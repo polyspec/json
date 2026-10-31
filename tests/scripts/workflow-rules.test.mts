@@ -312,18 +312,8 @@ test('ci-passed is the last job and needs every other job', () => {
   for (const [kind, [mutated, message]] of Object.entries(broken)) assert.ok(anyIncludes(violations('ci.yml', mutated), message), `${kind}: ${violations('ci.yml', mutated).join('\n')}`);
 });
 
-test('a tag push starts none of the workflows whose checks the release requires', () => {
-  // make release-verify requires the checks of config/release.json on the tagged commit; a workflow that a tag push started
-  // again would run them anew on the same commit, queued, so the release would race against them.
-  const { checks } = readJsonFile<{ checks: string[] }>(path.join(ROOT, 'config/release.json'), 'release-config.schema.json');
-  for (const check of checks) {
-    const owners = names().filter(name => check in workflow(read(name)).jobs);
-    assert.equal(owners.length, 1, `the check ${check} is a job of ${owners.join(', ')}`);
-    const owner = known(owners[0], `the workflow of the check ${check}`);
-    const push = known(workflow(read(owner)).on?.push, `the push trigger of ${owner}`);
-    assert.ok(isDeepStrictEqual(push.branches, ['**']) || isDeepStrictEqual(push.branches, ['main']), owner);
-    assert.equal(push.tags, undefined);
-  }
+test('a tag push starts no workflow', () => {
+  // A tag push starts no workflow: the release checks the tagged commit with the CI run of main, so a workflow that the tag started would run the same checks again, queued on the same commit.
   assert.deepEqual(names().filter(name => workflow(read(name)).on?.push?.tags !== undefined), []);
 });
 

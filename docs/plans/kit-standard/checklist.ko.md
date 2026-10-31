@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 6927297072ec2feb1d2264c9628669d975e1f4acab1e23938cf6f49e60fbb094 -->
+<!-- source-sha256: b97435bea7dc3fea862cbbaf8c99d9bfafa6c1c8ca6120ab5d50a6572df99ea0 -->
 # kit 표준 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -143,5 +143,5 @@
 | T2.121 | workflow 규칙 테스트는 kit 워크플로 목록을 설치된 kit의 복사본 목록에서 읽는다. gates.yml과 release.yml을 고정 나열하지 않는다 | tests/scripts/workflow-rules.test.mts | RED: `node --test --test-name-pattern="every workflow follows the rules" tests/scripts/workflow-rules.test.mts` exits 2 with the deepEqual of names() against ci.yml. GREEN: `node --test --test-name-pattern="every workflow follows the rules" tests/scripts/workflow-rules.test.mts` exits 0 | [o] |
 | T2.122 | ci.yml의 모든 부트스트랩 단계는 kit의 정규 부트스트랩 텍스트를, 첫 주석 줄까지 포함하여, 그대로 가진다 | .github/workflows/ci.yml | RED: `node --test --test-name-pattern="bootstraps its locked kit package" tests/scripts/workflow-rules.test.mts` fails before the change and exits 0 after it | [o] |
 | T2.123 | workflow 규칙 테스트는 저장소의 워크플로만 저장소 규칙으로 검사한다. kit 복사본을 정규로 읽는 단언을 없애고, 정규 부트스트랩 단계를 한 make 대상 규칙에서 면제한다 | tests/scripts/workflow-rules.test.mts | RED: the assertions of tests/scripts/workflow-rules.test.mts that compare ci.yml with the kit copies. GREEN: `node --test --test-name-pattern="each check job bootstraps" tests/scripts/workflow-rules.test.mts` exits 0 | [o] |
-| T2.124 | workflow 규칙 테스트는 kit 0.0.85가 정의하지 않는 config/release.json의 checks 키를 읽지 않는다 | tests/scripts/workflow-rules.test.mts | RED: `node --test tests/scripts/workflow-rules.test.mts` fails with missingProperty checks. GREEN: `node --test tests/scripts/workflow-rules.test.mts` passes the release-related tests | [ ] |
+| T2.124 | workflow 규칙 테스트는 kit 0.0.85가 정의하지 않는 config/release.json의 checks 키를 읽지 않는다 | tests/scripts/workflow-rules.test.mts | RED: `node --test tests/scripts/workflow-rules.test.mts` fails with missingProperty checks. GREEN: `node --test tests/scripts/workflow-rules.test.mts` passes the release-related tests | [~] |
 | T2.125 | package.json은 npm을 devEngines.packageManager에만 선언한다(K938). packageManager 필드와 이를 읽는 테스트와 주석은 제거한다 | package.json tests/scripts/environment.test.mts config/toolchain.json Makefile | RED: `node --test tests/scripts/environment.test.mts` fails at the packageManager assertion. GREEN: `node --test tests/scripts/environment.test.mts` passes and `make kit-check` exits 0 | [ ] |
