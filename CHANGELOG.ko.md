@@ -23,6 +23,8 @@
 
 - T2.121: workflow 규칙 테스트는 kit 워크플로 목록을 설치된 kit 패키지의 복사본에서 읽어, ci-pipeline.yml을 저장소 워크플로가 아닌 kit의 것으로 본다 (T2.121)
 
+- T2.124: workflow 규칙 테스트의 태그 push 규칙은 kit 0.0.85가 정의하지 않는 config/release.json의 checks를 읽지 않으며, 태그로 시작하는 workflow는 없다 (T2.124)
+
 ## 0.0.14
 - T2.110: ordered-json 0.0.14 릴리스: config/release.json의 모든 manifest와 lock의 버전이 0.0.14이며 changelog가 이를 기록한다 (T2.110)
 - T2.108: kit 0.0.77이 더 제공하지 않는 prepare-commit-msg 훅 파일을 제거한다 (K892) (T2.108)
