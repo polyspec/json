@@ -27,6 +27,8 @@
 
 - T2.125: package.json은 npm을 devEngines.packageManager에만 선언한다(K938). packageManager 필드, 그 단언과 이를 적은 문서를 제거한다 (T2.125)
 
+- T2.119: ordered-json의 Python 설치는 kit 체크아웃을 요구하는 link 대신 var/tools의 node로 실행하는 install-link로 패키지를 연결한다 (T2.119)
+
 ## 0.0.14
 - T2.110: ordered-json 0.0.14 릴리스: config/release.json의 모든 manifest와 lock의 버전이 0.0.14이며 changelog가 이를 기록한다 (T2.110)
 - T2.108: kit 0.0.77이 더 제공하지 않는 prepare-commit-msg 훅 파일을 제거한다 (K892) (T2.108)

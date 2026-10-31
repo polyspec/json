@@ -26,6 +26,8 @@
 
 - T2.125: package.json declares npm only in devEngines.packageManager (K938); the packageManager field, its assertion and the documents that named it are removed (T2.125)
 
+- T2.119: the Python install of ordered-json links the packages with install-link of kit, which runs with the node of var/tools, not the link target that needs a kit checkout (T2.119)
+
 ## 0.0.14
 - T2.110: ordered-json 0.0.14 is released: the version of every manifest and lock of config/release.json is 0.0.14, and the changelogs name it (T2.110)
 - T2.108: the prepare-commit-msg hook file is removed, which kit 0.0.77 no longer serves (K892) (T2.108)
