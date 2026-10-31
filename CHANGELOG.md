@@ -16,6 +16,8 @@
 
 - T2.118: the nine bootstrap steps of ci.yml run the devEngines npm from RUNNER_TEMP with --prefix, as kit does (K938-1), so the runner npm 11.20.0 no longer refuses devEngines (T2.118)
 
+- T2.122: each bootstrap step of ci.yml carries the canonical text of kit 0.0.85, first comment line included (T2.122)
+
 ## 0.0.14
 - T2.110: ordered-json 0.0.14 is released: the version of every manifest and lock of config/release.json is 0.0.14, and the changelogs name it (T2.110)
 - T2.108: the prepare-commit-msg hook file is removed, which kit 0.0.77 no longer serves (K892) (T2.108)

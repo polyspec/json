@@ -17,6 +17,8 @@
 
 - T2.118: ci.yml의 아홉 부트스트랩 단계는 kit과 같이(K938-1) devEngines의 npm을 RUNNER_TEMP에서 --prefix로 실행하여, 러너의 npm 11.20.0이 devEngines를 거부하지 않는다 (T2.118)
 
+- T2.122: ci.yml의 부트스트랩 단계 각각은 kit 0.0.85의 정규 텍스트를, 첫 주석 줄까지 포함하여, 가진다 (T2.122)
+
 ## 0.0.14
 - T2.110: ordered-json 0.0.14 릴리스: config/release.json의 모든 manifest와 lock의 버전이 0.0.14이며 changelog가 이를 기록한다 (T2.110)
 - T2.108: kit 0.0.77이 더 제공하지 않는 prepare-commit-msg 훅 파일을 제거한다 (K892) (T2.108)
