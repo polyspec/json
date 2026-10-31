@@ -82,13 +82,13 @@ ordered-json-install-php:
 
 # ordered-json-install-python makes packages/python/.venv from the Python of mise.toml (python-venv of kit) and installs the package
 # into it, non-editable, with the uv of mise.toml: the python extractor of kit reads the modules from the file list of the installed
-# distribution (kit K788), which an editable install does not hold. make link then makes the installed package folder a link to
+# distribution (kit K788), which an editable install does not hold. make install-link then makes the installed package folder a link to
 # packages/python/src/polyspec/ordered_json (kit K765), so the tests import the sources of the checkout. config/parity.json runs the
 # Python tests with its interpreter.
 ordered-json-install-python:
 	$(MAKE) --no-print-directory python-venv DIR=packages/python/.venv
 	$(ONLINE) $(UV) pip install --python packages/python/.venv/bin/python --link-mode copy --no-deps packages/python
-	$(MAKE) --no-print-directory link
+	$(MAKE) --no-print-directory install-link
 
 # Product dependency installs are reused by independent CI jobs after Kit prepares
 # only the requested toolchains. These targets install no other language's tools.
