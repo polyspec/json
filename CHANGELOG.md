@@ -6,6 +6,10 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.16
+
+- ordered-json 0.0.16 adopts kit 0.0.86 (T2.126); its release attaches polyspec-ordered-json-0.0.16.tgz, polyspec-ordered-json-php-0.0.16.zip, polyspec-ordered-json-php-ext-0.0.16.zip and the wheel (T2.127)
+
 - T2.126: ordered-json adopts kit 0.0.86, whose release names a Composer zip by the P39 label of its package (polyspec-ordered-json-php-X.Y.Z.zip, polyspec-ordered-json-php-ext-X.Y.Z.zip) and starts by itself when the CI run of the version commit succeeds (T2.126)
 
 ## 0.0.15
