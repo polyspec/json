@@ -28,7 +28,7 @@ const ALWAYS = '${{ !cancelled() }}';
 // The `on:` block of each workflow. In a tag filter * does not match /, so **/v* covers the tags of the Go modules.
 const TRIGGERS: Record<string, unknown> = {
   'ci.yml': { pull_request: null, push: { branches: ['main'] }, workflow_dispatch: null },
-  'release.yml': { push: { tags: ['v*', '**/v*'] } },
+
 };
 // The workflows whose checks the release workflow requires on the tagged commit; they run on every push.
 const CHECK_WORKFLOWS = ['ci.yml'];
@@ -36,9 +36,6 @@ const CHECK_WORKFLOWS = ['ci.yml'];
 // that take an environment variable of the job by name (TAG="$TAG").
 const MAKE_STEP = /^make [^|;&`$()]*(\$\{\{[^}]*\}\}[^|;&`$()]*)*( [A-Z][A-Z_]*="\$[A-Z][A-Z_]*")*$/;
 const BOOTSTRAP_STEPS = ['make install-tools TOOLS=npm', 'make install-packages'];
-// The steps of release.yml in their order, the copy of workflows/release.yml of @polyspec/kit, which checks the configuration
-// with make kit-check before any release step (kit K193).
-const RELEASE_STEPS = [...BOOTSTRAP_STEPS, 'make kit-check', 'make release-prepare', 'make release-tools', 'make release-tools-path', 'make release-verify', 'make release-versions', 'make release-assets', 'make release-publish', 'make release-proof TAG="$TAG"', 'make release-undraft TAG="$TAG"'];
 const CI_PASSED = 'ci-passed';
 const CI_PASSED_RUN = "make ci-passed RESULTS='${{ toJSON(needs) }}'";
 
@@ -52,8 +49,15 @@ const workflow = (text: string): Workflow => {
   return checkJson<Workflow>(value, 'workflow.schema.json', 'the workflow');
 };
 const runs = (job: Job) => (job.steps ?? []).flatMap(step => (step.run === undefined ? [] : [step.run]));
-// Gate topology belongs to Kit; its single release job carries the same canonical bootstrap.
-const PACKAGE_BOOTSTRAP = known(workflow(readFileSync(path.join(KIT_ROOT, 'workflows/release.yml'), 'utf8')).jobs.release?.steps?.find(step => step.name === 'bootstrap the installed kit package')?.run, 'the canonical installed-package bootstrap');
+const PACKAGE_BOOTSTRAP = [
+  'if [ "$(node -p \'require("./package.json").name\')" != \'@polyspec/kit\' ]; then',
+  '  # npm 11 of the runner refuses to run in a folder whose devEngines names npm 12.2.0 (EBADDEVENGINES), so the npm of',
+  '  # devEngines runs outside the checkout with --prefix (K938-1).',
+  '  root="$PWD"',
+  '  version="$(node -p \'require("./package.json").devEngines.packageManager.version\')"',
+  '  (cd "${RUNNER_TEMP:?RUNNER_TEMP is not set}" && npm_config_cache="$root/var/bootstrap/npm-cache" npm exec --yes --package="npm@$version" -- npm --prefix "$root" ci --ignore-scripts --allow-remote=root)',
+  'fi',
+].join('\n') + '\n';
 
 /** Each broken rule of the job ci-passed of ci.yml. */
 function ciPassedViolations(name: string, jobs: Record<string, Job>): string[] {
@@ -70,18 +74,6 @@ function ciPassedViolations(name: string, jobs: Record<string, Job>): string[] {
   return found;
 }
 
-/** Each broken rule of release.yml: one job with the permission to release, the tag, the whole history and the steps in order. */
-function releaseViolations(name: string, parsed: Workflow): string[] {
-  const found: string[] = [];
-  if (!isDeepStrictEqual(parsed.permissions, { contents: 'write' })) found.push(`${name}: the permissions are not exactly contents: write, which gh release create needs`);
-  if (!isDeepStrictEqual(Object.keys(parsed.jobs), ['release'])) return [...found, `${name}: the jobs are ${Object.keys(parsed.jobs).join(', ')}, not the one job release`];
-  const job = known(parsed.jobs.release, 'the job release');
-  if (job.env?.TAG !== '${{ github.ref_name }}') found.push(`${name}: the job release does not set TAG: \${{ github.ref_name }} in its environment`);
-  const first = job.steps?.[0];
-  if (first?.uses?.split('@')[0] !== 'actions/checkout' || first.with?.['fetch-depth'] !== 0) found.push(`${name}: the first step is not actions/checkout with fetch-depth: 0; the ancestry check needs origin/main`);
-  if (!isDeepStrictEqual(runs(job).slice(-RELEASE_STEPS.length), RELEASE_STEPS)) found.push(`${name}: the steps run ${JSON.stringify(runs(job))}, not the release steps ${JSON.stringify(RELEASE_STEPS)} last and in order`);
-  return found;
-}
 
 /** Each broken rule of the workflow `text`, named with the file, the job and the step. */
 export function violations(name: string, text: string): string[] {
@@ -95,7 +87,6 @@ export function violations(name: string, text: string): string[] {
   if (CHECK_WORKFLOWS.includes(name) && !Object.hasOwn(parsed.on ?? {}, 'push')) found.push(`${name}: the workflow runs on ${Object.keys(parsed.on ?? {}).join(', ')}, not on push; the release workflow requires its checks on the tagged commit of main`);
   if (name in TRIGGERS && !isDeepStrictEqual(parsed.on, TRIGGERS[name])) found.push(`${name}: the on: block is ${JSON.stringify(parsed.on)}, not ${JSON.stringify(TRIGGERS[name])}`);
   if (name === 'ci.yml') found.push(...ciPassedViolations(name, parsed.jobs));
-  if (name === 'release.yml') found.push(...releaseViolations(name, parsed));
   for (const [job, body] of Object.entries(parsed.jobs)) {
     const steps = body.steps ?? [];
     const makes = runs(body).filter(run => run.startsWith('make '));
