@@ -43,7 +43,7 @@ pip install "https://github.com/polyspec/ordered-json/releases/download/vX.Y.Z/p
 <a id="release-assets"></a>
 ## Release assets
 
-Each GitHub Release `vX.Y.Z` carries `polyspec-ordered-json-npm-X.Y.Z.tgz`, `polyspec-ordered-json-php-X.Y.Z.zip`, `polyspec-ordered-json-php-ext-php-X.Y.Z.zip` and the wheel `polyspec_ordered_json-X.Y.Z-py3-none-any.whl`. Each archive carries the manifest of its package unchanged: `package.json` of `packages/js/` and `composer.json` of `packages/php/` and `packages/php-ext/`, each with `version` X.Y.Z, without `repositories` and without `@dev`. The Python package ships only its wheel: pip installs the wheel asset URL shown in the install section above, and no git tag installs it.
+Each GitHub Release `vX.Y.Z` carries `polyspec-ordered-json-X.Y.Z.tgz`, `polyspec-ordered-json-php-X.Y.Z.zip`, `polyspec-ordered-json-php-ext-X.Y.Z.zip` and the wheel `polyspec_ordered_json-X.Y.Z-py3-none-any.whl`. Each archive carries the manifest of its package unchanged: `package.json` of `packages/js/` and `composer.json` of `packages/php/` and `packages/php-ext/`, each with `version` X.Y.Z, without `repositories` and without `@dev`. The Python package ships only its wheel: pip installs the wheel asset URL shown in the install section above, and no git tag installs it.
 
 npm installs the tarball by its path:
 
@@ -71,7 +71,7 @@ composer install
 
 Composer reads both zips. It does not install `polyspec/ordered-json-php-ext`, a package of the type `php-ext`; PIE builds and installs it ([native PHP](#native-php)).
 
-The packages of this repository depend on no other package, so the repository has no npm workspaces and no private development manifest: the root `package.json` and `composer.json` declare the same packages as `packages/js/` and `packages/php/` for an install from a checkout, with the same `version` and no `repositories`. A consumer installs a release outside a checkout with its package manager: npm installs the release tarball `polyspec-ordered-json-npm-X.Y.Z.tgz`, and Composer requires the PHP packages from the release zips of an artifact repository.
+The packages of this repository depend on no other package, so the repository has no npm workspaces and no private development manifest: the root `package.json` and `composer.json` declare the same packages as `packages/js/` and `packages/php/` for an install from a checkout, with the same `version` and no `repositories`. A consumer installs a release outside a checkout with its package manager: npm installs the release tarball `polyspec-ordered-json-X.Y.Z.tgz`, and Composer requires the PHP packages from the release zips of an artifact repository.
 
 <a id="native-php"></a>
 ## Native PHP

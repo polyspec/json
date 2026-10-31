@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- T2.126: ordered-json adopts kit 0.0.86, whose release names a Composer zip by the P39 label of its package (polyspec-ordered-json-php-X.Y.Z.zip, polyspec-ordered-json-php-ext-X.Y.Z.zip) and starts by itself when the CI run of the version commit succeeds (T2.126)
+
 ## 0.0.15
 
 - T2.120: ordered-json no longer calls kit-install-php-arginfo, which kit 0.0.85 does not define; the committed arginfo header is checked by kit (T2.120)

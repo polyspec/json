@@ -1,5 +1,5 @@
 <!-- doc-id: installation -->
-<!-- source-sha256: 5e043a21c49b4f968a53ebe94e37e3f4585dd5199a4a26e663e619afcad4b749 -->
+<!-- source-sha256: 140a76de7ac8b1abbe31c2d8b180ccc46cf1d71d039c783f3b3e16f7818fd88f -->
 # 설치와 실행
 
 [English](installation.md)
@@ -44,7 +44,7 @@ pip install "https://github.com/polyspec/ordered-json/releases/download/vX.Y.Z/p
 <a id="release-assets"></a>
 ## 릴리스 asset
 
-GitHub Release `vX.Y.Z`마다 `polyspec-ordered-json-npm-X.Y.Z.tgz`, `polyspec-ordered-json-php-X.Y.Z.zip`, `polyspec-ordered-json-php-ext-php-X.Y.Z.zip`과 wheel `polyspec_ordered_json-X.Y.Z-py3-none-any.whl`이 있습니다. 각 archive는 자기 package의 manifest를 바꾸지 않고 담습니다. `packages/js/`의 `package.json`, `packages/php/`와 `packages/php-ext/`의 `composer.json`이며, 모두 `version` X.Y.Z를 선언하고 `repositories`와 `@dev`가 없습니다. Python 패키지는 wheel만 릴리스합니다. pip는 위 설치 절의 wheel asset URL로 설치하며, git tag로는 설치하지 않습니다.
+GitHub Release `vX.Y.Z`마다 `polyspec-ordered-json-X.Y.Z.tgz`, `polyspec-ordered-json-php-X.Y.Z.zip`, `polyspec-ordered-json-php-ext-X.Y.Z.zip`과 wheel `polyspec_ordered_json-X.Y.Z-py3-none-any.whl`이 있습니다. 각 archive는 자기 package의 manifest를 바꾸지 않고 담습니다. `packages/js/`의 `package.json`, `packages/php/`와 `packages/php-ext/`의 `composer.json`이며, 모두 `version` X.Y.Z를 선언하고 `repositories`와 `@dev`가 없습니다. Python 패키지는 wheel만 릴리스합니다. pip는 위 설치 절의 wheel asset URL로 설치하며, git tag로는 설치하지 않습니다.
 
 npm은 tarball을 경로로 설치합니다.
 
@@ -72,7 +72,7 @@ composer install
 
 Composer는 두 zip을 모두 읽습니다. type이 `php-ext`인 package `polyspec/ordered-json-php-ext`은 설치하지 않으며, PIE가 빌드하고 설치합니다([네이티브 PHP](#native-php)).
 
-이 저장소의 package는 다른 package에 의존하지 않으므로 저장소에는 npm workspaces와 비공개 개발 manifest가 없습니다. 루트의 `package.json`과 `composer.json`은 checkout에서 설치하도록 `packages/js/`, `packages/php/`와 같은 package를 같은 `version`으로 선언하며 `repositories`가 없습니다. consumer는 저장소 밖에서 release를 패키지 관리자로 설치합니다. npm은 release tarball `polyspec-ordered-json-npm-X.Y.Z.tgz`를 설치하고, Composer는 PHP 패키지를 release zip의 artifact repository에서 require합니다.
+이 저장소의 package는 다른 package에 의존하지 않으므로 저장소에는 npm workspaces와 비공개 개발 manifest가 없습니다. 루트의 `package.json`과 `composer.json`은 checkout에서 설치하도록 `packages/js/`, `packages/php/`와 같은 package를 같은 `version`으로 선언하며 `repositories`가 없습니다. consumer는 저장소 밖에서 release를 패키지 관리자로 설치합니다. npm은 release tarball `polyspec-ordered-json-X.Y.Z.tgz`를 설치하고, Composer는 PHP 패키지를 release zip의 artifact repository에서 require합니다.
 
 <a id="native-php"></a>
 ## 네이티브 PHP

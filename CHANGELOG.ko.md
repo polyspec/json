@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: ba89910a779856c6b40425e81ab8c9b584b64c882742516f739b32842681a09a -->
+<!-- source-sha256: a167e7f2811f75b94a229466ec821a8f012138d4623657bc1acd76f89ca6b7d7 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- T2.126: ordered-json은 kit 0.0.86을 채택하며, 그 release는 Composer zip을 package의 P39 label(polyspec-ordered-json-php-X.Y.Z.zip, polyspec-ordered-json-php-ext-X.Y.Z.zip)로 이름 짓고 version commit의 CI run이 성공하면 스스로 시작한다 (T2.126)
 
 ## 0.0.15
 
