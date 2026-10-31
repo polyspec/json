@@ -107,7 +107,7 @@ canonical locked-package bootstrap 뒤에 모든 job은 pin된 npm과 잠긴 pac
 
 `ci.yml`의 마지막 job `ci-passed`는 release workflow가 tag된 commit에 요구하는 이 workflow의 check입니다. workflow의 다른 모든 job을 need로 가지고, 그중 하나가 실패하거나 skip되거나 취소되어도 그 모든 job 뒤에 실행되며(`if: ${{ always() }}`), `make ci-passed RESULTS='${{ toJSON(needs) }}'`를 실행합니다. `@polyspec/kit`의 ci-passed는 need로 가진 모든 job의 결과를 출력하고, 하나라도 `success`가 아니면 실패합니다. `ci.yml`에 추가한 job은 `needs`에 넣으므로 필수 check가 그 job을 포함합니다. `tests/scripts/workflow-rules.test.mts`는 `ci-passed`가 없거나, 마지막 job이 아니거나, `if: ${{ always() }}`가 없거나, 다른 모든 job을 need로 가지지 않거나, 다른 runner에서 실행되거나, 다른 step을 실행하면 실패합니다.
 
-저장소 소유 CI와 push-gate workflow의 각 job은 workspace 루트에 이 저장소를 checkout합니다. 첫 make 명령 전에 canonical bootstrap이 packageManager에 선언된 npm 버전으로 잠긴 kit 패키지를 설치합니다. Makefile은 설치된 패키지 bootstrap을 include하며 형제 checkout은 필요하지 않습니다. 개발용 소스 link는 선택적인 native 패키지 관리자 상태로 유지합니다.
+저장소 소유 CI와 push-gate workflow의 각 job은 workspace 루트에 이 저장소를 checkout합니다. 첫 make 명령 전에 canonical bootstrap이 devEngines.packageManager에 선언된 npm 버전으로 잠긴 kit 패키지를 설치합니다. Makefile은 설치된 패키지 bootstrap을 include하며 형제 checkout은 필요하지 않습니다. 개발용 소스 link는 선택적인 native 패키지 관리자 상태로 유지합니다.
 
 
 docs job은 tool 설치 후 Git hook을 준비합니다. language와 parity installer는 오프라인 lint 전에 설치된 kit Rust checker crate를 다운로드합니다. 다운로드는 설치 단계로 유지하며 어떤 검사도 네트워크 접근을 활성화하지 않습니다.

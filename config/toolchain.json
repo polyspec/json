@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "comment": "The toolchains of ordered-json that no other file declares. npm is declared in the packageManager of package.json, Rust in rust-toolchain.toml and PHP in .php-version. mise is the release that make install-tools TOOLS=npm installs with the sha256 of each platform; mise.toml declares the tools it installs (the Node.js, the Go and the Python of the kit pins with uv, alint of make layout-check, ruff, vulture, golangci-lint and deadcode of the lints, cargo-audit and govulncheck, and Composer) and mise.lock locks them. symbolExtractors and the Rust nightly of exceptions are the symbol extractors of the parity check (config/parity.json).",
+  "comment": "The toolchains of ordered-json that no other file declares. npm is declared in the devEngines.packageManager of package.json, Rust in rust-toolchain.toml and PHP in .php-version. mise is the release that make install-tools TOOLS=npm installs with the sha256 of each platform; mise.toml declares the tools it installs (the Node.js, the Go and the Python of the kit pins with uv, alint of make layout-check, ruff, vulture, golangci-lint and deadcode of the lints, cargo-audit and govulncheck, and Composer) and mise.lock locks them. symbolExtractors and the Rust nightly of exceptions are the symbol extractors of the parity check (config/parity.json).",
   "symbolExtractors": [
     "go",
     "php"

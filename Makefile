@@ -9,7 +9,7 @@ CARGO := $(shell command -v cargo)
 GO := $(shell command -v go)
 JSON_TEST_SUITE ?=
 
-# The tools of every run are the releases that the tracked declaration files name: npm in the packageManager of
+# The tools of every run are the releases that the tracked declaration files name: npm in the devEngines.packageManager of
 # package.json, Rust in rust-toolchain.toml, PHP in .php-version, and Node.js, Go, Python, Composer and the other tools
 # that mise installs in mise.toml at the digests of mise.lock. No command installs or selects a toolchain on demand:
 # make install-tools TOOLS=npm installs npm and mise into var/tools/bin and make install the tools of mise.lock into

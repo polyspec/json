@@ -1,5 +1,5 @@
 // The environment of every run: the tools are the declared releases, a check reads no network, and make install is the only
-// recipe that downloads. The releases are declared in the packageManager of package.json, rust-toolchain.toml, .php-version
+// recipe that downloads. The releases are declared in the devEngines.packageManager of package.json, rust-toolchain.toml, .php-version
 // and mise.toml, whose Node.js, Go and Python are the pins of @polyspec/kit and which the go line of the go.mod names;
 // make install-tools installs the running tools with them, and every target that runs a tool depends on it.
 import assert from 'node:assert/strict';
@@ -81,7 +81,7 @@ test('the declarations name an exact release or a minor release', () => {
   assert.match(miseVersion('python'), /^\d+\.\d+\.\d+$/);
   assert.match(read('.php-version'), /^\d+\.\d+\n$/);
   assert.match(read('rust-toolchain.toml'), /^channel = "\d+\.\d+\.\d+"$/m);
-  assert.match(known(readJsonFile<{ packageManager?: string }>(path.join(ROOT, 'package.json'), 'npm-manifest.schema.json').packageManager, 'packageManager of package.json'), /^npm@\d+\.\d+\.\d+\+sha512\.[0-9a-f]{128}$/);
+  assert.match(readJsonFile<{ devEngines: { packageManager: { version: string } } }>(path.join(ROOT, 'package.json'), 'npm-manifest.schema.json').devEngines.packageManager.version, /^\d+\.\d+\.\d+$/);
   // Go is the pin of kit, which mise.toml and the go directive name exactly; the go command drops a toolchain line equal to it.
   const goMod = parseJson<{ Go: string; Toolchain?: unknown }>(execFileSync('go', ['mod', 'edit', '-json'], { cwd: path.join(ROOT, rootOf('go')), encoding: 'utf8' }), 'go-mod-edit.schema.json', 'go mod edit -json');
   assert.equal(goMod.Go, miseVersion('go'));

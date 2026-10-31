@@ -103,7 +103,7 @@ export function violations(name: string, text: string): string[] {
       if (/^actions\/setup-(python|go)@/.test(step.uses ?? '')) found.push(`${label} installs a toolchain of mise.toml; make install-tools installs it`);
       // .php-version is the one declaration of the PHP of the checkout, which the release workflow of kit sets up (kit K193).
       if (step.uses?.startsWith('shivammathur/setup-php@') && (step.with?.['php-version-file'] !== '.php-version' || step.with['php-version'] !== undefined)) found.push(`${label} does not read the PHP from php-version-file: .php-version alone`);
-      // setup-node caches the dependencies of the packageManager by default with the npm of the machine; the npm of var/tools installs them.
+      // setup-node caches the dependencies of devEngines.packageManager by default with the npm of the machine; the npm of var/tools installs them.
       if (step.uses?.startsWith('actions/setup-node@') && step.with?.['package-manager-cache'] !== false) found.push(`${name}: job ${job} step ${index + 1} (setup-node) lacks package-manager-cache: false; the npm of var/tools installs the packages`);
     });
     if (body.strategy && body.strategy['fail-fast'] !== false) found.push(`${name}: job ${job} has a matrix without fail-fast: false; one failed job would cancel the others`);
