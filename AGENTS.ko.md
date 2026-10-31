@@ -80,15 +80,15 @@
 ## Release
 
 - Own: release는 `main`의 commit에 붙인 tag이며, 그 commit의 CI 실행은 `ci-passed` 성공으로 끝났어야 합니다. tag를 만들거나, 옮기거나, push하는 사람은 maintainer 한 명뿐입니다.
-  Enforced by: `make release-verify`
+  Enforced by: `make release-tag`
 - Own: version-bump commit `Release X.Y.Z`는 저장소의 모든 manifest에 version을 설정하며, 각 changelog의 `## Unreleased`를 `## X.Y.Z`로 바꿉니다.
   Enforced by: none; 검토에서 판단합니다.
 - Own: Go tag `packages/go/vX.Y.Z`는 같은 commit에서 `vX.Y.Z`보다 먼저 push합니다.
   Enforced by: none, 검토에서 판단합니다.
 - Own: Go tag가 GitHub에 없이 `vX.Y.Z`만 push되면 release 검증이 실패합니다.
-  Enforced by: `make release-verify`
+  Enforced by: none, 검토에서 판단합니다.
 - Own: tag push는 `.github/workflows/release.yml`을 실행하며, 이 workflow는 tag된 commit이 `ci-passed`가 통과한 `main`에 있는지 확인합니다.
-  Enforced by: `make release-verify`
+  Enforced by: `make release-tag`
 - Own: tag push 뒤 모든 manifest에 tag의 version이 있고 `CHANGELOG.md`에 `## X.Y.Z` 절이 있으며, 그다음 release.yml이 archive와 Python wheel을 빌드하고 GitHub Release를 만듭니다.
   Enforced by: none, 검토에서 판단합니다.
 - Own: 다른 저장소의 패키지를 고정하는 패키지는 GitHub에 실제로 존재하는 tag만 이름으로 적습니다. 고정은 그 tag를 push한 뒤에 씁니다.
