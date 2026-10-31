@@ -19,6 +19,8 @@
 
 - T2.122: ci.yml의 부트스트랩 단계 각각은 kit 0.0.85의 정규 텍스트를, 첫 주석 줄까지 포함하여, 가진다 (T2.122)
 
+- T2.123: workflow 규칙 테스트는 정규 부트스트랩을 kit 복사본이 아닌 저장소의 텍스트에서 읽고, 저장소 워크플로가 닿을 수 없는 release.yml 기대치를 없앤다 (T2.123)
+
 ## 0.0.14
 - T2.110: ordered-json 0.0.14 릴리스: config/release.json의 모든 manifest와 lock의 버전이 0.0.14이며 changelog가 이를 기록한다 (T2.110)
 - T2.108: kit 0.0.77이 더 제공하지 않는 prepare-commit-msg 훅 파일을 제거한다 (K892) (T2.108)
