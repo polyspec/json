@@ -25,6 +25,8 @@
 
 - T2.124: workflow 규칙 테스트의 태그 push 규칙은 kit 0.0.85가 정의하지 않는 config/release.json의 checks를 읽지 않으며, 태그로 시작하는 workflow는 없다 (T2.124)
 
+- T2.125: package.json은 npm을 devEngines.packageManager에만 선언한다(K938). packageManager 필드, 그 단언과 이를 적은 문서를 제거한다 (T2.125)
+
 ## 0.0.14
 - T2.110: ordered-json 0.0.14 릴리스: config/release.json의 모든 manifest와 lock의 버전이 0.0.14이며 changelog가 이를 기록한다 (T2.110)
 - T2.108: kit 0.0.77이 더 제공하지 않는 prepare-commit-msg 훅 파일을 제거한다 (K892) (T2.108)

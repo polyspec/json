@@ -24,6 +24,8 @@
 
 - T2.124: the tag-push rule of the workflow rules test no longer reads the checks of config/release.json, which kit 0.0.85 does not define; no workflow runs on a tag (T2.124)
 
+- T2.125: package.json declares npm only in devEngines.packageManager (K938); the packageManager field, its assertion and the documents that named it are removed (T2.125)
+
 ## 0.0.14
 - T2.110: ordered-json 0.0.14 is released: the version of every manifest and lock of config/release.json is 0.0.14, and the changelogs name it (T2.110)
 - T2.108: the prepare-commit-msg hook file is removed, which kit 0.0.77 no longer serves (K892) (T2.108)
