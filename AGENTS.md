@@ -79,15 +79,15 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
 ## Release
 
 - Own: A release is a tag of a commit of `main` whose CI run concluded with `ci-passed` success. Only the maintainer creates, moves or pushes a tag.
-  Enforced by: `make release-verify`
+  Enforced by: `make release-tag`
 - Own: The version-bump commit `Release X.Y.Z` sets the version in every manifest of the repository and renames `## Unreleased` of each changelog to `## X.Y.Z`.
   Enforced by: none; judged at review.
 - Own: The Go tag `packages/go/vX.Y.Z` is pushed before `vX.Y.Z`, on the same commit.
   Enforced by: none, judged at review.
 - Own: A `vX.Y.Z` pushed without its Go tag on GitHub fails the verification of the release.
-  Enforced by: `make release-verify`
+  Enforced by: none; judged at review.
 - Own: The tag push runs `.github/workflows/release.yml`, which requires the tagged commit on `main` with `ci-passed` passed.
-  Enforced by: `make release-verify`
+  Enforced by: `make release-tag`
 - Own: After the tag push, the version of the tag is in every manifest and the section `## X.Y.Z` is in `CHANGELOG.md`, then release.yml builds the archives and the Python wheel and creates the GitHub Release.
   Enforced by: none, judged at review.
 - Own: A package that pins a package of another repository names only a tag that exists on GitHub. The pin is written after that tag is pushed.
