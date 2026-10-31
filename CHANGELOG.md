@@ -6,12 +6,20 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- T2.120: ordered-json no longer calls kit-install-php-arginfo, which kit 0.0.85 does not define; the committed arginfo header is checked by kit (T2.120)
+
 - T2.111: .links, the link declaration of kit (K869), is ignored by .gitignore, not only by the local exclude (T2.111)
+
 - T2.112: the tests of the Python package share one helper module for the value tree and the rebuild, so duplication-check no longer excludes the test folders (P34) (T2.112)
+
 - T2.113: AGENTS.md names the existing check of each rule that a machine can check (make lint-rust, make lint-go, make lint-php, make release-verify); a rule that only a judgement can state keeps Enforced by: none (T2.113)
+
 - T2.114: AGENTS.md no longer names dependency-review, release-consumer-lock, release-consumer or config/dependency-policy.json, which kit deleted; the package managers own their locks (T2.114)
+
 - T2.115: distribution and installation describe a consumer installing a release with its package manager, not the make targets release-consumer and release-consumer-lock, which the locked kit does not define (T2.115)
+
 - T2.116: distribution describes the maintainer release steps of the locked kit: the make targets release-versions and release-proof, which it does not define, are removed (T2.116)
+
 - T2.117: ordered-json adopts kit 0.0.85: package.json and its lock name the release asset polyspec-kit-0.0.85.tgz, npm 12.2.0 is pinned by devEngines and mise, the copies follow kit, config/release.json declares product and runtime per package, and its checks key, which kit 0.0.85 does not define, is removed (T2.117)
 
 - T2.118: the nine bootstrap steps of ci.yml run the devEngines npm from RUNNER_TEMP with --prefix, as kit does (K938-1), so the runner npm 11.20.0 no longer refuses devEngines (T2.118)

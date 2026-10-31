@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: e2bd01ba665590cbcc9490eed4d8a73ba42576938784ccfec5373b0e8398d205 -->
+<!-- source-sha256: ba89910a779856c6b40425e81ab8c9b584b64c882742516f739b32842681a09a -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,12 +7,20 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- T2.120: ordered-json은 kit 0.0.85가 정의하지 않는 kit-install-php-arginfo를 호출하지 않으며, 커밋된 arginfo 헤더는 kit이 검사한다 (T2.120)
+
 - T2.111: kit 링크 선언 .links를 로컬 exclude만이 아니라 .gitignore가 무시한다 (K869) (T2.111)
+
 - T2.112: Python 패키지 테스트가 값 트리와 재구성 헬퍼를 한 모듈로 공유하며, 중복 검사가 테스트 폴더를 더 이상 제외하지 않는다 (P34) (T2.112)
+
 - T2.113: AGENTS.md는 기계가 검사할 수 있는 규칙마다 기존 검사를 Enforced by에 명시하고(make lint-rust, make lint-go, make lint-php, make release-verify), 판단만 남는 규칙은 none으로 둔다 (T2.113)
+
 - T2.114: AGENTS.md는 kit이 삭제한 dependency-review, release-consumer-lock, release-consumer와 config/dependency-policy.json을 더 이상 이름으로 들지 않으며, lock은 패키지 관리자가 소유합니다 (T2.114)
+
 - T2.115: distribution과 installation은 consumer가 release를 패키지 관리자로 설치한다고 설명하며, locked kit이 정의하지 않는 make release-consumer와 release-consumer-lock을 쓰지 않습니다 (T2.115)
+
 - T2.116: distribution은 locked kit이 정의하지 않는 make release-versions와 release-proof를 빼고, 실제 릴리스 step을 설명합니다 (T2.116)
+
 - T2.117: ordered-json은 kit 0.0.85를 채택한다. package.json과 lock은 polyspec-kit-0.0.85.tgz를 가리키고, devEngines와 mise가 npm 12.2.0을 고정하며, 복사본은 kit을 따르고, config/release.json은 패키지마다 product와 runtime을 선언하며, kit 0.0.85가 정의하지 않는 checks 키는 제거한다 (T2.117)
 
 - T2.118: ci.yml의 아홉 부트스트랩 단계는 kit과 같이(K938-1) devEngines의 npm을 RUNNER_TEMP에서 --prefix로 실행하여, 러너의 npm 11.20.0이 devEngines를 거부하지 않는다 (T2.118)
