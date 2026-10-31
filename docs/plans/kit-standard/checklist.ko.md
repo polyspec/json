@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: f71528ad5ae17cd88fbe7f9100956514e45c5f1956e27a6b5b5fc78ce2dd8869 -->
+<!-- source-sha256: 3af4f9b40054f12545cd28ce293123cb1a2855fe95a83a91b20a492aad17741d -->
 # kit 표준 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -137,3 +137,4 @@
 | T2.115 | locked kit이 정의하지 않는 make release-consumer와 make release-consumer-lock을 이름으로 든 distribution과 installation의 consumer 단락을, consumer가 패키지 관리자로 release를 설치하는 내용으로 고쳐 쓴다 | docs/operations/distribution.md docs/operations/distribution.ko.md docs/operations/installation.md docs/operations/installation.ko.md CHANGELOG.md CHANGELOG.ko.md | `make docs-check` | [o] |
 | T2.116 | locked kit이 정의하지 않는 make release-versions와 make release-proof를 이름으로 든 distribution의 maintainer 릴리스 step을, release workflow가 실제로 실행하는 step으로 고쳐 쓴다 | docs/operations/distribution.md docs/operations/distribution.ko.md CHANGELOG.md CHANGELOG.ko.md | `make docs-check` | [o] |
 | T2.117 | ordered-json은 kit 0.0.85를 채택한다. 고정과 lock은 polyspec-kit-0.0.85.tgz를 가리키고, devEngines와 mise는 npm 12.2.0을 고정하며, 복사본은 kit을 따르고, config/release.json은 패키지마다 product와 runtime을 선언한다 | package.json package-lock.json mise.toml PRINCIPLES.md PRINCIPLES.ko.md .github/workflows/release.yml .github/workflows/ci-pipeline.yml config/release.json | RED: `make kit-check` exits 2 on the 0.0.77 pin and the release fields. GREEN: `make kit-check` and `make kit-inject-check` exit 0 | [o] |
+| T2.118 | ci.yml의 kit 패키지 부트스트랩은 kit과 같이 RUNNER_TEMP에서 --prefix로 devEngines의 npm을 실행하여, 러너의 npm이 devEngines를 거부하지 않게 한다 (K938-1) | .github/workflows/ci.yml | RED: run 41236292427 fails with EBADDEVENGINES in every job. GREEN: the bootstrap step exits 0 and the CI run of main concludes success | [ ] |
