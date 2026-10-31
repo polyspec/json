@@ -203,6 +203,12 @@ url = "https://nodejs.org/dist/v26.12.0/node-v26.12.0-darwin-arm64.tar.gz"
 checksum = "sha256:878ecede191c7abc1bff01d3fb81f7ed81aa1161040dba18776b8ff8593614b1"
 url = "https://nodejs.org/dist/v26.12.0/node-v26.12.0-darwin-x64.tar.gz"
 
+[[tools."npm:npm"]]
+version = "12.2.0"
+aube = { path = ".mise/locks/npm-npm/12.2.0", digest = "sha256:ce704ee0a99dacc7181715a5d854470a968908ad4eed463cf838cfba38b1f027" }
+backend = "npm:npm"
+specifiers = ["12.2.0"]
+
 [[tools."pypi:vulture"]]
 version = "2.16"
 backend = "pypi:vulture"

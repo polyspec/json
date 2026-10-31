@@ -161,8 +161,13 @@ repository.
   tests it, a unit is never dropped to pass, and nothing is renamed to escape a check.
   Enforced by: `make parity-declarations-check`
 - P34 Repeated code is fixed by restructuring it into one module, never by excluding it; a tool source is classified; generated
-  output is never tracked in Git.
-  Enforced by: `make duplication-check`, `make rebuild-check`, `.githooks/pre-commit`
+  output is never tracked in Git, except a generated source that a consumer installs as the tagged tree itself (a Go module, a Rust
+  crate), which is tracked and declared with its reason in config/generated.json. A released package that needs generated output
+  declares each generated path in config/release.json with the repository's make target that produces it; the release first refuses a
+  checkout that differs from the tagged commit, holds a changed or untracked path, or links a dependency from outside it; it then
+  deletes each declared path, runs that target in the checkout, and fails when a declared path is missing from the result or is
+  tracked in Git.
+  Enforced by: `make duplication-check`, `make rebuild-check`, `.githooks/pre-commit`, `make release-assets`.
 - P35 Local source development does not wait for a provider release. Missing native source connections are reported as
   kit defects with their file and line; incompatible dependency requirements are corrected in the application's native
   declarations. Release installs use the exact released graph of their locks, independently of development source state.
@@ -175,6 +180,14 @@ repository.
 - P38 main may be written directly, by one actor per checkout, through commits; a branch reaches main by the fast-forward of
   `make land`, which runs the gates that its changed paths select (K404, K446, K603).
   Enforced by: none, make land is the way a branch reaches main, and no hook can see which way a change took.
+- P39 A release asset keeps the file name its packer gives: npm pack's `scope-name-<version>.tgz`, the
+  `vendor-name-<version>.zip` of the Composer zip that kit packs, and the PEP 427 `<dist>-<version>-<tags>.whl` of a wheel,
+  whose file name pip parses to install it. Each package asset carries the GitHub label
+  `<vendor>-<product>-<runtime>-<version>`: the vendor is the owner of repositoryUrl, and the product and the runtime are
+  declared for each package in config/release.json, the runtime one of the six runtimes ts, go, rust, php, php-ext and
+  python. A package manager's name never stands in for the runtime, and the package name is never read for the product or
+  the runtime. Only package assets carry a label; packages.json, a file of the release, carries none (K980).
+  Enforced by: `make release-assets`, `make release-publish`
 
 ## Repository standards
 
@@ -197,9 +210,13 @@ tool lands, a standard binds the work as written here.
   (`*.test.{ts,mts,cts,mjs,cjs,js}`, vitest's `*.{test,spec}.*`, `*Test.php`, `*_test.go`, `tests/` and `#[test]`,
   `test_*.py`); a repository may add files but never narrow the set, and a file named like a test is run by a binding.
   Enforced by: `make parity-declarations-check`
-- S4 Versions: kit compares and pins no version or lock; format validation of arguments is allowed. Each package manager
-  and its lock decide.
-  Enforced by: none, a comparison that kit does not make needs no check; review refuses a new one (K853).
+- S4 Versions: kit compares and pins no version or lock; each package manager and its lock decide. Two exceptions: the
+  digest of kit's bootstrap tool mise, which the bootstrap checks as the anchor before any package manager runs, with the
+  installed state of mise judged by that digest alone; and the order of the repository's own release headings in its change
+  log and its release tags, newest first, which release takes its version from. Format validation of arguments is allowed.
+  The npm of a checkout is the npm:npm of mise.toml, locked in mise.lock; kit installs no npm of its own (K938).
+  Enforced by: `make install-tools` (installed state of mise judged by its digest marker alone, which the TOOLS=npm form of it runs), `make release-tag` (a release is newer
+  than every release tag), `make docs-check` (change-log heading order); review refuses any other version comparison (K853).
 - S5 Folders: every monorepo has the same root folders (`packages/`, `contracts/`, `docs/`, `scripts/`, `tests/`,
   `examples/`, `benchmarks/`, `config/`). Runtime ports of the main spec live in `packages/<runtime>/`, other components in
   `packages/<component>/` and their ports in `packages/<component>/<runtime>/`; folder names carry no repository prefix. A
@@ -232,8 +249,8 @@ tool lands, a standard binds the work as written here.
   named `polyspec/<repository>-<component>` for each component; the repository has one extension. It lies in
   `packages/php-ext/` with its sources in `src/` and one stub, `src/polyspec_<repository>.stub.php`; it is named
   `polyspec/<repository>-php-ext` and `polyspec_<repository>`, a hyphen of the repository name an underscore. `make
-  build-php-ext` builds it with phpize after checking that the stub hash of its arginfo header, which `make
-  php-ext-arginfo` writes with the gen_stub.php of the PHP, is that of the stub, in a copy that keeps `composer.json` beside
+  build-php-ext` builds it with phpize after checking that the stub hash of its arginfo header, which the gen_stub.php of the PHP
+  writes, is that of the stub, in a copy that keeps `composer.json` beside
   `src/`, so that `config.m4` takes the version of the extension from `../composer.json`; `make test-php-ext` compares by
   Reflection what it registers with the libraries, each name with the library that declares it, before its unit tests, which
   are the PHPUnit files run with the extension loaded and none of the sources of the library (its dependencies and autoload-dev
@@ -248,11 +265,13 @@ tool lands, a standard binds the work as written here.
   (K591, K761, K765).
   Enforced by: none, the links exist only in development, where make link-check checks them against the link declaration .links (K869), and CI links nothing (K824);
   the K761 link test of kit finds no npm link, composer update or editable install in the tool log
-- S12 A repository's CI runs the shared gates once, through the gates workflow that kit gives it (`gates.yml`, the
-  prerequisites of `make kit-gates`); no other workflow of the repository, and no input that ci-targets or ci-setup reads,
-  names a prerequisite of kit-gates again. kit's own ci.yml, which tests kit itself, is no consumer CI (K870).
+- S12 A repository's CI is one pipeline: its own ci.yml calls the workflow that kit gives it (`ci-pipeline.yml`) as its
+  job `kit`, which runs the prerequisites of `make kit-gates` once with the targets of config/ci.json (`targets.shared`,
+  `targets.parity`, `targets.runtimes`), and a repository job of the same ci.yml follows with `needs: kit`. No other workflow
+  of the repository, and no input that ci-targets or ci-setup reads, names a prerequisite of kit-gates again. kit's own ci.yml,
+  which tests kit itself, is no consumer CI (K870, K910).
   Enforced by: none, a workflow is the repository's own file; each consumer removes its duplicates in its adoption row
 - S13 The rules that every repository shares are injected identically: each copy of `kit.copies` of the installed kit (this
-  file, gates.yml, release.yml and the others) is the bytes of the package, written by `make kit-sync` and changed only in kit;
+  file, ci-pipeline.yml, release.yml and the others) is the bytes of the package, written by `make kit-sync` and changed only in kit;
   scripts/kit holds those copies only. kit itself is their source and holds no copies (K851).
   Enforced by: `make kit-inject-check`

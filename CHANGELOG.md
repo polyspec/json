@@ -12,6 +12,8 @@
 - T2.114: AGENTS.md no longer names dependency-review, release-consumer-lock, release-consumer or config/dependency-policy.json, which kit deleted; the package managers own their locks (T2.114)
 - T2.115: distribution and installation describe a consumer installing a release with its package manager, not the make targets release-consumer and release-consumer-lock, which the locked kit does not define (T2.115)
 - T2.116: distribution describes the maintainer release steps of the locked kit: the make targets release-versions and release-proof, which it does not define, are removed (T2.116)
+- T2.117: ordered-json adopts kit 0.0.85: package.json and its lock name the release asset polyspec-kit-0.0.85.tgz, npm 12.2.0 is pinned by devEngines and mise, the copies follow kit, config/release.json declares product and runtime per package, and its checks key, which kit 0.0.85 does not define, is removed (T2.117)
+
 ## 0.0.14
 - T2.110: ordered-json 0.0.14 is released: the version of every manifest and lock of config/release.json is 0.0.14, and the changelogs name it (T2.110)
 - T2.108: the prepare-commit-msg hook file is removed, which kit 0.0.77 no longer serves (K892) (T2.108)

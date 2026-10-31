@@ -5,29 +5,34 @@
   "changelogTranslations": [
     "CHANGELOG.ko.md"
   ],
-  "checks": [
-    "ci-passed"
-  ],
   "packages": [
     {
       "kind": "npm",
       "directory": "packages/js",
-      "name": "@polyspec/ordered-json"
+      "name": "@polyspec/ordered-json",
+      "product": "ordered-json",
+      "runtime": "ts"
     },
     {
       "kind": "composer",
       "directory": "packages/php",
-      "name": "polyspec/ordered-json"
+      "name": "polyspec/ordered-json",
+      "product": "ordered-json",
+      "runtime": "php"
     },
     {
       "kind": "composer",
       "directory": "packages/php-ext",
-      "name": "polyspec/ordered-json-php-ext"
+      "name": "polyspec/ordered-json-php-ext",
+      "product": "ordered-json",
+      "runtime": "php-ext"
     },
     {
       "kind": "wheel",
       "directory": "packages/python",
-      "name": "polyspec-ordered-json"
+      "name": "polyspec-ordered-json",
+      "product": "ordered-json",
+      "runtime": "python"
     }
   ],
   "manifests": {
