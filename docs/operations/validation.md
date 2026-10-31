@@ -95,7 +95,6 @@ make install-tools TOOLS=npm
 make install-packages
 make install-tools TOOLS="go rust php composer python uv"
 make kit-install-symbols EXTRACTORS="go php"
-make kit-install-php-arginfo
 make ordered-json-install-parity
 make ci-targets TARGETS="test-markers-check verify-all parity-check"
 ~~~

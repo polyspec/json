@@ -133,9 +133,6 @@ jobs:
       - name: install parity extractors
         if: ${{ !cancelled() }}
         run: make kit-install-symbols EXTRACTORS="go php"
-      - name: install parity PHP generator
-        if: ${{ !cancelled() }}
-        run: make kit-install-php-arginfo
       - name: install parity packages
         if: ${{ !cancelled() }}
         run: make ordered-json-install-parity
@@ -409,9 +406,6 @@ jobs:
       - name: install php-ext tools
         if: ${{ !cancelled() }}
         run: make install-tools TOOLS="php composer"
-      - name: install php-ext generator
-        if: ${{ !cancelled() }}
-        run: make kit-install-php-arginfo
       - name: install PIE inputs
         if: ${{ !cancelled() }}
         run: make ordered-json-install-pie

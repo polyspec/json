@@ -3,7 +3,7 @@
   "parityMode": "full",
   "setup": {
     "shared": [],
-    "parity": ["kit-install-php-arginfo"],
+    "parity": [],
     "runtimes": {
       "go": [],
       "php": [],
