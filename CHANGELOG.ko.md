@@ -21,6 +21,8 @@
 
 - T2.123: workflow 규칙 테스트는 정규 부트스트랩을 kit 복사본이 아닌 저장소의 텍스트에서 읽고, 저장소 워크플로가 닿을 수 없는 release.yml 기대치를 없앤다 (T2.123)
 
+- T2.121: workflow 규칙 테스트는 kit 워크플로 목록을 설치된 kit 패키지의 복사본에서 읽어, ci-pipeline.yml을 저장소 워크플로가 아닌 kit의 것으로 본다 (T2.121)
+
 ## 0.0.14
 - T2.110: ordered-json 0.0.14 릴리스: config/release.json의 모든 manifest와 lock의 버전이 0.0.14이며 changelog가 이를 기록한다 (T2.110)
 - T2.108: kit 0.0.77이 더 제공하지 않는 prepare-commit-msg 훅 파일을 제거한다 (K892) (T2.108)

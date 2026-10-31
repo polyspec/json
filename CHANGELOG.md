@@ -20,6 +20,8 @@
 
 - T2.123: the workflow rules test takes the canonical bootstrap from the repository's own text, not from kit's copy of release.yml, and drops the release.yml expectations that no repository workflow can reach (T2.123)
 
+- T2.121: the workflow rules test takes the kit workflows from the copies of the installed kit package, so ci-pipeline.yml is kit's and not a repository workflow (T2.121)
+
 ## 0.0.14
 - T2.110: ordered-json 0.0.14 is released: the version of every manifest and lock of config/release.json is 0.0.14, and the changelogs name it (T2.110)
 - T2.108: the prepare-commit-msg hook file is removed, which kit 0.0.77 no longer serves (K892) (T2.108)
