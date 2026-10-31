@@ -14,6 +14,8 @@
 - T2.116: distribution describes the maintainer release steps of the locked kit: the make targets release-versions and release-proof, which it does not define, are removed (T2.116)
 - T2.117: ordered-json adopts kit 0.0.85: package.json and its lock name the release asset polyspec-kit-0.0.85.tgz, npm 12.2.0 is pinned by devEngines and mise, the copies follow kit, config/release.json declares product and runtime per package, and its checks key, which kit 0.0.85 does not define, is removed (T2.117)
 
+- T2.118: the nine bootstrap steps of ci.yml run the devEngines npm from RUNNER_TEMP with --prefix, as kit does (K938-1), so the runner npm 11.20.0 no longer refuses devEngines (T2.118)
+
 ## 0.0.14
 - T2.110: ordered-json 0.0.14 is released: the version of every manifest and lock of config/release.json is 0.0.14, and the changelogs name it (T2.110)
 - T2.108: the prepare-commit-msg hook file is removed, which kit 0.0.77 no longer serves (K892) (T2.108)

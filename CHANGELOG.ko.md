@@ -15,6 +15,8 @@
 - T2.116: distribution은 locked kit이 정의하지 않는 make release-versions와 release-proof를 빼고, 실제 릴리스 step을 설명합니다 (T2.116)
 - T2.117: ordered-json은 kit 0.0.85를 채택한다. package.json과 lock은 polyspec-kit-0.0.85.tgz를 가리키고, devEngines와 mise가 npm 12.2.0을 고정하며, 복사본은 kit을 따르고, config/release.json은 패키지마다 product와 runtime을 선언하며, kit 0.0.85가 정의하지 않는 checks 키는 제거한다 (T2.117)
 
+- T2.118: ci.yml의 아홉 부트스트랩 단계는 kit과 같이(K938-1) devEngines의 npm을 RUNNER_TEMP에서 --prefix로 실행하여, 러너의 npm 11.20.0이 devEngines를 거부하지 않는다 (T2.118)
+
 ## 0.0.14
 - T2.110: ordered-json 0.0.14 릴리스: config/release.json의 모든 manifest와 lock의 버전이 0.0.14이며 changelog가 이를 기록한다 (T2.110)
 - T2.108: kit 0.0.77이 더 제공하지 않는 prepare-commit-msg 훅 파일을 제거한다 (K892) (T2.108)
