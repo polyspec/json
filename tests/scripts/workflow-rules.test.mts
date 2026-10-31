@@ -119,8 +119,11 @@ export function violations(name: string, text: string): string[] {
 
 /** The targets of every `make ci-targets TARGETS="..."` step of a workflow. */
 const ciTargets = (text: string): string[] => Object.values(workflow(text).jobs).flatMap(job => runs(job).flatMap(run => (run.startsWith('make ci-targets ') ? known(/TARGETS="([^"]*)"/.exec(run)?.[1], `the TARGETS of ${run}`).split(' ') : [])));
-// gates.yml and release.yml are vendored from @polyspec/kit, which tests them: no test of this repository reads them (ruling 3).
-const KIT_WORKFLOWS = ['gates.yml', 'release.yml'];
+// The workflows that kit copies into the checkout, as the copies of its installed package name them: they are kit's, not the repository's.
+const KIT_COPIES = readJsonFile<{ kit: { copies: Record<string, string> } }>(path.join(ROOT, 'node_modules/@polyspec/kit/package.json'), 'npm-manifest.schema.json').kit.copies;
+const KIT_WORKFLOWS = Object.keys(KIT_COPIES)
+  .filter(file => file.startsWith('.github/workflows/'))
+  .map(file => path.basename(file));
 const names = () => readdirSync(WORKFLOWS).filter(name => name.endsWith('.yml') && !KIT_WORKFLOWS.includes(name)).sort();
 const anyIncludes = (issues: string[], part: string) => issues.some(issue => issue.includes(part));
 const changed = (text: string, from: string | RegExp, to: string) => {
