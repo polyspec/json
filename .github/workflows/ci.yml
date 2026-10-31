@@ -55,6 +55,7 @@ jobs:
         if: ${{ !cancelled() }}
         run: |
           if [ "$(node -p 'require("./package.json").name')" != '@polyspec/kit' ]; then
+            # npm 11 of the runner refuses to run in a folder whose devEngines names npm 12.2.0 (EBADDEVENGINES), so the npm of
             # devEngines runs outside the checkout with --prefix (K938-1).
             root="$PWD"
             version="$(node -p 'require("./package.json").devEngines.packageManager.version')"
@@ -111,6 +112,7 @@ jobs:
         if: ${{ !cancelled() }}
         run: |
           if [ "$(node -p 'require("./package.json").name')" != '@polyspec/kit' ]; then
+            # npm 11 of the runner refuses to run in a folder whose devEngines names npm 12.2.0 (EBADDEVENGINES), so the npm of
             # devEngines runs outside the checkout with --prefix (K938-1).
             root="$PWD"
             version="$(node -p 'require("./package.json").devEngines.packageManager.version')"
@@ -167,6 +169,7 @@ jobs:
         if: ${{ !cancelled() }}
         run: |
           if [ "$(node -p 'require("./package.json").name')" != '@polyspec/kit' ]; then
+            # npm 11 of the runner refuses to run in a folder whose devEngines names npm 12.2.0 (EBADDEVENGINES), so the npm of
             # devEngines runs outside the checkout with --prefix (K938-1).
             root="$PWD"
             version="$(node -p 'require("./package.json").devEngines.packageManager.version')"
@@ -213,6 +216,7 @@ jobs:
         if: ${{ !cancelled() }}
         run: |
           if [ "$(node -p 'require("./package.json").name')" != '@polyspec/kit' ]; then
+            # npm 11 of the runner refuses to run in a folder whose devEngines names npm 12.2.0 (EBADDEVENGINES), so the npm of
             # devEngines runs outside the checkout with --prefix (K938-1).
             root="$PWD"
             version="$(node -p 'require("./package.json").devEngines.packageManager.version')"
@@ -265,6 +269,7 @@ jobs:
         if: ${{ !cancelled() }}
         run: |
           if [ "$(node -p 'require("./package.json").name')" != '@polyspec/kit' ]; then
+            # npm 11 of the runner refuses to run in a folder whose devEngines names npm 12.2.0 (EBADDEVENGINES), so the npm of
             # devEngines runs outside the checkout with --prefix (K938-1).
             root="$PWD"
             version="$(node -p 'require("./package.json").devEngines.packageManager.version')"
@@ -322,6 +327,7 @@ jobs:
         if: ${{ !cancelled() }}
         run: |
           if [ "$(node -p 'require("./package.json").name')" != '@polyspec/kit' ]; then
+            # npm 11 of the runner refuses to run in a folder whose devEngines names npm 12.2.0 (EBADDEVENGINES), so the npm of
             # devEngines runs outside the checkout with --prefix (K938-1).
             root="$PWD"
             version="$(node -p 'require("./package.json").devEngines.packageManager.version')"
@@ -385,6 +391,7 @@ jobs:
         if: ${{ !cancelled() }}
         run: |
           if [ "$(node -p 'require("./package.json").name')" != '@polyspec/kit' ]; then
+            # npm 11 of the runner refuses to run in a folder whose devEngines names npm 12.2.0 (EBADDEVENGINES), so the npm of
             # devEngines runs outside the checkout with --prefix (K938-1).
             root="$PWD"
             version="$(node -p 'require("./package.json").devEngines.packageManager.version')"
@@ -441,6 +448,7 @@ jobs:
         if: ${{ !cancelled() }}
         run: |
           if [ "$(node -p 'require("./package.json").name')" != '@polyspec/kit' ]; then
+            # npm 11 of the runner refuses to run in a folder whose devEngines names npm 12.2.0 (EBADDEVENGINES), so the npm of
             # devEngines runs outside the checkout with --prefix (K938-1).
             root="$PWD"
             version="$(node -p 'require("./package.json").devEngines.packageManager.version')"
@@ -496,6 +504,7 @@ jobs:
       - name: bootstrap the installed kit package
         run: |
           if [ "$(node -p 'require("./package.json").name')" != '@polyspec/kit' ]; then
+            # npm 11 of the runner refuses to run in a folder whose devEngines names npm 12.2.0 (EBADDEVENGINES), so the npm of
             # devEngines runs outside the checkout with --prefix (K938-1).
             root="$PWD"
             version="$(node -p 'require("./package.json").devEngines.packageManager.version')"
