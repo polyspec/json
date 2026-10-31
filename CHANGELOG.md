@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.15
+
 - T2.120: ordered-json no longer calls kit-install-php-arginfo, which kit 0.0.85 does not define; the committed arginfo header is checked by kit (T2.120)
 
 - T2.111: .links, the link declaration of kit (K869), is ignored by .gitignore, not only by the local exclude (T2.111)

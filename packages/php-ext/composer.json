@@ -1,6 +1,6 @@
 {
   "name": "polyspec/ordered-json-php-ext",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "description": "Native PHP extension for strict JSON with document-order associative objects",
   "type": "php-ext",
   "license": "MIT",

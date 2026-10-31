@@ -7,6 +7,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.15
+
 - T2.120: ordered-json은 kit 0.0.85가 정의하지 않는 kit-install-php-arginfo를 호출하지 않으며, 커밋된 arginfo 헤더는 kit이 검사한다 (T2.120)
 
 - T2.111: kit 링크 선언 .links를 로컬 exclude만이 아니라 .gitignore가 무시한다 (K869) (T2.111)
