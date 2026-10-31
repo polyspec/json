@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: b05234d87f43c7f85c4b1d03bc505edec1f4979969b3e5e13fc7146df05dddb2 -->
+<!-- source-sha256: 6927297072ec2feb1d2264c9628669d975e1f4acab1e23938cf6f49e60fbb094 -->
 # kit 표준 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -141,7 +141,7 @@
 | T2.119 | ordered-json의 Python 설치는 kit 체크아웃을 요구하는 link 대신 var/tools의 node를 쓰는 install-link로 패키지를 연결한다 | Makefile | RED: make ordered-json-install-python fails with kit.mk:420 link Error 1 on a runner without a kit checkout. GREEN: `make ordered-json-install-python` exits 0 and `make kit-check` exits 0 | [ ] |
 | T2.120 | ordered-json의 parity 설치는 kit 0.0.85가 없앤 kit-install-php-arginfo를 호출하지 않는다. 커밋된 arginfo 헤더는 kit 검사가 계속 확인한다 | .github/workflows/ci.yml config/ci.json docs/operations/validation.md docs/operations/validation.ko.md | RED: make kit-install-php-arginfo fails with No rule to make target. GREEN: `make kit-check` and `make lint-php-ext` exit 0 and no workflow names the removed target | [ ] |
 | T2.121 | workflow 규칙 테스트는 kit 워크플로 목록을 설치된 kit의 복사본 목록에서 읽는다. gates.yml과 release.yml을 고정 나열하지 않는다 | tests/scripts/workflow-rules.test.mts | RED: `node --test --test-name-pattern="every workflow follows the rules" tests/scripts/workflow-rules.test.mts` exits 2 with the deepEqual of names() against ci.yml. GREEN: `node --test --test-name-pattern="every workflow follows the rules" tests/scripts/workflow-rules.test.mts` exits 0 | [ ] |
-| T2.122 | ci.yml의 모든 부트스트랩 단계는 kit의 정규 부트스트랩 텍스트를, 첫 주석 줄까지 포함하여, 그대로 가진다 | .github/workflows/ci.yml | RED: `node --test tests/scripts/workflow-rules.test.mts` reports the bootstrap of every job as not canonical. GREEN: `node --test tests/scripts/workflow-rules.test.mts` passes the bootstrap checks | [~] |
+| T2.122 | ci.yml의 모든 부트스트랩 단계는 kit의 정규 부트스트랩 텍스트를, 첫 주석 줄까지 포함하여, 그대로 가진다 | .github/workflows/ci.yml | RED: `node --test --test-name-pattern="bootstraps its locked kit package" tests/scripts/workflow-rules.test.mts` fails before the change and exits 0 after it | [o] |
 | T2.123 | workflow 규칙 테스트는 저장소의 워크플로만 저장소 규칙으로 검사한다. kit 복사본을 정규로 읽는 단언을 없애고, 정규 부트스트랩 단계를 한 make 대상 규칙에서 면제한다 | tests/scripts/workflow-rules.test.mts | RED: `node --test tests/scripts/workflow-rules.test.mts` fails in the assertions that compare ci.yml with the kit copies. GREEN: `node --test tests/scripts/workflow-rules.test.mts` passes | [ ] |
 | T2.124 | workflow 규칙 테스트는 kit 0.0.85가 정의하지 않는 config/release.json의 checks 키를 읽지 않는다 | tests/scripts/workflow-rules.test.mts | RED: `node --test tests/scripts/workflow-rules.test.mts` fails with missingProperty checks. GREEN: `node --test tests/scripts/workflow-rules.test.mts` passes the release-related tests | [ ] |
 | T2.125 | package.json은 npm을 devEngines.packageManager에만 선언한다(K938). packageManager 필드와 이를 읽는 테스트와 주석은 제거한다 | package.json tests/scripts/environment.test.mts config/toolchain.json Makefile | RED: `node --test tests/scripts/environment.test.mts` fails at the packageManager assertion. GREEN: `node --test tests/scripts/environment.test.mts` passes and `make kit-check` exits 0 | [ ] |
