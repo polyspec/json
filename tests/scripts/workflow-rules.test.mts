@@ -20,7 +20,6 @@ import { known } from './checkout.mts';
 const WORKFLOWS = path.join(ROOT, '.github/workflows');
 const REPORT = 'var/report/ci-targets/';
 const UPLOAD_REPORT = REPORT;
-const KIT_ROOT = path.dirname(fileURLToPath(import.meta.resolve('@polyspec/kit/package.json')));
 const KIT_TOOLS = path.dirname(fileURLToPath(import.meta.resolve('@polyspec/kit/run-tests')));
 // The target of the jobs that is no part of the full suite: the gate that make check itself applies before it runs.
 const GATE_TARGETS: string[] = [];
