@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: febfe58dc6fb87d8dbf6d60c9719db036685843a1d4d32b6bc0ba5b2f9d6ffc2 -->
+<!-- source-sha256: ffc04cb9effae16be39bd978229bf453628d44c77f69651ece345fa71d8b31ca -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- T2.136: ordered-json이 Kit 0.0.91을 채택한다 (T2.136).
 - T2.135: 0.0.19에서 composer.json의 version이 바뀐 뒤 composer.lock 세 개를 composer update --lock으로 다시 써서 composer validate가 통과한다 (T2.135).
 ## 0.0.19
 

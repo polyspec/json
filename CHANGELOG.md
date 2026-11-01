@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- T2.136: ordered-json adopts Kit 0.0.91 (T2.136).
 - T2.135: the three composer.lock files are rewritten with composer update --lock after the version of their composer.json changed in 0.0.19, so composer validate passes them (T2.135).
 ## 0.0.19
 
