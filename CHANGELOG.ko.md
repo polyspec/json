@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 2c206d4312c0df7000da45b04aca9a85691ef21adb5be1c6644f1e04b060db55 -->
+<!-- source-sha256: 5de1be8da4a38c327d3a10bbff3bd50fd2f7a39d5ab17f9c937423e58be0bdb0 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,10 +7,14 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.20
+
+- ordered-json 0.0.20은 0.0.19의 composer.lock 세 개를 다시 쓰고(T2.135), crate를 cargo로 직접 받으며(T2.137), kit 0.0.92를 채택한다(T2.138) (T2.139).
 - T2.138: ordered-json이 Kit 0.0.92를 채택하며, 여기에는 offline lint-rust가 crate를 받을 수 없는 Rust catch check가 없다 (T2.138).
 - T2.137: kit 0.0.91에 cargo-downloads-fetch가 없으므로 make install이 추적되는 모든 Cargo.lock의 crate를 cargo fetch --locked로 직접 받는다 (T2.137).
 - T2.136: ordered-json이 Kit 0.0.91을 채택한다 (T2.136).
 - T2.135: 0.0.19에서 composer.json의 version이 바뀐 뒤 composer.lock 세 개를 composer update --lock으로 다시 써서 composer validate가 통과한다 (T2.135).
+
 ## 0.0.19
 
 - ordered-json 0.0.19는 kit 0.0.89를 채택하고 kit에는 인터페이스로만 닿으며(T2.133), 그 release는 polyspec-ordered-json-0.0.19.tgz, polyspec-ordered-json-php-0.0.19.zip, polyspec-ordered-json-php-ext-0.0.19.zip과 wheel을 첨부한다 (T2.134)
