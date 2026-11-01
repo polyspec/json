@@ -1,11 +1,15 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 2d7bb8b547a18667fdb41caa9a09ace76d4025c9b182cd90664f2140af9787c3 -->
+<!-- source-sha256: b522669155a77073ed3f6819aec3324d1bc34938d4f8a9402a13d74779964f6f -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+## 0.0.18
+
+- ordered-json 0.0.18은 kit 0.0.88을 채택하며(T2.130), 그 release는 polyspec-ordered-json-0.0.18.tgz, polyspec-ordered-json-php-0.0.18.zip, polyspec-ordered-json-php-ext-0.0.18.zip과 wheel을 첨부한다 (T2.131)
 
 - T2.130: ordered-json이 kit 0.0.88을 채택합니다: ci.yml은 job kit이 kit의 ci-pipeline.yml을 호출하는 하나의 pipeline이며, 이 pipeline은 kit-gates의 gate를 한 번, config/ci.json이 선언한 target을 실행합니다(PRINCIPLES S12). 테스트는 전체 suite의 모든 target이 그 안에서 실행되는지 확인합니다(T2.130).
 
