@@ -1,5 +1,5 @@
 <!-- doc-id: validation -->
-<!-- source-sha256: 5a9478a2598ae93b3a4bee9fd68a7374ad09364a70ca2a5f17825f7d75915e03 -->
+<!-- source-sha256: eddf57dbc3815d84c5fb1801d16f5deb3d42bc2b759c01d458ef783ee783b286 -->
 # 검증
 
 [English](validation.md)
@@ -79,40 +79,11 @@ PIE 기록 `var/records/pie-verification.json`은 PIE 버전과 PHAR 해시, 실
 <a id="ci"></a>
 ## Hosted CI
 
-`.github/workflows/ci.yml`은 모든 pull request, `main` push와 수동 dispatch에서 실행됩니다. 여섯 language job은 native package test와 해당 lint를 병렬 실행합니다. 독립 `parity` job은 모든 구현을 설치·빌드하고 `verify-all`로 shared case를, `parity-check`로 선언된 모든 unit과 public symbol을 검증합니다. language job을 기다리지 않고, language job이 실패해도 취소되지 않습니다. PHP extension artifact proof는 `php-ext`가 맡습니다. 각 job은 서로 다른 report artifact를 가집니다.
+`.github/workflows/ci.yml`은 모든 pull request, `main`으로의 push와 수동 실행에서 동작합니다. 이 workflow는 하나의 pipeline입니다(PRINCIPLES S12). 유일한 job `kit`이 `@polyspec/kit` workflow의 사본인 `.github/workflows/ci-pipeline.yml`을 호출하고, 이 pipeline은 shared job, parity job, runtime별 job에서 `kit-gates`의 gate를 한 번 실행하며, 함께 [config/ci.json](../../config/ci.json)이 선언한 target을 실행합니다.
 
-| Job | Targets |
-| --- | --- |
-| `parity` | `test-markers-check verify-all parity-check` |
-| `js` | `test-js` |
-| `rust` | `test-rust lint-rust` |
-| `go` | `test-go lint-go` |
-| `php` | `test-php lint-php` |
-| `php-ext` | `lint-php-ext test-php-ext pie-check` |
-| `python` | `test-python lint-python` |
+config/ci.json은 그 job들의 setup target(`setup`), kit 외에 필요한 도구(`tools`)와 target(`targets`)을 선언합니다. shared job은 Git hook을 준비하고, parity job은 `ordered-json-install-parity`로 비교 환경을 설치하며, php-ext job은 `ordered-json-install-pie`로 PIE와 보조 suite를 설치하고, 각 runtime job은 자기 package를 build합니다. `CHECK_TARGETS`의 모든 target은 `kit-gates`의 gate 또는 config/ci.json의 target으로 pipeline에서 실행되며, config/ci.json은 `kit-gates`의 gate를 다시 적지 않습니다. 그렇지 않으면 `tests/scripts/workflow-rules.test.mts`가 실패합니다.
 
-~~~sh
-make install-tools TOOLS=npm
-make install-packages
-make install-tools TOOLS="go rust php composer python uv"
-make kit-install-symbols EXTRACTORS="go php"
-make ordered-json-install-parity
-make ci-targets TARGETS="test-markers-check verify-all parity-check"
-~~~
-
-canonical locked-package bootstrap 뒤에 모든 job은 pin된 npm과 잠긴 package를 설치합니다. 각 language job은 Kit `make install-tools TOOLS="..."`로 도구를 요청하고 잠긴 Rust, Composer, Python 의존성을 위해 product package installer를 재사용합니다. parity job은 같은 package installer로 자기 checkout에 비교에 필요한 전체 환경을 준비합니다. Kit 0.0.61이 선택 설치를 제공합니다. parity는 Kit target으로 Go/PHP symbol extractor와 PHP arginfo를 명시적으로 설치하고 extension job은 PHP arginfo만 설치합니다. 잠긴 PIE와 supplementary input은 product install target에서 native mise로 다운로드합니다. 여기서는 custom tool installer를 유지하지 않으며 측정 전 속도 향상을 주장하지 않습니다. `docs` job은 `make install-tools`로 repository 검사와 TypeScript lint를 실행하고 Git hook을 준비합니다. push gate는 `push-gate-commit`, `docs-check`, `evidence-check`, `commits-check`를 유지합니다. release와 gates workflow는 계속 kit가 관리합니다.
-
-`CHECK_TARGETS`의 모든 target은 `ci.yml`과 `push-gate.yml`의 job 하나에서만 실행됩니다. parity 안의 native test는 선언된 언어 간 coverage를 유지합니다. 각 check step은 `if: !cancelled()`로 실패 뒤에도 실행됩니다. `make ci-targets`는 모든 target을 끝까지 실행하고 상태, exit code, 시간과 출력을 `var/report/ci-targets/`에 기록합니다. 실패 뒤에도 report를 upload합니다. 각 job은 `ubuntu-24.04`와 잠긴 toolchain을 사용하고 실제 PHP patch release를 기록합니다. 전체 job deadline은 두지 않습니다.
-
-`ci.yml`의 마지막 job `ci-passed`는 release workflow가 tag된 commit에 요구하는 이 workflow의 check입니다. workflow의 다른 모든 job을 need로 가지고, 그중 하나가 실패하거나 skip되거나 취소되어도 그 모든 job 뒤에 실행되며(`if: ${{ always() }}`), `make ci-passed RESULTS='${{ toJSON(needs) }}'`를 실행합니다. `@polyspec/kit`의 ci-passed는 need로 가진 모든 job의 결과를 출력하고, 하나라도 `success`가 아니면 실패합니다. `ci.yml`에 추가한 job은 `needs`에 넣으므로 필수 check가 그 job을 포함합니다. `tests/scripts/workflow-rules.test.mts`는 `ci-passed`가 없거나, 마지막 job이 아니거나, `if: ${{ always() }}`가 없거나, 다른 모든 job을 need로 가지지 않거나, 다른 runner에서 실행되거나, 다른 step을 실행하면 실패합니다.
-
-저장소 소유 CI와 push-gate workflow의 각 job은 workspace 루트에 이 저장소를 checkout합니다. 첫 make 명령 전에 canonical bootstrap이 devEngines.packageManager에 선언된 npm 버전으로 잠긴 kit 패키지를 설치합니다. Makefile은 설치된 패키지 bootstrap을 include하며 형제 checkout은 필요하지 않습니다. 개발용 소스 link는 선택적인 native 패키지 관리자 상태로 유지합니다.
-
-
-docs job은 tool 설치 후 Git hook을 준비합니다. language와 parity installer는 오프라인 lint 전에 설치된 kit Rust checker crate를 다운로드합니다. 다운로드는 설치 단계로 유지하며 어떤 검사도 네트워크 접근을 활성화하지 않습니다.
-
-
-Kit가 관리하는 provider gate는 [config/ci.json](../../config/ci.json)을 읽습니다. 전체 parity 경로는 필수로 유지합니다. setup은 Kit의 native runtime 기본값, PEP 751 lock 모델을 위한 저장소 Python editable installer, pin된 PHP arginfo installer를 재사용합니다. shared metadata 검사는 Go, PHP, Python prerequisite를 명시합니다. 앱 recipe는 Kit gate를 대체하지 않습니다.
+각 job은 workspace 루트에 이 저장소를 checkout하고 첫 make 명령 전에 잠긴 kit 패키지를 설치하며, 형제 checkout은 필요하지 않습니다. 다운로드는 설치 단계에만 있으며, 어떤 검사도 네트워크를 켜지 않습니다. pipeline의 마지막 job `kit / required`는 모든 job이 통과했을 때만 통과하므로, `success`로 끝난 `ci` 실행이 release workflow가 요구하는 증거입니다([main 게시](#publish)).
 
 <a id="publish"></a>
 ## main 게시
@@ -123,7 +94,7 @@ Kit가 관리하는 provider gate는 [config/ci.json](../../config/ci.json)을 �
 git push origin HEAD:main
 ~~~
 
-이 push는 `ci.yml`을 실행하며, 그 job `ci-passed`는 release workflow가 tag된 commit에 요구하는 check입니다. 그 뒤에 버전 올림 commit을 `main`에 넣고, `ci-passed`가 성공으로 끝난 commit에만 tag `vX.Y.Z`를 붙입니다([tag release](distribution.ko.md#tag-release)).
+이 push는 `ci.yml`을 실행합니다. 그 실행이 `success`로 끝나면 release workflow는 그 실행의 commit이 version commit이거나, version에 tag가 없고 `## Unreleased`가 비어 있는 그 뒤의 commit일 때 그 commit에 change log 최상위 `## X.Y.Z`를 릴리스합니다. 판단은 `@polyspec/kit`의 `make release-tag`가 합니다([tag release](distribution.ko.md#tag-release)).
 
 <a id="documentation-checks"></a>
 ## 문서 검사

@@ -7,7 +7,8 @@ UV := $(CURDIR)/var/tools/mise/shims/uv
 COMPOSER := $(CURDIR)/var/tools/mise/shims/composer
 CARGO := $(shell command -v cargo)
 GO := $(shell command -v go)
-JSON_TEST_SUITE ?=
+# The supplementary suite of mise.toml (http:jsontestsuite), which ordered-json-install-suite installs; empty when it is not installed.
+JSON_TEST_SUITE ?= $(wildcard var/tools/mise/installs/http-jsontestsuite/latest)
 
 # The tools of every run are the releases that the tracked declaration files name: npm in the devEngines.packageManager of
 # package.json, Rust in rust-toolchain.toml, PHP in .php-version, and Node.js, Go, Python, Composer and the other tools

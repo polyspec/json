@@ -1,5 +1,5 @@
 <!-- doc-id: documentation-plan -->
-<!-- source-sha256: 9cb585f6c411225f62be549bb77c1a944c707503ea7ec20d4739d5ec63b70200 -->
+<!-- source-sha256: 7f0135cc0544da15d013bb8322a488be7d90df1fb3b7127d6c959473aea5f4a5 -->
 # 문서 관리
 
 [English](documentation-plan.md)
@@ -44,7 +44,7 @@
 
 한국어 파일의 `source-sha256` 주석은 번역을 검토한 영어 개정본을 기록합니다. 번역 검토 후에만 갱신합니다. 해시 일치는 번역의 정확성을 증명하지 않습니다. 검사기는 외부 사이트의 접속 가능 여부나 문장의 의미를 검증하지 않으며, 코드와 테스트 결과를 읽고 확인해야 합니다.
 
-`make check`는 검증기 테스트, 등록된 모든 JSON 구현, `--records`를 붙인 근거 검사(`make verify-all`)를 실행합니다. 이 근거 검사는 소스 해시가 현재 소스와 다른 체크아웃의 통합 기록이나 PIE 기록(`var/records`)도 거부합니다. [PIE 검증](validation.ko.md#pie)은 별도의 빌드와 공통 사례 결과를 기록합니다. hosted CI가 이 검사들을 실행합니다. `.github/workflows/ci.yml`은 `main`에 push된 모든 commit과 모든 pull request에서 전체 suite를 실행하고([hosted CI](validation.ko.md#ci)), `.github/workflows/push-gate.yml`은 작업이 `[~]`인 push된 commit을 거부합니다.
+`make check`는 검증기 테스트, 등록된 모든 JSON 구현, `--records`를 붙인 근거 검사(`make verify-all`)를 실행합니다. 이 근거 검사는 소스 해시가 현재 소스와 다른 체크아웃의 통합 기록이나 PIE 기록(`var/records`)도 거부합니다. [PIE 검증](validation.ko.md#pie)은 별도의 빌드와 공통 사례 결과를 기록합니다. hosted CI가 이 검사들을 실행합니다. `.github/workflows/ci.yml`은 `main`에 push된 모든 commit과 모든 pull request에서 전체 suite를 실행합니다([hosted CI](validation.ko.md#ci)).
 
 <a id="records"></a>
 ## 기술 기록

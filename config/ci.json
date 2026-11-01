@@ -2,18 +2,82 @@
   "schema": 1,
   "parityMode": "full",
   "setup": {
-    "shared": [],
-    "parity": [],
+    "shared": [
+      "hooks"
+    ],
+    "parity": [
+      "ordered-json-install-parity"
+    ],
     "runtimes": {
-      "go": [],
-      "php": [],
-      "php-ext": [],
-      "python": ["ordered-json-install-python"],
-      "rust": [],
-      "ts": []
+      "go": [
+        "build-go"
+      ],
+      "php": [
+        "ordered-json-install-php",
+        "build-php"
+      ],
+      "php-ext": [
+        "ordered-json-install-pie",
+        "ordered-json-install-php"
+      ],
+      "python": [
+        "ordered-json-install-python",
+        "build-python"
+      ],
+      "rust": [
+        "ordered-json-install-rust-packages",
+        "build-rust"
+      ],
+      "ts": [
+        "build-js"
+      ]
     }
   },
   "tools": {
-    "shared": ["go", "php", "composer", "python", "uv"]
+    "shared": [
+      "php",
+      "composer"
+    ],
+    "parity": [
+      "go",
+      "rust",
+      "php",
+      "composer",
+      "python",
+      "uv"
+    ]
+  },
+  "targets": {
+    "shared": [
+      "link-check",
+      "hooks-check",
+      "release-coverage",
+      "evidence-check",
+      "ordered-json-test-scripts",
+      "typecheck"
+    ],
+    "parity": [
+      "verify-all"
+    ],
+    "runtimes": {
+      "go": [
+        "test-go"
+      ],
+      "php": [
+        "test-php"
+      ],
+      "php-ext": [
+        "pie-check"
+      ],
+      "python": [
+        "test-python"
+      ],
+      "rust": [
+        "test-rust"
+      ],
+      "ts": [
+        "test-js"
+      ]
+    }
   }
 }

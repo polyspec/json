@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- T2.130: ordered-json adopts kit 0.0.88: ci.yml is one pipeline whose job kit calls the ci-pipeline.yml of kit, which runs the gates of kit-gates once and the targets that config/ci.json declares (PRINCIPLES S12), and a test checks that every target of the full suite runs in it (T2.130).
+
 ## 0.0.17
 
 - ordered-json 0.0.17 adopts kit 0.0.87 (T2.128); its release attaches polyspec-ordered-json-0.0.17.tgz, polyspec-ordered-json-php-0.0.17.zip, polyspec-ordered-json-php-ext-0.0.17.zip and the wheel (T2.129)

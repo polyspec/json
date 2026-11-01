@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 37c1f31011443f382a737708115b4641e6337767edf363894fdc507579e12297 -->
+<!-- source-sha256: 2d7bb8b547a18667fdb41caa9a09ace76d4025c9b182cd90664f2140af9787c3 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- T2.130: ordered-json이 kit 0.0.88을 채택합니다: ci.yml은 job kit이 kit의 ci-pipeline.yml을 호출하는 하나의 pipeline이며, 이 pipeline은 kit-gates의 gate를 한 번, config/ci.json이 선언한 target을 실행합니다(PRINCIPLES S12). 테스트는 전체 suite의 모든 target이 그 안에서 실행되는지 확인합니다(T2.130).
 
 ## 0.0.17
 
