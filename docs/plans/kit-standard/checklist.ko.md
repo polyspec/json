@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: bf02a971dfb3a6ed976b08e83be3337ddfb59bd008c82f2ce464ede22597f317 -->
+<!-- source-sha256: 8f5b23d2da16d5741e70ae80c4b2a9328f0700760ef389c70584b94bf823b2bc -->
 # kit 표준 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -148,3 +148,4 @@
 | T2.126 | 저장소가 kit 0.0.86을 채택한다. package.json과 package-lock.json은 kit 0.0.86 release를 가리키고, kit-sync는 그 PRINCIPLES와 release.yml을 vendor하며, distribution과 installation 문서는 kit 0.0.86이 이름 짓는 대로 release asset을 적는다. npm tarball은 npm pack의 이름, Composer zip은 package의 P39 label, wheel은 PEP 427 이름이다 | package.json package-lock.json PRINCIPLES.md(.ko) .github/workflows/release.yml docs/operations/distribution.md(.ko) docs/operations/installation.md(.ko) | RED: make kit-sync writes PRINCIPLES.md, PRINCIPLES.ko.md and .github/workflows/release.yml from kit 0.0.86. GREEN: `make kit-check rules-check docs-check duplication-check` pass and `node --test tests/scripts/workflow-rules.test.mts` passes | [o] |
 | T2.127 | ordered-json 0.0.16을 릴리즈한다 | package.json package-lock.json composer.json packages/js/package.json packages/php/composer.json packages/php-ext/composer.json packages/python/pyproject.toml packages/rust/Cargo.toml packages/rust/Cargo.lock CHANGELOG.md(.ko) | GREEN: `make docs-check` passes and every manifest declares 0.0.16 | [o] |
 | T2.128 | ordered-json에 kit v0.0.87을 채택한다. URL을 고정하고 lock을 갱신하고 kit-sync를 실행하며, 복사본 단계를 가진 job마다 kit-bootstrap action을 쓴다. 릴리스가 아니므로 버전 커밋은 없다. | package.json pins polyspec-kit-0.0.87.tgz and package-lock.json matches it; .github/actions/kit-bootstrap/action.yml is written by kit-sync; each bootstrap copy in the workflows is uses: ./.github/actions/kit-bootstrap | The first backticked command: `make kit-check` exits 0 in the worktree of this row. | [o] |
+| T2.129 | ordered-json 0.0.17을 릴리즈한다 | package.json package-lock.json composer.json packages/js/package.json packages/php/composer.json packages/php-ext/composer.json packages/python/pyproject.toml packages/rust/Cargo.toml packages/rust/Cargo.lock CHANGELOG.md(.ko) | GREEN: `make docs-check` passes and every manifest declares 0.0.17 | [ ] |
