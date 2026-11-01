@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 4ad6130aa2f07ba7d4e1e79c171b56fdfa3d36ceae75832795c922038dbfb0ba -->
+<!-- source-sha256: 10edab8ca60f8627f0d4a4a15db9c6d82b3eabc5096c51b93b8c95658dfd86dd -->
 # kit 표준 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -150,3 +150,4 @@
 | T2.128 | ordered-json에 kit v0.0.87을 채택한다. URL을 고정하고 lock을 갱신하고 kit-sync를 실행하며, 복사본 단계를 가진 job마다 kit-bootstrap action을 쓴다. 릴리스가 아니므로 버전 커밋은 없다. | package.json pins polyspec-kit-0.0.87.tgz and package-lock.json matches it; .github/actions/kit-bootstrap/action.yml is written by kit-sync; each bootstrap copy in the workflows is uses: ./.github/actions/kit-bootstrap | The first backticked command: `make kit-check` exits 0 in the worktree of this row. | [o] |
 | T2.129 | ordered-json 0.0.17을 릴리즈한다 | package.json package-lock.json composer.json packages/js/package.json packages/php/composer.json packages/php-ext/composer.json packages/python/pyproject.toml packages/rust/Cargo.toml packages/rust/Cargo.lock CHANGELOG.md(.ko) | GREEN: `make docs-check` passes and every manifest declares 0.0.17 | [o] |
 | T2.130 | kit 0.0.88을 도입한다: 고정하고 kit-sync를 실행하며, ci.yml을 하나의 pipeline으로 만든다(S12). ci.yml은 ci-pipeline.yml을 job kit으로 호출하고, kit-gates에 없는 target은 config/ci.json의 targets(shared, runtimes)로 옮기며, 어떤 workflow도 kit-gates의 gate를 다시 실행하지 않는다. | `package.json`, `package-lock.json`, the copies of kit-sync, `.github/workflows/ci.yml`, `config/ci.json`, `tests/scripts/workflow-rules.test.mts`, `CHANGELOG.md(.ko)` | Red: `make kit-check` names the S12 findings of ci.yml. Green: `make kit-gates-static` ends with every shared gate passed. | [ ] |
+| T2.131 | ordered-json 0.0.18을 릴리즈한다 | package.json package-lock.json composer.json packages/js/package.json packages/php/composer.json packages/php-ext/composer.json packages/python/pyproject.toml packages/rust/Cargo.toml packages/rust/Cargo.lock CHANGELOG.md(.ko) | GREEN: `make docs-check` passes and every manifest declares 0.0.18 | [ ] |
