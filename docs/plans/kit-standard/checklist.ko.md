@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 7acb7c7370d0433004e91d5e07a37dc4d95dbd4c1d0f4a3ef5f98574303881a7 -->
+<!-- source-sha256: 8dcfb248290a15018428b48dd28f6004f7ec5d709848abbb853c11394ac01fd8 -->
 # kit 표준 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -152,4 +152,4 @@
 | T2.130 | kit 0.0.88을 도입한다: 고정하고 kit-sync를 실행하며, ci.yml을 하나의 pipeline으로 만든다(S12). ci.yml은 ci-pipeline.yml을 job kit으로 호출하고, kit-gates에 없는 target은 config/ci.json의 targets(shared, runtimes)로 옮기며, 어떤 workflow도 kit-gates의 gate를 다시 실행하지 않는다. | `package.json`, `package-lock.json`, the copies of kit-sync, `.github/workflows/ci.yml`, `config/ci.json`, `tests/scripts/workflow-rules.test.mts`, `Makefile`, `AGENTS.md(.ko)`, `docs/operations/validation.md(.ko)`, `docs/operations/distribution.md(.ko)`, `docs/operations/documentation-plan.md(.ko)`, the removed `scripts/schema/*.schema.json`, `CHANGELOG.md(.ko)` | Red: `make kit-check` names the S12 findings of ci.yml. Green: `make kit-gates-static` ends with every shared gate passed. | [o] |
 | T2.131 | ordered-json 0.0.18을 릴리즈한다 | package.json package-lock.json composer.json packages/js/package.json packages/php/composer.json packages/php-ext/composer.json packages/python/pyproject.toml packages/rust/Cargo.toml packages/rust/Cargo.lock CHANGELOG.md(.ko) | GREEN: `make docs-check` passes and every manifest declares 0.0.18 | [o] |
 | T2.132 | distribution.md는 존재하는 make target만 적는다: T2.97이 제거한 release-config-check를 더 이상 적지 않는다 | docs/operations/distribution.md(.ko) | GREEN: `make docs-check` passes and no document outside the plans names release-config-check | [o] |
-| T2.133 | kit 0.0.89를 채택하고 kit에는 인터페이스로만 닿는다(S15): make check는 FINAL_RUN으로 kit의 ci-targets target을 실행하고, kit checker의 crate는 cargo-downloads-fetch로 받는다 | package.json, package-lock.json, the copies of kit-sync, Makefile, tests/scripts/environment.test.mts, docs that name full-run | GREEN: `make kit-check` names no S15 finding and `node --test tests/scripts/environment.test.mts` passes | [ ] |
+| T2.133 | kit 0.0.89를 채택하고 kit에는 인터페이스로만 닿는다(S15): make check는 FINAL_RUN으로 kit의 ci-targets target을 실행하고, kit checker의 crate는 cargo-downloads-fetch로 받는다 | package.json, package-lock.json, the copies of kit-sync, Makefile, tests/scripts/environment.test.mts, docs that name full-run | GREEN: `make kit-check` names no S15 finding and `node --test tests/scripts/environment.test.mts` passes | [~] |
