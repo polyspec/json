@@ -39,7 +39,7 @@
   Enforced by: `make docs-check`
 - Own: push는 `[~]` 작업이 없을 때만 합니다.
   Enforced by: none, 검토에서 판단합니다.
-- Own: `make check`의 guard는 `[~]` 작업이 있거나, 추적 변경이 commit되지 않았거나, 무시되지 않은 untracked 파일이 있으면 시작을 거부하며, commit된 tree의 각 전체 실행을 `var/full-run.json`에 기록합니다. 전체 실행은 commit된 tree만 검증합니다.
+- Own: `make check`의 guard인 FINAL_RUN=1의 kit ci-targets는 추적 변경이 commit되지 않았거나 무시되지 않은 untracked 파일이 있으면 시작을 거부하며, 각 전체 실행의 report를 `var/report/full-run`에 씁니다. 전체 실행은 commit된 tree만 검증합니다.
   Enforced by: `make check`
 
 <a id="verification"></a>

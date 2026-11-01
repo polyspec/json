@@ -14,7 +14,7 @@ make install
 make check
 ~~~
 
-`make check`는 `@polyspec/kit`의 full-run으로 `CHECK_TARGETS`의 target을 실행합니다. 그 target `verify-all`은 `config/parity.json`의 모든 구현을 빌드하고, 각 구현의 probe에 공통 JSON 사례를 보내고, 통합 기록 `var/records/verification.json`을 생성한 뒤 체크아웃의 [기록](#records)과 함께 근거 검사를 실행합니다(`scripts/verify.mts --record`). 통합 기록에는 추적된 모든 파일의 소스 해시가 포함됩니다. 각 구현의 패키지 테스트는 `make parity-check`에서 그 언어의 native runner로, 도구 test는 `make ordered-json-test-scripts`에서 실행합니다.
+`make check`는 깨끗한 commit된 tree에서 FINAL_RUN=1의 `@polyspec/kit` ci-targets로 `CHECK_TARGETS`의 target을 실행합니다. 그 target `verify-all`은 `config/parity.json`의 모든 구현을 빌드하고, 각 구현의 probe에 공통 JSON 사례를 보내고, 통합 기록 `var/records/verification.json`을 생성한 뒤 체크아웃의 [기록](#records)과 함께 근거 검사를 실행합니다(`scripts/verify.mts --record`). 통합 기록에는 추적된 모든 파일의 소스 해시가 포함됩니다. 각 구현의 패키지 테스트는 `make parity-check`에서 그 언어의 native runner로, 도구 test는 `make ordered-json-test-scripts`에서 실행합니다.
 
 각 빌드 단계는 시작 줄, 도착하는 대로의 출력, 종료 상태와 경과 시간을 출력합니다. 빌드 단계와 PIE 명령에는 시간 한도가 없으며, 종료 상태와 출력이 결과를 결정합니다. 각 probe는 공통 사례를 한 번에 하나씩 받고, 검증기는 사례와 그 응답의 경과 시간을 출력합니다. 응답마다 60 s가 주어지며, 이를 넘긴 probe는 종료되고 해당 사례 이름이 보고됩니다. 실행 전체에는 한도를 두지 않습니다. 빌드 단계나 probe가 끝나면 검증기는 그 process group을 종료하므로, 그것이 background에서 시작한 process는 그보다 오래 남거나 그 출력을 열어 두지 않습니다. 실패는 실행도 다른 언어도 끝내지 않습니다. 각 언어의 빌드와 모든 probe의 모든 공통 사례는 끝까지 실행되고, 실패한 빌드는 자기 언어의 이후 단계만 건너뛰며, 실행은 그 뒤 모든 실패를 나열하고 기록을 쓰지 않은 채 status 1로 끝납니다. fixture와 추가 사례의 기대 결과는 독립 참조(`scripts/reference.mts`)에서 옵니다. 참조는 바이트를 엄격한 UTF-8로 디코딩하고, 모든 member를 원본 범위와 함께 순서대로 유지하는 JSON parser인 momoa로 파싱하며, escape되지 않은 제어 문자와 중첩 한도는 그 token에서 검사합니다.
 

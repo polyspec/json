@@ -35,7 +35,7 @@ unexport CARGO_TARGET_DIR
 # installations. CI bootstraps the locked package before Make reads this include.
 include node_modules/@polyspec/kit/scripts/kit/kit-bootstrap.mk
 
-# The targets of the full suite that make check runs through the guard of full-run of @polyspec/kit and that the jobs of
+# The targets of the full suite that make check runs through ci-targets of @polyspec/kit with FINAL_RUN and that the jobs of
 # .github/workflows run with make ci-targets (a target is in one job). verify-all writes the aggregate record into var/records.
 CHECK_TARGETS := kit-check suppression-check bypass-check divergence-check link-check rules-check rebuild-check language-check test-markers-check duplication-check layout-check hooks-check owner-validate release-coverage parity-declarations-check docs-check evidence-check verify-all parity-check lint-rust lint-go lint-php lint-php-ext test-php-ext lint-python pie-check ordered-json-test-scripts typecheck lint-ts test-js test-rust test-go test-php test-python
 
@@ -44,10 +44,10 @@ CHECK_TARGETS := kit-check suppression-check bypass-check divergence-check link-
 	ordered-json-js-check ordered-json-js-test ordered-json-go-check ordered-json-go-test ordered-json-php-check ordered-json-php-test \
 	ordered-json-php-ext-check ordered-json-php-ext-test ordered-json-python-check ordered-json-python-test ordered-json-rust-check ordered-json-rust-test
 
-# check runs the full suite once per committed tree, when no task of docs/plans/execution/checklist.md is [~]
-# (full-run of @polyspec/kit); it records its result in var/full-run.json. rerun-failed (kit.mk) reruns the targets that failed.
+# check runs the full suite on a clean committed tree: ci-targets of @polyspec/kit with FINAL_RUN=1 refuses any other tree, runs
+# every target past failures and writes its report into var/report/full-run.
 check:
-	$(NODE) $(KIT)/full-run.$(KIT_EXT) run $(CHECK_TARGETS)
+	FINAL_RUN=1 $(MAKE) --no-print-directory ci-targets CI_REPORT=var/report/full-run TARGETS="$(CHECK_TARGETS)"
 
 # install makes every download that the checks read after make install-packages: the tools of mise.lock, the Rust toolchain of
 # rust-toolchain.toml, the crates of packages/rust/Cargo.lock, the Composer projects of the PHP packages with their PHPUnit,
@@ -70,7 +70,6 @@ ordered-json-install: install-kit ordered-json-install-rust cargo-downloads-fetc
 
 ordered-json-install-rust:
 	$(ONLINE) rustup toolchain install --no-self-update
-	$(ONLINE) $(CARGO) fetch --locked --manifest-path node_modules/@polyspec/kit/scripts/kit/catch-check-rust/Cargo.toml
 
 # ordered-json-install-php installs the locked Composer packages of packages/php and packages/php-ext, PHPUnit among them, into their
 # vendor/, from which kit parity runs their tests (config/parity.json), and the root package, the published composer.json,

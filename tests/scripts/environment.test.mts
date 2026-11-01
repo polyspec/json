@@ -65,7 +65,7 @@ test('make install makes every download of the checks', () => {
   const table = recipes(makefile());
   assert.deepEqual(known(table.get('install'), 'the target install').prerequisites, ['ordered-json-install']);
   assert.deepEqual(known(table.get('ordered-json-install'), 'the target ordered-json-install').prerequisites, ['install-kit', 'ordered-json-install-rust', 'cargo-downloads-fetch', 'ordered-json-install-php', 'ordered-json-install-python']);
-  assert.deepEqual(known(table.get('ordered-json-install-rust'), 'the target ordered-json-install-rust').recipe, ['$(ONLINE) rustup toolchain install --no-self-update', '$(ONLINE) $(CARGO) fetch --locked --manifest-path node_modules/@polyspec/kit/scripts/kit/catch-check-rust/Cargo.toml']);
+  assert.deepEqual(known(table.get('ordered-json-install-rust'), 'the target ordered-json-install-rust').recipe, ['$(ONLINE) rustup toolchain install --no-self-update']);
 });
 
 

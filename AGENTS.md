@@ -38,7 +38,7 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
   Enforced by: `make docs-check`
 - Own: A push happens only when no task is `[~]`.
   Enforced by: none, judged at review.
-- Own: The guard of `make check` refuses to start while a task is `[~]`, while tracked changes are uncommitted or while an untracked file is not ignored, and it records each full run of a committed tree in `var/full-run.json`. A full run verifies a committed tree only.
+- Own: The guard of `make check`, ci-targets of kit with FINAL_RUN=1, refuses to start while tracked changes are uncommitted or while an untracked file is not ignored, and it writes the report of each full run into `var/report/full-run`. A full run verifies a committed tree only.
   Enforced by: `make check`
 
 <a id="verification"></a>

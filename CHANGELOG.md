@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- T2.133: ordered-json adopts kit 0.0.89 and reaches kit only through its interface (S15): make check runs ci-targets of kit with FINAL_RUN=1, and the crate of the kit checker comes from cargo-downloads-fetch (T2.133).
 - T2.132: docs/operations/distribution.md no longer names make release-config-check, which T2.97 removed (T2.132).
 
 ## 0.0.18
