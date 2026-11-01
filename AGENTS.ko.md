@@ -1,5 +1,5 @@
 <!-- doc-id: development -->
-<!-- source-sha256: 3d26d98901fb6ee777534870d81d39025437c48f490b816078998295308cf2ec -->
+<!-- source-sha256: 63eed9695f424ff8b14083cc3f57f42d5ea11c51f91bfe9354565636698bb2af -->
 # Development procedure
 
 [English](AGENTS.md)
