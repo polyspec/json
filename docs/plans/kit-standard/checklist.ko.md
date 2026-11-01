@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: de0910af9d90b0768d6da2a60613f19b07c7da773d227260822e57a9758b18b5 -->
+<!-- source-sha256: b2de7d3d1ed27a54ee083905aef9750ebce3fdbe06505f9504a06db69a43c912 -->
 # kit 표준 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -154,3 +154,4 @@
 | T2.132 | distribution.md는 존재하는 make target만 적는다: T2.97이 제거한 release-config-check를 더 이상 적지 않는다 | docs/operations/distribution.md(.ko) | GREEN: `make docs-check` passes and no document outside the plans names release-config-check | [o] |
 | T2.133 | kit 0.0.89를 채택하고 kit에는 인터페이스로만 닿는다(S15): make check는 FINAL_RUN으로 kit의 ci-targets target을 실행하고, kit checker의 crate는 cargo-downloads-fetch로 받는다 | package.json, package-lock.json, the copies of kit-sync, Makefile, tests/scripts/environment.test.mts, docs that name full-run | GREEN: `make kit-check` names no S15 finding and `node --test tests/scripts/environment.test.mts` passes | [o] |
 | T2.134 | ordered-json 0.0.19 릴리즈 | package.json, package-lock.json, composer.json, packages/*/package.json, composer.json, pyproject.toml, Cargo.toml and Cargo.lock, CHANGELOG.md(.ko) | GREEN: `make docs-check` passes and every manifest declares 0.0.19 | [o] |
+| T2.135 | composer validate가 통과하도록 composer.lock 세 개를 composer update --lock으로 다시 쓴다 | composer.lock, packages/php/composer.lock, packages/php-ext/composer.lock, CHANGELOG.md(.ko) | GREEN: `composer validate --no-check-publish --no-check-all --working-dir=packages/php` and `composer validate --no-check-publish --no-check-all --working-dir=packages/php-ext` pass | [ ] |
