@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: c3f03c5df88f58d225d9480e4338f35d98284f6c6b2968b36de0a3a40e82e1bb -->
+<!-- source-sha256: 3e8f35744012fb91d367906659348aa9496c1b6a34c01ecc160ca71cd88f909c -->
 # kit 표준 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -153,4 +153,4 @@
 | T2.131 | ordered-json 0.0.18을 릴리즈한다 | package.json package-lock.json composer.json packages/js/package.json packages/php/composer.json packages/php-ext/composer.json packages/python/pyproject.toml packages/rust/Cargo.toml packages/rust/Cargo.lock CHANGELOG.md(.ko) | GREEN: `make docs-check` passes and every manifest declares 0.0.18 | [o] |
 | T2.132 | distribution.md는 존재하는 make target만 적는다: T2.97이 제거한 release-config-check를 더 이상 적지 않는다 | docs/operations/distribution.md(.ko) | GREEN: `make docs-check` passes and no document outside the plans names release-config-check | [o] |
 | T2.133 | kit 0.0.89를 채택하고 kit에는 인터페이스로만 닿는다(S15): make check는 FINAL_RUN으로 kit의 ci-targets target을 실행하고, kit checker의 crate는 cargo-downloads-fetch로 받는다 | package.json, package-lock.json, the copies of kit-sync, Makefile, tests/scripts/environment.test.mts, docs that name full-run | GREEN: `make kit-check` names no S15 finding and `node --test tests/scripts/environment.test.mts` passes | [o] |
-| T2.134 | ordered-json 0.0.19 릴리즈 | package.json, package-lock.json, composer.json, packages/*/package.json, composer.json, pyproject.toml, Cargo.toml and Cargo.lock, CHANGELOG.md(.ko) | the CI of the push passes and its release attaches the 0.0.19 assets | [ ] |
+| T2.134 | ordered-json 0.0.19 릴리즈 | package.json, package-lock.json, composer.json, packages/*/package.json, composer.json, pyproject.toml, Cargo.toml and Cargo.lock, CHANGELOG.md(.ko) | the CI of the push passes and its release attaches the 0.0.19 assets | [~] |
