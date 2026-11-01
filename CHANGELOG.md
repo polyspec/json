@@ -6,6 +6,10 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.19
+
+- ordered-json 0.0.19 adopts kit 0.0.89 and reaches kit only through its interface (T2.133); its release attaches polyspec-ordered-json-0.0.19.tgz, polyspec-ordered-json-php-0.0.19.zip, polyspec-ordered-json-php-ext-0.0.19.zip and the wheel (T2.134)
+
 - T2.133: ordered-json adopts kit 0.0.89 and reaches kit only through its interface (S15): make check runs ci-targets of kit with FINAL_RUN=1, and the crate of the kit checker comes from cargo-downloads-fetch (T2.133).
 - T2.132: docs/operations/distribution.md no longer names make release-config-check, which T2.97 removed (T2.132).
 

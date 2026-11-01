@@ -1,11 +1,15 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: cba67714f4324a727f125d5a0af0d573eaf16a3b95fe90dab4b2ae13ec403d47 -->
+<!-- source-sha256: 402046aad9c43d4b579b48db69cba0ce91661b58add6e48d5c982448d4594336 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+## 0.0.19
+
+- ordered-json 0.0.19는 kit 0.0.89를 채택하고 kit에는 인터페이스로만 닿으며(T2.133), 그 release는 polyspec-ordered-json-0.0.19.tgz, polyspec-ordered-json-php-0.0.19.zip, polyspec-ordered-json-php-ext-0.0.19.zip과 wheel을 첨부한다 (T2.134)
 
 - T2.133: ordered-json은 kit 0.0.89를 채택하고 kit에는 인터페이스로만 닿는다(S15): make check는 FINAL_RUN=1로 kit의 ci-targets를 실행하고, kit checker의 crate는 cargo-downloads-fetch로 받는다 (T2.133).
 - T2.132: docs/operations/distribution.md는 T2.97이 제거한 make release-config-check를 더 이상 적지 않습니다(T2.132).
