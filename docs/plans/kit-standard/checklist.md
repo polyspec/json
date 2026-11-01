@@ -157,3 +157,4 @@
 | T2.136 | Adopt Kit 0.0.91 | package.json, package-lock.json, the kit copies | GREEN: `make kit-inject-check` passes | [o] |
 | T2.137 | ordered-json fetches its locked crates with cargo fetch --locked itself, since kit 0.0.91 has no cargo-downloads-fetch | Makefile, tests/scripts/environment.test.mts, CHANGELOG.md(.ko) | GREEN: `make -n ordered-json-install` passes | [o] |
 | T2.138 | Adopt Kit 0.0.92 | package.json, package-lock.json, the kit copies, CHANGELOG.md(.ko) | GREEN: `make kit-inject-check` passes | [o] |
+| T2.139 | Release 0.0.20 | every manifest, the three composer.lock files, CHANGELOG.md(.ko) | GREEN: `make docs-check` passes and every manifest declares 0.0.20 | [ ] |
