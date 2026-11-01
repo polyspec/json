@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- T2.128: ordered-json adopts kit 0.0.87: every CI job bootstraps with the kit-bootstrap action that kit-sync copies (K992), and a make install that starts on the packed kit follows the linked kit after its link (K993) (T2.128)
+
 ## 0.0.16
 
 - ordered-json 0.0.16 adopts kit 0.0.86 (T2.126); its release attaches polyspec-ordered-json-0.0.16.tgz, polyspec-ordered-json-php-0.0.16.zip, polyspec-ordered-json-php-ext-0.0.16.zip and the wheel (T2.127)

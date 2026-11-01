@@ -38,11 +38,6 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
-        if: ${{ !cancelled() }}
-        with:
-          node-version-file: mise.toml
-          package-manager-cache: false
       # shivammathur/setup-php 2.40.0, the release that the release workflow of @polyspec/kit pins: PHP of .php-version; Composer,
       # which the Composer manifests are read with, is a tool of mise.toml.
       - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
@@ -51,22 +46,9 @@ jobs:
           php-version-file: .php-version
           tools: none
           coverage: none
-      - name: bootstrap the installed kit package
+      - name: Bootstrap kit, npm and the packages of package-lock.json (K992)
         if: ${{ !cancelled() }}
-        run: |
-          if [ "$(node -p 'require("./package.json").name')" != '@polyspec/kit' ]; then
-            # npm 11 of the runner refuses to run in a folder whose devEngines names npm 12.2.0 (EBADDEVENGINES), so the npm of
-            # devEngines runs outside the checkout with --prefix (K938-1).
-            root="$PWD"
-            version="$(node -p 'require("./package.json").devEngines.packageManager.version')"
-            (cd "${RUNNER_TEMP:?RUNNER_TEMP is not set}" && npm_config_cache="$root/var/bootstrap/npm-cache" npm exec --yes --package="npm@$version" -- npm --prefix "$root" ci --ignore-scripts --allow-remote=root)
-          fi
-      - name: make install-tools TOOLS=npm
-        if: ${{ !cancelled() }}
-        run: make install-tools TOOLS=npm
-      - name: make install-packages
-        if: ${{ !cancelled() }}
-        run: make install-packages
+        uses: ./.github/actions/kit-bootstrap
       # Repository tool tests read Go metadata; layout needs alint and dependency policy needs Composer.
       - name: install repository check tools
         if: ${{ !cancelled() }}
@@ -95,11 +77,6 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
-        if: ${{ !cancelled() }}
-        with:
-          node-version-file: mise.toml
-          package-manager-cache: false
       # shivammathur/setup-php 2.40.0, the release that the release workflow of @polyspec/kit pins: the latest patch release of
       # the minor release of .php-version, with phpize for the extension builds of the verification and PIE.
       - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
@@ -108,22 +85,9 @@ jobs:
           php-version-file: .php-version
           tools: none
           coverage: none
-      - name: bootstrap the installed kit package
+      - name: Bootstrap kit, npm and the packages of package-lock.json (K992)
         if: ${{ !cancelled() }}
-        run: |
-          if [ "$(node -p 'require("./package.json").name')" != '@polyspec/kit' ]; then
-            # npm 11 of the runner refuses to run in a folder whose devEngines names npm 12.2.0 (EBADDEVENGINES), so the npm of
-            # devEngines runs outside the checkout with --prefix (K938-1).
-            root="$PWD"
-            version="$(node -p 'require("./package.json").devEngines.packageManager.version')"
-            (cd "${RUNNER_TEMP:?RUNNER_TEMP is not set}" && npm_config_cache="$root/var/bootstrap/npm-cache" npm exec --yes --package="npm@$version" -- npm --prefix "$root" ci --ignore-scripts --allow-remote=root)
-          fi
-      - name: make install-tools TOOLS=npm
-        if: ${{ !cancelled() }}
-        run: make install-tools TOOLS=npm
-      - name: make install-packages
-        if: ${{ !cancelled() }}
-        run: make install-packages
+        uses: ./.github/actions/kit-bootstrap
       # The tools of mise.lock (Go, Python, Composer, cargo-audit and the rest) with the phpcs and PHPStan of config/php-lint, the
       # Rust toolchain of rust-toolchain.toml, the crates of packages/rust/Cargo.lock, the Composer projects of the root and the
       # PHP packages (the PIE PHAR and the supplementary suite are tools of mise.lock).
@@ -157,27 +121,9 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+      - name: Bootstrap kit, npm and the packages of package-lock.json (K992)
         if: ${{ !cancelled() }}
-        with:
-          node-version-file: mise.toml
-          package-manager-cache: false
-      - name: bootstrap the installed kit package
-        if: ${{ !cancelled() }}
-        run: |
-          if [ "$(node -p 'require("./package.json").name')" != '@polyspec/kit' ]; then
-            # npm 11 of the runner refuses to run in a folder whose devEngines names npm 12.2.0 (EBADDEVENGINES), so the npm of
-            # devEngines runs outside the checkout with --prefix (K938-1).
-            root="$PWD"
-            version="$(node -p 'require("./package.json").devEngines.packageManager.version')"
-            (cd "${RUNNER_TEMP:?RUNNER_TEMP is not set}" && npm_config_cache="$root/var/bootstrap/npm-cache" npm exec --yes --package="npm@$version" -- npm --prefix "$root" ci --ignore-scripts --allow-remote=root)
-          fi
-      - name: make install-tools TOOLS=npm
-        if: ${{ !cancelled() }}
-        run: make install-tools TOOLS=npm
-      - name: make install-packages
-        if: ${{ !cancelled() }}
-        run: make install-packages
+        uses: ./.github/actions/kit-bootstrap
       # The tools of mise.lock (Go, Python, Composer, cargo-audit and the rest) with the phpcs and PHPStan of config/php-lint, the
       # Rust toolchain of rust-toolchain.toml, the crates of packages/rust/Cargo.lock, the Composer projects of the root and the
       # PHP packages (the PIE PHAR and the supplementary suite are tools of mise.lock).
@@ -204,27 +150,9 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+      - name: Bootstrap kit, npm and the packages of package-lock.json (K992)
         if: ${{ !cancelled() }}
-        with:
-          node-version-file: mise.toml
-          package-manager-cache: false
-      - name: bootstrap the installed kit package
-        if: ${{ !cancelled() }}
-        run: |
-          if [ "$(node -p 'require("./package.json").name')" != '@polyspec/kit' ]; then
-            # npm 11 of the runner refuses to run in a folder whose devEngines names npm 12.2.0 (EBADDEVENGINES), so the npm of
-            # devEngines runs outside the checkout with --prefix (K938-1).
-            root="$PWD"
-            version="$(node -p 'require("./package.json").devEngines.packageManager.version')"
-            (cd "${RUNNER_TEMP:?RUNNER_TEMP is not set}" && npm_config_cache="$root/var/bootstrap/npm-cache" npm exec --yes --package="npm@$version" -- npm --prefix "$root" ci --ignore-scripts --allow-remote=root)
-          fi
-      - name: make install-tools TOOLS=npm
-        if: ${{ !cancelled() }}
-        run: make install-tools TOOLS=npm
-      - name: make install-packages
-        if: ${{ !cancelled() }}
-        run: make install-packages
+        uses: ./.github/actions/kit-bootstrap
       # The tools of mise.lock (Go, Python, Composer, cargo-audit and the rest) with the phpcs and PHPStan of config/php-lint, the
       # Rust toolchain of rust-toolchain.toml, the crates of packages/rust/Cargo.lock, the Composer projects of the root and the
       # PHP packages (the PIE PHAR and the supplementary suite are tools of mise.lock).
@@ -257,27 +185,9 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+      - name: Bootstrap kit, npm and the packages of package-lock.json (K992)
         if: ${{ !cancelled() }}
-        with:
-          node-version-file: mise.toml
-          package-manager-cache: false
-      - name: bootstrap the installed kit package
-        if: ${{ !cancelled() }}
-        run: |
-          if [ "$(node -p 'require("./package.json").name')" != '@polyspec/kit' ]; then
-            # npm 11 of the runner refuses to run in a folder whose devEngines names npm 12.2.0 (EBADDEVENGINES), so the npm of
-            # devEngines runs outside the checkout with --prefix (K938-1).
-            root="$PWD"
-            version="$(node -p 'require("./package.json").devEngines.packageManager.version')"
-            (cd "${RUNNER_TEMP:?RUNNER_TEMP is not set}" && npm_config_cache="$root/var/bootstrap/npm-cache" npm exec --yes --package="npm@$version" -- npm --prefix "$root" ci --ignore-scripts --allow-remote=root)
-          fi
-      - name: make install-tools TOOLS=npm
-        if: ${{ !cancelled() }}
-        run: make install-tools TOOLS=npm
-      - name: make install-packages
-        if: ${{ !cancelled() }}
-        run: make install-packages
+        uses: ./.github/actions/kit-bootstrap
       # The tools of mise.lock (Go, Python, Composer, cargo-audit and the rest) with the phpcs and PHPStan of config/php-lint, the
       # Rust toolchain of rust-toolchain.toml, the crates of packages/rust/Cargo.lock, the Composer projects of the root and the
       # PHP packages (the PIE PHAR and the supplementary suite are tools of mise.lock).
@@ -307,11 +217,6 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
-        if: ${{ !cancelled() }}
-        with:
-          node-version-file: mise.toml
-          package-manager-cache: false
       # shivammathur/setup-php 2.40.0, the release that the release workflow of @polyspec/kit pins: the latest patch release of
       # the minor release of .php-version, with phpize for the extension builds of the verification and PIE.
       - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
@@ -320,22 +225,9 @@ jobs:
           php-version-file: .php-version
           tools: none
           coverage: none
-      - name: bootstrap the installed kit package
+      - name: Bootstrap kit, npm and the packages of package-lock.json (K992)
         if: ${{ !cancelled() }}
-        run: |
-          if [ "$(node -p 'require("./package.json").name')" != '@polyspec/kit' ]; then
-            # npm 11 of the runner refuses to run in a folder whose devEngines names npm 12.2.0 (EBADDEVENGINES), so the npm of
-            # devEngines runs outside the checkout with --prefix (K938-1).
-            root="$PWD"
-            version="$(node -p 'require("./package.json").devEngines.packageManager.version')"
-            (cd "${RUNNER_TEMP:?RUNNER_TEMP is not set}" && npm_config_cache="$root/var/bootstrap/npm-cache" npm exec --yes --package="npm@$version" -- npm --prefix "$root" ci --ignore-scripts --allow-remote=root)
-          fi
-      - name: make install-tools TOOLS=npm
-        if: ${{ !cancelled() }}
-        run: make install-tools TOOLS=npm
-      - name: make install-packages
-        if: ${{ !cancelled() }}
-        run: make install-packages
+        uses: ./.github/actions/kit-bootstrap
       # The tools of mise.lock (Go, Python, Composer, cargo-audit and the rest) with the phpcs and PHPStan of config/php-lint, the
       # Rust toolchain of rust-toolchain.toml, the crates of packages/rust/Cargo.lock, the Composer projects of the root and the
       # PHP packages (the PIE PHAR and the supplementary suite are tools of mise.lock).
@@ -371,11 +263,6 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
-        if: ${{ !cancelled() }}
-        with:
-          node-version-file: mise.toml
-          package-manager-cache: false
       # shivammathur/setup-php 2.40.0, the release that the release workflow of @polyspec/kit pins: the latest patch release of
       # the minor release of .php-version, with phpize for the extension builds of the verification and PIE.
       - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
@@ -384,22 +271,9 @@ jobs:
           php-version-file: .php-version
           tools: none
           coverage: none
-      - name: bootstrap the installed kit package
+      - name: Bootstrap kit, npm and the packages of package-lock.json (K992)
         if: ${{ !cancelled() }}
-        run: |
-          if [ "$(node -p 'require("./package.json").name')" != '@polyspec/kit' ]; then
-            # npm 11 of the runner refuses to run in a folder whose devEngines names npm 12.2.0 (EBADDEVENGINES), so the npm of
-            # devEngines runs outside the checkout with --prefix (K938-1).
-            root="$PWD"
-            version="$(node -p 'require("./package.json").devEngines.packageManager.version')"
-            (cd "${RUNNER_TEMP:?RUNNER_TEMP is not set}" && npm_config_cache="$root/var/bootstrap/npm-cache" npm exec --yes --package="npm@$version" -- npm --prefix "$root" ci --ignore-scripts --allow-remote=root)
-          fi
-      - name: make install-tools TOOLS=npm
-        if: ${{ !cancelled() }}
-        run: make install-tools TOOLS=npm
-      - name: make install-packages
-        if: ${{ !cancelled() }}
-        run: make install-packages
+        uses: ./.github/actions/kit-bootstrap
       # The tools of mise.lock (Go, Python, Composer, cargo-audit and the rest) with the phpcs and PHPStan of config/php-lint, the
       # Rust toolchain of rust-toolchain.toml, the crates of packages/rust/Cargo.lock, the Composer projects of the root and the
       # PHP packages (the PIE PHAR and the supplementary suite are tools of mise.lock).
@@ -433,27 +307,9 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+      - name: Bootstrap kit, npm and the packages of package-lock.json (K992)
         if: ${{ !cancelled() }}
-        with:
-          node-version-file: mise.toml
-          package-manager-cache: false
-      - name: bootstrap the installed kit package
-        if: ${{ !cancelled() }}
-        run: |
-          if [ "$(node -p 'require("./package.json").name')" != '@polyspec/kit' ]; then
-            # npm 11 of the runner refuses to run in a folder whose devEngines names npm 12.2.0 (EBADDEVENGINES), so the npm of
-            # devEngines runs outside the checkout with --prefix (K938-1).
-            root="$PWD"
-            version="$(node -p 'require("./package.json").devEngines.packageManager.version')"
-            (cd "${RUNNER_TEMP:?RUNNER_TEMP is not set}" && npm_config_cache="$root/var/bootstrap/npm-cache" npm exec --yes --package="npm@$version" -- npm --prefix "$root" ci --ignore-scripts --allow-remote=root)
-          fi
-      - name: make install-tools TOOLS=npm
-        if: ${{ !cancelled() }}
-        run: make install-tools TOOLS=npm
-      - name: make install-packages
-        if: ${{ !cancelled() }}
-        run: make install-packages
+        uses: ./.github/actions/kit-bootstrap
       # The tools of mise.lock (Go, Python, Composer, cargo-audit and the rest) with the phpcs and PHPStan of config/php-lint, the
       # Rust toolchain of rust-toolchain.toml, the crates of packages/rust/Cargo.lock, the Composer projects of the root and the
       # PHP packages (the PIE PHAR and the supplementary suite are tools of mise.lock).
@@ -491,22 +347,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
-        with:
-          node-version-file: mise.toml
-          package-manager-cache: false
-      - name: bootstrap the installed kit package
-        run: |
-          if [ "$(node -p 'require("./package.json").name')" != '@polyspec/kit' ]; then
-            # npm 11 of the runner refuses to run in a folder whose devEngines names npm 12.2.0 (EBADDEVENGINES), so the npm of
-            # devEngines runs outside the checkout with --prefix (K938-1).
-            root="$PWD"
-            version="$(node -p 'require("./package.json").devEngines.packageManager.version')"
-            (cd "${RUNNER_TEMP:?RUNNER_TEMP is not set}" && npm_config_cache="$root/var/bootstrap/npm-cache" npm exec --yes --package="npm@$version" -- npm --prefix "$root" ci --ignore-scripts --allow-remote=root)
-          fi
-      - name: make install-tools TOOLS=npm
-        run: make install-tools TOOLS=npm
-      - name: make install-packages
-        run: make install-packages
+      - name: Bootstrap kit, npm and the packages of package-lock.json (K992)
+        uses: ./.github/actions/kit-bootstrap
       - name: make ci-passed
         run: make ci-passed RESULTS='${{ toJSON(needs) }}'

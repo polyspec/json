@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: e9376dc4a503172a7d5b2fd055b27a36d9fb724e7b709430d132b628acdc9a80 -->
+<!-- source-sha256: e2fcf4ae9bfb5563a8366bed6b674012a31329525dc0e69e405a4d3252939707 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- T2.128: ordered-json은 kit 0.0.87을 채택한다. 모든 CI job은 kit-sync가 복사하는 kit-bootstrap action으로 bootstrap하고(K992), pack된 kit으로 시작한 make install은 link 뒤에 link된 kit을 따른다(K993) (T2.128)
 
 ## 0.0.16
 
