@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: ffc04cb9effae16be39bd978229bf453628d44c77f69651ece345fa71d8b31ca -->
+<!-- source-sha256: bcdff01338ca5f7b6ad673cd897c47a549fd18c151a71fbe044d481a6a5dc73f -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- T2.137: kit 0.0.91에 cargo-downloads-fetch가 없으므로 make install이 추적되는 모든 Cargo.lock의 crate를 cargo fetch --locked로 직접 받는다 (T2.137).
 - T2.136: ordered-json이 Kit 0.0.91을 채택한다 (T2.136).
 - T2.135: 0.0.19에서 composer.json의 version이 바뀐 뒤 composer.lock 세 개를 composer update --lock으로 다시 써서 composer validate가 통과한다 (T2.135).
 ## 0.0.19

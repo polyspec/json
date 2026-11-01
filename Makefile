@@ -63,10 +63,10 @@ deps-node:
 	$(MAKE) --no-print-directory install-packages
 deps-go:
 	$(GO) -C packages/go mod download
-deps-rust: ordered-json-install-rust cargo-downloads-fetch
+deps-rust: ordered-json-install-rust-packages
 deps-php: ordered-json-install-php
 deps-python: ordered-json-install-python
-ordered-json-install: install-kit ordered-json-install-rust cargo-downloads-fetch ordered-json-install-php ordered-json-install-python
+ordered-json-install: install-kit ordered-json-install-rust-packages ordered-json-install-php ordered-json-install-python
 
 ordered-json-install-rust:
 	$(ONLINE) rustup toolchain install --no-self-update
@@ -93,8 +93,9 @@ ordered-json-install-python:
 # Product dependency installs are reused by independent CI jobs after Kit prepares
 # only the requested toolchains. These targets install no other language's tools.
 .PHONY: ordered-json-install-rust-packages ordered-json-install-parity ordered-json-install-suite ordered-json-install-pie
+# Cargo runs offline here (CARGO_NET_OFFLINE), so the install fetches the crates of every tracked Cargo.lock with cargo fetch --locked.
 ordered-json-install-rust-packages: ordered-json-install-rust
-	$(MAKE) --no-print-directory cargo-downloads-fetch
+	@set -e; for lock in $$(git ls-files -- '*Cargo.lock'); do $(ONLINE) $(CARGO) fetch --locked --manifest-path "$${lock%.lock}.toml"; done
 
 ordered-json-install-suite:
 	$(ONLINE) $(KIT_TOOLS)/bin/mise install --locked http:jsontestsuite

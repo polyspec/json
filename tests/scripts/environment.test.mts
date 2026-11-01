@@ -58,13 +58,13 @@ test('every check runs offline and only make install downloads', () => {
   for (const [name, value] of Object.entries(OFFLINE)) assert.match(text, new RegExp(`^export ${name} := ${value}$`, 'm'));
   assert.match(text, new RegExp(`^ONLINE := env${Object.keys(OFFLINE).map(name => ` -u ${name}`).join('')}$`, 'm'));
   const downloading = [...recipes(text)].filter(([, rule]) => rule.recipe.some(line => line.includes('$(ONLINE)'))).map(([target]) => target).sort();
-  assert.deepEqual(downloading, ['ordered-json-install-php', 'ordered-json-install-pie', 'ordered-json-install-python', 'ordered-json-install-rust', 'ordered-json-install-suite']);
+  assert.deepEqual(downloading, ['ordered-json-install-php', 'ordered-json-install-pie', 'ordered-json-install-python', 'ordered-json-install-rust', 'ordered-json-install-rust-packages', 'ordered-json-install-suite']);
 });
 
 test('make install makes every download of the checks', () => {
   const table = recipes(makefile());
   assert.deepEqual(known(table.get('install'), 'the target install').prerequisites, ['ordered-json-install']);
-  assert.deepEqual(known(table.get('ordered-json-install'), 'the target ordered-json-install').prerequisites, ['install-kit', 'ordered-json-install-rust', 'cargo-downloads-fetch', 'ordered-json-install-php', 'ordered-json-install-python']);
+  assert.deepEqual(known(table.get('ordered-json-install'), 'the target ordered-json-install').prerequisites, ['install-kit', 'ordered-json-install-rust-packages', 'ordered-json-install-php', 'ordered-json-install-python']);
   assert.deepEqual(known(table.get('ordered-json-install-rust'), 'the target ordered-json-install-rust').recipe, ['$(ONLINE) rustup toolchain install --no-self-update']);
 });
 
