@@ -1,11 +1,15 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: e2fcf4ae9bfb5563a8366bed6b674012a31329525dc0e69e405a4d3252939707 -->
+<!-- source-sha256: 37c1f31011443f382a737708115b4641e6337767edf363894fdc507579e12297 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+## 0.0.17
+
+- ordered-json 0.0.17은 kit 0.0.87을 채택하며(T2.128), 그 release는 polyspec-ordered-json-0.0.17.tgz, polyspec-ordered-json-php-0.0.17.zip, polyspec-ordered-json-php-ext-0.0.17.zip과 wheel을 첨부한다 (T2.129)
 
 - T2.128: ordered-json은 kit 0.0.87을 채택한다. 모든 CI job은 kit-sync가 복사하는 kit-bootstrap action으로 bootstrap하고(K992), pack된 kit으로 시작한 make install은 link 뒤에 link된 kit을 따른다(K993) (T2.128)
 
