@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 402046aad9c43d4b579b48db69cba0ce91661b58add6e48d5c982448d4594336 -->
+<!-- source-sha256: febfe58dc6fb87d8dbf6d60c9719db036685843a1d4d32b6bc0ba5b2f9d6ffc2 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- T2.135: 0.0.19에서 composer.json의 version이 바뀐 뒤 composer.lock 세 개를 composer update --lock으로 다시 써서 composer validate가 통과한다 (T2.135).
 ## 0.0.19
 
 - ordered-json 0.0.19는 kit 0.0.89를 채택하고 kit에는 인터페이스로만 닿으며(T2.133), 그 release는 polyspec-ordered-json-0.0.19.tgz, polyspec-ordered-json-php-0.0.19.zip, polyspec-ordered-json-php-ext-0.0.19.zip과 wheel을 첨부한다 (T2.134)

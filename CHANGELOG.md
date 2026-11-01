@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- T2.135: the three composer.lock files are rewritten with composer update --lock after the version of their composer.json changed in 0.0.19, so composer validate passes them (T2.135).
 ## 0.0.19
 
 - ordered-json 0.0.19 adopts kit 0.0.89 and reaches kit only through its interface (T2.133); its release attaches polyspec-ordered-json-0.0.19.tgz, polyspec-ordered-json-php-0.0.19.zip, polyspec-ordered-json-php-ext-0.0.19.zip and the wheel (T2.134)
