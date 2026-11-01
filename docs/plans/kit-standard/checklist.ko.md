@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 0d19934e36f2d8936a77814eee8da3ff9400cf74afaf36d7853624c5f160b3f7 -->
+<!-- source-sha256: f76a1e66f439ee98756c6c42e20890a4239c61a39960e637345dbfec277e4f40 -->
 # kit 표준 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -158,4 +158,4 @@
 | T2.136 | Kit 0.0.91을 채택한다 | package.json, package-lock.json, the kit copies | GREEN: `make kit-inject-check` passes | [o] |
 | T2.137 | kit 0.0.91에 cargo-downloads-fetch가 없으므로 ordered-json이 잠긴 crate를 cargo fetch --locked로 직접 받는다 | Makefile, tests/scripts/environment.test.mts, CHANGELOG.md(.ko) | GREEN: `make -n ordered-json-install` passes | [o] |
 | T2.138 | Kit 0.0.92를 채택한다 | package.json, package-lock.json, the kit copies, CHANGELOG.md(.ko) | GREEN: `make kit-inject-check` passes | [o] |
-| T2.139 | 0.0.20 릴리즈 | every manifest, the three composer.lock files, CHANGELOG.md(.ko) | GREEN: `make docs-check` passes and every manifest declares 0.0.20 | [ ] |
+| T2.139 | 0.0.20 릴리즈 | every manifest, the three composer.lock files, CHANGELOG.md(.ko) | GREEN: `make docs-check` passes and every manifest declares 0.0.20 | [~] |
