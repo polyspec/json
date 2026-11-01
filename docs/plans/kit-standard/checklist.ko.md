@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: ae88169a868291d17abf5aad81875b952fce2d10c6d4ea9df4b478923625d9e2 -->
+<!-- source-sha256: 2c36413395e9bd944cb400e2c9250591f364f79181d17eebb22efabd226c7c35 -->
 # kit 표준 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -156,4 +156,4 @@
 | T2.134 | ordered-json 0.0.19 릴리즈 | package.json, package-lock.json, composer.json, packages/*/package.json, composer.json, pyproject.toml, Cargo.toml and Cargo.lock, CHANGELOG.md(.ko) | GREEN: `make docs-check` passes and every manifest declares 0.0.19 | [o] |
 | T2.135 | composer validate가 통과하도록 composer.lock 세 개를 composer update --lock으로 다시 쓴다 | composer.lock, packages/php/composer.lock, packages/php-ext/composer.lock, CHANGELOG.md(.ko) | GREEN: `composer validate --no-check-publish --no-check-all --working-dir=packages/php` and `composer validate --no-check-publish --no-check-all --working-dir=packages/php-ext` pass | [o] |
 | T2.136 | Kit 0.0.91을 채택한다 | package.json, package-lock.json, the kit copies | GREEN: `make kit-inject-check` passes | [o] |
-| T2.137 | kit 0.0.91에 cargo-downloads-fetch가 없으므로 ordered-json이 잠긴 crate를 cargo fetch --locked로 직접 받는다 | Makefile, tests/scripts/environment.test.mts, CHANGELOG.md(.ko) | GREEN: `make -n ordered-json-install` passes | [ ] |
+| T2.137 | kit 0.0.91에 cargo-downloads-fetch가 없으므로 ordered-json이 잠긴 crate를 cargo fetch --locked로 직접 받는다 | Makefile, tests/scripts/environment.test.mts, CHANGELOG.md(.ko) | GREEN: `make -n ordered-json-install` passes | [~] |
