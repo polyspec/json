@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: b522669155a77073ed3f6819aec3324d1bc34938d4f8a9402a13d74779964f6f -->
+<!-- source-sha256: b2e911fd98f041c62ea47f255b502db1e4c33f566c9dfd09a08aea2e61978d44 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- T2.132: docs/operations/distribution.md는 T2.97이 제거한 make release-config-check를 더 이상 적지 않습니다(T2.132).
 
 ## 0.0.18
 

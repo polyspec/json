@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- T2.132: docs/operations/distribution.md no longer names make release-config-check, which T2.97 removed (T2.132).
+
 ## 0.0.18
 
 - ordered-json 0.0.18 adopts kit 0.0.88 (T2.130); its release attaches polyspec-ordered-json-0.0.18.tgz, polyspec-ordered-json-php-0.0.18.zip, polyspec-ordered-json-php-ext-0.0.18.zip and the wheel (T2.131)
