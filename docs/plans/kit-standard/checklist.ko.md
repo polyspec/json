@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 016298e73ea6009304349865a36bfb46ec869bf4cfaed67470d23238db8753c9 -->
+<!-- source-sha256: e764250ef8099da8ed9d72bca772098570b5cbd4e7884f2e07c18e910a6ac689 -->
 # kit 표준 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -157,3 +157,4 @@
 | T2.135 | composer validate가 통과하도록 composer.lock 세 개를 composer update --lock으로 다시 쓴다 | composer.lock, packages/php/composer.lock, packages/php-ext/composer.lock, CHANGELOG.md(.ko) | GREEN: `composer validate --no-check-publish --no-check-all --working-dir=packages/php` and `composer validate --no-check-publish --no-check-all --working-dir=packages/php-ext` pass | [o] |
 | T2.136 | Kit 0.0.91을 채택한다 | package.json, package-lock.json, the kit copies | GREEN: `make kit-inject-check` passes | [o] |
 | T2.137 | kit 0.0.91에 cargo-downloads-fetch가 없으므로 ordered-json이 잠긴 crate를 cargo fetch --locked로 직접 받는다 | Makefile, tests/scripts/environment.test.mts, CHANGELOG.md(.ko) | GREEN: `make -n ordered-json-install` passes | [o] |
+| T2.138 | Kit 0.0.92를 채택한다 | package.json, package-lock.json, the kit copies, CHANGELOG.md(.ko) | GREEN: `make kit-inject-check` passes | [ ] |
