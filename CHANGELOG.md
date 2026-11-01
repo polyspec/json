@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- T2.138: ordered-json adopts Kit 0.0.92, which has no Rust catch check whose crates the offline lint-rust cannot fetch (T2.138).
 - T2.137: make install fetches the crates of every tracked Cargo.lock with cargo fetch --locked itself, since kit 0.0.91 has no cargo-downloads-fetch (T2.137).
 - T2.136: ordered-json adopts Kit 0.0.91 (T2.136).
 - T2.135: the three composer.lock files are rewritten with composer update --lock after the version of their composer.json changed in 0.0.19, so composer validate passes them (T2.135).
