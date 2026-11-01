@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 518b8bda648f4815720a347b92b17acde6d07c8844d4c5a5f5279ae97cd58640 -->
+<!-- source-sha256: 441e3fb729e782cdd467954229c01002ea1cc90443de6a7a53942018e0b7a22c -->
 # kit 표준 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -155,4 +155,4 @@
 | T2.133 | kit 0.0.89를 채택하고 kit에는 인터페이스로만 닿는다(S15): make check는 FINAL_RUN으로 kit의 ci-targets target을 실행하고, kit checker의 crate는 cargo-downloads-fetch로 받는다 | package.json, package-lock.json, the copies of kit-sync, Makefile, tests/scripts/environment.test.mts, docs that name full-run | GREEN: `make kit-check` names no S15 finding and `node --test tests/scripts/environment.test.mts` passes | [o] |
 | T2.134 | ordered-json 0.0.19 릴리즈 | package.json, package-lock.json, composer.json, packages/*/package.json, composer.json, pyproject.toml, Cargo.toml and Cargo.lock, CHANGELOG.md(.ko) | GREEN: `make docs-check` passes and every manifest declares 0.0.19 | [o] |
 | T2.135 | composer validate가 통과하도록 composer.lock 세 개를 composer update --lock으로 다시 쓴다 | composer.lock, packages/php/composer.lock, packages/php-ext/composer.lock, CHANGELOG.md(.ko) | GREEN: `composer validate --no-check-publish --no-check-all --working-dir=packages/php` and `composer validate --no-check-publish --no-check-all --working-dir=packages/php-ext` pass | [o] |
-| T2.136 | Kit 0.0.91을 채택한다 | package.json, package-lock.json, the kit copies | GREEN: `make kit-inject-check` passes | [ ] |
+| T2.136 | Kit 0.0.91을 채택한다 | package.json, package-lock.json, the kit copies | GREEN: `make kit-inject-check` passes | [~] |
