@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: ed2a4e0f8d2cfd882de5df8e53b9bf30ae918e42ab64a5dd988b8790c3ded928 -->
+<!-- source-sha256: 52bcd49253faa836f7ab23dab0622c00ab9c9b85defac01b8f37803ac1ef1ecb -->
 # kit 표준 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -160,4 +160,4 @@
 | T2.138 | Kit 0.0.92를 채택한다 | package.json, package-lock.json, the kit copies, CHANGELOG.md(.ko) | GREEN: `make kit-inject-check` passes | [o] |
 | T2.139 | 0.0.20 릴리즈 | every manifest, the three composer.lock files, CHANGELOG.md(.ko) | GREEN: `make docs-check` passes and every manifest declares 0.0.20 | [o] |
 | T2.140 | kit 0.0.98을 지원한다(kit docs/spec/utilities-and-recipes.md): Makefile은 kit.mk와 kit-bootstrap.mk를 include하지 않고 자신이 실행하는 레시피를 직접 가지며, 설치된 kit의 유틸리티를 명시적 인자로 호출한다. kit이 정하던 설정은 저장소의 .npmrc, mise.toml과 lint 설정 파일로 옮긴다. kit이 복사해 넣던 파일은 저장소의 파일이 되거나, 그 파일이 섬기던 hook과 함께 삭제된다. CI pipeline은 각 job의 target을 이름으로 실행하고, 그 target이 config/ci.json이 선언하던 target을 가지므로 rules-check가 모든 검사에 닿는다(kit K1057). make check는 FINAL_RUN 없이 실행된다(kit K1053) | Makefile, .npmrc, mise.toml, .golangci.yml, phpcs.xml.dist, phpstan.dist.neon, ruff.toml, clippy.toml, .oxlintrc.json, knip.json, packages/rust/Cargo.toml, .github/workflows/*.yml, .github/actions/kit-bootstrap/action.yml, config/*.json, config/layout*.yml, the removed .githooks, .claude/settings.json, config/knip-entries.json and config/pyproject.schema.json, tests/scripts/*.test.mts, AGENTS.md(.ko), PRINCIPLES.md(.ko), docs/operations/*.md(.ko), CHANGELOG.md(.ko) | No-Red: the change moves recipes and settings into files of the repository and adds no behavior. GREEN: `make -n -B install kit-gates-static lint-ts` passes with no include of kit.mk, and `node --test tests/scripts/environment.test.mts tests/scripts/workflow-rules.test.mts` passes | [o] |
-| T2.141 | 0.0.21 릴리즈 | every manifest, the three composer.lock files, CHANGELOG.md(.ko) | GREEN: `make docs-check` passes and every manifest declares 0.0.21 | [~] |
+| T2.141 | 0.0.21 릴리즈 | every manifest, the three composer.lock files, CHANGELOG.md(.ko) | GREEN: `make docs-check` passes and every manifest declares 0.0.21 | [o] |
