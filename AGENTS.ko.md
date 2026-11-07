@@ -1,5 +1,5 @@
 <!-- doc-id: development -->
-<!-- source-sha256: 3e8391cd4e17d8821a3ded8f90b9ef6c28bb73a17a214acbf7fea2c3daa2165f -->
+<!-- source-sha256: d41a883f42f8da396678fca0033fb8a0d09657ce8aa9d6e0bb53082b63fe8573 -->
 # Development procedure
 
 [English](AGENTS.md)
@@ -39,7 +39,7 @@
   Enforced by: `make docs-check`
 - Own: push는 `[~]` 작업이 없을 때만 합니다.
   Enforced by: none, 검토에서 판단합니다.
-- Own: `make check`의 guard인 FINAL_RUN=1의 kit ci-targets는 추적 변경이 commit되지 않았거나 무시되지 않은 untracked 파일이 있으면 시작을 거부하며, 각 전체 실행의 report를 `var/report/full-run`에 씁니다. 전체 실행은 commit된 tree만 검증합니다.
+- Own: `make check`는 kit의 ci-targets로 `CHECK_TARGETS`의 모든 target을 실패 뒤에도 끝까지 실행하고, 각 전체 실행의 report를 `var/report/full-run`에 씁니다.
   Enforced by: `make check`
 
 <a id="verification"></a>
@@ -51,7 +51,7 @@
   Enforced by: `make ci-targets`
 - Own: 모든 추적 경로는 [config/owner-checks.json](config/owner-checks.json)의 규칙이 소유합니다. `make owner-validate`는 어떤 규칙도 맞지 않는 경로, 어떤 path도 맞지 않는 glob, 존재하지 않는 owner가 있으면 실패합니다. 새 파일은 같은 commit에서 매핑합니다.
   Enforced by: `make layout-check`
-- Own: Makefile의 `CHECK_TARGETS`의 각 target은 `.github/workflows/ci.yml`의 정확히 한 job에서 `make ci-targets TARGETS="..."`로 실행되며, 이는 실패 뒤에도 끝까지 실행하고 각 job의 보고서를 업로드합니다.
+- Own: Makefile의 `CHECK_TARGETS`의 각 target은 `.github/workflows/ci-pipeline.yml`의 정확히 한 job의 target(`kit-gates-static`, `kit-gates-parity`, `kit-gates-runtime-<runtime>`)의 prerequisite이며, 그 job은 이 target을 이름으로 `make ci-targets`로 실패 뒤에도 끝까지 실행하고 보고서를 업로드합니다.
   Enforced by: `make ordered-json-test-scripts`
 - Own: 각 언어의 lint가 통과합니다: `make lint-rust`(`-D warnings`의 clippy), `make lint-go`(`.golangci.yml`의 golangci-lint와 deadcode), `make lint-php`(`phpcs.xml.dist`의 phpcs와 PHPStan), `make lint-python`(`ruff.toml`의 ruff와 vulture).
   Enforced by: `make ci-targets`

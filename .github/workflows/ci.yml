@@ -1,6 +1,6 @@
-# CI: one pipeline (PRINCIPLES S12). The job kit calls ci-pipeline.yml of this repository, which runs the gates of kit-gates of
-# the Makefile once and, in each of its jobs, the targets that config/ci.json declares for that job: the setup targets, then the
-# targets of targets.shared, targets.parity and targets.runtimes. The release workflow releases the commit whose run of this
+# CI: one pipeline (PRINCIPLES S12). The job kit calls ci-pipeline.yml of this repository, which runs, in each of its jobs, the
+# setup targets that config/ci.json declares for that job and then the target of the job in the Makefile: kit-gates-static,
+# kit-gates-parity and kit-gates-runtime-<runtime>. The release workflow releases the commit whose run of this
 # workflow is green.
 name: ci
 

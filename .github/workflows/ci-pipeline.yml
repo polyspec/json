@@ -2,8 +2,9 @@
 # docs/spec/utilities-and-recipes.md). .github/workflows/ci.yml holds the triggers and the concurrency and calls it as its job
 # kit, so one push runs one workflow: shared first, then the parity and runtime jobs in parallel, then required. Each job runs
 # only make targets of the Makefile of this repository: it installs its own locked prerequisites, declared in config/ci.json
-# or the deps-<runtime> targets, and runs the gates of its group with the targets that config/ci.json declares for it
-# (targets.shared, targets.parity, targets.runtimes.<runtime>) through make ci-targets.
+# or the deps-<runtime> targets, and runs the target of its job, kit-gates-static, kit-gates-parity or
+# kit-gates-runtime-<runtime>, through make ci-targets. The steps name these targets, so rules-check reaches their
+# prerequisites (kit K1057); the runtime matrix lists the runtimes of the repository, and the plan adds the tools of each.
 name: ci-pipeline
 
 on:
@@ -22,7 +23,6 @@ jobs:
       parity_mode: ${{ steps.plan.outputs.parity_mode }}
       has_runtimes: ${{ steps.plan.outputs.has_runtimes }}
       parity_tools: ${{ steps.plan.outputs.parity_tools }}
-      parity_targets: ${{ steps.plan.outputs.parity_targets }}
       extractors: ${{ steps.plan.outputs.extractors }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -50,7 +50,7 @@ jobs:
         name: prepare shared CI context
         run: make kit-ci-context-prepare GROUP=shared
       - name: shared gates
-        run: make ci-targets TARGETS="kit-gates-static ${{ join(fromJSON(steps.plan.outputs.shared_targets), ' ') }}"
+        run: make ci-targets TARGETS=kit-gates-static
       - name: cleanup shared CI context
         if: ${{ always() && steps.context_prepare.outcome != 'skipped' }}
         run: make kit-ci-context-cleanup GROUP=shared
@@ -91,7 +91,7 @@ jobs:
         name: prepare parity CI context
         run: make kit-ci-context-prepare GROUP=parity
       - name: parity gate
-        run: make ci-targets TARGETS="kit-gates-parity ${{ join(fromJSON(needs.shared.outputs.parity_targets), ' ') }}"
+        run: make ci-targets TARGETS=kit-gates-parity
       - name: cleanup parity CI context
         if: ${{ always() && steps.context_prepare.outcome != 'skipped' }}
         run: make kit-ci-context-cleanup GROUP=parity
@@ -110,6 +110,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        runtime: [go, php, php-ext, python, rust, ts]
         include: ${{ fromJSON(needs.shared.outputs.runtimes) }}
     runs-on: ${{ needs.shared.outputs.runner }}
     steps:
@@ -134,7 +135,7 @@ jobs:
         name: prepare runtime CI context
         run: make kit-ci-context-prepare GROUP=runtime RUNTIME=${{ matrix.runtime }}
       - name: runtime gate
-        run: make ci-targets TARGETS="kit-gates-runtime-${{ matrix.runtime }} ${{ join(matrix.targets, ' ') }}"
+        run: make ci-targets TARGETS=kit-gates-runtime-${{ matrix.runtime }}
       - name: cleanup runtime CI context
         if: ${{ always() && steps.context_prepare.outcome != 'skipped' }}
         run: make kit-ci-context-cleanup GROUP=runtime RUNTIME=${{ matrix.runtime }}

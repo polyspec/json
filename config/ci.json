@@ -44,37 +44,5 @@
       "python",
       "uv"
     ]
-  },
-  "targets": {
-    "shared": [
-      "link-check",
-      "release-coverage",
-      "evidence-check",
-      "ordered-json-test-scripts",
-      "typecheck"
-    ],
-    "parity": [
-      "verify-all"
-    ],
-    "runtimes": {
-      "go": [
-        "test-go"
-      ],
-      "php": [
-        "test-php"
-      ],
-      "php-ext": [
-        "pie-check"
-      ],
-      "python": [
-        "test-python"
-      ],
-      "rust": [
-        "test-rust"
-      ],
-      "ts": [
-        "test-js"
-      ]
-    }
   }
 }

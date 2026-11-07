@@ -51,8 +51,9 @@ ONLINE := env -u CARGO_NET_OFFLINE -u GOPROXY -u npm_config_offline -u COMPOSER_
 # another checkout would let it take binaries built from other sources as fresh.
 unexport CARGO_TARGET_DIR
 
-# The targets of the full suite that make check runs through ci-targets of @polyspec/kit with FINAL_RUN and that the jobs of
-# .github/workflows run with make ci-targets (a target is in one job). verify-all writes the aggregate record into var/records.
+# The targets of the full suite that make check runs through ci-targets of @polyspec/kit and that the jobs of
+# .github/workflows/ci-pipeline.yml run as the prerequisites of their kit-gates-* target (a target is in one job). verify-all
+# writes the aggregate record into var/records.
 CHECK_TARGETS := kit-check suppression-check divergence-check link-check rules-check rebuild-check language-check test-markers-check duplication-check layout-check owner-validate release-coverage parity-declarations-check docs-check evidence-check verify-all parity-check lint-rust lint-go lint-php lint-php-ext test-php-ext lint-python pie-check ordered-json-test-scripts typecheck lint-ts test-js test-rust test-go test-php test-python
 
 .PHONY: check ordered-json-test-scripts typecheck ordered-json-install-php ordered-json-install-python verify-all verify-js verify-rust verify-go verify-php verify-php-extension verify-python evidence-check pie-check \
@@ -60,10 +61,10 @@ CHECK_TARGETS := kit-check suppression-check divergence-check link-check rules-c
 	ordered-json-js-check ordered-json-js-test ordered-json-go-check ordered-json-go-test ordered-json-php-check ordered-json-php-test \
 	ordered-json-php-ext-check ordered-json-php-ext-test ordered-json-python-check ordered-json-python-test ordered-json-rust-check ordered-json-rust-test
 
-# check runs the full suite on a clean committed tree: ci-targets of @polyspec/kit with FINAL_RUN=1 refuses any other tree, runs
-# every target past failures and writes its report into var/report/full-run.
+# check runs the full suite: ci-targets of @polyspec/kit runs every target past failures and writes its report into
+# var/report/full-run.
 check:
-	FINAL_RUN=1 $(MAKE) --no-print-directory ci-targets CI_REPORT=var/report/full-run TARGETS="$(CHECK_TARGETS)"
+	$(MAKE) --no-print-directory ci-targets CI_REPORT=var/report/full-run TARGETS="$(CHECK_TARGETS)"
 
 # install makes every download that the checks read after make install-packages: the tools of mise.lock, the Rust toolchain of
 # rust-toolchain.toml, the crates of packages/rust/Cargo.lock, the Composer projects of the PHP packages with their PHPUnit,
@@ -319,27 +320,28 @@ link-check:
 	$(NODE) $(KIT)/link-check.mjs$(if $(PROJECT), --project $(PROJECT))
 
 # ---- CI: the gates, the plan and the setup of the jobs of .github/workflows/ci-pipeline.yml ----------------------------------
-.PHONY: kit-gates kit-gates-static kit-gates-parity kit-gates-runtime-ts kit-gates-runtime-php kit-gates-runtime-python \
+.PHONY: kit-gates-static kit-gates-parity kit-gates-runtime-ts kit-gates-runtime-php kit-gates-runtime-python \
 	kit-gates-runtime-go kit-gates-runtime-rust kit-gates-runtime-php-ext kit-ci-plan kit-ci-setup kit-ci-context-prepare \
 	kit-ci-context-cleanup ci-targets
-# kit-gates is every gate; the pipeline runs its partitions, one per job, and ci-setup and land of kit read these names.
-kit-gates: kit-check layout-check docs-check rules-check owner-validate rebuild-check language-check test-markers-check duplication-check parity-declarations-check parity-check suppression-check divergence-check lint-ts lint-php lint-python lint-go lint-rust lint-php-ext test-php-ext
+# The targets of the jobs of the pipeline, which its steps run by name: kit-gates-static in the shared job, kit-gates-parity in
+# the parity job and kit-gates-runtime-<runtime> in the runtime job of each runtime. Together they hold every target of
+# CHECK_TARGETS, each in one of them (tests/scripts/workflow-rules.test.mts).
 # kit-gates-static runs past a failure, so one run names every static gate that fails.
 ifneq ($(filter kit-gates-static,$(MAKECMDGOALS)),)
 MAKEFLAGS += -k
 endif
-kit-gates-static: kit-check layout-check docs-check rules-check owner-validate rebuild-check language-check test-markers-check duplication-check parity-declarations-check suppression-check divergence-check
+kit-gates-static: kit-check layout-check docs-check rules-check owner-validate rebuild-check language-check test-markers-check duplication-check parity-declarations-check suppression-check divergence-check link-check release-coverage evidence-check ordered-json-test-scripts typecheck
 	@echo "[kit-gates-static] every shared gate passed"
-kit-gates-parity: parity-check
-kit-gates-runtime-ts: lint-ts
-kit-gates-runtime-php: lint-php
-kit-gates-runtime-python: lint-python
-kit-gates-runtime-go: lint-go
-kit-gates-runtime-rust: lint-rust
-kit-gates-runtime-php-ext: lint-php-ext test-php-ext
+kit-gates-parity: parity-check verify-all
+kit-gates-runtime-ts: lint-ts test-js
+kit-gates-runtime-php: lint-php test-php
+kit-gates-runtime-python: lint-python test-python
+kit-gates-runtime-go: lint-go test-go
+kit-gates-runtime-rust: lint-rust test-rust
+kit-gates-runtime-php-ext: lint-php-ext test-php-ext pie-check
 
-# kit-ci-plan writes the jobs of config/ci.json to GITHUB_OUTPUT; kit-ci-setup runs the setup targets that config/ci.json declares
-# for GROUP=shared|parity|runtime and RUNTIME.
+# kit-ci-plan writes the jobs, runners and tools of config/ci.json to GITHUB_OUTPUT; kit-ci-setup runs the setup targets that
+# config/ci.json declares for GROUP=shared|parity|runtime and RUNTIME.
 kit-ci-plan:
 	$(NODE) $(KIT)/ci-setup.mjs --plan
 kit-ci-setup:

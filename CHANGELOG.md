@@ -6,7 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
-- T2.140: the Makefile includes no recipe of kit and holds every recipe it runs, calling the utilities of the installed kit; the allow-remote of npm, the settings of mise and uv and the lint configurations are files of the repository (.npmrc, mise.toml, .golangci.yml, phpcs.xml.dist, phpstan.dist.neon, ruff.toml, clippy.toml, .oxlintrc.json, knip.json, the [lints] of packages/rust/Cargo.toml); the workflows, PRINCIPLES and config/layout.kit.yml are files of the repository, and the Git hooks, the Claude Code hook settings, config/knip-entries.json and config/pyproject.schema.json are removed, for kit 0.0.98 (kit docs/spec/utilities-and-recipes.md) (T2.140).
+- T2.140: the Makefile includes no recipe of kit and holds every recipe it runs, calling the utilities of the installed kit; the allow-remote of npm, the settings of mise and uv and the lint configurations are files of the repository (.npmrc, mise.toml, .golangci.yml, phpcs.xml.dist, phpstan.dist.neon, ruff.toml, clippy.toml, .oxlintrc.json, knip.json, the [lints] of packages/rust/Cargo.toml); the workflows, PRINCIPLES and config/layout.kit.yml are files of the repository, and the Git hooks, the Claude Code hook settings, config/knip-entries.json and config/pyproject.schema.json are removed; the CI pipeline runs the target of each job by name (kit-gates-static, kit-gates-parity and kit-gates-runtime-<runtime> of a listed runtime matrix), whose prerequisites now hold the targets that config/ci.json declared, so rules-check reaches every check (kit K1057), make check runs ci-targets without FINAL_RUN (kit K1053) and PRINCIPLES is the text of kit 0.0.98 (kit K1055), for kit 0.0.98 (kit docs/spec/utilities-and-recipes.md) (T2.140).
 
 ## 0.0.20
 

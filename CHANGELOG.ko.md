@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: e1bb671be865b9fe0869290c7ec78f7b1a03fbda4dd295038b8b79e4f6911b63 -->
+<!-- source-sha256: 5e26535a6a39ee5e9e37f9c10f5476bd3504f68db268bd9fceea1b82b4f20c2d -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,7 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
-- T2.140: Makefile은 kit의 recipe를 include하지 않고 자신이 실행하는 모든 recipe를 가지며, 설치된 kit의 유틸리티를 호출한다. npm의 allow-remote, mise와 uv의 설정, lint 설정은 저장소의 파일이다(.npmrc, mise.toml, .golangci.yml, phpcs.xml.dist, phpstan.dist.neon, ruff.toml, clippy.toml, .oxlintrc.json, knip.json, packages/rust/Cargo.toml의 [lints]). workflow, PRINCIPLES, config/layout.kit.yml은 저장소의 파일이 되고, Git hook, Claude Code hook 설정, config/knip-entries.json, config/pyproject.schema.json은 삭제된다. kit 0.0.98을 위한 변경이다(kit docs/spec/utilities-and-recipes.md) (T2.140).
+- T2.140: Makefile은 kit의 recipe를 include하지 않고 자신이 실행하는 모든 recipe를 가지며, 설치된 kit의 유틸리티를 호출한다. npm의 allow-remote, mise와 uv의 설정, lint 설정은 저장소의 파일이다(.npmrc, mise.toml, .golangci.yml, phpcs.xml.dist, phpstan.dist.neon, ruff.toml, clippy.toml, .oxlintrc.json, knip.json, packages/rust/Cargo.toml의 [lints]). workflow, PRINCIPLES, config/layout.kit.yml은 저장소의 파일이 되고, Git hook, Claude Code hook 설정, config/knip-entries.json, config/pyproject.schema.json은 삭제된다. CI pipeline은 각 job의 target(kit-gates-static, kit-gates-parity, 나열된 runtime matrix의 kit-gates-runtime-<runtime>)을 이름으로 실행하고, 그 prerequisite가 config/ci.json이 선언하던 target을 가지므로 rules-check가 모든 검사에 닿는다(kit K1057). make check는 FINAL_RUN 없이 ci-targets를 실행하고(kit K1053), PRINCIPLES는 kit 0.0.98의 text다(kit K1055). kit 0.0.98을 위한 변경이다(kit docs/spec/utilities-and-recipes.md) (T2.140).
 
 ## 0.0.20
 

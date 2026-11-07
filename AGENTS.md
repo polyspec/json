@@ -38,7 +38,7 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
   Enforced by: `make docs-check`
 - Own: A push happens only when no task is `[~]`.
   Enforced by: none, judged at review.
-- Own: The guard of `make check`, ci-targets of kit with FINAL_RUN=1, refuses to start while tracked changes are uncommitted or while an untracked file is not ignored, and it writes the report of each full run into `var/report/full-run`. A full run verifies a committed tree only.
+- Own: `make check` runs every target of `CHECK_TARGETS` through ci-targets of kit, past failures, and writes the report of each full run into `var/report/full-run`.
   Enforced by: `make check`
 
 <a id="verification"></a>
@@ -50,7 +50,7 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
   Enforced by: `make ci-targets`
 - Own: Every tracked path is owned by a rule of [config/owner-checks.json](config/owner-checks.json). `make owner-validate` fails while a path matches no rule, a glob matches no path or an owner does not exist. A new file is mapped in the same commit.
   Enforced by: `make layout-check`
-- Own: Each target of `CHECK_TARGETS` in the Makefile runs in exactly one job of `.github/workflows/ci.yml`, through `make ci-targets TARGETS="..."`, which runs past failures and uploads each job's report.
+- Own: Each target of `CHECK_TARGETS` in the Makefile is a prerequisite of the target of exactly one job of `.github/workflows/ci-pipeline.yml` (`kit-gates-static`, `kit-gates-parity`, `kit-gates-runtime-<runtime>`), which the job runs by name through `make ci-targets`, past failures, and uploads its report.
   Enforced by: `make ordered-json-test-scripts`
 - Own: The lint of each language passes: `make lint-rust` (clippy with `-D warnings`), `make lint-go` (golangci-lint with `.golangci.yml`, and deadcode), `make lint-php` (phpcs with `phpcs.xml.dist`, and PHPStan) and `make lint-python` (ruff with `ruff.toml`, and vulture).
   Enforced by: `make ci-targets`
