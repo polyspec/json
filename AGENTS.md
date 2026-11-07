@@ -27,9 +27,9 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
 ## Generated files
 
 - Own: Generated files are never tracked in Git. They are dependency installs (`node_modules/`, `vendor/`, virtual environments), build output (`dist/`, `target/`, `*.tsbuildinfo`), caches (`.cache/`, `__pycache__/`, `.pytest_cache/`), test run artifacts (`test-results/`, `playwright-report/`, PHPUnit caches) and tool downloads (`var/`). Each `.gitignore` covers these paths, and a new generator adds its ignore entry in the same commit.
-  Enforced by: `.githooks/pre-commit`
+  Enforced by: `make layout-check`
 - Own: Only these files are tracked among generated ones: lock files (`package-lock.json`, `composer.lock`, `Cargo.lock`, uv locks, `mise.lock`), the committed generated documents that this file names, and test fixtures.
-  Enforced by: `.githooks/pre-commit`
+  Enforced by: `make layout-check`
 
 <a id="checklist"></a>
 ## Execution checklist
@@ -45,11 +45,11 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
 ## Required checks
 
 - Own: Development runs unit tests only: the native test of a changed package, or a tool test with `make ordered-json-test-scripts TESTS=<file>`. `make verify-<language>` builds one implementation and sends the shared cases to its probe, and writes no record.
-  Enforced by: `.claude/settings.json`
+  Enforced by: none, judged at review.
 - Own: The full suite (`make check`) and the end-to-end checks (`make pie-check`, `make owner-check`, the adapter suites and the supplementary suite) run in hosted CI on every pull request and every push to `main`. No rule requires a local run before a commit or a push, and no rule runs a broader check after each correction.
   Enforced by: `make ci-targets`
-- Own: Every tracked path is owned by a rule of [config/owner-checks.json](config/owner-checks.json). The pre-commit hook runs `make owner-validate`, which refuses a commit while a path matches no rule, a glob matches no path or an owner does not exist. A new file is mapped in the same commit.
-  Enforced by: `.githooks/pre-commit`
+- Own: Every tracked path is owned by a rule of [config/owner-checks.json](config/owner-checks.json). `make owner-validate` fails while a path matches no rule, a glob matches no path or an owner does not exist. A new file is mapped in the same commit.
+  Enforced by: `make layout-check`
 - Own: Each target of `CHECK_TARGETS` in the Makefile runs in exactly one job of `.github/workflows/ci.yml`, through `make ci-targets TARGETS="..."`, which runs past failures and uploads each job's report.
   Enforced by: `make ordered-json-test-scripts`
 - Own: The lint of each language passes: `make lint-rust` (clippy with `-D warnings`), `make lint-go` (golangci-lint with `.golangci.yml`, and deadcode), `make lint-php` (phpcs with `phpcs.xml.dist`, and PHPStan) and `make lint-python` (ruff with `ruff.toml`, and vulture).
@@ -57,7 +57,7 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
 - Own: The PHP extension is rebuilt when its native code changes. A result from an old binary or a prior run is never taken as verification of changed code.
   Enforced by: `make parity-check`
 - Own: A verification result or a source hash is never edited to make a check pass. A record of `var/records/` is written by the run that verifies it and is not committed.
-  Enforced by: `.githooks/pre-commit`
+  Enforced by: `make layout-check`
 
 <a id="parity"></a>
 ## Implementations and shared cases
@@ -94,9 +94,9 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
 <a id="tools"></a>
 ## Shared tools
 
-- Own: The tools that every polyspec repository shares are the package `@polyspec/kit`, a devDependency pinned in `package-lock.json`. The Makefile includes `node_modules/@polyspec/kit/scripts/kit/kit-bootstrap.mk`, which includes the `kit.mk` of the installed package. The files that `kit.copies` lists are copies that `make kit-sync` writes from the package. A copy is never edited, copied under another name or disabled here; a change is made in polyspec/kit and adopted by updating `@polyspec/kit`, then running `make install-packages` and `make kit-sync`.
-  Enforced by: `make kit-check`
-- Own: This repository differs from the other polyspec repositories only in `config/*.json` (checklist, dependency policy and review, documents, owner checks, release and toolchain), in `config/layout.yml`, which extends `config/layout.kit.yml` with the folders of this repository, and in its product code: the packages in `packages/`, the verifier and the benchmarks.
+- Own: The tools that every polyspec repository shares are the package `@polyspec/kit`, a devDependency pinned in `package-lock.json`. The Makefile holds every recipe of this repository and runs the utilities of the installed package (`node_modules/@polyspec/kit/dist`) with explicit arguments; it includes no recipe of kit. The settings of the tools are in their own files: `.npmrc`, the `[settings]` and `[env]` of `mise.toml`, the lint configurations at the root and the `[lints]` of `packages/rust/Cargo.toml`. `PRINCIPLES.md`, the workflows of `.github/workflows`, `.github/actions/kit-bootstrap/action.yml` and `config/layout.kit.yml` are files of this repository, taken from kit, which writes no copy (kit docs/spec/utilities-and-recipes.md).
+  Enforced by: none, judged at review: kit checks no recipe or file of a repository.
+- Own: The folder layout of this repository is `config/layout.yml`, which extends `config/layout.kit.yml` with the folders of this repository.
   Enforced by: `make layout-check`
 
 <a id="dependencies"></a>

@@ -1,5 +1,5 @@
 <!-- doc-id: validation -->
-<!-- source-sha256: 3b278eed3adbbf84459659a7f260d14280f5a27b46374e8a24349cc0d33274c6 -->
+<!-- source-sha256: f3758783238e1b633e9c4f4fc36d9fc38f21f9ee4868486510b65b2a2eeb95bb -->
 # 검증
 
 [English](validation.md)
@@ -79,22 +79,22 @@ PIE 기록 `var/records/pie-verification.json`은 PIE 버전과 PHAR 해시, 실
 <a id="ci"></a>
 ## Hosted CI
 
-`.github/workflows/ci.yml`은 모든 pull request, `main`으로의 push와 수동 실행에서 동작합니다. 이 workflow는 하나의 pipeline입니다(PRINCIPLES S12). 유일한 job `kit`이 `@polyspec/kit` workflow의 사본인 `.github/workflows/ci-pipeline.yml`을 호출하고, 이 pipeline은 shared job, parity job, runtime별 job에서 `kit-gates`의 gate를 한 번 실행하며, 함께 [config/ci.json](../../config/ci.json)이 선언한 target을 실행합니다.
+`.github/workflows/ci.yml`은 모든 pull request, `main`으로의 push와 수동 실행에서 동작합니다. 이 workflow는 하나의 pipeline입니다(PRINCIPLES S12). 유일한 job `kit`이 `@polyspec/kit`의 pipeline에서 가져온 이 저장소의 `.github/workflows/ci-pipeline.yml`을 호출하고, 이 pipeline은 shared job, parity job, runtime별 job에서 `kit-gates`의 gate를 한 번 실행하며, 함께 [config/ci.json](../../config/ci.json)이 선언한 target을 실행합니다.
 
-config/ci.json은 그 job들의 setup target(`setup`), kit 외에 필요한 도구(`tools`)와 target(`targets`)을 선언합니다. shared job은 Git hook을 준비하고, parity job은 `ordered-json-install-parity`로 비교 환경을 설치하며, php-ext job은 `ordered-json-install-pie`로 PIE와 보조 suite를 설치하고, 각 runtime job은 자기 package를 build합니다. `CHECK_TARGETS`의 모든 target은 `kit-gates`의 gate 또는 config/ci.json의 target으로 pipeline에서 실행되며, config/ci.json은 `kit-gates`의 gate를 다시 적지 않습니다. 그렇지 않으면 `tests/scripts/workflow-rules.test.mts`가 실패합니다.
+config/ci.json은 그 job들의 setup target(`setup`), kit 외에 필요한 도구(`tools`)와 target(`targets`)을 선언합니다. parity job은 `ordered-json-install-parity`로 비교 환경을 설치하며, php-ext job은 `ordered-json-install-pie`로 PIE와 보조 suite를 설치하고, 각 runtime job은 자기 package를 build합니다. `CHECK_TARGETS`의 모든 target은 `kit-gates`의 gate 또는 config/ci.json의 target으로 pipeline에서 실행되며, config/ci.json은 `kit-gates`의 gate를 다시 적지 않습니다. 그렇지 않으면 `tests/scripts/workflow-rules.test.mts`가 실패합니다.
 
 각 job은 workspace 루트에 이 저장소를 checkout하고 첫 make 명령 전에 잠긴 kit 패키지를 설치하며, 형제 checkout은 필요하지 않습니다. 다운로드는 설치 단계에만 있으며, 어떤 검사도 네트워크를 켜지 않습니다. pipeline의 마지막 job `kit / required`는 모든 job이 통과했을 때만 통과하므로, `success`로 끝난 `ci` 실행이 release workflow가 요구하는 증거입니다([main 게시](#publish)).
 
 <a id="publish"></a>
 ## main 게시
 
-0.x 버전 동안 체크리스트 작업의 변경은 로컬에 commit하고, 체크리스트의 모든 행이 `[o]`일 때 `main`에 한 번 push합니다([AGENTS](../../AGENTS.ko.md)). push 전에 pre-push hook `.githooks/pre-push`가 push gate를 실행합니다:
+0.x 버전 동안 체크리스트 작업의 변경은 로컬에 commit하고, 체크리스트의 모든 행이 `[o]`일 때 `main`에 한 번 push합니다([AGENTS](../../AGENTS.ko.md)):
 
 ~~~sh
 git push origin HEAD:main
 ~~~
 
-이 push는 `ci.yml`을 실행합니다. 그 실행이 `success`로 끝나면 release workflow는 그 실행의 commit이 version commit이거나, version에 tag가 없고 `## Unreleased`가 비어 있는 그 뒤의 commit일 때 그 commit에 change log 최상위 `## X.Y.Z`를 릴리스합니다. 판단은 `@polyspec/kit`의 `make release-tag`가 합니다([tag release](distribution.ko.md#tag-release)).
+이 push는 `ci.yml`을 실행합니다. 그 실행이 `success`로 끝나면 release workflow는 그 실행의 commit이 version commit이거나, version에 tag가 없고 `## Unreleased`가 비어 있는 그 뒤의 commit일 때 그 commit에 change log 최상위 `## X.Y.Z`를 릴리스합니다. 판단은 `@polyspec/kit`의 release 유틸리티를 실행하는 `make release-tag`가 합니다([tag release](distribution.ko.md#tag-release)).
 
 <a id="documentation-checks"></a>
 ## 문서 검사

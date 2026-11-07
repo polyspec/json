@@ -58,7 +58,7 @@ test('every check runs offline and only make install downloads', () => {
   for (const [name, value] of Object.entries(OFFLINE)) assert.match(text, new RegExp(`^export ${name} := ${value}$`, 'm'));
   assert.match(text, new RegExp(`^ONLINE := env${Object.keys(OFFLINE).map(name => ` -u ${name}`).join('')}$`, 'm'));
   const downloading = [...recipes(text)].filter(([, rule]) => rule.recipe.some(line => line.includes('$(ONLINE)'))).map(([target]) => target).sort();
-  assert.deepEqual(downloading, ['ordered-json-install-php', 'ordered-json-install-pie', 'ordered-json-install-python', 'ordered-json-install-rust', 'ordered-json-install-rust-packages', 'ordered-json-install-suite']);
+  assert.deepEqual(downloading, ['build-php-ext', 'install-packages', 'kit-install-declared', 'kit-install-symbols', 'ordered-json-install-php', 'ordered-json-install-pie', 'ordered-json-install-python', 'ordered-json-install-rust', 'ordered-json-install-rust-packages', 'ordered-json-install-suite', 'release-assets', 'release-tools', 'toolchain-lock', 'worktree-setup']);
 });
 
 test('make install makes every download of the checks', () => {
@@ -92,7 +92,7 @@ const BARE_TOOL_COMMAND = /(^|[;&|(])\s*(npm|npx|go|cargo|rustc)(\s|$)/;
 
 test('no recipe runs a pinned tool by name', () => {
   // GNU Make 3.81 looks a simple recipe command up on its own PATH, not on the exported one, so npm, go and cargo start from a
-  // script or a shim path, and node, the release of mise.toml, starts by $(NODE) of kit.mk, its path in var/tools (kit K171).
+  // script or a shim path, and node, the release of mise.toml, starts by $(NODE) of the Makefile, its path in var/tools (kit K171).
   const lines = makefile().split('\n').filter(line => line.startsWith('\t')).map(line => line.trim().replace(/^[@-]*(\$\(ONLINE\) )?/, ''));
   assert.ok(lines.length);
   for (const command of lines) {

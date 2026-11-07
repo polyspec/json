@@ -1,6 +1,6 @@
-// The CI of ordered-json is one pipeline (PRINCIPLES S12): ci.yml calls the workflow that kit gives it as its job kit, which runs
-// the gates of kit-gates once and the targets that config/ci.json declares. make kit-check judges the shape of ci.yml; this test
-// keeps the full suite whole: every target of CHECK_TARGETS, the full suite of make check, runs in CI as a gate of kit-gates or
+// The CI of ordered-json is one pipeline (PRINCIPLES S12): ci.yml calls ci-pipeline.yml of this repository as its job kit, which
+// runs the gates of kit-gates of the Makefile once and the targets that config/ci.json declares. This test keeps the full suite
+// whole: every target of CHECK_TARGETS, the full suite of make check, runs in CI as a gate of kit-gates or
 // as a target of config/ci.json, and config/ci.json names no gate of kit-gates again.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';

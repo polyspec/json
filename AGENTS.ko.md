@@ -1,5 +1,5 @@
 <!-- doc-id: development -->
-<!-- source-sha256: 63eed9695f424ff8b14083cc3f57f42d5ea11c51f91bfe9354565636698bb2af -->
+<!-- source-sha256: 3e8391cd4e17d8821a3ded8f90b9ef6c28bb73a17a214acbf7fea2c3daa2165f -->
 # Development procedure
 
 [English](AGENTS.md)
@@ -28,9 +28,9 @@
 ## Generated files
 
 - Own: 생성 파일은 Git에 추적하지 않습니다. 여기에는 의존성 설치(`node_modules/`, `vendor/`, virtual environment), 빌드 산출물(`dist/`, `target/`, `*.tsbuildinfo`), 캐시(`.cache/`, `__pycache__/`, `.pytest_cache/`), 테스트 실행 산출물(`test-results/`, `playwright-report/`, PHPUnit 캐시)과 도구 다운로드(`var/`)가 포함됩니다. 각 `.gitignore`가 이 경로를 덮으며, 새 generator는 같은 commit에서 ignore 항목을 추가합니다.
-  Enforced by: `.githooks/pre-commit`
+  Enforced by: `make layout-check`
 - Own: 생성 파일 가운데 추적하는 것은 다음뿐입니다: lock 파일(`package-lock.json`, `composer.lock`, `Cargo.lock`, uv lock, `mise.lock`), 이 파일이 이름을 적은 commit된 생성 문서, 그리고 테스트 fixture.
-  Enforced by: `.githooks/pre-commit`
+  Enforced by: `make layout-check`
 
 <a id="checklist"></a>
 ## Execution checklist
@@ -46,11 +46,11 @@
 ## Required checks
 
 - Own: 개발 중에는 unit test만 실행합니다. 바뀐 패키지의 native test나, `make ordered-json-test-scripts TESTS=<file>`의 tool test를 실행합니다. `make verify-<language>`는 한 구현을 빌드하고 공통 사례를 그 probe에 보내며, 기록을 쓰지 않습니다.
-  Enforced by: `.claude/settings.json`
+  Enforced by: none, review에서 판단합니다.
 - Own: 전체 suite(`make check`)와 end-to-end 검사(`make pie-check`, `make owner-check`, adapter suite, 보충 suite)는 모든 pull request와 `main`에 대한 모든 push마다 hosted CI가 실행합니다. commit이나 push 전 로컬 실행을 요구하는 규칙은 없으며, 수정할 때마다 더 넓은 검사를 다시 실행하라는 규칙도 없습니다.
   Enforced by: `make ci-targets`
-- Own: 모든 추적 경로는 [config/owner-checks.json](config/owner-checks.json)의 규칙이 소유합니다. pre-commit hook은 `make owner-validate`를 실행하며, 이는 어떤 규칙도 맞지 않는 경로, 어떤 path도 맞지 않는 glob, 존재하지 않는 owner가 있으면 commit을 거부합니다. 새 파일은 같은 commit에서 매핑합니다.
-  Enforced by: `.githooks/pre-commit`
+- Own: 모든 추적 경로는 [config/owner-checks.json](config/owner-checks.json)의 규칙이 소유합니다. `make owner-validate`는 어떤 규칙도 맞지 않는 경로, 어떤 path도 맞지 않는 glob, 존재하지 않는 owner가 있으면 실패합니다. 새 파일은 같은 commit에서 매핑합니다.
+  Enforced by: `make layout-check`
 - Own: Makefile의 `CHECK_TARGETS`의 각 target은 `.github/workflows/ci.yml`의 정확히 한 job에서 `make ci-targets TARGETS="..."`로 실행되며, 이는 실패 뒤에도 끝까지 실행하고 각 job의 보고서를 업로드합니다.
   Enforced by: `make ordered-json-test-scripts`
 - Own: 각 언어의 lint가 통과합니다: `make lint-rust`(`-D warnings`의 clippy), `make lint-go`(`.golangci.yml`의 golangci-lint와 deadcode), `make lint-php`(`phpcs.xml.dist`의 phpcs와 PHPStan), `make lint-python`(`ruff.toml`의 ruff와 vulture).
@@ -58,7 +58,7 @@
 - Own: PHP extension은 native 코드가 바뀌면 다시 빌드합니다. 오래된 binary나 이전 실행의 결과를 바뀐 코드의 검증으로 취급하지 않습니다.
   Enforced by: `make parity-check`
 - Own: 검증 결과나 source hash를 검사를 통과시키려고 편집하지 않습니다. `var/records/`의 기록은 그것을 검증한 실행이 쓰며 commit하지 않습니다.
-  Enforced by: `.githooks/pre-commit`
+  Enforced by: `make layout-check`
 
 <a id="parity"></a>
 ## Implementations and shared cases
@@ -95,9 +95,9 @@
 <a id="tools"></a>
 ## Shared tools
 
-- Own: 모든 polyspec 저장소가 공유하는 도구는 `package-lock.json`에 고정된 devDependency 패키지 `@polyspec/kit`입니다. Makefile은 `node_modules/@polyspec/kit/scripts/kit/kit-bootstrap.mk`를 include하고, 이는 설치된 패키지의 `kit.mk`를 include합니다. `kit.copies`가 나열하는 파일은 `make kit-sync`가 패키지에서 쓰는 복사본입니다. 복사본은 편집하거나, 다른 이름으로 복사하거나, 이 저장소에서 끄지 않습니다. 변경은 polyspec/kit에서 하고, `@polyspec/kit`을 갱신한 뒤 `make install-packages`와 `make kit-sync`를 실행해 반영합니다.
-  Enforced by: `make kit-check`
-- Own: 이 저장소는 다른 polyspec 저장소와 `config/*.json`(checklist, dependency policy와 review, documents, owner checks, release, toolchain), `config/layout.yml`(이 저장소의 폴더로 `config/layout.kit.yml`을 확장한 것), 그리고 제품 코드(`packages/`의 패키지, verifier, benchmark)에서만 다릅니다.
+- Own: 모든 polyspec 저장소가 공유하는 도구는 `package-lock.json`에 고정된 devDependency 패키지 `@polyspec/kit`입니다. Makefile은 이 저장소의 모든 recipe를 가지며, 설치된 패키지의 유틸리티(`node_modules/@polyspec/kit/dist`)를 명시적 인자로 실행합니다. kit의 recipe는 include하지 않습니다. 도구의 설정은 각 도구의 파일에 있습니다: `.npmrc`, `mise.toml`의 `[settings]`와 `[env]`, root의 lint 설정, `packages/rust/Cargo.toml`의 `[lints]`. `PRINCIPLES.md`, `.github/workflows`의 workflow, `.github/actions/kit-bootstrap/action.yml`, `config/layout.kit.yml`은 kit에서 가져온 이 저장소의 파일이며, kit은 사본을 쓰지 않습니다(kit docs/spec/utilities-and-recipes.md).
+  Enforced by: none, review에서 판단합니다: kit은 저장소의 recipe나 파일을 검사하지 않습니다.
+- Own: 이 저장소의 폴더 배치는 `config/layout.yml`이며, 이는 이 저장소의 폴더로 `config/layout.kit.yml`을 확장합니다.
   Enforced by: `make layout-check`
 
 <a id="dependencies"></a>

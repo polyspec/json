@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 5de1be8da4a38c327d3a10bbff3bd50fd2f7a39d5ab17f9c937423e58be0bdb0 -->
+<!-- source-sha256: e1bb671be865b9fe0869290c7ec78f7b1a03fbda4dd295038b8b79e4f6911b63 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- T2.140: Makefile은 kit의 recipe를 include하지 않고 자신이 실행하는 모든 recipe를 가지며, 설치된 kit의 유틸리티를 호출한다. npm의 allow-remote, mise와 uv의 설정, lint 설정은 저장소의 파일이다(.npmrc, mise.toml, .golangci.yml, phpcs.xml.dist, phpstan.dist.neon, ruff.toml, clippy.toml, .oxlintrc.json, knip.json, packages/rust/Cargo.toml의 [lints]). workflow, PRINCIPLES, config/layout.kit.yml은 저장소의 파일이 되고, Git hook, Claude Code hook 설정, config/knip-entries.json, config/pyproject.schema.json은 삭제된다. kit 0.0.98을 위한 변경이다(kit docs/spec/utilities-and-recipes.md) (T2.140).
 
 ## 0.0.20
 

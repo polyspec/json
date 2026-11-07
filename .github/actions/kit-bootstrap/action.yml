@@ -1,8 +1,6 @@
-# The one bootstrap of every CI job of a repository (K992): kit-sync vendors it as .github/actions/kit-bootstrap/action.yml,
-# and ci-pipeline.yml, release.yml and the jobs of the repository's own workflows run it after their checkout with
-# `uses: ./.github/actions/kit-bootstrap`, so no workflow carries a copy of these steps that a kit release leaves behind. The
-# parity, runtime and release jobs set PHP up before it; the shared job of ci-pipeline sets it up after, so a repository whose
-# INSTALL_PACKAGES_EXTRA needs PHP declares that in its own job.
+# The one bootstrap of every CI job of ordered-json (K992), a file of this repository taken from the one of kit: ci-pipeline.yml
+# and release.yml run it after their checkout with `uses: ./.github/actions/kit-bootstrap`. The parity, runtime and release
+# jobs set PHP up before it; the shared job of ci-pipeline sets it up after.
 name: kit bootstrap
 description: Sets up the Node.js of mise.toml, installs the locked kit package, then the npm of var/tools and the packages of package-lock.json.
 runs:

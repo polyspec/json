@@ -1,5 +1,5 @@
 <!-- doc-id: installation -->
-<!-- source-sha256: 140a76de7ac8b1abbe31c2d8b180ccc46cf1d71d039c783f3b3e16f7818fd88f -->
+<!-- source-sha256: e8a9b7e25d2dd2380ec0cd6a11e2e4ebd88909f80ff34ccfd673f8159dd7c973 -->
 # 설치와 실행
 
 [English](installation.md)
@@ -17,7 +17,7 @@
 | 네이티브 PHP | 일치하는 PHP 개발 헤더, C 컴파일러, phpize, make | `polyspec_ordered_json` 확장 | [확장 소스](https://github.com/polyspec/ordered-json/blob/main/packages/php-ext/src/ordered_json.c) |
 | 저장소 검사 | 고정된 Python, Node.js, Rust, Go, npm release, Git, make, 위 PHP | `make install`, `make check` | [검증](validation.ko.md) |
 
-저장소 검사는 추적 파일이 고정한 정확한 release로 실행합니다. Rust는 `rust-toolchain.toml`, Node.js, Go와 Python은 `mise.toml`에 `@polyspec/kit`의 pin으로(`packages/go/go.mod`의 `go` 줄도 같은 Go를 정확히 가리킵니다) Composer, uv, lint와 dependency review의 도구와 함께 고정하고 `mise.lock`이 각 digest로 잠그며, PHP는 `.php-version`에 minor release로, npm은 `package.json`의 `devEngines.packageManager` 버전으로 고정하고, 그 tarball의 digest는 `mise.lock`에 둡니다. 새 checkout은 먼저 mise, `mise.toml`의 Node.js와 그 npm을 `var/tools`에 설치하는 `make install-tools TOOLS=npm`과, 그 npm으로 공유 도구의 package `@polyspec/kit`을 포함한 `package-lock.json`을 설치하는 `make install-packages`를 실행합니다. 그다음 `make install`은 그 Rust toolchain을 rustup으로 설치하고, `mise.lock`의 도구를 `mise install --locked`로 Git이 무시하고 Makefile이 그 shim을 `PATH` 앞에 두는 checkout의 `var/tools/mise`에 설치합니다(`@polyspec/kit`의 `make install-tools`). 기계의 도구는 사용하지도 바꾸지도 않습니다. `make install-tools`는 모든 도구를 선언대로 설치하고, 도구를 실행하는 모든 target이 이에 의존하며, 다른 도구마다 기대 버전과 실제 버전을 밝히며 실패합니다. `GOTOOLCHAIN=local`과 `RUSTUP_AUTO_INSTALL=0`은 실행 중에 go와 rustup이 다른 toolchain을 내려받거나 설치하지 못하게 하고, 모든 cargo 명령은 `--locked`를 사용합니다.
+저장소 검사는 추적 파일이 고정한 정확한 release로 실행합니다. Rust는 `rust-toolchain.toml`, Node.js, Go와 Python은 `mise.toml`에 `@polyspec/kit`의 pin으로(`packages/go/go.mod`의 `go` 줄도 같은 Go를 정확히 가리킵니다) Composer, uv, lint와 dependency review의 도구와 함께 고정하고 `mise.lock`이 각 digest로 잠그며, PHP는 `.php-version`에 minor release로, npm은 `package.json`의 `devEngines.packageManager` 버전으로 고정하고, 그 tarball의 digest는 `mise.lock`에 둡니다. 새 checkout은 먼저 mise, `mise.toml`의 Node.js와 그 npm을 `var/tools`에 설치하는 `make install-tools TOOLS=npm`과, 그 npm으로 공유 도구의 package `@polyspec/kit`을 포함한 `package-lock.json`을 설치하는 `make install-packages`를 실행합니다. 그다음 `make install`은 그 Rust toolchain을 rustup으로 설치하고, `mise.lock`의 도구를 `mise install --locked`로 Git이 무시하고 Makefile이 그 shim을 `PATH` 앞에 두는 checkout의 `var/tools/mise`에 설치합니다(`@polyspec/kit`의 설치 도구를 실행하는 `make install-tools`). 기계의 도구는 사용하지도 바꾸지도 않습니다. `make install-tools`는 모든 도구를 선언대로 설치하고, 도구를 실행하는 모든 target이 이에 의존하며, 다른 도구마다 기대 버전과 실제 버전을 밝히며 실패합니다. `GOTOOLCHAIN=local`과 `RUSTUP_AUTO_INSTALL=0`은 실행 중에 go와 rustup이 다른 toolchain을 내려받거나 설치하지 못하게 하고, 모든 cargo 명령은 `--locked`를 사용합니다.
 
 표는 선언된 최소 버전이며 모든 최소 버전에서 테스트했다는 의미는 아닙니다. 실제 버전은 commit을 검증하는 실행의 [기록](validation.ko.md#records)에 기록합니다. JavaScript, Rust, Go, Python은 외부 런타임 라이브러리에 의존하지 않습니다.
 
@@ -83,7 +83,7 @@ Composer는 두 zip을 모두 읽습니다. type이 `php-ext`인 package `polysp
 make build-php-ext
 ~~~
 
-kit의 `make build-php-ext`는 stub에서 `make php-ext-arginfo`가 쓴 arginfo header가 그 stub의 것임을 확인한 뒤 `packages/php-ext`의 복사본에서 phpize로 확장을 빌드하고 `var/php-ext/polyspec_ordered_json.so`를 게시합니다. 사용자는 PIE(`polyspec/ordered-json-php-ext`)로 빌드하고 설치합니다. 모듈을 로드하려면 다음과 같이 실행합니다.
+kit의 확장 유틸리티를 실행하는 `make build-php-ext`는 stub에서 `make php-ext-arginfo`가 쓴 arginfo header가 그 stub의 것임을 확인한 뒤 `packages/php-ext`의 복사본에서 phpize로 확장을 빌드하고 `var/php-ext/polyspec_ordered_json.so`를 게시합니다. 사용자는 PIE(`polyspec/ordered-json-php-ext`)로 빌드하고 설치합니다. 모듈을 로드하려면 다음과 같이 실행합니다.
 
 ~~~sh
 php -n -d extension="$PWD/var/php-ext/polyspec_ordered_json.so" script.php

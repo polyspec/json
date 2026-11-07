@@ -1,7 +1,5 @@
 {
   "schema": 1,
-  "hooks": [
-    "pre-commit"
-  ],
+  "hooks": [],
   "idPattern": "T[0-9]+(?:\\.[0-9]+)+(?:-[0-9]+)*"
 }

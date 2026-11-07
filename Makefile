@@ -1,3 +1,25 @@
+# The recipes of this repository are its own (kit docs/spec/utilities-and-recipes.md): they run the utilities of the installed
+# @polyspec/kit, node_modules/@polyspec/kit, with explicit arguments, and include no recipe of kit. A packed install and a
+# development link to the kit checkout both hold the built utilities in dist/ (make kit-build in the kit checkout).
+KIT := $(CURDIR)/node_modules/@polyspec/kit/dist
+KIT_TOOLS := $(CURDIR)/var/tools
+NODE := $(KIT_TOOLS)/bin/node
+NPM := $(KIT_TOOLS)/bin/npm
+ALINT := $(KIT_TOOLS)/mise/shims/alint
+# The bootstrap installs the node of var/tools, so it starts with the Node.js of the machine (the setup-node of CI).
+BOOTSTRAP_NODE := node
+# The mise that make install-tools TOOLS=npm installs keeps its data, cache, state and configuration in var/tools/mise and reads
+# mise.toml as its global configuration, whose [settings] and [env] state how mise and uv behave; the shims of var/tools/mise
+# read these directories, so every recipe runs with them, and with var/tools/bin and the shims first on PATH.
+export MISE_DATA_DIR := $(KIT_TOOLS)/mise
+export MISE_CACHE_DIR := $(KIT_TOOLS)/mise/cache
+export MISE_STATE_DIR := $(KIT_TOOLS)/mise/state
+export MISE_CONFIG_DIR := $(KIT_TOOLS)/mise/config
+export MISE_GLOBAL_CONFIG_FILE := $(CURDIR)/mise.toml
+export MISE_GLOBAL_CONFIG_ROOT := $(CURDIR)
+MISE_ENVIRONMENT := MISE_DATA_DIR MISE_CACHE_DIR MISE_STATE_DIR MISE_CONFIG_DIR MISE_GLOBAL_CONFIG_FILE MISE_GLOBAL_CONFIG_ROOT
+export PATH := $(CURDIR)/var/tools/bin:$(CURDIR)/var/tools/mise/shims:$(PATH)
+
 # PYTHON is the python of mise.toml, which make install-tools installs with mise at the digest of mise.lock and its shim
 # runs (kit K127). A recipe names it by its absolute path: GNU make execs a recipe line without shell metacharacters
 # directly, so a bare python3 would resolve through the PATH that make read at start (the system Python).
@@ -14,9 +36,7 @@ JSON_TEST_SUITE ?= $(wildcard var/tools/mise/installs/http-jsontestsuite/latest)
 # package.json, Rust in rust-toolchain.toml, PHP in .php-version, and Node.js, Go, Python, Composer and the other tools
 # that mise installs in mise.toml at the digests of mise.lock. No command installs or selects a toolchain on demand:
 # make install-tools TOOLS=npm installs npm and mise into var/tools/bin and make install the tools of mise.lock into
-# var/tools/mise (make install-tools of @polyspec/kit), whose shims kit.mk puts first on PATH with var/tools/bin, so no tool
-# of the machine is used or changed, and install-tools installs every tool at its declaration.
-export PATH := $(CURDIR)/var/tools/bin:$(PATH)
+# var/tools/mise, whose shims come first on PATH with var/tools/bin, so no tool of the machine is used or changed.
 export GOTOOLCHAIN := local
 export RUSTUP_AUTO_INSTALL := 0
 # A check reads no network: make install downloads what the checks read, and every other recipe and the scripts it
@@ -31,13 +51,9 @@ ONLINE := env -u CARGO_NET_OFFLINE -u GOPROXY -u npm_config_offline -u COMPOSER_
 # another checkout would let it take binaries built from other sources as fresh.
 unexport CARGO_TARGET_DIR
 
-# Shared targets come from the installed kit package. Its bootstrap supports both native npm source links and packed
-# installations. CI bootstraps the locked package before Make reads this include.
-include node_modules/@polyspec/kit/scripts/kit/kit-bootstrap.mk
-
 # The targets of the full suite that make check runs through ci-targets of @polyspec/kit with FINAL_RUN and that the jobs of
 # .github/workflows run with make ci-targets (a target is in one job). verify-all writes the aggregate record into var/records.
-CHECK_TARGETS := kit-check suppression-check bypass-check divergence-check link-check rules-check rebuild-check language-check test-markers-check duplication-check layout-check hooks-check owner-validate release-coverage parity-declarations-check docs-check evidence-check verify-all parity-check lint-rust lint-go lint-php lint-php-ext test-php-ext lint-python pie-check ordered-json-test-scripts typecheck lint-ts test-js test-rust test-go test-php test-python
+CHECK_TARGETS := kit-check suppression-check divergence-check link-check rules-check rebuild-check language-check test-markers-check duplication-check layout-check owner-validate release-coverage parity-declarations-check docs-check evidence-check verify-all parity-check lint-rust lint-go lint-php lint-php-ext test-php-ext lint-python pie-check ordered-json-test-scripts typecheck lint-ts test-js test-rust test-go test-php test-python
 
 .PHONY: check ordered-json-test-scripts typecheck ordered-json-install-php ordered-json-install-python verify-all verify-js verify-rust verify-go verify-php verify-php-extension verify-python evidence-check pie-check \
 	benchmark benchmark-check python-parse-budget install ordered-json-install ordered-json-install-rust \
@@ -54,8 +70,9 @@ check:
 # the virtual environment of the Python package; the PIE PHAR and the supplementary suite are tools of mise.toml (http:pie and
 # http:jsontestsuite), which install-tools installs.
 # It is the only target that downloads.
-# install runs the bootstrap of kit as the prerequisite install-kit of ordered-json-install (K246-2).
+# install runs the bootstrap as the prerequisite install-kit of ordered-json-install, then links the packages (install-link).
 install: ordered-json-install
+	$(MAKE) --no-print-directory install-link
 
 # deps-<runtime> (K859): the locked install of each runtime, a thin call that ci-setup runs when the runtime list is empty.
 .PHONY: deps-node deps-go deps-rust deps-php deps-python
@@ -109,7 +126,7 @@ ordered-json-install-parity: ordered-json-install-rust-packages ordered-json-ins
 # which gives each test its own deadline; typecheck checks the TypeScript of scripts/, tests/scripts/ and benchmarks/ with the tsc
 # of package.json (tsconfig.json), which Node runs by type stripping and so never checks itself.
 ordered-json-test-scripts:
-	$(NODE) $(KIT)/run-tests.$(KIT_EXT) node -- $(or $(TESTS),tests/scripts/)
+	$(NODE) $(KIT)/run-tests.mjs node -- $(or $(TESTS),tests/scripts/)
 
 typecheck:
 	$(NODE) node_modules/typescript/bin/tsc -p tsconfig.json
@@ -160,13 +177,240 @@ ordered-json-python-test: ordered-json-python-check
 ordered-json-rust-check: verify-rust
 ordered-json-rust-test: ordered-json-rust-check
 
-# parity-check loads the library that build-php-ext (kit, S10) publishes into var/php-ext, which config/parity.json names for the
-# implementation php-extension.
-parity-check: build-php-ext
-
 # python-parse-budget compares the CPU time of the Python parse with the pure PHP parse on one generated document and fails
 # when the Python median exceeds three times the PHP median (benchmarks/python-parse/run.py). A person runs it after a
 # change of the Python parser; it is no target of make check.
 python-parse-budget:
 	$(MAKE) --no-print-directory install-tools TOOLS="python php"
 	$(PYTHON) benchmarks/python-parse/run.py
+
+# ---- The recipes of the bootstrap and the installs, which run the utilities of the installed kit --------------------------
+.PHONY: install-kit install-tools install-packages install-link kit-install-declared kit-install-symbols toolchain-lock python-venv
+# install-kit installs, in order, the mise, node and npm of mise.toml, the packages of package-lock.json, the other tools of
+# mise.toml and the symbol extractors of config/toolchain.json, all into var/tools of this checkout.
+install-kit:
+	$(MAKE) --no-print-directory install-tools TOOLS=npm
+	$(MAKE) --no-print-directory install-packages
+	$(MAKE) --no-print-directory install-tools
+	$(MAKE) --no-print-directory kit-install-declared
+
+# TOOLS=npm runs the bootstrap installer, which imports only Node.js built-ins, with the Node.js of the machine; any other TOOLS
+# names tools of mise.toml, and no TOOLS installs every tool of mise.lock.
+install-tools:
+ifeq ($(TOOLS),npm)
+	$(ONLINE) $(BOOTSTRAP_NODE) $(KIT)/bootstrap/bootstrap.mjs
+else
+	$(ONLINE) $(NODE) $(KIT)/install-tools.mjs $(TOOLS)
+endif
+
+# npm reads allow-remote of .npmrc, which allows the URL of the kit release that package.json names.
+install-packages:
+	$(ONLINE) $(NPM) ci
+
+install-link:
+	$(NODE) $(KIT)/link.mjs link$(if $(PROJECT), --project $(PROJECT))$(if $(RUNTIME), --runtime $(RUNTIME))
+
+kit-install-declared:
+	$(ONLINE) $(NODE) $(KIT)/install-symbols.mjs --declared
+
+kit-install-symbols:
+	$(ONLINE) $(NODE) $(KIT)/install-symbols.mjs $(EXTRACTORS)
+
+# toolchain-lock writes mise.lock with the mise of var/tools for every platform that has the archives of the tools.
+TOOLCHAIN_LOCK_PLATFORMS := linux-x64,linux-arm64,macos-arm64,macos-x64,windows-x64,windows-arm64
+toolchain-lock:
+	$(ONLINE) $(KIT_TOOLS)/bin/mise lock uv python --global --platform $(TOOLCHAIN_LOCK_PLATFORMS)
+	$(ONLINE) $(KIT_TOOLS)/bin/mise install --locked uv python
+	UV_PYTHON="$$($(KIT_TOOLS)/bin/mise which python3)" $(ONLINE) $(KIT_TOOLS)/bin/mise lock --global --platform $(TOOLCHAIN_LOCK_PLATFORMS)
+
+python-venv:
+	$(NODE) $(KIT)/python-venv.mjs $(DIR)
+
+# ---- Builds and tests of each runtime of packages/ -----------------------------------------------------------------------
+.PHONY: build-go build-js build-php build-python build-rust test-go test-js test-php test-python test-rust build-php-ext lint-php-ext test-php-ext
+build-go build-js build-php build-python build-rust:
+	$(NODE) $(KIT)/runtime-targets.mjs build $(@:build-%=%)
+
+# The unit tests of a runtime; CASES=<pattern> is the name filter of its runner.
+test-go test-js test-php test-python test-rust:
+	$(NODE) $(KIT)/runtime-targets.mjs $(@:test-%=%)
+
+# The PHP extension of packages/php-ext: build-php-ext builds var/php-ext/polyspec_ordered_json.so with phpize after the check
+# of its stub and arginfo header; gen_stub.php may fetch its PHP-Parser once.
+build-php-ext:
+	$(ONLINE) $(NODE) $(KIT)/php-extension.mjs build
+lint-php-ext:
+	$(NODE) $(KIT)/php-extension.mjs check
+test-php-ext: build-php-ext
+	$(NODE) $(KIT)/php-extension.mjs test
+
+# ---- Checks ----------------------------------------------------------------------------------------------------------------
+.PHONY: kit-check layout-check docs-check rules-check owner-check owner-validate rebuild-check language-check test-markers-check \
+	duplication-check parity-declarations-check parity-check suppression-check divergence-check link-check release-coverage \
+	lint-ts lint-php lint-python lint-go lint-rust
+# kit-check validates the config/*.json that the utilities of kit read against their schemas.
+kit-check:
+	$(NODE) $(KIT)/kit-check.mjs
+
+# layout-check runs alint with config/layout.yml, then fails on an install directory that Git does not ignore and on a tracked
+# generated file.
+layout-check:
+	@test -x $(ALINT) || { echo "layout-check: $(ALINT) is missing; run make install-tools"; exit 1; }
+	$(ALINT) check --config config/layout.yml --color never --compact .
+	$(NODE) $(KIT)/generated-files.mjs installs
+	$(NODE) $(KIT)/generated-files.mjs tracked
+
+docs-check:
+	$(NODE) $(KIT)/check-documents.mjs
+
+rules-check:
+	$(NODE) $(KIT)/check-rules.mjs
+
+# owner-check runs the checks of config/owner-checks.json that own the changed paths; PATHS="a b" or BASE=<revision> selects them.
+owner-check:
+	$(NODE) $(KIT)/owner-check.mjs $(if $(PATHS),--paths "$(PATHS)") $(if $(BASE),--base $(BASE))
+owner-validate:
+	$(NODE) $(KIT)/owner-check.mjs --validate
+
+rebuild-check:
+	$(NODE) $(KIT)/rebuild-check.mjs
+language-check:
+	$(NODE) $(KIT)/language-check.mjs
+test-markers-check:
+	$(NODE) $(KIT)/test-markers.mjs
+duplication-check:
+	$(NODE) $(KIT)/duplication-check.mjs
+suppression-check:
+	$(NODE) $(KIT)/suppression-check.mjs
+divergence-check:
+	$(NODE) $(KIT)/divergence-check.mjs
+release-coverage:
+	$(NODE) $(KIT)/release.mjs coverage
+
+# parity-declarations-check checks config/parity.json without a run; UNITS, RULES and IDS narrow the findings.
+parity-declarations-check:
+	$(NODE) $(KIT)/parity.mjs --declarations $(foreach unit,$(UNITS),--unit $(unit)) $(foreach rule,$(RULES),--rule $(rule)) $(foreach id,$(IDS),--id $(id))
+# parity-check runs every binding of config/parity.json; UNITS and IMPLEMENTATIONS select. It loads the library that
+# build-php-ext publishes into var/php-ext for the implementation php-extension.
+parity-check: build-php-ext
+	$(NODE) $(KIT)/parity.mjs $(foreach unit,$(UNITS),--unit $(unit)) $(foreach implementation,$(IMPLEMENTATIONS),--implementation $(implementation))
+
+# The lint of each language, with the configuration files of this repository: .oxlintrc.json and knip.json, phpcs.xml.dist and
+# phpstan.dist.neon, ruff.toml and the [tool.vulture] of packages/python/pyproject.toml, .golangci.yml, and the [lints] of
+# packages/rust/Cargo.toml with clippy.toml.
+lint-ts:
+	$(NODE) $(KIT)/lint-ts.mjs
+lint-php:
+	$(NODE) $(KIT)/lint-php.mjs
+lint-python:
+	$(NODE) $(KIT)/lint-python.mjs
+lint-go:
+	$(NODE) $(KIT)/lint-go.mjs
+lint-rust:
+	$(NODE) $(KIT)/lint-rust.mjs
+
+# ---- Development links (the git-ignored .links of the main checkout) -------------------------------------------------------
+.PHONY: link unlink link-check
+link:
+	$(NODE) $(KIT)/link.mjs link$(if $(PROJECT), --project $(PROJECT))$(if $(RUNTIME), --runtime $(RUNTIME))
+unlink:
+	$(NODE) $(KIT)/link.mjs unlink$(if $(PROJECT), --project $(PROJECT))$(if $(RUNTIME), --runtime $(RUNTIME))
+link-check:
+	$(NODE) $(KIT)/link-check.mjs$(if $(PROJECT), --project $(PROJECT))
+
+# ---- CI: the gates, the plan and the setup of the jobs of .github/workflows/ci-pipeline.yml ----------------------------------
+.PHONY: kit-gates kit-gates-static kit-gates-parity kit-gates-runtime-ts kit-gates-runtime-php kit-gates-runtime-python \
+	kit-gates-runtime-go kit-gates-runtime-rust kit-gates-runtime-php-ext kit-ci-plan kit-ci-setup kit-ci-context-prepare \
+	kit-ci-context-cleanup ci-targets
+# kit-gates is every gate; the pipeline runs its partitions, one per job, and ci-setup and land of kit read these names.
+kit-gates: kit-check layout-check docs-check rules-check owner-validate rebuild-check language-check test-markers-check duplication-check parity-declarations-check parity-check suppression-check divergence-check lint-ts lint-php lint-python lint-go lint-rust lint-php-ext test-php-ext
+# kit-gates-static runs past a failure, so one run names every static gate that fails.
+ifneq ($(filter kit-gates-static,$(MAKECMDGOALS)),)
+MAKEFLAGS += -k
+endif
+kit-gates-static: kit-check layout-check docs-check rules-check owner-validate rebuild-check language-check test-markers-check duplication-check parity-declarations-check suppression-check divergence-check
+	@echo "[kit-gates-static] every shared gate passed"
+kit-gates-parity: parity-check
+kit-gates-runtime-ts: lint-ts
+kit-gates-runtime-php: lint-php
+kit-gates-runtime-python: lint-python
+kit-gates-runtime-go: lint-go
+kit-gates-runtime-rust: lint-rust
+kit-gates-runtime-php-ext: lint-php-ext test-php-ext
+
+# kit-ci-plan writes the jobs of config/ci.json to GITHUB_OUTPUT; kit-ci-setup runs the setup targets that config/ci.json declares
+# for GROUP=shared|parity|runtime and RUNTIME.
+kit-ci-plan:
+	$(NODE) $(KIT)/ci-setup.mjs --plan
+kit-ci-setup:
+	$(NODE) $(KIT)/ci-setup.mjs --setup $(GROUP) $(RUNTIME)
+kit-ci-context-prepare:
+	$(NODE) $(KIT)/ci-setup.mjs --context-prepare $(GROUP) $(RUNTIME)
+kit-ci-context-cleanup:
+	$(NODE) $(KIT)/ci-setup.mjs --context-cleanup $(GROUP) $(RUNTIME)
+
+# ci-targets runs TARGETS past failures and writes the logs, record.json and summary.md into CI_REPORT.
+CI_REPORT ?= var/report/ci-targets
+ci-targets:
+	$(NODE) $(KIT)/ci-targets.mjs $(CI_REPORT) $(TARGETS)
+
+# ---- Release: the steps of .github/workflows/release.yml, in its order (config/release.json) ---------------------------------
+.PHONY: release-prepare release-tools release-tools-path release-tag release-assets release-publish release-undraft
+# The release builds the released versions, so its Go runs without the go.work that link writes.
+release-prepare release-tools release-tag release-assets release-publish release-undraft release-coverage: export GOWORK := off
+# release-prepare: this repository needs no preparation before release-tools.
+release-prepare:
+	@:
+release-tools:
+	$(ONLINE) $(NODE) $(KIT)/release-tools.mjs
+# release-tools-path puts var/tools/bin and the shims on GITHUB_PATH and the environment of mise on GITHUB_ENV for the steps after it.
+release-tools-path:
+	@echo "$(KIT_TOOLS)/mise/shims" >> "$$GITHUB_PATH"
+	@echo "$(KIT_TOOLS)/bin" >> "$$GITHUB_PATH"
+	@for name in $(MISE_ENVIRONMENT); do echo "$$name=$$(printenv $$name)"; done >> "$$GITHUB_ENV"
+# release-tag tags the commit of the successful CI run RUN; AUTO=1 releases only the version commit of the top version.
+release-tag:
+	$(NODE) $(KIT)/release-run.mjs tag "$$RUN"$(if $(AUTO), --auto)
+release-assets:
+	$(ONLINE) $(NODE) $(KIT)/release.mjs assets "$$TAG"
+release-publish:
+	$(NODE) $(KIT)/release.mjs publish "$$TAG"
+release-undraft:
+	$(NODE) $(KIT)/release.mjs undraft "$$TAG"
+
+# ---- The procedure of a row: worktree, checklist, commit, landing --------------------------------------------------------------
+.PHONY: worktree-setup land plan-new plan-split item-new item-edit item-state item-test commit documents-stamp text-absent twin-merge
+# worktree-setup creates or reuses the worktree of a row from main and runs make install in it.
+worktree-setup:
+	$(ONLINE) $(NODE) $(KIT)/worktree-setup.mjs $(NAME) $(ID) $(or $(TYPE),fix)
+# land merges BRANCH fast-forward into main and removes its worktree and branch.
+land:
+	$(NODE) $(KIT)/land.mjs $(BRANCH)
+
+# The texts of a row reach plan.mjs unexpanded: each text that is set is passed in single quotes as its raw value.
+raw_text = $(foreach v,$(1),$(if $(filter undefined,$(origin $(v))),,$(v)='$(subst ','\'',$(value $(v)))'))
+plan-new:
+	$(NODE) $(KIT)/plan.mjs plan-new
+plan-split:
+	$(NODE) $(KIT)/plan.mjs plan-split
+item-new:
+	$(call raw_text,TASK TASK_KO DELIVERABLES VERIFICATION) $(NODE) $(KIT)/plan.mjs item-new
+item-edit:
+	$(call raw_text,TASK TASK_KO DELIVERABLES VERIFICATION CAUSE RETRY CAUSE_KO RETRY_KO) $(NODE) $(KIT)/plan.mjs item-edit
+item-state:
+	$(NODE) $(KIT)/plan.mjs item-state
+item-test:
+	$(NODE) $(KIT)/plan.mjs item-test
+commit:
+	$(NODE) $(KIT)/plan.mjs commit
+documents-stamp:
+	$(NODE) $(KIT)/documents-stamp.mjs $(PATHS)
+# text-absent fails while the tracked file FILE holds the text TEXT; both reach the utility unexpanded through its environment.
+unexport TEXT
+text-absent: export KIT_TEXT_ABSENT_FILE = $(value FILE)
+text-absent: export KIT_TEXT_ABSENT_TEXT = $(value TEXT)
+text-absent:
+	$(NODE) $(KIT)/text-absent.mjs
+# twin-merge is the merge driver of a Korean twin, a changelog and a checklist that git config names (merge.kit-*.driver).
+twin-merge:
+	@$(NODE) $(KIT)/twin-merge.mjs $(MERGE)

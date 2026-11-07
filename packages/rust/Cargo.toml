@@ -26,15 +26,22 @@ serde_json = "1"
 name = "official"
 harness = false
 
-# The crate is its own workspace, whose lints kit requires (config/cargo.schema.json): no unsafe code, and every allow
-# attribute names its reason.
+# The crate is its own workspace, whose lints make lint-rust (cargo clippy) reads: every warning fails, no unsafe code, no
+# hidden error (P8), and every allow attribute names its reason; clippy.toml of the root disallows Result::ok and the
+# unwrap_or family. config/cargo.schema.json requires unsafe_code and allow_attributes_without_reason.
 [lints]
 workspace = true
 
 [workspace]
 
 [workspace.lints.rust]
+warnings = "deny"
 unsafe_code = "deny"
+unused_must_use = "deny"
 
 [workspace.lints.clippy]
+all = { level = "deny", priority = -1 }
 allow_attributes_without_reason = "deny"
+let_underscore_must_use = "deny"
+let_underscore_untyped = "deny"
+map_err_ignore = "deny"

@@ -2,9 +2,7 @@
   "schema": 1,
   "parityMode": "full",
   "setup": {
-    "shared": [
-      "hooks"
-    ],
+    "shared": [],
     "parity": [
       "ordered-json-install-parity"
     ],
@@ -50,7 +48,6 @@
   "targets": {
     "shared": [
       "link-check",
-      "hooks-check",
       "release-coverage",
       "evidence-check",
       "ordered-json-test-scripts",

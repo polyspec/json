@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- T2.140: the Makefile includes no recipe of kit and holds every recipe it runs, calling the utilities of the installed kit; the allow-remote of npm, the settings of mise and uv and the lint configurations are files of the repository (.npmrc, mise.toml, .golangci.yml, phpcs.xml.dist, phpstan.dist.neon, ruff.toml, clippy.toml, .oxlintrc.json, knip.json, the [lints] of packages/rust/Cargo.toml); the workflows, PRINCIPLES and config/layout.kit.yml are files of the repository, and the Git hooks, the Claude Code hook settings, config/knip-entries.json and config/pyproject.schema.json are removed, for kit 0.0.98 (kit docs/spec/utilities-and-recipes.md) (T2.140).
+
 ## 0.0.20
 
 - ordered-json 0.0.20 rewrites the three composer.lock files of 0.0.19 (T2.135), fetches its crates with cargo itself (T2.137) and adopts kit 0.0.92 (T2.138) (T2.139).

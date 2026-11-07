@@ -78,22 +78,22 @@ The PIE record `var/records/pie-verification.json` records the PIE version and P
 <a id="ci"></a>
 ## Hosted CI
 
-`.github/workflows/ci.yml` runs on every pull request, push to `main` and manual dispatch. It is one pipeline (PRINCIPLES S12): its one job `kit` calls `.github/workflows/ci-pipeline.yml`, the copy of the workflow of `@polyspec/kit`, which runs the gates of `kit-gates` once, in a shared job, a parity job and a job for each runtime, and with them the targets that [config/ci.json](../../config/ci.json) declares.
+`.github/workflows/ci.yml` runs on every pull request, push to `main` and manual dispatch. It is one pipeline (PRINCIPLES S12): its one job `kit` calls `.github/workflows/ci-pipeline.yml`, the pipeline of this repository taken from the one of `@polyspec/kit`, which runs the gates of `kit-gates` once, in a shared job, a parity job and a job for each runtime, and with them the targets that [config/ci.json](../../config/ci.json) declares.
 
-config/ci.json declares, for those jobs, the setup targets (`setup`), the tools beyond those of kit (`tools`) and the targets (`targets`). The shared job prepares Git hooks; the parity job installs the comparison environments with `ordered-json-install-parity`; the php-ext job installs PIE and the supplementary suite with `ordered-json-install-pie`; each runtime job builds its package. Every target of `CHECK_TARGETS` runs in the pipeline, as a gate of `kit-gates` or as a target of config/ci.json, and config/ci.json names no gate of `kit-gates` again; `tests/scripts/workflow-rules.test.mts` fails otherwise.
+config/ci.json declares, for those jobs, the setup targets (`setup`), the tools beyond those of kit (`tools`) and the targets (`targets`). The parity job installs the comparison environments with `ordered-json-install-parity`; the php-ext job installs PIE and the supplementary suite with `ordered-json-install-pie`; each runtime job builds its package. Every target of `CHECK_TARGETS` runs in the pipeline, as a gate of `kit-gates` or as a target of config/ci.json, and config/ci.json names no gate of `kit-gates` again; `tests/scripts/workflow-rules.test.mts` fails otherwise.
 
 Each job checks out this repository at the workspace root and installs the locked kit package before its first make command; no sibling checkout is required. Downloads remain installation steps; no check enables network access. The closing job `kit / required` of the pipeline passes only when every job passed, so a run of `ci` that concludes `success` is the evidence that the release workflow requires ([publishing main](#publish)).
 
 <a id="publish"></a>
 ## Publishing main
 
-While the version is 0.x, the work of a checklist row is committed locally, and `main` receives the commits in one push, when every row of the checklist is `[o]` (AGENTS.md). The pre-push hook `.githooks/pre-push` runs the push gate before the push:
+While the version is 0.x, the work of a checklist row is committed locally, and `main` receives the commits in one push, when every row of the checklist is `[o]` (AGENTS.md):
 
 ~~~sh
 git push origin HEAD:main
 ~~~
 
-The push runs `ci.yml`. When its run concludes `success`, the release workflow releases the top `## X.Y.Z` of the change log at the commit of the run when that commit is the version commit, or a later commit whose `## Unreleased` is empty while the version is untagged; `make release-tag` of `@polyspec/kit` decides it ([tag releases](distribution.md#tag-release)).
+The push runs `ci.yml`. When its run concludes `success`, the release workflow releases the top `## X.Y.Z` of the change log at the commit of the run when that commit is the version commit, or a later commit whose `## Unreleased` is empty while the version is untagged; `make release-tag`, which runs the release utility of `@polyspec/kit`, decides it ([tag releases](distribution.md#tag-release)).
 
 <a id="documentation-checks"></a>
 ## Documentation checks

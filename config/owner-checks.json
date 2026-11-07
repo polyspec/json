@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "comment": "The checks that own each tracked path, read by owner-check of @polyspec/kit: make owner-check runs the owners of the changed paths, never the full suite, and the pre-commit hook runs make owner-validate. ordered-json-test-scripts runs the verifier unit tests (TESTS selects test files) and verify-<language> verifies one implementation.",
+  "comment": "The checks that own each tracked path, read by owner-check of @polyspec/kit: make owner-check runs the owners of the changed paths, never the full suite; make owner-validate, a gate of kit-gates-static, checks this file. ordered-json-test-scripts runs the verifier unit tests (TESTS selects test files) and verify-<language> verifies one implementation.",
   "owners": [
     {
       "paths": [
@@ -117,7 +117,8 @@
     },
     {
       "paths": [
-        ".github/workflows/*.yml"
+        ".github/workflows/*.yml",
+        ".github/actions/kit-bootstrap/action.yml"
       ],
       "targets": [
         "ordered-json-test-scripts"
@@ -125,31 +126,41 @@
     },
     {
       "paths": [
-        ".githooks/pre-commit",
         "config/checklist.json",
         "config/owner-checks.json"
       ],
       "targets": [
-        "hooks-check",
-        "owner-validate"
+        "owner-validate",
+        "docs-check"
       ]
     },
     {
       "paths": [
-        ".github/workflows/release.yml",
-        ".claude/settings.json",
-        "PRINCIPLES.md",
-        "PRINCIPLES.ko.md",
-        ".editorconfig",
-        "config/pyproject.schema.json",
-        "config/composer.schema.json",
-        "config/cargo.schema.json",
+        "config/*.json",
         "package.json",
-        "package-lock.json",
-        "config/*.json"
+        "package-lock.json"
       ],
       "targets": [
         "kit-check"
+      ]
+    },
+    {
+      "paths": [
+        "PRINCIPLES.md",
+        "AGENTS.md"
+      ],
+      "targets": [
+        "rules-check"
+      ]
+    },
+    {
+      "paths": [
+        ".editorconfig",
+        "config/composer.schema.json",
+        "config/cargo.schema.json"
+      ],
+      "targets": [
+        "layout-check"
       ]
     },
     {
@@ -255,6 +266,7 @@
     {
       "paths": [
         "mise.toml",
+        ".npmrc",
         "mise.lock",
         ".mise/**",
         ".php-version",
@@ -338,6 +350,49 @@
       "targets": [
         "lint-php-ext",
         "duplication-check"
+      ]
+    },
+    {
+      "paths": [
+        ".oxlintrc.json",
+        "knip.json"
+      ],
+      "targets": [
+        "lint-ts"
+      ]
+    },
+    {
+      "paths": [
+        "phpcs.xml.dist",
+        "phpstan.dist.neon"
+      ],
+      "targets": [
+        "lint-php"
+      ]
+    },
+    {
+      "paths": [
+        "ruff.toml"
+      ],
+      "targets": [
+        "lint-python"
+      ]
+    },
+    {
+      "paths": [
+        ".golangci.yml"
+      ],
+      "targets": [
+        "lint-go"
+      ]
+    },
+    {
+      "paths": [
+        "clippy.toml",
+        "packages/rust/Cargo.toml"
+      ],
+      "targets": [
+        "lint-rust"
       ]
     }
   ]
