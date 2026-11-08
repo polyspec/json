@@ -6,6 +6,11 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.22
+
+- ordered-json 0.0.22 adopts kit 0.0.101: parity is deleted (T2.144), the tests that asserted recipe or workflow text are deleted (T2.143), and the release asset of kit 0.0.101 is pinned (T2.145) (T2.146).
+- T2.145: ordered-json adopts kit 0.0.101, which only stops two kit refusals; no recipe line changes (T2.145).
+- T2.143: the tests that asserted recipe or workflow text are deleted; they checked no behaviour (T2.143).
 - T2.144: ordered-json adopts kit 0.0.100, which deletes parity: config/parity.json and the parity-check, parity-declarations-check, divergence-check and test-markers-check gates are gone; config/implementations.json declares the implementations of the shared verifier, each implementation runs its own tests in make test-<language>, and the verify job of the pipeline runs verify-all (kit K1129) (T2.144).
 - T2.142: ordered-json adopts kit 0.0.99 with the behaviour of kit 0.0.98 kept: each recipe passes the values that kit 0.0.98 fixed as explicit arguments, and config/checklist.json, documents.json, duplication.json, generated.json, release.json, ci.json and parity.json declare what kit read by default (kit K1068–K1118) (T2.142).
 

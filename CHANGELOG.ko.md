@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 4aad4cb992d6fed21329716b074a5f1ea753d83a66e2635f815fc0f549f9ba74 -->
+<!-- source-sha256: 8c8bb007279cf3821b5c7fd7460afe4320e688d1c18d41ea818e8461db6736e2 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,11 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.22
+
+- ordered-json 0.0.22는 kit 0.0.101을 채택한다. parity가 삭제되고(T2.144), recipe나 workflow 문구를 단언하던 테스트가 삭제되며(T2.143), kit 0.0.101 release asset이 고정된다(T2.145) (T2.146).
+- T2.145: ordered-json은 kit 거부 두 가지만 멈추는 kit 0.0.101을 채택한다. recipe 줄은 바뀌지 않는다(T2.145).
+- T2.143: recipe나 workflow 문구를 단언하던 테스트가 삭제된다. 그 테스트는 동작을 검사하지 않았다(T2.143).
 - T2.144: ordered-json은 parity를 지우는 kit 0.0.100을 채택한다. config/parity.json과 parity-check, parity-declarations-check, divergence-check, test-markers-check gate가 사라지고, config/implementations.json이 공통 검증기의 구현을 선언하며, 각 구현은 make test-<language>에서 자기 테스트를 실행하고, pipeline의 verify job이 verify-all을 실행한다(kit K1129) (T2.144).
 - T2.142: ordered-json은 kit 0.0.98의 동작을 그대로 두고 kit 0.0.99를 채택한다. 각 recipe는 kit 0.0.98이 고정했던 값을 명시 인자로 넘기고, config/checklist.json, documents.json, duplication.json, generated.json, release.json, ci.json, parity.json은 kit이 기본으로 읽던 것을 선언한다(kit K1068–K1118) (T2.142).
 
