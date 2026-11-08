@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 8c8bb007279cf3821b5c7fd7460afe4320e688d1c18d41ea818e8461db6736e2 -->
+<!-- source-sha256: a5513b59e4e6416327bf1556ca10e1032b2406350fb0c6350bf3b9821a597f74 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- ordered-json는 설치가 실패하면 uv-install이 provider 링크를 되돌리는 kit 0.0.102를 채택한다. recipe 줄은 바뀌지 않는다(T2.147).
 
 ## 0.0.22
 

@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- ordered-json adopts kit 0.0.102, whose uv-install puts back the provider links when its install fails; no recipe line changes (T2.147).
+
 ## 0.0.22
 
 - ordered-json 0.0.22 adopts kit 0.0.101: parity is deleted (T2.144), the tests that asserted recipe or workflow text are deleted (T2.143), and the release asset of kit 0.0.101 is pinned (T2.145) (T2.146).
