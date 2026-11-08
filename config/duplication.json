@@ -25,7 +25,7 @@
   "exclude": [
     {
       "glob": "packages/php-ext/src/polyspec_*.stub.php",
-      "reason": "the S10 stub declares the library under the same names and signatures"
+      "reason": "ecosystem: the S10 stub declares the library under the same names and signatures"
     }
   ]
 }
