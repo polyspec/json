@@ -92,7 +92,7 @@ Official examples define expected behavior. Supplementary fixtures increase cove
 <a id="requirements"></a>
 ## Requirements
 
-Each requirement is one testable statement of this contract. A unit of config/parity.json cites the identifiers that it tests.
+Each requirement is one testable statement of this contract.
 
 - **RQ-001** An object keeps the first occurrence position of each decoded key and the last value written for it.
 - **RQ-002** Object keys compare by decoded UTF-16 code units, so an escaped spelling and a literal spelling name the same member.

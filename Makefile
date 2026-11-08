@@ -57,7 +57,7 @@ unexport CARGO_TARGET_DIR
 # The targets of the full suite that make check runs through ci-targets of @polyspec/kit and that the jobs of
 # .github/workflows/ci-pipeline.yml run as the prerequisites of their kit-gates-* target (a target is in one job). verify-all
 # writes the aggregate record into var/records.
-CHECK_TARGETS := suppression-check divergence-check link-check rules-check rebuild-check language-check test-markers-check duplication-check layout-check owner-validate release-coverage parity-declarations-check docs-check evidence-check verify-all parity-check lint-rust lint-go lint-php lint-php-ext test-php-ext lint-python pie-check ordered-json-test-scripts typecheck lint-ts test-js test-rust test-go test-php test-python
+CHECK_TARGETS := suppression-check link-check rules-check rebuild-check language-check duplication-check layout-check owner-validate release-coverage docs-check evidence-check verify-all lint-rust lint-go lint-php lint-php-ext test-php-ext lint-python pie-check ordered-json-test-scripts typecheck lint-ts test-js test-rust test-go test-php test-python
 
 .PHONY: check ordered-json-test-scripts typecheck ordered-json-install-php ordered-json-install-python verify-all verify-js verify-rust verify-go verify-php verify-php-extension verify-python evidence-check pie-check \
 	benchmark benchmark-check python-parse-budget install ordered-json-install ordered-json-install-rust \
@@ -93,7 +93,7 @@ ordered-json-install-rust:
 	$(ONLINE) rustup toolchain install --no-self-update
 
 # ordered-json-install-php installs the locked Composer packages of packages/php and packages/php-ext, PHPUnit among them, into their
-# vendor/, from which kit parity runs their tests (config/parity.json), and the root package, the published composer.json,
+# vendor/, from which make test-php runs their tests, and the root package, the published composer.json,
 # into vendor/, whose autoloader PHPStan of make lint-php reads for the PHP of benchmarks/. The root package requires only
 # the platform, so its install downloads nothing; its composer.lock locks no package.
 ordered-json-install-php:
@@ -102,9 +102,8 @@ ordered-json-install-php:
 	$(ONLINE) $(COMPOSER) install --no-interaction --no-progress --working-dir=packages/php-ext
 
 # ordered-json-install-python makes packages/python/.venv from the Python of mise.toml (python-venv of kit) and installs the package
-# into it, non-editable, with the uv of mise.toml: the python extractor of kit reads the modules from the file list of the installed
-# distribution (kit K788), which an editable install does not hold. make install-link then makes the installed package folder a link to
-# packages/python/src/polyspec/ordered_json (kit K765), so the tests import the sources of the checkout. config/parity.json runs the
+# into it, non-editable, with the uv of mise.toml. make install-link then makes the installed package folder a link to
+# packages/python/src/polyspec/ordered_json (kit K765), so the tests import the sources of the checkout; make test-python runs the
 # Python tests with its interpreter.
 ordered-json-install-python:
 	$(MAKE) --no-print-directory python-venv DIR=packages/python/.venv
@@ -113,7 +112,7 @@ ordered-json-install-python:
 
 # Product dependency installs are reused by independent CI jobs after Kit prepares
 # only the requested toolchains. These targets install no other language's tools.
-.PHONY: ordered-json-install-rust-packages ordered-json-install-parity ordered-json-install-suite ordered-json-install-pie
+.PHONY: ordered-json-install-rust-packages ordered-json-install-verify ordered-json-install-suite ordered-json-install-pie
 # Cargo runs offline here (CARGO_NET_OFFLINE), so the install fetches the crates of every tracked Cargo.lock with cargo fetch --locked.
 ordered-json-install-rust-packages: ordered-json-install-rust
 	@set -e; for lock in $$(git ls-files -- '*Cargo.lock'); do $(ONLINE) $(CARGO) fetch --locked --manifest-path "$${lock%.lock}.toml"; done
@@ -124,7 +123,8 @@ ordered-json-install-suite:
 ordered-json-install-pie: ordered-json-install-suite
 	$(ONLINE) $(KIT_TOOLS)/bin/mise install --locked http:pie
 
-ordered-json-install-parity: ordered-json-install-rust-packages ordered-json-install-php ordered-json-install-python ordered-json-install-suite
+# ordered-json-install-verify installs what verify-all builds and probes: the packages of every implementation and the suite.
+ordered-json-install-verify: ordered-json-install-rust-packages ordered-json-install-php ordered-json-install-python ordered-json-install-suite
 
 # ordered-json-test-scripts runs the node:test tool tests of tests/scripts, or the files of TESTS, through run-tests of @polyspec/kit,
 # which gives each test its own deadline; typecheck checks the TypeScript of scripts/, tests/scripts/ and benchmarks/ with the tsc
@@ -137,7 +137,7 @@ typecheck:
 
 # verify-all builds and verifies every implementation with the shared cases, writes var/records/verification.json and checks
 # it with the evidence check (scripts/verify.mts --record); verify-<implementation> verifies one implementation and writes no
-# record. The package tests of each implementation run in parity-check, with the native runner of its language.
+# record. The package tests of each implementation run in test-<language>, with the native runner of its language.
 verify-all:
 	$(NODE) scripts/verify.mts --record$(if $(JSON_TEST_SUITE), --suite "$(JSON_TEST_SUITE)")
 
@@ -267,8 +267,8 @@ test-php-ext: build-php-ext
 	$(NODE) $(KIT)/php-extension.mjs test --extension packages/php-ext --build-dir var/php-ext --skip vendor --skip node_modules --library packages/php -- --roots packages/php
 
 # ---- Checks ----------------------------------------------------------------------------------------------------------------
-.PHONY: layout-check docs-check rules-check owner-check owner-validate rebuild-check language-check test-markers-check \
-	duplication-check parity-declarations-check parity-check suppression-check divergence-check link-check release-coverage \
+.PHONY: layout-check docs-check rules-check owner-check owner-validate rebuild-check language-check \
+	duplication-check suppression-check link-check release-coverage \
 	lint-ts lint-php lint-python lint-go lint-rust
 # layout-check runs alint with config/layout.yml, then fails on an install directory that Git does not ignore and on a tracked
 # generated file.
@@ -298,24 +298,13 @@ rebuild-check:
 	$(NODE) $(KIT)/rebuild-check.mjs $(REBUILD_SOURCES) $(REBUILD_EXCLUDES)
 language-check:
 	$(NODE) $(KIT)/language-check.mjs --forbid '\p{Script=Hangul}'
-test-markers-check:
-	$(NODE) $(KIT)/test-markers.mjs
 duplication-check:
 	$(NODE) $(KIT)/duplication-check.mjs
 suppression-check:
 	$(NODE) $(KIT)/suppression-check.mjs
-divergence-check:
-	$(NODE) $(KIT)/divergence-check.mjs --reason-kind generated --reason-kind fixture --reason-kind test --reason-kind harness --reason-kind ecosystem --reason-kind external --feature-state partial --feature-state unsupported --parity config/parity.json
 release-coverage:
 	$(NODE) $(KIT)/release.mjs coverage
 
-# parity-declarations-check checks config/parity.json without a run; UNITS, RULES and IDS narrow the findings.
-parity-declarations-check:
-	$(NODE) $(KIT)/parity.mjs --declarations $(foreach unit,$(UNITS),--unit $(unit)) $(foreach rule,$(RULES),--rule $(rule)) $(foreach id,$(IDS),--id $(id))
-# parity-check runs every binding of config/parity.json; UNITS and IMPLEMENTATIONS select. It loads the library that
-# build-php-ext publishes into var/php-ext for the implementation php-extension.
-parity-check: build-php-ext
-	$(NODE) $(KIT)/parity.mjs $(foreach unit,$(UNITS),--unit $(unit)) $(foreach implementation,$(IMPLEMENTATIONS),--implementation $(implementation))
 
 # The lint of each language, with the configuration files of this repository: .oxlintrc.json and knip.json, phpcs.xml.dist and
 # phpstan.dist.neon, ruff.toml and the [tool.vulture] of packages/python/pyproject.toml, .golangci.yml, and the [lints] of
@@ -341,19 +330,19 @@ link-check:
 	$(NODE) $(KIT)/link-check.mjs$(if $(PROJECT), --project $(PROJECT))
 
 # ---- CI: the gates, the plan and the setup of the jobs of .github/workflows/ci-pipeline.yml ----------------------------------
-.PHONY: kit-gates-static kit-gates-parity kit-gates-runtime-ts kit-gates-runtime-php kit-gates-runtime-python \
+.PHONY: kit-gates-static kit-gates-verify kit-gates-runtime-ts kit-gates-runtime-php kit-gates-runtime-python \
 	kit-gates-runtime-go kit-gates-runtime-rust kit-gates-runtime-php-ext kit-ci-plan kit-ci-setup kit-ci-context-prepare \
 	kit-ci-context-cleanup ci-targets
-# The targets of the jobs of the pipeline, which its steps run by name: kit-gates-static in the shared job, kit-gates-parity in
-# the parity job and kit-gates-runtime-<runtime> in the runtime job of each runtime. Together they hold every target of
+# The targets of the jobs of the pipeline, which its steps run by name: kit-gates-static in the shared job, kit-gates-verify in
+# the verify job and kit-gates-runtime-<runtime> in the runtime job of each runtime. Together they hold every target of
 # CHECK_TARGETS, each in one of them (tests/scripts/workflow-rules.test.mts).
 # kit-gates-static runs past a failure, so one run names every static gate that fails.
 ifneq ($(filter kit-gates-static,$(MAKECMDGOALS)),)
 MAKEFLAGS += -k
 endif
-kit-gates-static: layout-check docs-check rules-check owner-validate rebuild-check language-check test-markers-check duplication-check parity-declarations-check suppression-check divergence-check link-check release-coverage evidence-check ordered-json-test-scripts typecheck
+kit-gates-static: layout-check docs-check rules-check owner-validate rebuild-check language-check duplication-check suppression-check link-check release-coverage evidence-check ordered-json-test-scripts typecheck
 	@echo "[kit-gates-static] every shared gate passed"
-kit-gates-parity: parity-check verify-all
+kit-gates-verify: verify-all
 kit-gates-runtime-ts: lint-ts test-js
 kit-gates-runtime-php: lint-php test-php
 kit-gates-runtime-python: lint-python test-python
@@ -362,15 +351,15 @@ kit-gates-runtime-rust: lint-rust test-rust
 kit-gates-runtime-php-ext: lint-php-ext test-php-ext pie-check
 
 # kit-ci-plan writes the jobs, runners and tools of config/ci.json to GITHUB_OUTPUT; kit-ci-setup runs the setup targets that
-# config/ci.json declares for GROUP=shared|parity|runtime and RUNTIME.
+# config/ci.json declares for GROUP=shared|runtime and RUNTIME.
 kit-ci-plan:
-	$(NODE) $(KIT)/ci-setup.mjs --parity config/parity.json --plan
+	$(NODE) $(KIT)/ci-setup.mjs --plan
 kit-ci-setup:
-	$(NODE) $(KIT)/ci-setup.mjs --parity config/parity.json --setup $(GROUP) $(RUNTIME)
+	$(NODE) $(KIT)/ci-setup.mjs --setup $(GROUP) $(RUNTIME)
 kit-ci-context-prepare:
-	$(NODE) $(KIT)/ci-setup.mjs --parity config/parity.json --context-prepare $(GROUP) $(RUNTIME)
+	$(NODE) $(KIT)/ci-setup.mjs --context-prepare $(GROUP) $(RUNTIME)
 kit-ci-context-cleanup:
-	$(NODE) $(KIT)/ci-setup.mjs --parity config/parity.json --context-cleanup $(GROUP) $(RUNTIME)
+	$(NODE) $(KIT)/ci-setup.mjs --context-cleanup $(GROUP) $(RUNTIME)
 
 # ci-targets runs TARGETS past failures and writes the logs, record.json and summary.md into CI_REPORT.
 CI_REPORT ?= var/report/ci-targets

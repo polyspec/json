@@ -20,11 +20,11 @@ RUNS = 3
 ROWS = 50000
 PYTHON_RUN = Path(__file__).with_name("parse.py")
 PHP_RUN = Path(__file__).with_name("parse.php")
-# The implementations of config/parity.json, the one declaration of their folders and of the interpreter of the Python
+# The implementations of config/implementations.json, the one declaration of their folders and of the interpreter of the Python
 # package (its venv, which make ordered-json-install-python makes).
 IMPLEMENTATIONS = {
     item["name"]: item
-    for item in json.loads((ROOT / "config/parity.json").read_text())["implementations"]
+    for item in json.loads((ROOT / "config/implementations.json").read_text())["implementations"]
 }
 
 

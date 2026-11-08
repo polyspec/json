@@ -1,5 +1,5 @@
 <!-- doc-id: api -->
-<!-- source-sha256: b0b58925fb1bc1b9689d51055c0dec2291df0243b71eac4f1624db45c12846c7 -->
+<!-- source-sha256: b3189419db770aabbe7e542c45dec2be665f1594a5789a905056bb63de544730 -->
 # API 계약
 
 [English](api.md)
@@ -28,7 +28,7 @@ JavaScript 파싱 오류는 UTF-16 위치를 반환합니다. Rust, Go, PHP, Pyt
 <a id="bindings"></a>
 ## 바인딩 확장
 
-바인딩은 해당 언어에만 필요한 API를 추가할 수 있습니다. 바인딩 확장은 공유 parser와 serializer를 사용하고, 허용한 입력의 결과와 오류 위치를 바꾸지 않으며, 추가로 거부하는 입력을 문서화합니다. 공유 동작 표가 아니라 이 절에 적습니다. 해당 패키지는 각각 `config/parity.json`의 feature unit인 자체 테스트를 그 언어의 native test runner로 실행하고 `make parity-check`가 이를 실행합니다. 공통 사례가 닿지 못하는 API는 그 테스트로만 검증됩니다.
+바인딩은 해당 언어에만 필요한 API를 추가할 수 있습니다. 바인딩 확장은 공유 parser와 serializer를 사용하고, 허용한 입력의 결과와 오류 위치를 바꾸지 않으며, 추가로 거부하는 입력을 문서화합니다. 공유 동작 표가 아니라 이 절에 적습니다. 해당 패키지는 자체 테스트를 그 언어의 native test runner로 실행합니다(`make test-<language>`). 공통 사례가 닿지 못하는 API는 그 테스트로만 검증됩니다.
 
 Rust 바인딩은 `parse_bytes_reject_duplicates(source)`를 제공합니다. 일반 문법과 깊이 한도로 UTF-8 바이트를 파싱하지만 어느 깊이든 해석된 객체 키가 반복되면 거부합니다. 이스케이프 표기가 같은 UTF-16 키를 만드는 경우를 포함하여 두 번째 키 토큰의 첫 바이트 위치에 `duplicate object key` 오류를 반환합니다. `parse_bytes`는 공통 중복 키 동작을 유지합니다. 그 밖의 유효한 값과 오류 및 위치는 바뀌지 않습니다.
 

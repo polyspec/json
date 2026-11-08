@@ -1,8 +1,7 @@
 """The package tests of the ordered-json Python package, run by unittest.
 
-Every case of the shared standard runs here, each test method the feature unit of config/parity.json of its name without
-test_, and the package cases cover the API of this binding alone. The package is installed into packages/python/.venv,
-whose interpreter config/parity.json names.
+Every case of the shared standard runs here, and the package cases cover the API of this binding alone. The package is installed into packages/python/.venv,
+whose interpreter make test-python runs.
 """
 
 import json

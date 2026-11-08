@@ -1,5 +1,5 @@
 <!-- doc-id: json-contract -->
-<!-- source-sha256: 2468b6f1d285ac4db69f98b2b863e515d1286287ec4730ea253bea5c386bffed -->
+<!-- source-sha256: 5b2dba014b07f0dc6bc097051f91f6d49a5ad27ba2ca8cf885dd4d86112d149a -->
 # JSON 계약
 
 [English](json-contract.md)
@@ -93,7 +93,7 @@ JavaScript의 `compact` 옵션과 PHP의 `compact` 인자는 호환성을 위해
 <a id="requirements"></a>
 ## 요구사항
 
-각 요구사항은 이 계약의 검사 가능한 한 진술입니다. config/parity.json의 unit은 자기가 검사하는 식별자를 인용합니다.
+각 요구사항은 이 계약의 검사 가능한 한 진술입니다.
 
 - **RQ-001** 객체는 디코딩된 각 키의 최초 출현 위치를 유지하고, 그 키에 마지막으로 쓰인 값을 가집니다.
 - **RQ-002** 객체 키는 디코딩된 UTF-16 code unit으로 비교하므로, 이스케이프한 표기와 그대로의 표기는 같은 member를 가리킵니다.

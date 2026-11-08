@@ -46,7 +46,7 @@
         "scripts/registry.mts",
         "scripts/reference.mts",
         "scripts/verify.mts",
-        "config/parity.json",
+        "config/implementations.json",
         "examples/official.json",
         "contracts/fixtures/**"
       ],
@@ -163,18 +163,6 @@
     },
     {
       "paths": [
-        "config/parity.json",
-        "examples/official.json",
-        "packages/**",
-        "docs/spec/*.md"
-      ],
-      "targets": [
-        "parity-declarations-check",
-        "parity-check"
-      ]
-    },
-    {
-      "paths": [
         "config/layout.kit.yml",
         "config/layout.yml"
       ],
@@ -187,7 +175,8 @@
         "packages/js/**"
       ],
       "targets": [
-        "verify-js"
+        "verify-js",
+        "test-js"
       ]
     },
     {
@@ -195,7 +184,8 @@
         "packages/rust/**"
       ],
       "targets": [
-        "verify-rust"
+        "verify-rust",
+        "test-rust"
       ]
     },
     {
@@ -203,7 +193,8 @@
         "packages/go/**"
       ],
       "targets": [
-        "verify-go"
+        "verify-go",
+        "test-go"
       ]
     },
     {
@@ -212,7 +203,8 @@
       ],
       "targets": [
         "verify-php",
-        "verify-php-extension"
+        "verify-php-extension",
+        "test-php"
       ]
     },
     {
@@ -220,7 +212,8 @@
         "packages/php-ext/**"
       ],
       "targets": [
-        "verify-php-extension"
+        "verify-php-extension",
+        "test-php-ext"
       ]
     },
     {
@@ -228,7 +221,8 @@
         "packages/python/**"
       ],
       "targets": [
-        "verify-python"
+        "verify-python",
+        "test-python"
       ]
     },
     {

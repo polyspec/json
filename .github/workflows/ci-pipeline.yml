@@ -1,8 +1,8 @@
 # The CI pipeline of ordered-json, a file of this repository taken from the pipeline of kit (kit writes no copy, kit
 # docs/spec/utilities-and-recipes.md). .github/workflows/ci.yml holds the triggers and the concurrency and calls it as its job
-# kit, so one push runs one workflow: shared first, then the parity and runtime jobs in parallel, then required. Each job runs
+# kit, so one push runs one workflow: shared first, then the verify and runtime jobs in parallel, then required. Each job runs
 # only make targets of the Makefile of this repository: it installs its own locked prerequisites, declared in config/ci.json
-# or the deps-<runtime> targets, and runs the target of its job, kit-gates-static, kit-gates-parity or
+# or the deps-<runtime> targets, and runs the target of its job, kit-gates-static, kit-gates-verify or
 # kit-gates-runtime-<runtime>, through make ci-targets. The steps name these targets, so rules-check reaches their
 # prerequisites (kit K1057); the runtime matrix lists the runtimes of the repository, and the plan adds the tools of each.
 name: ci-pipeline
@@ -20,10 +20,7 @@ jobs:
     outputs:
       runtimes: ${{ steps.plan.outputs.runtimes }}
       runner: ${{ steps.plan.outputs.runner }}
-      parity_mode: ${{ steps.plan.outputs.parity_mode }}
       has_runtimes: ${{ steps.plan.outputs.has_runtimes }}
-      parity_tools: ${{ steps.plan.outputs.parity_tools }}
-      extractors: ${{ steps.plan.outputs.extractors }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -41,9 +38,6 @@ jobs:
       - name: install common gate tools
         if: ${{ steps.plan.outputs.common_tools != '[]' }}
         run: make install-tools TOOLS="${{ join(fromJSON(steps.plan.outputs.common_tools), ' ') }}"
-      - name: install PHP symbol extractor
-        if: ${{ contains(steps.plan.outputs.extractors, 'php') }}
-        run: make kit-install-symbols EXTRACTORS=php
       - name: install shared prerequisites
         run: make kit-ci-setup GROUP=shared
       - id: context_prepare
@@ -63,44 +57,34 @@ jobs:
           path: var/report/ci-targets/
           if-no-files-found: ignore
 
-  parity:
+  # The shared verifier of this repository (scripts/verify.mts): it builds every implementation and compares their replies on
+  # the shared cases, so it installs the toolchains of every language.
+  verify:
     needs: shared
-    if: ${{ needs.shared.outputs.parity_mode == 'full' }}
     runs-on: ${{ needs.shared.outputs.runner }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 0
       - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
-        if: ${{ contains(needs.shared.outputs.parity_tools, 'php') }}
         with:
           php-version-file: .php-version
           tools: none
           coverage: none
       # The bootstrap of kit (K992): the Node.js of mise.toml, the locked kit package, the npm of var/tools and the packages.
       - uses: ./.github/actions/kit-bootstrap
-      - name: install parity toolchains
-        if: ${{ needs.shared.outputs.parity_tools != '[]' }}
-        run: make install-tools TOOLS="${{ join(fromJSON(needs.shared.outputs.parity_tools), ' ') }}"
-      - name: install symbol extractors
-        if: ${{ needs.shared.outputs.extractors != '[]' }}
-        run: make kit-install-symbols EXTRACTORS="${{ join(fromJSON(needs.shared.outputs.extractors), ' ') }}"
-      - name: install parity prerequisites
-        run: make kit-ci-setup GROUP=parity
-      - id: context_prepare
-        name: prepare parity CI context
-        run: make kit-ci-context-prepare GROUP=parity
-      - name: parity gate
-        run: make ci-targets TARGETS=kit-gates-parity
-      - name: cleanup parity CI context
-        if: ${{ always() && steps.context_prepare.outcome != 'skipped' }}
-        run: make kit-ci-context-cleanup GROUP=parity
+      - name: install verify toolchains
+        run: make install-tools TOOLS="go rust php composer python uv"
+      - name: install verify prerequisites
+        run: make ordered-json-install-verify
+      - name: verify gate
+        run: make ci-targets TARGETS=kit-gates-verify
       # actions/upload-artifact v7.0.1: the report of make ci-targets, var/report/ci-targets.
       - name: report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: kit-report-parity
+          name: kit-report-verify
           path: var/report/ci-targets/
           if-no-files-found: ignore
 
@@ -128,9 +112,6 @@ jobs:
         run: make install-tools TOOLS="${{ join(matrix.installTools, ' ') }}"
       - name: install runtime prerequisites
         run: make kit-ci-setup GROUP=runtime RUNTIME=${{ matrix.runtime }}
-      - name: install PHP symbol extractor
-        if: ${{ matrix.runtime == 'php' && contains(needs.shared.outputs.extractors, 'php') }}
-        run: make kit-install-symbols EXTRACTORS=php
       - id: context_prepare
         name: prepare runtime CI context
         run: make kit-ci-context-prepare GROUP=runtime RUNTIME=${{ matrix.runtime }}
@@ -148,20 +129,20 @@ jobs:
           path: var/report/ci-targets/
           if-no-files-found: ignore
 
-  # The closing common part: it fails when a job that the plan selected does not succeed. The plan selects shared, the parity job
-  # of parity_mode full, and runtime when the repository has one (K950). A job
+  # The closing common part: it fails when a job that the plan selected does not succeed. The plan selects shared and verify,
+  # and runtime when the repository has one (K950). A job
   # the plan did not select is skipped and is not a result; a selected job that is skipped fails the pipeline. It runs on the
   # default runner, since the runner output of shared is empty when shared fails before the plan.
   required:
     if: ${{ always() }}
-    needs: [shared, parity, runtime]
+    needs: [shared, verify, runtime]
     runs-on: ubuntu-24.04
     env:
       SHARED_RESULT: ${{ needs.shared.result }}
-      PARITY_RESULT: ${{ needs.parity.result }}
+      VERIFY_RESULT: ${{ needs.verify.result }}
       RUNTIME_RESULT: ${{ needs.runtime.result }}
       SHARED_SELECTED: 'true'
-      PARITY_SELECTED: ${{ needs.shared.outputs.parity_mode == 'full' }}
+      VERIFY_SELECTED: 'true'
       RUNTIME_SELECTED: ${{ needs.shared.outputs.has_runtimes == 'true' }}
     steps:
       - name: require every job that the plan selected
@@ -179,6 +160,6 @@ jobs:
             fi
           }
           judge shared "$SHARED_RESULT" "$SHARED_SELECTED"
-          judge parity "$PARITY_RESULT" "$PARITY_SELECTED"
+          judge verify "$VERIFY_RESULT" "$VERIFY_SELECTED"
           judge runtime "$RUNTIME_RESULT" "$RUNTIME_SELECTED"
           exit "$failed"

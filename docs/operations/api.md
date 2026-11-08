@@ -27,7 +27,7 @@ JavaScript parse errors report UTF-16 offsets. Rust, Go, PHP and Python parse er
 <a id="bindings"></a>
 ## Binding extensions
 
-A binding may add an API that only its language needs. A binding extension uses the shared parser and serializer, leaves results and error offsets unchanged for inputs it accepts, and documents any additional rejection. It appears in this section instead of the shared operation tables. Its package runs its own tests, each a feature unit of `config/parity.json`, with the native test runner of its language, and `make parity-check` runs them; an API that no shared case can reach is verified only by those tests.
+A binding may add an API that only its language needs. A binding extension uses the shared parser and serializer, leaves results and error offsets unchanged for inputs it accepts, and documents any additional rejection. It appears in this section instead of the shared operation tables. Its package runs its own tests with the native test runner of its language (`make test-<language>`); an API that no shared case can reach is verified only by those tests.
 
 The Rust binding provides `parse_bytes_reject_duplicates(source)`. It parses UTF-8 bytes with the normal grammar and depth limit but rejects a repeated decoded object key at any depth. It reports `duplicate object key` at the first byte of the second key token, including when escape sequences spell the same UTF-16 key. `parse_bytes` retains the shared duplicate-key behavior. All other valid values, errors and offsets are unchanged.
 

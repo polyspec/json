@@ -2,8 +2,8 @@
 // the probe of each (one document path in, one JSON reply out) and compares each reply with the expected result: the golden
 // results of examples/official.json, and for the repository fixtures and the optional supplementary suite the independent
 // reference (reference.mts). Every implementation must also reject the same input at the same position with the same kind,
-// one of the list of the JSON contract. The package tests of each implementation are no part of it: make parity-check runs
-// them with the native runner of each language.
+// one of the list of the JSON contract. The package tests of each implementation are no part of it: make test-<language>
+// runs them with the native runner of each language.
 //
 //   node scripts/verify.mts [--only <implementation>]... [--suite <JSONTestSuite checkout>]
 //   node scripts/verify.mts --record [--suite <checkout>]   every implementation, then var/records/verification.json and the
@@ -374,7 +374,7 @@ async function main(): Promise<number> {
   }
   const unknown = (values.only ?? []).filter(name => !IMPLEMENTATIONS.includes(name));
   if (unknown.length) {
-    console.error(`--only names ${unknown.join(', ')}; the implementations of config/parity.json are ${IMPLEMENTATIONS.join(', ')}`);
+    console.error(`--only names ${unknown.join(', ')}; the implementations of config/implementations.json are ${IMPLEMENTATIONS.join(', ')}`);
     return 2;
   }
   if (values.record && values.only) {

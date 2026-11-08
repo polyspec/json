@@ -1,5 +1,5 @@
-// The implementations of config/parity.json with the commands of the shared verifier, and the run directory in which a
-// verification builds them. config/parity.json, which the parity check of @polyspec/kit reads, is the one source of the
+// The implementations of config/implementations.json with the commands of the shared verifier, and the run directory in
+// which a verification builds them. config/implementations.json is the one source of the
 // implementations and of the directory of each (its one root); the verifier is a comparator of that declaration. It builds
 // each implementation, runs its probe on the shared cases and reads its runtime versions with the commands below. A command
 // names the directory of an implementation as {<name>} and the cache of the run as {cache}.
@@ -12,7 +12,7 @@ import { readJsonFile } from './json.mts';
 import type { Tree } from './reference.mts';
 
 export const ROOT = path.resolve(import.meta.dirname, '..');
-const PARITY = 'config/parity.json';
+const DECLARATION = 'config/implementations.json';
 
 /** A command line: the program and its arguments. */
 export type Argv = [string, ...string[]];
@@ -98,22 +98,22 @@ export function errorCode(error: unknown): string | undefined {
 }
 
 /**
- * The implementations of config/parity.json of `root`, each with its one root and its commands. Every implementation has
+ * The implementations of config/implementations.json of `root`, each with its one root and its commands. Every implementation has
  * commands and every command set belongs to an implementation, so neither names a language that the other lacks.
  */
 export function loadRegistry(root = ROOT, commands = COMMANDS): Registry {
-  const { implementations: declared } = readJsonFile<{ implementations: { name: string; roots: string[] }[] }>(path.join(root, PARITY), 'parity-implementations.schema.json');
-  if (declared.length === 0) throw new Error(`${PARITY} declares no implementation`);
+  const { implementations: declared } = readJsonFile<{ implementations: { name: string; roots: string[] }[] }>(path.join(root, DECLARATION), 'implementations.schema.json');
+  if (declared.length === 0) throw new Error(`${DECLARATION} declares no implementation`);
   const roots: Record<string, string> = {};
   for (const { name, roots: folders } of declared) {
     const [folder, ...others] = folders;
-    if (folder === undefined || others.length) throw new Error(`${PARITY}: the verifier needs one root of ${name}, not ${JSON.stringify(folders)}`);
-    if (path.isAbsolute(folder) || folder.split('/').includes('..') || folder === '.') throw new Error(`${PARITY}: the root of ${name} is ${folder}, not a child directory of the repository`);
+    if (folder === undefined || others.length) throw new Error(`${DECLARATION}: the verifier needs one root of ${name}, not ${JSON.stringify(folders)}`);
+    if (path.isAbsolute(folder) || folder.split('/').includes('..') || folder === '.') throw new Error(`${DECLARATION}: the root of ${name} is ${folder}, not a child directory of the repository`);
     roots[name] = folder;
   }
   const names = Object.keys(roots).sort();
   if (JSON.stringify(names) !== JSON.stringify(Object.keys(commands).sort())) {
-    throw new Error(`${PARITY} declares ${JSON.stringify(names)}, but the verifier has commands for ${JSON.stringify(Object.keys(commands).sort())}`);
+    throw new Error(`${DECLARATION} declares ${JSON.stringify(names)}, but the verifier has commands for ${JSON.stringify(Object.keys(commands).sort())}`);
   }
   for (const [name, entry] of Object.entries(commands)) {
     const unknown = (entry.dependencies ?? []).filter(dependency => !(dependency in roots));

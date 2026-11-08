@@ -1,4 +1,4 @@
-// The implementations of the verifier are those of config/parity.json, each built with its own commands in a run directory
+// The implementations of the verifier are those of config/implementations.json, each built with its own commands in a run directory
 // of its own, never in the checkout; the packages keep the polyspec names.
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
@@ -10,12 +10,12 @@ import { COMMANDS, REGISTRY, ROOT, commandsOf, copySources, pathOf, loadRegistry
 import { parse } from 'smol-toml';
 import { checkout, known } from './checkout.mts';
 
-/** Writes the config/parity.json of a synthetic checkout: one implementation for each name with its one root. */
+/** Writes the config/implementations.json of a synthetic checkout: one implementation for each name with its one root. */
 const declare = (json: (file: string, data: unknown) => void, roots: Record<string, string>) =>
-  json('config/parity.json', { schema: 1, implementations: Object.entries(roots).map(([name, folder]) => ({ name, runner: 'python', roots: [folder] })), units: [] });
+  json('config/implementations.json', { schema: 1, implementations: Object.entries(roots).map(([name, folder]) => ({ name, roots: [folder] })) });
 
-test('the implementations are those of the parity declaration', (context) => {
-  const declared = readJsonFile<{ implementations: { name: string; roots: string[] }[] }>(path.join(ROOT, 'config/parity.json'), 'parity-implementations.schema.json').implementations;
+test('the implementations are those of config/implementations.json', (context) => {
+  const declared = readJsonFile<{ implementations: { name: string; roots: string[] }[] }>(path.join(ROOT, 'config/implementations.json'), 'implementations.schema.json').implementations;
   assert.deepEqual(REGISTRY.roots, Object.fromEntries(declared.map(entry => [entry.name, entry.roots[0]])));
   const { root, json } = checkout(context);
   declare(json, { js: 'packages/js', future: 'packages/future' });

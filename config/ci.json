@@ -1,12 +1,8 @@
 {
   "schema": 1,
   "runtimes": ["go", "php", "php-ext", "python", "rust", "ts"],
-  "parityMode": "full",
   "setup": {
     "shared": [],
-    "parity": [
-      "ordered-json-install-parity"
-    ],
     "runtimes": {
       "go": [
         "build-go"
@@ -36,14 +32,6 @@
     "shared": [
       "php",
       "composer"
-    ],
-    "parity": [
-      "go",
-      "rust",
-      "php",
-      "composer",
-      "python",
-      "uv"
     ]
   }
 }

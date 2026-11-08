@@ -1,18 +1,8 @@
 {
   "schema": 1,
-  "comment": "The toolchains of ordered-json that no other file declares. npm is declared in the devEngines.packageManager of package.json, Rust in rust-toolchain.toml and PHP in .php-version. mise is the release that make install-tools TOOLS=npm installs with the sha256 of each platform; mise.toml declares the tools it installs (the Node.js, the Go and the Python of the kit pins with uv, alint of make layout-check, ruff, vulture, golangci-lint and deadcode of the lints, cargo-audit and govulncheck, and Composer) and mise.lock locks them. symbolExtractors and the Rust nightly of exceptions are the symbol extractors of the parity check (config/parity.json).",
+  "comment": "The toolchains of ordered-json that no other file declares. npm is declared in the devEngines.packageManager of package.json, Rust in rust-toolchain.toml and PHP in .php-version. mise is the release that make install-tools TOOLS=npm installs with the sha256 of each platform; mise.toml declares the tools it installs (the Node.js, the Go and the Python of the kit pins with uv, alint of make layout-check, ruff, vulture, golangci-lint and deadcode of the lints, cargo-audit and govulncheck, and Composer) and mise.lock locks them. symbolExtractors names the PHP programs of kit that lint-php reads.",
   "symbolExtractors": [
-    "go",
     "php"
-  ],
-  "exceptions": [
-    {
-      "tool": "rust",
-      "channel": "nightly-2026-10-01",
-      "scope": "packages/rust",
-      "reason": "the rust symbol extractor of the parity check reads the rustdoc JSON of the crate, which only a nightly writes (rust-lang/rust#76578)",
-      "retry": "rustdoc JSON is stable"
-    }
   ],
   "mise": {
     "version": "2026.10.8",

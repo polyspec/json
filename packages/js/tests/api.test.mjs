@@ -1,5 +1,4 @@
-// Package tests for the JavaScript value API, run by node:test; each test is the feature unit of config/parity.json
-// of the same name. The shared cases exercise the JSON contract through the adapter; construction guards, frozen
+// Package tests for the JavaScript value API, run by node:test. The shared cases exercise the JSON contract through the adapter; construction guards, frozen
 // results, wrong-kind access, option validation and UTF-16 offsets live only here.
 import assert from 'node:assert/strict';
 import {test} from 'node:test';

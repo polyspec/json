@@ -50,26 +50,24 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
   Enforced by: `make ci-targets`
 - Own: Every tracked path is owned by a rule of [config/owner-checks.json](config/owner-checks.json). `make owner-validate` fails while a path matches no rule, a glob matches no path or an owner does not exist. A new file is mapped in the same commit.
   Enforced by: `make layout-check`
-- Own: Each target of `CHECK_TARGETS` in the Makefile is a prerequisite of the target of exactly one job of `.github/workflows/ci-pipeline.yml` (`kit-gates-static`, `kit-gates-parity`, `kit-gates-runtime-<runtime>`), which the job runs by name through `make ci-targets`, past failures, and uploads its report.
+- Own: Each target of `CHECK_TARGETS` in the Makefile is a prerequisite of the target of exactly one job of `.github/workflows/ci-pipeline.yml` (`kit-gates-static`, `kit-gates-verify`, `kit-gates-runtime-<runtime>`), which the job runs by name through `make ci-targets`, past failures, and uploads its report.
   Enforced by: `make ordered-json-test-scripts`
 - Own: The lint of each language passes: `make lint-rust` (clippy with `-D warnings`), `make lint-go` (golangci-lint with `.golangci.yml`, and deadcode), `make lint-php` (phpcs with `phpcs.xml.dist`, and PHPStan) and `make lint-python` (ruff with `ruff.toml`, and vulture).
   Enforced by: `make ci-targets`
 - Own: The PHP extension is rebuilt when its native code changes. A result from an old binary or a prior run is never taken as verification of changed code.
-  Enforced by: `make parity-check`
+  Enforced by: `make test-php-ext`
 - Own: A verification result or a source hash is never edited to make a check pass. A record of `var/records/` is written by the run that verifies it and is not committed.
   Enforced by: `make layout-check`
 
-<a id="parity"></a>
+<a id="implementations"></a>
 ## Implementations and shared cases
 
-- Own: [config/parity.json](config/parity.json) declares the implementations, which is the one source of the language set of this repository, with the directory of each, and the units that each implementation holds. A new language is added in `config/parity.json`, in the commands of `scripts/registry.mts` and in a package directory, without changing the shared JSON comparison algorithm.
-  Enforced by: `make parity-declarations-check`
-- Own: A profile narrower than every implementation names its reason and the spec anchors of the difference. A unit that an implementation does not hold yet is an exclusion with the checklist item that removes it, and it fails the check until that item is done.
-  Enforced by: `make parity-declarations-check`
-- Own: `make parity-check` runs the bindings of every suite in every implementation and reads the public symbols of each one, so a missing case, an undeclared test or an undeclared public symbol fails.
-  Enforced by: `make parity-check`
+- Own: [config/implementations.json](config/implementations.json) declares the implementations, which is the one source of the language set of this repository, with the directory of each. A new language is added in `config/implementations.json`, in the commands of `scripts/registry.mts` and in a package directory, without changing the shared JSON comparison algorithm.
+  Enforced by: `make ordered-json-test-scripts`
+- Own: Each implementation runs its own package tests with the native runner of its language: `make test-js`, `make test-rust`, `make test-go`, `make test-php`, `make test-php-ext` and `make test-python`.
+  Enforced by: `make ci-targets`
 - Own: An API that only one package provides is tested in that package. Shared cases exercise the JSON contract and cannot reach a language-specific API.
-  Enforced by: `make parity-declarations-check`
+  Enforced by: none, judged at review: the shared cases reach only the JSON contract.
 - Own: All language probes use [official.json](examples/official.json) and [scripts/verify.mts](scripts/verify.mts). Shared cases are added there or under `contracts/fixtures/`. No language-specific examples or expected results are created.
   Enforced by: `make verify-all`
 - Own: A contract change updates the verifier and the affected packages in one repository revision. See the [repository contract](docs/operations/repositories.md).
@@ -136,8 +134,8 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
 <a id="package-npm"></a>
 ## Package npm (packages/js)
 
-- Own: The package `@polyspec/ordered-json` is checked alone by `make ordered-json-js-check`, which runs `make verify-js` (`scripts/verify.mts --only js`) and compares its adapter with the shared cases and writes no record. Its package tests are native node:test files that `make parity-check` runs.
-  Enforced by: `make parity-check`
+- Own: The package `@polyspec/ordered-json` is checked alone by `make ordered-json-js-check`, which runs `make verify-js` (`scripts/verify.mts --only js`) and compares its adapter with the shared cases and writes no record. Its package tests are native node:test files that `make test-js` runs.
+  Enforced by: `make test-js`
 - Own: The package keeps no independent goldens: official cases and expected results belong to the repository root, and a behavior change updates the common specification before the package.
   Enforced by: `make verify-all`
 - Own: The changes of the package are listed in its section of [CHANGELOG.md](CHANGELOG.md), and its documents are checked with the others.
@@ -152,8 +150,8 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
   Enforced by: none, judged at review: no workflow, Git hook or Claude Code hook runs this target.
 - Own: Its crates are the locked versions of `packages/rust/Cargo.lock`, which `make install` downloads; no check downloads them.
   Enforced by: none, judged at review: the crates of a Cargo.lock are the state of cargo, which a make target cannot compare with the lock (K864).
-- Own: Its package tests are the native tests of the crate that `make parity-check` runs with their declared units.
-  Enforced by: `make parity-declarations-check`
+- Own: Its package tests are the native tests of the crate that `make test-rust` runs.
+  Enforced by: `make test-rust`
 - Own: The changes of the crate are listed in its section of [CHANGELOG.md](CHANGELOG.md).
   Enforced by: `make docs-check`
 
@@ -166,8 +164,8 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
   Enforced by: none, judged at review: no workflow, Git hook or Claude Code hook runs this target.
 - Own: `GOTOOLCHAIN` is `local`, and the module requires the Go release of `mise.toml`.
   Enforced by: none, judged at review: kit 0.0.77 removed toolchain check (K854), and the pins of mise.toml and mise.lock are read by install-tools.
-- Own: Its package tests are the Go tests beside the code that `make parity-check` runs with their declared units.
-  Enforced by: `make parity-declarations-check`
+- Own: Its package tests are the Go tests beside the code that `make test-go` runs.
+  Enforced by: `make test-go`
 - Own: The changes of the module are listed in its section of [CHANGELOG.md](CHANGELOG.md).
   Enforced by: `make docs-check`
 
@@ -180,16 +178,16 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
   Enforced by: none, judged at review: no workflow, Git hook or Claude Code hook runs this target.
 - Own: Its `composer.lock` is locked to the platform `8.4.1` and requires PHP `>=8.4`, and is re-locked with `composer update --lock` when its manifest changes.
   Enforced by: none, judged at review.
-- Own: Its package tests are the PHPUnit tests of `packages/php/tests` that `make parity-check` runs with their declared units, installed by `make install`.
-  Enforced by: `make parity-check`
+- Own: Its package tests are the PHPUnit tests of `packages/php/tests` that `make test-php` runs, installed by `make install`.
+  Enforced by: `make test-php`
 - Own: The changes of the package are listed in its section of [CHANGELOG.md](CHANGELOG.md).
   Enforced by: `make docs-check`
 
 <a id="package-php-ext"></a>
 ## Package php-ext (packages/php-ext)
 
-- Own: The extension is checked alone by `make ordered-json-php-ext-check`, which runs `make verify-php-extension`. `make build-php-ext` of kit (S10) builds `var/php-ext/polyspec_ordered_json.so` from the stub and its tracked arginfo header (`make php-ext-arginfo` writes it), and `make verify-php-extension` and `make parity-check` load it.
-  Enforced by: `make parity-check`
+- Own: The extension is checked alone by `make ordered-json-php-ext-check`, which runs `make verify-php-extension`. `make build-php-ext` of kit (S10) builds `var/php-ext/polyspec_ordered_json.so` from the stub and its tracked arginfo header (`make php-ext-arginfo` writes it), and `make verify-php-extension` and `make test-php-ext` load it.
+  Enforced by: `make test-php-ext`
 - Own: Its `composer.lock` is locked to the platform `8.4.1` and requires PHP `>=8.4`, the same as the PHP package, and is re-locked with `composer update --lock` when its manifest changes.
   Enforced by: none, judged at review.
 - Own: The changes of the extension are listed in its section of [CHANGELOG.md](CHANGELOG.md).
@@ -200,7 +198,7 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
 
 - Own: The package is checked alone by `make ordered-json-python-check`, which runs `make verify-python`, and linted by `make lint-python` (ruff with `ruff.toml`, and vulture with `packages/python/vulture_whitelist.py`). `make install-packages` installs it editable into `packages/python/.venv`, which its tests use.
   Enforced by: `make lint-python`
-- Own: Its package tests are the unittest tests of `packages/python/tests` that `make parity-check` runs with their declared units.
-  Enforced by: `make parity-declarations-check`
+- Own: Its package tests are the unittest tests of `packages/python/tests` that `make test-python` runs.
+  Enforced by: `make test-python`
 - Own: The changes of the package are listed in its section of [CHANGELOG.md](CHANGELOG.md).
   Enforced by: `make docs-check`

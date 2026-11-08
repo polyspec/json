@@ -1,5 +1,5 @@
 <!-- doc-id: development -->
-<!-- source-sha256: d41a883f42f8da396678fca0033fb8a0d09657ce8aa9d6e0bb53082b63fe8573 -->
+<!-- source-sha256: efe31da2d4da5018a777dd71bc2cf9ec3afbd1a02d183348309ae644fa55527f -->
 # Development procedure
 
 [English](AGENTS.md)
@@ -51,26 +51,24 @@
   Enforced by: `make ci-targets`
 - Own: 모든 추적 경로는 [config/owner-checks.json](config/owner-checks.json)의 규칙이 소유합니다. `make owner-validate`는 어떤 규칙도 맞지 않는 경로, 어떤 path도 맞지 않는 glob, 존재하지 않는 owner가 있으면 실패합니다. 새 파일은 같은 commit에서 매핑합니다.
   Enforced by: `make layout-check`
-- Own: Makefile의 `CHECK_TARGETS`의 각 target은 `.github/workflows/ci-pipeline.yml`의 정확히 한 job의 target(`kit-gates-static`, `kit-gates-parity`, `kit-gates-runtime-<runtime>`)의 prerequisite이며, 그 job은 이 target을 이름으로 `make ci-targets`로 실패 뒤에도 끝까지 실행하고 보고서를 업로드합니다.
+- Own: Makefile의 `CHECK_TARGETS`의 각 target은 `.github/workflows/ci-pipeline.yml`의 정확히 한 job의 target(`kit-gates-static`, `kit-gates-verify`, `kit-gates-runtime-<runtime>`)의 prerequisite이며, 그 job은 이 target을 이름으로 `make ci-targets`로 실패 뒤에도 끝까지 실행하고 보고서를 업로드합니다.
   Enforced by: `make ordered-json-test-scripts`
 - Own: 각 언어의 lint가 통과합니다: `make lint-rust`(`-D warnings`의 clippy), `make lint-go`(`.golangci.yml`의 golangci-lint와 deadcode), `make lint-php`(`phpcs.xml.dist`의 phpcs와 PHPStan), `make lint-python`(`ruff.toml`의 ruff와 vulture).
   Enforced by: `make ci-targets`
 - Own: PHP extension은 native 코드가 바뀌면 다시 빌드합니다. 오래된 binary나 이전 실행의 결과를 바뀐 코드의 검증으로 취급하지 않습니다.
-  Enforced by: `make parity-check`
+  Enforced by: `make test-php-ext`
 - Own: 검증 결과나 source hash를 검사를 통과시키려고 편집하지 않습니다. `var/records/`의 기록은 그것을 검증한 실행이 쓰며 commit하지 않습니다.
   Enforced by: `make layout-check`
 
-<a id="parity"></a>
+<a id="implementations"></a>
 ## Implementations and shared cases
 
-- Own: [config/parity.json](config/parity.json)은 구현을 선언하며, 이 저장소의 언어 집합에 대한 단일 출처입니다. 각 구현의 디렉터리와 각 구현이 가진 unit도 여기에 적습니다. 새 언어는 공통 JSON 비교 알고리즘을 바꾸지 않고 `config/parity.json`, `scripts/registry.mts`의 명령, 패키지 디렉터리에 추가합니다.
-  Enforced by: `make parity-declarations-check`
-- Own: 모든 구현보다 좁은 profile은 그 이유와 차이의 spec anchor를 명시합니다. 구현이 아직 가지지 않은 unit은 그것을 제거하는 체크리스트 항목과 함께 exclusion으로 두며, 그 항목이 끝나기 전까지 검사가 실패합니다.
-  Enforced by: `make parity-declarations-check`
-- Own: `make parity-check`는 모든 구현의 모든 suite에 대한 binding을 실행하고 각 구현의 public symbol을 읽습니다. 따라서 누락된 사례, 선언되지 않은 테스트, 선언되지 않은 public symbol은 실패합니다.
-  Enforced by: `make parity-check`
+- Own: [config/implementations.json](config/implementations.json)은 구현을 선언하며, 이 저장소의 언어 집합에 대한 단일 출처입니다. 각 구현의 디렉터리도 여기에 적습니다. 새 언어는 공통 JSON 비교 알고리즘을 바꾸지 않고 `config/implementations.json`, `scripts/registry.mts`의 명령, 패키지 디렉터리에 추가합니다.
+  Enforced by: `make ordered-json-test-scripts`
+- Own: 각 구현은 자기 언어의 native runner로 자기 패키지 테스트를 실행합니다: `make test-js`, `make test-rust`, `make test-go`, `make test-php`, `make test-php-ext`, `make test-python`.
+  Enforced by: `make ci-targets`
 - Own: 한 패키지만 제공하는 API는 그 패키지에서 테스트합니다. 공통 사례는 JSON 계약을 검사하며 언어별 API에 닿을 수 없습니다.
-  Enforced by: `make parity-declarations-check`
+  Enforced by: none, 검토에서 판단합니다. 공통 사례는 JSON 계약에만 닿습니다.
 - Own: 모든 언어 probe는 [official.json](examples/official.json)과 [scripts/verify.mts](scripts/verify.mts)를 사용합니다. 공통 사례는 그 파일이나 `contracts/fixtures/` 아래에 추가합니다. 언어별 예제나 기대 결과는 만들지 않습니다.
   Enforced by: `make verify-all`
 - Own: 계약 변경은 하나의 저장소 revision에서 verifier와 영향받는 패키지를 함께 갱신합니다. [repository contract](docs/operations/repositories.ko.md)를 참조합니다.
@@ -137,8 +135,8 @@
 <a id="package-npm"></a>
 ## 패키지 npm (packages/js)
 
-- Own: 패키지 `@polyspec/ordered-json`은 `make ordered-json-js-check`로 이 패키지만 검사합니다. 이 target은 `make verify-js`(`scripts/verify.mts --only js`)를 실행해 어댑터를 공통 사례와 비교하며 기록을 쓰지 않습니다. 패키지 테스트는 `make parity-check`가 실행하는 native node:test 파일입니다.
-  Enforced by: `make parity-check`
+- Own: 패키지 `@polyspec/ordered-json`은 `make ordered-json-js-check`로 이 패키지만 검사합니다. 이 target은 `make verify-js`(`scripts/verify.mts --only js`)를 실행해 어댑터를 공통 사례와 비교하며 기록을 쓰지 않습니다. 패키지 테스트는 `make test-js`가 실행하는 native node:test 파일입니다.
+  Enforced by: `make test-js`
 - Own: 패키지는 독립 기대값을 두지 않습니다. 공식 사례와 기대 결과는 저장소 루트에 있으며, 동작을 바꿀 때는 패키지보다 먼저 공통 명세를 고칩니다.
   Enforced by: `make verify-all`
 - Own: 패키지의 변경은 [CHANGELOG.ko.md](CHANGELOG.ko.md)의 이 패키지 절에 적고, 문서는 다른 문서와 함께 검사합니다.
@@ -153,8 +151,8 @@
   Enforced by: none, 판단 사항입니다. workflow, Git hook, Claude Code hook 어디도 이 target을 실행하지 않습니다.
 - Own: crate는 `packages/rust/Cargo.lock`에 고정된 버전이며, `make install`이 내려받고 검사는 내려받지 않습니다.
   Enforced by: none, 판단 사항입니다. crate의 존재는 cargo의 상태이므로 make target이 Cargo.lock과 비교할 수 없습니다(K864).
-- Own: 패키지 테스트는 `make parity-check`가 선언된 unit과 함께 실행하는 crate의 native 테스트입니다.
-  Enforced by: `make parity-declarations-check`
+- Own: 패키지 테스트는 `make test-rust`가 실행하는 crate의 native 테스트입니다.
+  Enforced by: `make test-rust`
 - Own: crate의 변경은 [CHANGELOG.ko.md](CHANGELOG.ko.md)의 이 패키지 절에 적습니다.
   Enforced by: `make docs-check`
 
@@ -167,8 +165,8 @@
   Enforced by: none, 판단 사항입니다. workflow, Git hook, Claude Code hook 어디도 이 target을 실행하지 않습니다.
 - Own: `GOTOOLCHAIN`은 `local`이며, module은 `mise.toml`의 Go release를 요구합니다.
   Enforced by: none, 판단 사항입니다. kit 0.0.77이 toolchain check를 제거했고(K854), mise.toml과 mise.lock의 고정은 install-tools가 읽습니다.
-- Own: 패키지 테스트는 `make parity-check`가 선언된 unit과 함께 실행하는 코드 옆의 Go 테스트입니다.
-  Enforced by: `make parity-declarations-check`
+- Own: 패키지 테스트는 `make test-go`가 실행하는 코드 옆의 Go 테스트입니다.
+  Enforced by: `make test-go`
 - Own: module의 변경은 [CHANGELOG.ko.md](CHANGELOG.ko.md)의 이 패키지 절에 적습니다.
   Enforced by: `make docs-check`
 
@@ -181,16 +179,16 @@
   Enforced by: none, 판단 사항입니다. workflow, Git hook, Claude Code hook 어디도 이 target을 실행하지 않습니다.
 - Own: `composer.lock`은 platform `8.4.1`로 잠기고 PHP `>=8.4`를 요구하며, manifest가 바뀌면 `composer update --lock`으로 다시 잠급니다.
   Enforced by: none, 검토에서 판단합니다.
-- Own: 패키지 테스트는 `packages/php/tests`의 PHPUnit 테스트이며, `make install`이 설치하고 `make parity-check`가 선언된 unit과 함께 실행합니다.
-  Enforced by: `make parity-check`
+- Own: 패키지 테스트는 `packages/php/tests`의 PHPUnit 테스트이며, `make install`이 설치하고 `make test-php`가 실행합니다.
+  Enforced by: `make test-php`
 - Own: 패키지의 변경은 [CHANGELOG.ko.md](CHANGELOG.ko.md)의 이 패키지 절에 적습니다.
   Enforced by: `make docs-check`
 
 <a id="package-php-ext"></a>
 ## 패키지 php-ext (packages/php-ext)
 
-- Own: extension은 `make ordered-json-php-ext-check`로 이 패키지만 검사하며, 이 target은 `make verify-php-extension`을 실행합니다. kit의 `make build-php-ext`(S10)가 stub과 추적되는 arginfo header(`make php-ext-arginfo`가 씁니다)에서 `var/php-ext/polyspec_ordered_json.so`를 빌드하며, `make verify-php-extension`과 `make parity-check`가 이를 불러옵니다.
-  Enforced by: `make parity-check`
+- Own: extension은 `make ordered-json-php-ext-check`로 이 패키지만 검사하며, 이 target은 `make verify-php-extension`을 실행합니다. kit의 `make build-php-ext`(S10)가 stub과 추적되는 arginfo header(`make php-ext-arginfo`가 씁니다)에서 `var/php-ext/polyspec_ordered_json.so`를 빌드하며, `make verify-php-extension`과 `make test-php-ext`가 이를 불러옵니다.
+  Enforced by: `make test-php-ext`
 - Own: `composer.lock`은 platform `8.4.1`로 잠기고 PHP `>=8.4`를 요구합니다. PHP 패키지와 같으며, manifest가 바뀌면 `composer update --lock`으로 다시 잠급니다.
   Enforced by: none, 검토에서 판단합니다.
 - Own: extension의 변경은 [CHANGELOG.ko.md](CHANGELOG.ko.md)의 이 패키지 절에 적습니다.
@@ -201,7 +199,7 @@
 
 - Own: 패키지는 `make ordered-json-python-check`로 이 패키지만 검사하며, 이 target은 `make verify-python`을 실행합니다. `make lint-python`(`ruff.toml`을 쓰는 ruff와 `packages/python/vulture_whitelist.py`를 쓰는 vulture)이 lint합니다. `make install-packages`가 `packages/python/.venv`에 editable로 설치하며, 테스트가 이를 씁니다.
   Enforced by: `make lint-python`
-- Own: 패키지 테스트는 `packages/python/tests`의 unittest 테스트이며, `make parity-check`가 선언된 unit과 함께 실행합니다.
-  Enforced by: `make parity-declarations-check`
+- Own: 패키지 테스트는 `packages/python/tests`의 unittest 테스트이며, `make test-python`이 실행합니다.
+  Enforced by: `make test-python`
 - Own: 패키지의 변경은 [CHANGELOG.ko.md](CHANGELOG.ko.md)의 이 패키지 절에 적습니다.
   Enforced by: `make docs-check`

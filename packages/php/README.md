@@ -19,7 +19,7 @@ $output = Polyspec\OrderedJson\stringify($value);
 ~~~
 
 
-The [native extension](https://github.com/polyspec/ordered-json/tree/main/packages/php-ext) is a separate optional package. Pure PHP needs no extension checkout. `parse()` uses the extension when it is loaded and the pure PHP implementation otherwise. The tests run with PHPUnit, once without the extension and once with it (`config/parity.json`).
+The [native extension](https://github.com/polyspec/ordered-json/tree/main/packages/php-ext) is a separate optional package. Pure PHP needs no extension checkout. `parse()` uses the extension when it is loaded and the pure PHP implementation otherwise. The tests run with PHPUnit, once without the extension (`make test-php`) and once with it (`make test-php-ext`).
 
 `Polyspec\OrderedJson\Value::parseRejectDuplicates($source)` rejects a repeated decoded object key at any depth with `Polyspec\OrderedJson\ParseError` of kind `duplicate_object_key` instead of keeping the last value. It parses with the pure PHP parser even when the extension is loaded.
 

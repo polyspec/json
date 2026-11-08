@@ -1,6 +1,6 @@
 // Requirements: RQ-022.
-// The official examples of examples/official.json, run by node:test: each case is a top-level test named by its id,
-// the suite unit `official` of config/parity.json. A case parses its input and compares the source text, the compact
+// The official examples of examples/official.json, run by node:test: each case is a top-level test named by its id.
+// A case parses its input and compares the source text, the compact
 // serialization and the value tree with the expected results, then the tree of the reparsed serialization and of the
 // value rebuilt through the factories (docs/spec/json-contract.md#acceptance).
 import assert from 'node:assert/strict';

@@ -1,5 +1,4 @@
-//! Requirement RQ-022. The official examples of examples/official.json, run as the trials `official::<id>` of libtest-mimic, the cases of the
-//! suite unit `official` of config/parity.json. A case parses its input and compares the source text, the compact
+//! Requirement RQ-022. The official examples of examples/official.json, run as the trials `official::<id>` of libtest-mimic. A case parses its input and compares the source text, the compact
 //! serialization and the value tree with the expected results, then the tree of the reparsed serialization and of the
 //! value rebuilt through the factories (docs/spec/json-contract.md#acceptance). The examples are read with the library:
 //! their trees hold lone surrogates, which serde_json refuses, and every string of a tree is compared as its UTF-16 code

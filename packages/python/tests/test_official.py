@@ -1,6 +1,6 @@
 """The official examples of examples/official.json (requirement RQ-022), run by unittest.
 
-Each case is the test method test_<id>, a case of the suite unit `official` of config/parity.json. A case parses its input
+Each case is the test method test_<id>. A case parses its input
 and compares the source text, the compact serialization and the value tree with the expected results, then the tree of the
 reparsed serialization and of the value rebuilt through the factories (docs/spec/json-contract.md#acceptance).
 """

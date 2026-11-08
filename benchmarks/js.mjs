@@ -3,7 +3,7 @@ import { performance } from 'node:perf_hooks';
 import { createHash } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 
-// The package of the JavaScript implementation, which benchmarks/run.mts names by its root in config/parity.json.
+// The package of the JavaScript implementation, which benchmarks/run.mts names by its root in config/implementations.json.
 if (!process.env.OJ_PACKAGE) throw new Error('OJ_PACKAGE names the directory of the JavaScript package');
 const { parse, stringify } = await import(pathToFileURL(`${process.env.OJ_PACKAGE}/index.js`).href);
 

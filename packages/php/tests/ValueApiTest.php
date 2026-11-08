@@ -17,7 +17,7 @@ use function Polyspec\OrderedJson\parse;
 use function Polyspec\OrderedJson\stringify;
 
 /**
- * The value API, run by PHPUnit; each test method is a feature unit of config/parity.json. The pure PHP library and
+ * The value API, run by PHPUnit. The pure PHP library and
  * the extension that registers the same API answer identically, so `make test-php` runs these tests without the
  * extension and `make test-php-ext` with it.
  *

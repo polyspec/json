@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 32da4e3b2028c6cb207db92d90aa54f47846e941982e7d18021c079011154b45 -->
+<!-- source-sha256: b2a2bf02496f36d1f07eb9584506c86d067ee08ca2eb096b4fc9b1420a2c8724 -->
 # kit 표준 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -163,3 +163,4 @@
 | T2.141 | 0.0.21 릴리즈 | every manifest, the three composer.lock files, CHANGELOG.md(.ko) | GREEN: `make docs-check` passes and every manifest declares 0.0.21 | [o] |
 | T2.142 | kit 0.0.98의 동작을 그대로 두고 kit 0.0.99를 채택한다: package.json과 package-lock.json은 kit 0.0.99 release를 가리키고, 각 recipe는 kit 0.0.98이 고정했던 값을 명시 인자로 넘긴다(kit K1068–K1118): docs-check는 private path, checklist 위치, kit 행을, owner-validate는 --every-path를, divergence-check는 reason kind, feature state, --parity를, rebuild-check는 source를, php-ext build와 test는 layout을, runtime target은 root, runner 인자, timeout을, install-tools는 Composer home과 cache를, release는 main, asset, record를, worktree-setup과 land는 branch를 넘긴다. config/checklist.json, documents.json, duplication.json(extension stub), generated.json, release.json, ci.json(runtimes), parity.json은 kit이 기본으로 읽던 것을 선언한다 | package.json, package-lock.json, Makefile, config/checklist.json, config/ci.json, config/documents.json, config/duplication.json, config/generated.json, config/owner-checks.json, config/parity.json, config/release.json | No-Red: the recipes pass the values that kit 0.0.98 fixed, so behaviour is unchanged. GREEN: `make -n` of every changed target exits 0 under 0.0.99 with the same command count as under 0.0.98, and `make ordered-json-test-scripts` passes | [o] |
 | T2.143 | recipe나 workflow의 문구를 단언하는 시험을 지운다: 그 시험은 동작을 확인하지 않고 kit나 recipe가 바뀔 때마다 깨진다 | tests/scripts/environment.test.mts | `make lint-ts` and `make docs-check` exit 0; the deleted tests are named in the commit body | [o] |
+| T2.144 | parity 삭제: kit 0.0.100은 구현 사이의 관계를 검사하지 않는다. config/parity.json과 parity, divergence, test-marker gate를 지우고, config/implementations.json이 검증기의 언어 집합을 가지며, verify job이 verify-all을 실행한다 | config/parity.json, Makefile, .github/workflows/ci-pipeline.yml, config/ci.json, config/owner-checks.json, config/toolchain.json, AGENTS, PRINCIPLES, docs/operations | `make owner-validate`, `make docs-check` and `make lint-ts` exit 0 | [o] |

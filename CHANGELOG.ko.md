@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 91a579abad0f1ae3715357adacd71df4d988c9e29f4b6264863b77fe17814f8b -->
+<!-- source-sha256: 4aad4cb992d6fed21329716b074a5f1ea753d83a66e2635f815fc0f549f9ba74 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- T2.144: ordered-json은 parity를 지우는 kit 0.0.100을 채택한다. config/parity.json과 parity-check, parity-declarations-check, divergence-check, test-markers-check gate가 사라지고, config/implementations.json이 공통 검증기의 구현을 선언하며, 각 구현은 make test-<language>에서 자기 테스트를 실행하고, pipeline의 verify job이 verify-all을 실행한다(kit K1129) (T2.144).
 - T2.142: ordered-json은 kit 0.0.98의 동작을 그대로 두고 kit 0.0.99를 채택한다. 각 recipe는 kit 0.0.98이 고정했던 값을 명시 인자로 넘기고, config/checklist.json, documents.json, duplication.json, generated.json, release.json, ci.json, parity.json은 kit이 기본으로 읽던 것을 선언한다(kit K1068–K1118) (T2.142).
 
 ## 0.0.21

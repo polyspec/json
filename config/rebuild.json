@@ -72,7 +72,7 @@
     },
     "scripts/registry.mts": {
       "kind": "policy",
-      "reason": "the commands of the shared verifier for the implementations of config/parity.json, the product of this repository; no ecosystem tool builds and probes four languages"
+      "reason": "the commands of the shared verifier for the implementations of config/implementations.json, the product of this repository; no ecosystem tool builds and probes four languages"
     },
     "scripts/verify.mts": {
       "kind": "policy",

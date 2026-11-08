@@ -1,5 +1,5 @@
 <!-- doc-id: distribution -->
-<!-- source-sha256: 20c3d8280cb1ecece424ce47f92de8d8049b324b39c7f183b976b45ea756f895 -->
+<!-- source-sha256: 4f0efdc3fd30d1d0e58002e4bf78fad29b76dea977f64b476f1109b221400fdb -->
 # 배포
 
 [English](distribution.md)
@@ -22,7 +22,7 @@
 git push origin HEAD:main
 ~~~
 
-호스팅 CI가 pull request와 모든 push to `main`에서 kit의 gate, parity 검사, 모든 runtime의 test, lint, PIE 검사를 실행하고, `main`에서 성공한 `ci` 실행이 release workflow를 시작합니다. 깨끗한 복제가 게시된 리비전에서 모든 패키지를 빌드하는지 확인합니다. 공통 계약 변경은 검증기, fixture와 관련 패키지를 같은 리비전으로 게시합니다.
+호스팅 CI가 pull request와 모든 push to `main`에서 kit의 gate, 공통 검증기, 모든 runtime의 test, lint, PIE 검사를 실행하고, `main`에서 성공한 `ci` 실행이 release workflow를 시작합니다. 깨끗한 복제가 게시된 리비전에서 모든 패키지를 빌드하는지 확인합니다. 공통 계약 변경은 검증기, fixture와 관련 패키지를 같은 리비전으로 게시합니다.
 
 인증 정보는 시스템 인증 저장소에서 관리합니다. 게시 관측과 테스트 결과를 구분합니다.
 

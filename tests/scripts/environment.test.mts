@@ -22,7 +22,7 @@ function miseVersion(name: string): string {
   assert.ok(typeof version === 'string', `mise.toml declares the version of ${name}`);
   return version;
 }
-/** The directory of the implementation `name` in config/parity.json. */
+/** The directory of the implementation `name` in config/implementations.json. */
 const rootOf = (name: string): string => known(REGISTRY.roots[name], `the root of ${name}`);
 
 test('no runner command installs or selects another toolchain', () => {

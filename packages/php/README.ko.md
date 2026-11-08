@@ -1,5 +1,5 @@
 <!-- doc-id: php-overview -->
-<!-- source-sha256: 2d5bfbc7cc012cbac3264e29c74704b6cc30f5c91671c227316c1b1d5011cd3d -->
+<!-- source-sha256: 19e0b768f34e943e54c45b6877c8e8092ea467e13c20c3e29cecc3894d1035b0 -->
 # ordered-json for PHP
 
 [English](README.md)
@@ -20,7 +20,7 @@ $output = Polyspec\OrderedJson\stringify($value);
 ~~~
 
 
-[네이티브 확장](https://github.com/polyspec/ordered-json/tree/main/packages/php-ext)은 별도의 선택적 패키지입니다. 순수 PHP에는 확장 체크아웃이 필요하지 않습니다. `parse()`는 확장이 로드되어 있으면 확장을, 그렇지 않으면 순수 PHP 구현을 사용합니다. 테스트는 PHPUnit으로 확장 없이 한 번, 확장과 함께 한 번 실행합니다(`config/parity.json`).
+[네이티브 확장](https://github.com/polyspec/ordered-json/tree/main/packages/php-ext)은 별도의 선택적 패키지입니다. 순수 PHP에는 확장 체크아웃이 필요하지 않습니다. `parse()`는 확장이 로드되어 있으면 확장을, 그렇지 않으면 순수 PHP 구현을 사용합니다. 테스트는 PHPUnit으로 확장 없이 한 번(`make test-php`), 확장과 함께 한 번(`make test-php-ext`) 실행합니다.
 
 `Polyspec\OrderedJson\Value::parseRejectDuplicates($source)`는 마지막 값을 유지하지 않고 어느 깊이든 해석된 객체 키가 반복되면 `duplicate_object_key` 종류의 `Polyspec\OrderedJson\ParseError`로 거부합니다. 확장이 로드되어 있어도 순수 PHP parser로 파싱합니다.
 

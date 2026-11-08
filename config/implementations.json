@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "comment": "The implementations of ordered-json, the one source of its language set and of the folder of each, which the shared verifier (scripts/registry.mts) and the benchmarks read; python names the interpreter of its venv.",
+  "implementations": [
+    {
+      "name": "js",
+      "roots": [
+        "packages/js"
+      ]
+    },
+    {
+      "name": "rust",
+      "roots": [
+        "packages/rust"
+      ]
+    },
+    {
+      "name": "go",
+      "roots": [
+        "packages/go"
+      ]
+    },
+    {
+      "name": "php",
+      "roots": [
+        "packages/php"
+      ]
+    },
+    {
+      "name": "php-extension",
+      "roots": [
+        "packages/php-ext"
+      ]
+    },
+    {
+      "name": "python",
+      "roots": [
+        "packages/python"
+      ],
+      "command": "packages/python/.venv/bin/python"
+    }
+  ]
+}

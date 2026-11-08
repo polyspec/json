@@ -12,8 +12,8 @@ use function Polyspec\OrderedJson\parse;
 use function Polyspec\OrderedJson\stringify;
 
 /**
- * The official examples of examples/official.json, run by PHPUnit: each case is the data set of its id of testCase, a
- * case of the suite unit `official` of config/parity.json (requirement RQ-022). The cases run against the pure PHP
+ * The official examples of examples/official.json, run by PHPUnit: each case is the data set of its id of testCase
+ * (requirement RQ-022). The cases run against the pure PHP
  * library and, through `make test-php-ext`, against the extension that registers the same API. A case parses its
  * input and compares the source text, the compact serialization and the value tree with the expected results, then the
  * tree of the reparsed serialization and of the value rebuilt through the factories

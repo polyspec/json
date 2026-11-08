@@ -147,7 +147,7 @@ async function main(): Promise<void> {
     await prepare(['php-extension'], run);
     const extension = builtExtension();
     if (!existsSync(extension)) throw new Error('the PHP extension of the benchmark was not built');
-    // The directory of each implementation is its root in config/parity.json.
+    // The directory of each implementation is its root in config/implementations.json.
     const packages = repositoryPaths();
     const php = env;
     const commands: [string, string, Argv, NodeJS.ProcessEnv][] = [

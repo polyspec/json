@@ -21,7 +21,7 @@ Run each changed package's required checks and commit the package with the commo
 git push origin HEAD:main
 ~~~
 
-Hosted CI runs the gates of kit, the parity check and the tests, lints and PIE check of every runtime on the pull request and on every push to `main`, and a successful run of `ci` on `main` starts the release workflow. Verify a clean clone can build every package from the published revision. A shared contract change is published only with its verifier, fixtures, and affected packages in that same revision.
+Hosted CI runs the gates of kit, the shared verifier and the tests, lints and PIE check of every runtime on the pull request and on every push to `main`, and a successful run of `ci` on `main` starts the release workflow. Verify a clean clone can build every package from the published revision. A shared contract change is published only with its verifier, fixtures, and affected packages in that same revision.
 
 Keep authentication information in the system credential store. Keep publication observations separate from test results.
 
