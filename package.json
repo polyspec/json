@@ -31,7 +31,7 @@
   },
   "devDependencies": {
     "@humanwhocodes/momoa": "3.3.13",
-    "@polyspec/kit": "https://github.com/polyspec/kit/releases/download/v0.0.100/polyspec-kit-0.0.100.tgz",
+    "@polyspec/kit": "https://github.com/polyspec/kit/releases/download/v0.0.101/polyspec-kit-0.0.101.tgz",
     "@types/mdast": "4.0.4",
     "@types/node": "26.6.5",
     "ajv": "8.20.0",
