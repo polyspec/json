@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 7ae8947b689c6ba78a61a66b4a91891f00867b47bbb8ece5d47012450f139e80 -->
+<!-- source-sha256: cf1ba558c784b310a279822bf9fadad943875bbf3573c1972a65ac63f99ab2ac -->
 # kit 표준 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -167,3 +167,4 @@
 | T2.145 | kit 거부 두 가지만 멈추는 kit 0.0.101을 채택한다: 0.0.101 release asset을 고정하며, recipe 줄은 바뀌지 않는다 | package.json, package-lock.json | `make docs-check` and `make lint-ts` exit 0 | [o] |
 | T2.146 | 0.0.22 릴리즈 | every manifest, the three composer.lock files, CHANGELOG.md(.ko) | GREEN: `make docs-check` passes and every manifest declares 0.0.22 | [o] |
 | T2.147 | 설치가 실패하면 uv-install이 provider 링크를 되돌리는 kit 0.0.102를 채택한다: 0.0.102 release asset을 고정하며, recipe 줄은 바뀌지 않는다 | package.json, package-lock.json | `make docs-check` and `make lint-ts` exit 0 | [o] |
+| T2.148 | 0.0.23 릴리즈 | every manifest, the three composer.lock files, CHANGELOG.md(.ko) | GREEN: `make docs-check` passes and every manifest declares 0.0.23 | [o] |

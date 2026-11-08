@@ -166,3 +166,4 @@
 | T2.145 | Adopt kit 0.0.101, which only stops two kit refusals: pin the 0.0.101 release asset; no recipe line changes | package.json, package-lock.json | `make docs-check` and `make lint-ts` exit 0 | [o] |
 | T2.146 | Release 0.0.22 | every manifest, the three composer.lock files, CHANGELOG.md(.ko) | GREEN: `make docs-check` passes and every manifest declares 0.0.22 | [o] |
 | T2.147 | Adopt kit 0.0.102, whose uv-install puts back the provider links when its install fails: pin the 0.0.102 release asset; no recipe line changes | package.json, package-lock.json | `make docs-check` and `make lint-ts` exit 0 | [o] |
+| T2.148 | Release 0.0.23 | every manifest, the three composer.lock files, CHANGELOG.md(.ko) | GREEN: `make docs-check` passes and every manifest declares 0.0.23 | [o] |

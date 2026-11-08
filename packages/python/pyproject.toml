@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "polyspec-ordered-json"
-version = "0.0.22"
+version = "0.0.23"
 description = "JSON document order at every depth"
 readme = "README.md"
 requires-python = ">=3.14"

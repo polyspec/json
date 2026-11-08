@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: a5513b59e4e6416327bf1556ca10e1032b2406350fb0c6350bf3b9821a597f74 -->
+<!-- source-sha256: 7f610a5fb091eec1aa354b2fac8b292c0ef9c6ab97a181fd684854a97777be16 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,9 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.23
+
+- ordered-json 0.0.23은 kit 0.0.102에서 실행된다(T2.147) (T2.148).
 - ordered-json는 설치가 실패하면 uv-install이 provider 링크를 되돌리는 kit 0.0.102를 채택한다. recipe 줄은 바뀌지 않는다(T2.147).
 
 ## 0.0.22

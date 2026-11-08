@@ -6,6 +6,9 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.23
+
+- ordered-json 0.0.23 runs kit 0.0.102 (T2.147) (T2.148).
 - ordered-json adopts kit 0.0.102, whose uv-install puts back the provider links when its install fails; no recipe line changes (T2.147).
 
 ## 0.0.22
