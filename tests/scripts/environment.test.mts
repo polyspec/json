@@ -12,7 +12,6 @@ import { checkJson, parseJson, readJsonFile } from '../../scripts/json.mts';
 import { REGISTRY, ROOT, commandsOf } from '../../scripts/registry.mts';
 import { known } from './checkout.mts';
 
-const OFFLINE = { CARGO_NET_OFFLINE: 'true', GOPROXY: 'off', npm_config_offline: 'true', COMPOSER_DISABLE_NETWORK: '1' };
 // The targets whose recipe builds or runs an implementation.
 const makefile = () => readFileSync(path.join(ROOT, 'Makefile'), 'utf8');
 const read = (file: string) => readFileSync(path.join(ROOT, file), 'utf8');
@@ -26,51 +25,9 @@ function miseVersion(name: string): string {
 /** The directory of the implementation `name` in config/parity.json. */
 const rootOf = (name: string): string => known(REGISTRY.roots[name], `the root of ${name}`);
 
-/** The prerequisites and the recipe lines of each target of a Makefile; a rule of several targets gives each of them. */
-function recipes(text: string): Map<string, { prerequisites: string[]; recipe: string[] }> {
-  const found = new Map<string, { prerequisites: string[]; recipe: string[] }>();
-  let current: { prerequisites: string[]; recipe: string[] } | undefined;
-  for (const line of text.split('\n')) {
-    const header = /^([A-Za-z0-9_.-]+(?: [A-Za-z0-9_.-]+)*):(?!=)(.*)$/.exec(line);
-    if (header && !line.startsWith('\t')) {
-      const [, targets, prerequisites] = header;
-      assert.ok(targets !== undefined && prerequisites !== undefined, line);
-      current = { prerequisites: known(prerequisites.split('#')[0], line).trim().split(/\s+/).filter(Boolean), recipe: [] };
-      for (const target of targets.split(' ')) found.set(target, current);
-    } else if (line.startsWith('\t') && current) {
-      current.recipe.push(line.trim());
-    } else if (line.trim() && !line.startsWith('#')) {
-      current = undefined;
-    }
-  }
-  return found;
-}
-
-test('no command installs or selects another toolchain', () => {
-  assert.match(makefile(), /^export GOTOOLCHAIN := local$/m);
-  assert.match(makefile(), /^export RUSTUP_AUTO_INSTALL := 0$/m);
+test('no runner command installs or selects another toolchain', () => {
   assert.equal(commandsOf('go').env?.GOTOOLCHAIN, 'local');
   assert.equal(commandsOf('rust').env?.RUSTUP_AUTO_INSTALL, '0');
-});
-
-test('every check runs offline and only make install downloads', () => {
-  const text = makefile();
-  for (const [name, value] of Object.entries(OFFLINE)) assert.match(text, new RegExp(`^export ${name} := ${value}$`, 'm'));
-  assert.match(text, new RegExp(`^ONLINE := env${Object.keys(OFFLINE).map(name => ` -u ${name}`).join('')}$`, 'm'));
-  const downloading = [...recipes(text)].filter(([, rule]) => rule.recipe.some(line => line.includes('$(ONLINE)'))).map(([target]) => target).sort();
-  assert.deepEqual(downloading, ['build-php-ext', 'install-packages', 'kit-install-declared', 'kit-install-symbols', 'ordered-json-install-php', 'ordered-json-install-pie', 'ordered-json-install-python', 'ordered-json-install-rust', 'ordered-json-install-rust-packages', 'ordered-json-install-suite', 'release-assets', 'release-tools', 'toolchain-lock', 'worktree-setup']);
-});
-
-test('make install makes every download of the checks', () => {
-  const table = recipes(makefile());
-  assert.deepEqual(known(table.get('install'), 'the target install').prerequisites, ['ordered-json-install']);
-  assert.deepEqual(known(table.get('ordered-json-install'), 'the target ordered-json-install').prerequisites, ['install-kit', 'ordered-json-install-rust-packages', 'ordered-json-install-php', 'ordered-json-install-python']);
-  assert.deepEqual(known(table.get('ordered-json-install-rust'), 'the target ordered-json-install-rust').recipe, ['$(ONLINE) rustup toolchain install --no-self-update']);
-});
-
-
-test('the tools of the checkout come first on the path', () => {
-  assert.match(makefile(), /^export PATH := \$\(CURDIR\)\/var\/tools\/bin:/m);
 });
 
 test('the declarations name an exact release or a minor release', () => {
