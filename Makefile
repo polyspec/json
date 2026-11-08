@@ -237,10 +237,10 @@ python-venv:
 .PHONY: build-go build-js build-php build-python build-rust test-go test-js test-php test-python test-rust build-php-ext lint-php-ext test-php-ext
 # The build of each package of a runtime with the build of its ecosystem; the JavaScript and PHP packages have none (kit K1106).
 build-go:
-	$(NODE) $(KIT)/runtime-targets.mjs build --roots packages/go -- var/tools/bin/go build ./...
+	$(NODE) $(KIT)/runtime-targets.mjs build --roots packages/go -- $(CURDIR)/var/tools/mise/shims/go build ./...
 build-js build-php:
 build-python:
-	$(NODE) $(KIT)/runtime-targets.mjs build --roots packages/python -- var/tools/bin/uv build
+	$(NODE) $(KIT)/runtime-targets.mjs build --roots packages/python -- $(UV) build
 build-rust:
 	$(NODE) $(KIT)/runtime-targets.mjs build --roots packages/rust -- cargo build --locked
 
