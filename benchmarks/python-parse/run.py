@@ -24,7 +24,9 @@ PHP_RUN = Path(__file__).with_name("parse.php")
 # package (its venv, which make ordered-json-install-python makes).
 IMPLEMENTATIONS = {
     item["name"]: item
-    for item in json.loads((ROOT / "config/implementations.json").read_text())["implementations"]
+    for item in json.loads((ROOT / "config/implementations.json").read_text())[
+        "implementations"
+    ]
 }
 
 
