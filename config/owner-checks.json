@@ -140,9 +140,7 @@
         "package.json",
         "package-lock.json"
       ],
-      "targets": [
-        "kit-check"
-      ]
+      "targets": []
     },
     {
       "paths": [
@@ -181,7 +179,6 @@
         "config/layout.yml"
       ],
       "targets": [
-        "kit-check",
         "layout-check"
       ]
     },

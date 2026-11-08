@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- T2.142: ordered-json adopts kit 0.0.99 with the behaviour of kit 0.0.98 kept: each recipe passes the values that kit 0.0.98 fixed as explicit arguments, and config/checklist.json, documents.json, duplication.json, generated.json, release.json, ci.json and parity.json declare what kit read by default (kit K1068–K1118) (T2.142).
+
 ## 0.0.21
 
 - ordered-json 0.0.21 adopts kit 0.0.98: the Makefile holds its own recipes and calls the utilities of the installed kit, and the CI pipeline runs the target of each job by name (T2.140) (T2.141).

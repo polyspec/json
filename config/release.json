@@ -47,5 +47,18 @@
   "notReleased": {},
   "goModules": {
     "packages/go": "github.com/polyspec/ordered-json/packages/go"
-  }
+  },
+  "annotatedTags": true,
+  "packageFiles": [
+    "package.json",
+    "composer.json",
+    "Cargo.toml",
+    "pyproject.toml",
+    "go.mod",
+    "VERSION"
+  ],
+  "writtenFiles": [
+    "config/phpunit/composer.json",
+    ".mise/locks/**"
+  ]
 }

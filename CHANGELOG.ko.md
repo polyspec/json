@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: a3d6993d0b97862cfb43988609e24114ea1bb97b4950667f3578e788106a6ad2 -->
+<!-- source-sha256: 91a579abad0f1ae3715357adacd71df4d988c9e29f4b6264863b77fe17814f8b -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- T2.142: ordered-json은 kit 0.0.98의 동작을 그대로 두고 kit 0.0.99를 채택한다. 각 recipe는 kit 0.0.98이 고정했던 값을 명시 인자로 넘기고, config/checklist.json, documents.json, duplication.json, generated.json, release.json, ci.json, parity.json은 kit이 기본으로 읽던 것을 선언한다(kit K1068–K1118) (T2.142).
 
 ## 0.0.21
 

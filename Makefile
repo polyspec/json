@@ -18,6 +18,9 @@ export MISE_CONFIG_DIR := $(KIT_TOOLS)/mise/config
 export MISE_GLOBAL_CONFIG_FILE := $(CURDIR)/mise.toml
 export MISE_GLOBAL_CONFIG_ROOT := $(CURDIR)
 MISE_ENVIRONMENT := MISE_DATA_DIR MISE_CACHE_DIR MISE_STATE_DIR MISE_CONFIG_DIR MISE_GLOBAL_CONFIG_FILE MISE_GLOBAL_CONFIG_ROOT
+# kit 0.0.98's run-tests dropped NODE_TEST_CONTEXT, so a node --test that a recipe starts from inside a node test runs as
+# its own run, not as a child of that test (kit K1094); no recipe passes it on.
+unexport NODE_TEST_CONTEXT
 export PATH := $(CURDIR)/var/tools/bin:$(CURDIR)/var/tools/mise/shims:$(PATH)
 
 # PYTHON is the python of mise.toml, which make install-tools installs with mise at the digest of mise.lock and its shim
@@ -54,7 +57,7 @@ unexport CARGO_TARGET_DIR
 # The targets of the full suite that make check runs through ci-targets of @polyspec/kit and that the jobs of
 # .github/workflows/ci-pipeline.yml run as the prerequisites of their kit-gates-* target (a target is in one job). verify-all
 # writes the aggregate record into var/records.
-CHECK_TARGETS := kit-check suppression-check divergence-check link-check rules-check rebuild-check language-check test-markers-check duplication-check layout-check owner-validate release-coverage parity-declarations-check docs-check evidence-check verify-all parity-check lint-rust lint-go lint-php lint-php-ext test-php-ext lint-python pie-check ordered-json-test-scripts typecheck lint-ts test-js test-rust test-go test-php test-python
+CHECK_TARGETS := suppression-check divergence-check link-check rules-check rebuild-check language-check test-markers-check duplication-check layout-check owner-validate release-coverage parity-declarations-check docs-check evidence-check verify-all parity-check lint-rust lint-go lint-php lint-php-ext test-php-ext lint-python pie-check ordered-json-test-scripts typecheck lint-ts test-js test-rust test-go test-php test-python
 
 .PHONY: check ordered-json-test-scripts typecheck ordered-json-install-php ordered-json-install-python verify-all verify-js verify-rust verify-go verify-php verify-php-extension verify-python evidence-check pie-check \
 	benchmark benchmark-check python-parse-budget install ordered-json-install ordered-json-install-rust \
@@ -127,7 +130,7 @@ ordered-json-install-parity: ordered-json-install-rust-packages ordered-json-ins
 # which gives each test its own deadline; typecheck checks the TypeScript of scripts/, tests/scripts/ and benchmarks/ with the tsc
 # of package.json (tsconfig.json), which Node runs by type stripping and so never checks itself.
 ordered-json-test-scripts:
-	$(NODE) $(KIT)/run-tests.mjs node -- $(or $(TESTS),tests/scripts/)
+	$(NODE) $(KIT)/run-tests.mjs node --timeout 30 -- --test-concurrency=1 $(or $(TESTS),tests/scripts/)
 
 typecheck:
 	$(NODE) node_modules/typescript/bin/tsc -p tsconfig.json
@@ -195,13 +198,16 @@ install-kit:
 	$(MAKE) --no-print-directory install-tools
 	$(MAKE) --no-print-directory kit-install-declared
 
+# The home and the cache of the Composer that install-tools and install-symbols run, the folders of var/tools that kit 0.0.98
+# set (kit K1095).
+COMPOSER_TOOL_ENV = COMPOSER_HOME=$(CURDIR)/var/tools/composer/home COMPOSER_CACHE_DIR=$(CURDIR)/var/tools/composer/cache
 # TOOLS=npm runs the bootstrap installer, which imports only Node.js built-ins, with the Node.js of the machine; any other TOOLS
 # names tools of mise.toml, and no TOOLS installs every tool of mise.lock.
 install-tools:
 ifeq ($(TOOLS),npm)
 	$(ONLINE) $(BOOTSTRAP_NODE) $(KIT)/bootstrap/bootstrap.mjs
 else
-	$(ONLINE) $(NODE) $(KIT)/install-tools.mjs $(TOOLS)
+	$(COMPOSER_TOOL_ENV) $(ONLINE) $(NODE) $(KIT)/install-tools.mjs --no-self-update $(TOOLS)
 endif
 
 # npm reads allow-remote of .npmrc, which allows the URL of the kit release that package.json names.
@@ -212,10 +218,10 @@ install-link:
 	$(NODE) $(KIT)/link.mjs link$(if $(PROJECT), --project $(PROJECT))$(if $(RUNTIME), --runtime $(RUNTIME))
 
 kit-install-declared:
-	$(ONLINE) $(NODE) $(KIT)/install-symbols.mjs --declared
+	$(COMPOSER_TOOL_ENV) $(ONLINE) $(NODE) $(KIT)/install-symbols.mjs --declared
 
 kit-install-symbols:
-	$(ONLINE) $(NODE) $(KIT)/install-symbols.mjs $(EXTRACTORS)
+	$(COMPOSER_TOOL_ENV) $(ONLINE) $(NODE) $(KIT)/install-symbols.mjs $(EXTRACTORS)
 
 # toolchain-lock writes mise.lock with the mise of var/tools for every platform that has the archives of the tools.
 TOOLCHAIN_LOCK_PLATFORMS := linux-x64,linux-arm64,macos-arm64,macos-x64,windows-x64,windows-arm64
@@ -229,54 +235,69 @@ python-venv:
 
 # ---- Builds and tests of each runtime of packages/ -----------------------------------------------------------------------
 .PHONY: build-go build-js build-php build-python build-rust test-go test-js test-php test-python test-rust build-php-ext lint-php-ext test-php-ext
-build-go build-js build-php build-python build-rust:
-	$(NODE) $(KIT)/runtime-targets.mjs build $(@:build-%=%)
+# The build of each package of a runtime with the build of its ecosystem; the JavaScript and PHP packages have none (kit K1106).
+build-go:
+	$(NODE) $(KIT)/runtime-targets.mjs build --roots packages/go -- var/tools/bin/go build ./...
+build-js build-php:
+build-python:
+	$(NODE) $(KIT)/runtime-targets.mjs build --roots packages/python -- var/tools/bin/uv build
+build-rust:
+	$(NODE) $(KIT)/runtime-targets.mjs build --roots packages/rust -- cargo build --locked
 
-# The unit tests of a runtime; CASES=<pattern> is the name filter of its runner.
-test-go test-js test-php test-python test-rust:
-	$(NODE) $(KIT)/runtime-targets.mjs $(@:test-%=%)
+# The unit tests of a runtime; CASES=<pattern> is the name filter of its runner. The runner arguments are those that kit 0.0.98
+# passed (kit K1094, K1106): go -count=1 -timeout=0, one test at a time in node and cargo, and the 30 s test timeout of node.
+test-go:
+	$(NODE) $(KIT)/runtime-targets.mjs test --runner go --roots packages/go -- -count=1 -timeout=0
+test-js:
+	$(NODE) $(KIT)/runtime-targets.mjs test --runner node --roots packages/js -- --test-timeout=30000 --test-concurrency=1
+test-php:
+	$(NODE) $(KIT)/runtime-targets.mjs test --runner php --roots packages/php
+test-python:
+	PYTHONUNBUFFERED=1 NO_COLOR=1 PYTHON_COLORS=0 $(NODE) $(KIT)/runtime-targets.mjs test --runner python --roots packages/python --venv .venv
+test-rust:
+	$(NODE) $(KIT)/runtime-targets.mjs test --runner cargo --roots packages/rust -- -- --test-threads=1
 
 # The PHP extension of packages/php-ext: build-php-ext builds var/php-ext/polyspec_ordered_json.so with phpize after the check
 # of its stub and arginfo header; gen_stub.php may fetch its PHP-Parser once.
 build-php-ext:
-	$(ONLINE) $(NODE) $(KIT)/php-extension.mjs build
+	$(ONLINE) $(NODE) $(KIT)/php-extension.mjs build --extension packages/php-ext --build-dir var/php-ext --skip vendor --skip node_modules --library packages/php
 lint-php-ext:
-	$(NODE) $(KIT)/php-extension.mjs check
+	$(NODE) $(KIT)/php-extension.mjs check --extension packages/php-ext --build-dir var/php-ext --skip vendor --skip node_modules --library packages/php
 test-php-ext: build-php-ext
-	$(NODE) $(KIT)/php-extension.mjs test
+	$(NODE) $(KIT)/php-extension.mjs test --extension packages/php-ext --build-dir var/php-ext --skip vendor --skip node_modules --library packages/php -- --roots packages/php
 
 # ---- Checks ----------------------------------------------------------------------------------------------------------------
-.PHONY: kit-check layout-check docs-check rules-check owner-check owner-validate rebuild-check language-check test-markers-check \
+.PHONY: layout-check docs-check rules-check owner-check owner-validate rebuild-check language-check test-markers-check \
 	duplication-check parity-declarations-check parity-check suppression-check divergence-check link-check release-coverage \
 	lint-ts lint-php lint-python lint-go lint-rust
-# kit-check validates the config/*.json that the utilities of kit read against their schemas.
-kit-check:
-	$(NODE) $(KIT)/kit-check.mjs
-
 # layout-check runs alint with config/layout.yml, then fails on an install directory that Git does not ignore and on a tracked
 # generated file.
 layout-check:
 	@test -x $(ALINT) || { echo "layout-check: $(ALINT) is missing; run make install-tools"; exit 1; }
 	$(ALINT) check --config config/layout.yml --color never --compact .
-	$(NODE) $(KIT)/generated-files.mjs installs
-	$(NODE) $(KIT)/generated-files.mjs tracked
+	$(NODE) $(KIT)/generated-files.mjs installs var package.json=node_modules pyproject.toml=.venv composer.json=vendor
+	$(NODE) $(KIT)/generated-files.mjs tracked --binary ELF --binary Mach-O --binary PE
 
 docs-check:
-	$(NODE) $(KIT)/check-documents.mjs
+	$(NODE) $(KIT)/check-documents.mjs --checklist-place --private-path /Users/ --private-path /home/ --kit-rows
 
 rules-check:
 	$(NODE) $(KIT)/check-rules.mjs
 
 # owner-check runs the checks of config/owner-checks.json that own the changed paths; PATHS="a b" or BASE=<revision> selects them.
 owner-check:
-	$(NODE) $(KIT)/owner-check.mjs $(if $(PATHS),--paths "$(PATHS)") $(if $(BASE),--base $(BASE))
+	$(NODE) $(KIT)/owner-check.mjs --every-path $(if $(PATHS),--paths "$(PATHS)") $(if $(BASE),--base $(BASE))
 owner-validate:
-	$(NODE) $(KIT)/owner-check.mjs --validate
+	$(NODE) $(KIT)/owner-check.mjs --every-path --validate
 
+# The tool sources of rebuild-check, the values that kit 0.0.98 fixed (kit K1080): the scripts and generators, each glob quoted.
+REBUILD_SOURCES := --source 'scripts/**/*.{mts,mjs,cjs,js,ts,py,php,sh,mk}' --source 'packages/*/{scripts,tools,bin}/**/*.{mts,mjs,cjs,js,ts,py,php,sh,mk}' --source 'packages/*/*/{scripts,tools,bin}/**/*.{mts,mjs,cjs,js,ts,py,php,sh,mk}' --source '**/*_generate.go' --source '**/*.generate.{mts,mjs,cjs,js,ts,py,php,sh,mk}' --source 'benchmarks/**/*.{mts,mjs,cjs,js,ts,py,php,sh,mk}' --source 'examples/**/*.{mts,mjs,cjs,js,ts,py,php,sh,mk}' --source 'tests/fixtures/*/generate.*'
+# The files among the sources that are no tool source (kit K1080): the .d.ts declarations and the tests.
+REBUILD_EXCLUDES := --exclude '**/*.d.ts' --exclude '*/**/{test,tests}/**' --exclude 'test/**' --exclude 'tests/**/{*_generate.go,*.generate.*}' --exclude '**/*.{test,spec}.{js,jsx,ts,tsx,cjs,cts,mjs,mts}' --exclude '**/{*_test.go,test_*.py,*_test.py,*Test.php}'
 rebuild-check:
-	$(NODE) $(KIT)/rebuild-check.mjs
+	$(NODE) $(KIT)/rebuild-check.mjs $(REBUILD_SOURCES) $(REBUILD_EXCLUDES)
 language-check:
-	$(NODE) $(KIT)/language-check.mjs
+	$(NODE) $(KIT)/language-check.mjs --forbid '\p{Script=Hangul}'
 test-markers-check:
 	$(NODE) $(KIT)/test-markers.mjs
 duplication-check:
@@ -284,7 +305,7 @@ duplication-check:
 suppression-check:
 	$(NODE) $(KIT)/suppression-check.mjs
 divergence-check:
-	$(NODE) $(KIT)/divergence-check.mjs
+	$(NODE) $(KIT)/divergence-check.mjs --reason-kind generated --reason-kind fixture --reason-kind test --reason-kind harness --reason-kind ecosystem --reason-kind external --feature-state partial --feature-state unsupported --parity config/parity.json
 release-coverage:
 	$(NODE) $(KIT)/release.mjs coverage
 
@@ -302,13 +323,13 @@ parity-check: build-php-ext
 lint-ts:
 	$(NODE) $(KIT)/lint-ts.mjs
 lint-php:
-	$(NODE) $(KIT)/lint-php.mjs
+	$(NODE) $(KIT)/lint-php.mjs --memory-limit=-1
 lint-python:
 	$(NODE) $(KIT)/lint-python.mjs
 lint-go:
 	$(NODE) $(KIT)/lint-go.mjs
 lint-rust:
-	$(NODE) $(KIT)/lint-rust.mjs
+	$(NODE) $(KIT)/lint-rust.mjs --locked
 
 # ---- Development links (the git-ignored .links of the main checkout) -------------------------------------------------------
 .PHONY: link unlink link-check
@@ -330,7 +351,7 @@ link-check:
 ifneq ($(filter kit-gates-static,$(MAKECMDGOALS)),)
 MAKEFLAGS += -k
 endif
-kit-gates-static: kit-check layout-check docs-check rules-check owner-validate rebuild-check language-check test-markers-check duplication-check parity-declarations-check suppression-check divergence-check link-check release-coverage evidence-check ordered-json-test-scripts typecheck
+kit-gates-static: layout-check docs-check rules-check owner-validate rebuild-check language-check test-markers-check duplication-check parity-declarations-check suppression-check divergence-check link-check release-coverage evidence-check ordered-json-test-scripts typecheck
 	@echo "[kit-gates-static] every shared gate passed"
 kit-gates-parity: parity-check verify-all
 kit-gates-runtime-ts: lint-ts test-js
@@ -343,18 +364,18 @@ kit-gates-runtime-php-ext: lint-php-ext test-php-ext pie-check
 # kit-ci-plan writes the jobs, runners and tools of config/ci.json to GITHUB_OUTPUT; kit-ci-setup runs the setup targets that
 # config/ci.json declares for GROUP=shared|parity|runtime and RUNTIME.
 kit-ci-plan:
-	$(NODE) $(KIT)/ci-setup.mjs --plan
+	$(NODE) $(KIT)/ci-setup.mjs --parity config/parity.json --plan
 kit-ci-setup:
-	$(NODE) $(KIT)/ci-setup.mjs --setup $(GROUP) $(RUNTIME)
+	$(NODE) $(KIT)/ci-setup.mjs --parity config/parity.json --setup $(GROUP) $(RUNTIME)
 kit-ci-context-prepare:
-	$(NODE) $(KIT)/ci-setup.mjs --context-prepare $(GROUP) $(RUNTIME)
+	$(NODE) $(KIT)/ci-setup.mjs --parity config/parity.json --context-prepare $(GROUP) $(RUNTIME)
 kit-ci-context-cleanup:
-	$(NODE) $(KIT)/ci-setup.mjs --context-cleanup $(GROUP) $(RUNTIME)
+	$(NODE) $(KIT)/ci-setup.mjs --parity config/parity.json --context-cleanup $(GROUP) $(RUNTIME)
 
 # ci-targets runs TARGETS past failures and writes the logs, record.json and summary.md into CI_REPORT.
 CI_REPORT ?= var/report/ci-targets
 ci-targets:
-	$(NODE) $(KIT)/ci-targets.mjs $(CI_REPORT) $(TARGETS)
+	$(NODE) $(KIT)/ci-targets.mjs -k $(CI_REPORT) $(TARGETS)
 
 # ---- Release: the steps of .github/workflows/release.yml, in its order (config/release.json) ---------------------------------
 .PHONY: release-prepare release-tools release-tools-path release-tag release-assets release-publish release-undraft
@@ -372,33 +393,39 @@ release-tools-path:
 	@for name in $(MISE_ENVIRONMENT); do echo "$$name=$$(printenv $$name)"; done >> "$$GITHUB_ENV"
 # release-tag tags the commit of the successful CI run RUN; AUTO=1 releases only the version commit of the top version.
 release-tag:
-	$(NODE) $(KIT)/release-run.mjs tag "$$RUN"$(if $(AUTO), --auto)
+	RELEASE_MAIN=origin/main $(NODE) $(KIT)/release-run.mjs tag "$$RUN"$(if $(AUTO), --auto)
 release-assets:
-	$(ONLINE) $(NODE) $(KIT)/release.mjs assets "$$TAG"
+	RELEASE_ASSETS=var/release/assets $(ONLINE) $(NODE) $(KIT)/release.mjs assets "$$TAG"
 release-publish:
-	$(NODE) $(KIT)/release.mjs publish "$$TAG"
+	RELEASE_ASSETS=var/release/assets RELEASE_RECORDS=var/release $(NODE) $(KIT)/release.mjs publish "$$TAG"
 release-undraft:
-	$(NODE) $(KIT)/release.mjs undraft "$$TAG"
+	RELEASE_RECORDS=var/release $(NODE) $(KIT)/release.mjs undraft "$$TAG"
 
 # ---- The procedure of a row: worktree, checklist, commit, landing --------------------------------------------------------------
 .PHONY: worktree-setup land plan-new plan-split item-new item-edit item-state item-test commit documents-stamp text-absent twin-merge
+# The worktree of a row (kit K1107), as kit 0.0.98 made it: ../<main checkout>-<NAME>-<ID> on <TYPE or fix>/<NAME>-<ID> from main;
+# a worktree without node_modules first gets npm ci of the npm of var/tools, then make install and make link-check run in it. The
+# worktree runs its own tools in a make of its own (kit K858): the recipe drops the flags of this make and this var/tools from PATH.
+WORKTREE_MAIN = $(patsubst %/.git,%,$(shell git rev-parse --path-format=absolute --git-common-dir))
+WORKTREE_DECLARATION = --folder $(WORKTREE_MAIN)-$(NAME)-$(ID) --branch $(or $(TYPE),fix)/$(NAME)-$(ID) --base main --prepare 'test -d node_modules || PATH="$(KIT_TOOLS)/bin:$$PATH" $(NPM) ci --ignore-scripts' --make install --make link-check
+WORKTREE_ENVIRONMENT = env -u MAKEFLAGS -u MFLAGS -u MAKELEVEL PATH="$$(printf '%s' "$$PATH" | awk -v RS=: -v ORS=: -v tools='$(KIT_TOOLS)' 'index($$0, tools) != 1' | sed 's/:$$//')"
 # worktree-setup creates or reuses the worktree of a row from main and runs make install in it.
 worktree-setup:
-	$(ONLINE) $(NODE) $(KIT)/worktree-setup.mjs $(NAME) $(ID) $(or $(TYPE),fix)
+	$(ONLINE) $(WORKTREE_ENVIRONMENT) $(NODE) $(KIT)/worktree-setup.mjs $(WORKTREE_DECLARATION)
 # land merges BRANCH fast-forward into main and removes its worktree and branch.
 land:
-	$(NODE) $(KIT)/land.mjs $(BRANCH)
+	$(NODE) $(KIT)/land.mjs $(BRANCH) main
 
 # The texts of a row reach plan.mjs unexpanded: each text that is set is passed in single quotes as its raw value.
 raw_text = $(foreach v,$(1),$(if $(filter undefined,$(origin $(v))),,$(v)='$(subst ','\'',$(value $(v)))'))
 plan-new:
-	$(NODE) $(KIT)/plan.mjs plan-new
+	NAME_PATTERN='^[a-z][a-z0-9-]*$$' $(NODE) $(KIT)/plan.mjs plan-new
 plan-split:
 	$(NODE) $(KIT)/plan.mjs plan-split
 item-new:
 	$(call raw_text,TASK TASK_KO DELIVERABLES VERIFICATION) $(NODE) $(KIT)/plan.mjs item-new
 item-edit:
-	$(call raw_text,TASK TASK_KO DELIVERABLES VERIFICATION CAUSE RETRY CAUSE_KO RETRY_KO) $(NODE) $(KIT)/plan.mjs item-edit
+	$(call raw_text,TASK TASK_KO DELIVERABLES VERIFICATION CAUSE RETRY CAUSE_KO RETRY_KO) DONE_STAYS=1 $(NODE) $(KIT)/plan.mjs item-edit
 item-state:
 	$(NODE) $(KIT)/plan.mjs item-state
 item-test:

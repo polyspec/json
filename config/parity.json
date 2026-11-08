@@ -74,7 +74,8 @@
       "symbols": {
         "extractor": "php",
         "entry": "packages/php-ext/src/polyspec_ordered_json.stub.php"
-      }
+      },
+      "shares": "php"
     },
     {
       "name": "python",
