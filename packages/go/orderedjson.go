@@ -53,33 +53,79 @@ const linearMembers = 8
 // Parsed values are allocated in chunks of at most this many values.
 const maxChunk = 1024
 
-type ParseError struct {
-	Offset  int
-	Message string
+// ErrorKind names why the module refused an input, the same name in every implementation: the rejection kinds of the
+// parser, DuplicateObjectKey of the strict parse and the kinds of a refused argument.
+type ErrorKind string
+
+const (
+	ExpectedValueError             ErrorKind = "expected_value"
+	ExpectedDigitError             ErrorKind = "expected_digit"
+	ExpectedColonError             ErrorKind = "expected_colon"
+	ExpectedDelimiterError         ErrorKind = "expected_delimiter"
+	ExpectedObjectKeyError         ErrorKind = "expected_object_key"
+	InvalidEscapeError             ErrorKind = "invalid_escape"
+	InvalidUnicodeEscapeError      ErrorKind = "invalid_unicode_escape"
+	UnfinishedEscapeError          ErrorKind = "unfinished_escape"
+	UnterminatedStringError        ErrorKind = "unterminated_string"
+	UnescapedControlCharacterError ErrorKind = "unescaped_control_character"
+	InvalidUTF8Error               ErrorKind = "invalid_utf8"
+	MaximumDepthExceededError      ErrorKind = "maximum_depth_exceeded"
+	TrailingInputError             ErrorKind = "trailing_input"
+	DuplicateObjectKeyError        ErrorKind = "duplicate_object_key"
+	NonStringKeyError              ErrorKind = "non_string_key"
+	WrongKindError                 ErrorKind = "wrong_kind"
+	InvalidNumberLiteralError      ErrorKind = "invalid_number_literal"
+	DepthLimitOutOfRangeError      ErrorKind = "depth_limit_out_of_range"
+	InvalidArgumentTypeError       ErrorKind = "invalid_argument_type"
+)
+
+// Error is every error of the module. Only the module makes one, so each carries one of the ErrorKind constants.
+type Error interface {
+	error
+	// Kind reports why the input was refused.
+	Kind() ErrorKind
+	// Offset is the byte offset of a rejection in its document, and zero for a refused argument.
+	Offset() int
+	// Message is the Go wording of the kind.
+	Message() string
 }
 
-// rejectionKinds names the reason for each message, shared by every implementation.
-var rejectionKinds = map[string]string{
-	"expected JSON value":                 "expected_value",
-	"expected digit":                      "expected_digit",
-	"expected colon":                      "expected_colon",
-	"expected comma or closing delimiter": "expected_delimiter",
-	"expected string":                     "expected_object_key",
-	"invalid escape":                      "invalid_escape",
-	"invalid Unicode escape":              "invalid_unicode_escape",
-	"unfinished escape":                   "unfinished_escape",
-	"unterminated string":                 "unterminated_string",
-	"unescaped control character":         "unescaped_control_character",
-	"invalid UTF-8":                       "invalid_utf8",
-	"maximum nesting depth exceeded":      "maximum_depth_exceeded",
-	"unexpected trailing input":           "trailing_input",
-	"duplicate object key":                "duplicate_object_key",
+type failure struct {
+	offset int
+	kind   ErrorKind
 }
 
-// Kind reports why the document was rejected.
-func (e *ParseError) Kind() string { return rejectionKinds[e.Message] }
+// messages holds the wording of every ErrorKind constant.
+var messages = map[ErrorKind]string{
+	ExpectedValueError:             "expected JSON value",
+	ExpectedDigitError:             "expected digit",
+	ExpectedColonError:             "expected colon",
+	ExpectedDelimiterError:         "expected comma or closing delimiter",
+	ExpectedObjectKeyError:         "expected string",
+	InvalidEscapeError:             "invalid escape",
+	InvalidUnicodeEscapeError:      "invalid Unicode escape",
+	UnfinishedEscapeError:          "unfinished escape",
+	UnterminatedStringError:        "unterminated string",
+	UnescapedControlCharacterError: "unescaped control character",
+	InvalidUTF8Error:               "invalid UTF-8",
+	MaximumDepthExceededError:      "maximum nesting depth exceeded",
+	TrailingInputError:             "unexpected trailing input",
+	DuplicateObjectKeyError:        "duplicate object key",
+	NonStringKeyError:              "object key must be string",
+	WrongKindError:                 "value is of another kind",
+	InvalidNumberLiteralError:      "expected number literal without whitespace",
+	DepthLimitOutOfRangeError:      "maxDepth must be between 0 and 256",
+	InvalidArgumentTypeError:       "expected an orderedjson Value or OrderedMap",
+}
 
-func (e *ParseError) Error() string { return fmt.Sprintf("%s at byte %d", e.Message, e.Offset) }
+func (e *failure) Kind() ErrorKind { return e.kind }
+func (e *failure) Offset() int     { return e.offset }
+func (e *failure) Message() string { return messages[e.kind] }
+func (e *failure) Error() string   { return fmt.Sprintf("%s at byte %d", e.Message(), e.offset) }
+
+// rejection is a refusal of the document at a byte offset; refusal is a refused argument, which has no offset.
+func rejection(offset int, kind ErrorKind) error { return &failure{offset, kind} }
+func refusal(kind ErrorKind) error               { return &failure{0, kind} }
 
 // OrderedMap associates each key with one value and retains its insertion position.
 // Its zero value is an empty map. Keys returns JSON string values in that order.
@@ -181,10 +227,10 @@ func (s *orderedMapState) find(name string) int {
 
 func (m *OrderedMap) Set(key, value *Value) error {
 	if key.Kind() != StringKind {
-		return fmt.Errorf("object key must be string")
+		return refusal(NonStringKeyError)
 	}
 	if !value.valid() {
-		return fmt.Errorf("expected orderedjson Value")
+		return refusal(InvalidArgumentTypeError)
 	}
 	if m.state == nil {
 		m.state = &orderedMapState{}
@@ -287,6 +333,7 @@ func (v *Value) name() string {
 	}
 	return unitsName(decodeUnits(content))
 }
+
 // String implements fmt.Stringer. A Value that does not serialize has no text, so String panics with the error rather
 // than return an empty string that looks like a value (P8).
 func (v *Value) String() string {
@@ -298,25 +345,25 @@ func (v *Value) String() string {
 }
 func (v *Value) Members() (*OrderedMap, error) {
 	if v.Kind() != ObjectKind {
-		return nil, fmt.Errorf("expected object")
+		return nil, refusal(WrongKindError)
 	}
 	return v.members.clone(), nil
 }
 func (v *Value) Items() ([]*Value, error) {
 	if v.Kind() != ArrayKind {
-		return nil, fmt.Errorf("expected array")
+		return nil, refusal(WrongKindError)
 	}
 	return append([]*Value{}, v.items...), nil
 }
 func (v *Value) StringUnits() ([]uint16, error) {
 	if v.Kind() != StringKind {
-		return nil, fmt.Errorf("expected string")
+		return nil, refusal(WrongKindError)
 	}
 	return decodeUnits(v.source[v.start+1 : v.end-1]), nil
 }
 func (v *Value) StringValue() (string, error) {
 	if v.Kind() != StringKind {
-		return "", fmt.Errorf("expected string")
+		return "", refusal(WrongKindError)
 	}
 	content := v.source[v.start+1 : v.end-1]
 	if v.flags&flagEscaped == 0 {
@@ -327,13 +374,13 @@ func (v *Value) StringValue() (string, error) {
 }
 func (v *Value) NumberLiteral() (string, error) {
 	if v.Kind() != NumberKind {
-		return "", fmt.Errorf("expected number")
+		return "", refusal(WrongKindError)
 	}
 	return strings.TrimSpace(v.Raw()), nil
 }
 func (v *Value) BooleanValue() (bool, error) {
 	if v.Kind() != BooleanKind {
-		return false, fmt.Errorf("expected boolean")
+		return false, refusal(WrongKindError)
 	}
 	return strings.TrimSpace(v.Raw()) == "true", nil
 }
@@ -351,7 +398,7 @@ func (v *Value) Get(key string) *Value {
 }
 func String(text string) (*Value, error) {
 	if !utf8.ValidString(text) {
-		return nil, fmt.Errorf("invalid UTF-8")
+		return nil, refusal(InvalidUTF8Error)
 	}
 	return StringFromUnits(utf16.Encode([]rune(text))), nil
 }
@@ -377,10 +424,11 @@ func Number(literal string) (*Value, error) {
 		return nil, err
 	}
 	if v.kind != numberKind || strings.TrimSpace(literal) != literal {
-		return nil, fmt.Errorf("expected number literal without whitespace")
+		return nil, refusal(InvalidNumberLiteralError)
 	}
 	return v, nil
 }
+
 // mustBuild parses a literal that this package builds itself. Such a literal always parses, so a failure is a defect of
 // the package and panics with the literal instead of returning a Value that is nil.
 func mustBuild(literal string) *Value {
@@ -401,7 +449,7 @@ func Array(items []*Value) (*Value, error) {
 	parts := make([]string, len(items))
 	for i, v := range items {
 		if !v.valid() {
-			return nil, fmt.Errorf("expected orderedjson Value")
+			return nil, refusal(InvalidArgumentTypeError)
 		}
 		part, err := v.Compact()
 		if err != nil {
@@ -413,7 +461,7 @@ func Array(items []*Value) (*Value, error) {
 }
 func Object(members *OrderedMap) (*Value, error) {
 	if members == nil {
-		return nil, fmt.Errorf("expected ordered map")
+		return nil, refusal(InvalidArgumentTypeError)
 	}
 	parts := make([]string, members.Len())
 	for i, key := range members.orderedKeys() {
@@ -427,7 +475,7 @@ func Object(members *OrderedMap) (*Value, error) {
 }
 func Stringify(value *Value) (string, error) {
 	if !value.valid() {
-		return "", fmt.Errorf("expected orderedjson Value")
+		return "", refusal(InvalidArgumentTypeError)
 	}
 	return value.Compact()
 }
@@ -450,7 +498,7 @@ func (v *Value) UnmarshalJSON(data []byte) error {
 }
 func (v *Value) Compact() (string, error) {
 	if !v.valid() {
-		return "", fmt.Errorf("expected orderedjson Value")
+		return "", refusal(InvalidArgumentTypeError)
 	}
 	if v.flags&flagCompact != 0 {
 		return v.source[v.start:v.end], nil
@@ -519,10 +567,10 @@ func firstInvalidByte(source string) int {
 
 func parse(source string, maxDepth int, flags uint8) (*Value, error) {
 	if maxDepth < 0 || maxDepth > MaxDepth {
-		return nil, fmt.Errorf("maxDepth must be between 0 and 256")
+		return nil, refusal(DepthLimitOutOfRangeError)
 	}
 	if !utf8.ValidString(source) {
-		return nil, &ParseError{firstInvalidByte(source), "invalid UTF-8"}
+		return nil, rejection(firstInvalidByte(source), InvalidUTF8Error)
 	}
 	p := parser{source: source, maxDepth: maxDepth, flags: flags, estimate: -1}
 	v, err := p.value(0)
@@ -531,7 +579,7 @@ func parse(source string, maxDepth int, flags uint8) (*Value, error) {
 	}
 	p.ws()
 	if p.pos != len(source) {
-		return nil, p.fail("unexpected trailing input")
+		return nil, p.fail(TrailingInputError)
 	}
 	v.flags |= flagRoot
 	return v, nil
@@ -585,7 +633,7 @@ func (p *parser) peek() byte {
 	}
 	return p.source[p.pos]
 }
-func (p *parser) fail(message string) error { return &ParseError{p.pos, message} }
+func (p *parser) fail(kind ErrorKind) error { return rejection(p.pos, kind) }
 func (p *parser) ws() {
 	pos := p.pos
 	for pos < len(p.source) {
@@ -597,9 +645,9 @@ func (p *parser) ws() {
 	p.whitespace += pos - p.pos
 	p.pos = pos
 }
-func (p *parser) expect(ch byte, message string) error {
+func (p *parser) expect(ch byte, kind ErrorKind) error {
 	if p.peek() != ch {
-		return p.fail(message)
+		return p.fail(kind)
 	}
 	p.pos++
 	return nil
@@ -618,7 +666,7 @@ func hex(ch byte) (uint16, bool) {
 
 // string validates a string token and reports whether it contains escapes.
 func (p *parser) string() (bool, error) {
-	if err := p.expect('"', "expected string"); err != nil {
+	if err := p.expect('"', ExpectedObjectKeyError); err != nil {
 		return false, err
 	}
 	escaped := false
@@ -630,10 +678,10 @@ func (p *parser) string() (bool, error) {
 			return escaped, nil
 		case ch < 32:
 			// The scanner has consumed the offending byte; the offset names it.
-			return false, &ParseError{p.pos - 1, "unescaped control character"}
+			return false, rejection(p.pos-1, UnescapedControlCharacterError)
 		case ch == '\\':
 			if p.pos >= len(p.source) {
-				return false, p.fail("unfinished escape")
+				return false, p.fail(UnfinishedEscapeError)
 			}
 			escape := p.source[p.pos]
 			p.pos++
@@ -642,23 +690,23 @@ func (p *parser) string() (bool, error) {
 			case 'u':
 				for i := 0; i < 4; i++ {
 					if _, ok := hex(p.peek()); !ok {
-						return false, p.fail("invalid Unicode escape")
+						return false, p.fail(InvalidUnicodeEscapeError)
 					}
 					p.pos++
 				}
 			case '"', '\\', '/', 'b', 'f', 'n', 'r', 't':
 			default:
 				// The escape character has been consumed; the offset names it.
-				return false, &ParseError{p.pos - 1, "invalid escape"}
+				return false, rejection(p.pos-1, InvalidEscapeError)
 			}
 		}
 	}
-	return false, p.fail("unterminated string")
+	return false, p.fail(UnterminatedStringError)
 }
 func isDigit(ch byte) bool { return ch >= '0' && ch <= '9' }
 func (p *parser) digits() error {
 	if !isDigit(p.peek()) {
-		return p.fail("expected digit")
+		return p.fail(ExpectedDigitError)
 	}
 	for isDigit(p.peek()) {
 		p.pos++
@@ -716,11 +764,11 @@ func (p *parser) value(depth int) (*Value, error) {
 		p.pos += 4
 		return p.newValue(nullKind, start, flagCompact), nil
 	}
-	return nil, p.fail("expected JSON value")
+	return nil, p.fail(ExpectedValueError)
 }
 func (p *parser) container(depth, start int, object bool) (*Value, error) {
 	if depth >= p.maxDepth {
-		return nil, p.fail("maximum nesting depth exceeded")
+		return nil, p.fail(MaximumDepthExceededError)
 	}
 	close, kind, base := byte(']'), arrayKind, len(p.items)
 	if object {
@@ -744,7 +792,7 @@ func (p *parser) container(depth, start int, object bool) (*Value, error) {
 				}
 				key := p.newValue(stringKind, keyStart, flags)
 				p.ws()
-				if err := p.expect(':', "expected colon"); err != nil {
+				if err := p.expect(':', ExpectedColonError); err != nil {
 					return nil, err
 				}
 				child, err := p.value(depth + 1)
@@ -754,7 +802,7 @@ func (p *parser) container(depth, start int, object bool) (*Value, error) {
 				duplicates := p.duplicates
 				index = p.addMember(base, index, key, child)
 				if p.flags&flagRejectDuplicates != 0 && p.duplicates != duplicates {
-					return nil, &ParseError{keyStart, "duplicate object key"}
+					return nil, rejection(keyStart, DuplicateObjectKeyError)
 				}
 			} else {
 				child, err := p.value(depth + 1)
@@ -770,7 +818,7 @@ func (p *parser) container(depth, start int, object bool) (*Value, error) {
 			if p.peek() == close {
 				break
 			}
-			if err := p.expect(',', "expected comma or closing delimiter"); err != nil {
+			if err := p.expect(',', ExpectedDelimiterError); err != nil {
 				return nil, err
 			}
 			p.ws()

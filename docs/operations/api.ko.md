@@ -1,5 +1,5 @@
 <!-- doc-id: api -->
-<!-- source-sha256: cf0dcafc08c3779d870d3edb56909a3cdf600b1818fed2d9658235803b4c53d1 -->
+<!-- source-sha256: 2bef05a576006ee5365d44c90812bdec498dc3eb104054db283f9c81e70f41fa -->
 # API 계약
 
 [English](api.md)
@@ -35,6 +35,8 @@ Rust 바인딩은 `parse_bytes_reject_duplicates(source)`를 제공합니다. �
 Rust 바인딩의 모든 오류는 `Error`이며, 그 `kind()`는 enum `ErrorKind`를 반환합니다. `ErrorKind`는 exhaustive이므로 호출자는 wildcard arm 없이 모든 kind를 match합니다. `ErrorKind::as_str()`는 kind의 이름, `message()`는 Rust 문구이고, `offset`은 거부의 바이트 위치이며 거부된 인자에서는 0입니다. 파싱 거부는 공유 rejection kind 목록의 이름을 가지며, Rust `str`가 담을 수 없는 `unescaped_lone_surrogate`는 제외하고, strict parse가 `duplicate_object_key`를 더합니다. 거부된 인자는 자기 kind를 가집니다: 문자열이 아닌 key의 `OrderedMap::insert`는 `non_string_key`, 다른 kind 값의 `string_value()`는 `wrong_kind`, 다른 JSON 값이거나 whitespace를 가진 literal의 `Value::number`는 `invalid_number_literal`(파싱되지 않는 literal은 그 거부의 kind를 가집니다), 256을 넘는 한도의 `parse_with_max_depth`는 `depth_limit_out_of_range`입니다. 빈 kind를 가진 오류는 없습니다.
 
 Go 바인딩은 `ParseRejectDuplicates(source)`를 제공합니다. 일반 문법과 기본 깊이 한도로 텍스트를 파싱하지만 어느 깊이든 해석된 객체 키가 반복되면 거부합니다. 이스케이프 표기가 같은 UTF-16 키를 만드는 경우를 포함하여 두 번째 키 토큰의 첫 바이트 위치에 `duplicate object key` 오류(kind `duplicate_object_key`)를 반환합니다. `Parse`는 공통 중복 키 동작을 유지합니다. 그 밖의 유효한 값과 오류 및 위치는 바뀌지 않습니다.
+
+Go 바인딩의 모든 오류는 module만 구현하는 interface `orderedjson.Error`이므로 module의 어떤 오류도 빈 kind를 갖지 않습니다: `Kind()`는 그 문자열이 kind 이름인 `ErrorKind` 상수를, `Offset()`은 거부의 바이트 위치를(거부된 인자에서는 0), `Message()`는 Go 문구를 반환합니다. 호출자는 `orderedjson.Error` 타입의 `target`에 대해 `errors.As(err, &target)`로 읽습니다. 파싱 거부는 공유 목록의 이름을 가지며, Go 문자열은 unpaired surrogate를 잘못된 UTF-8로만 담으므로 `unescaped_lone_surrogate`는 제외되고, `ParseRejectDuplicates`가 `duplicate_object_key`를 더합니다. 거부된 인자는 문자열이 아닌 key의 `OrderedMap.Set`에 `non_string_key`, 다른 kind 값의 `Members`, `Items`, `StringUnits`, `StringValue`, `NumberLiteral`, `BooleanValue`에 `wrong_kind`, `Number`에 `invalid_number_literal`, 0부터 256 밖의 한도인 `ParseWithMaxDepth`에 `depth_limit_out_of_range`, UTF-8이 아닌 text의 `String`에 `invalid_utf8`, `Set`, `Array`, `Stringify`, `Compact`에 준 nil 또는 영값 `Value`와 `Object`에 준 nil `OrderedMap`에 `invalid_argument_type`을 가집니다.
 
 JavaScript 바인딩은 `parse(source, options)`와 `parseBytes(bytes, options)`의 options에서 `rejectDuplicates: true`를 받습니다. 이 옵션이 있으면 이스케이프 표기가 같은 UTF-16 키를 만드는 경우를 포함하여 어느 깊이든 해석된 객체 키가 반복될 때 `Duplicate object key at UTF-16 offset N` 메시지와 `duplicate_object_key` `kind`의 `ParseError`로 거부하며, `N`은 두 번째 키 토큰의 UTF-16 위치입니다. `rejectDuplicates`는 boolean이어야 하며 기본값 `false`는 공통 중복 키 동작을 유지합니다. 이 옵션은 `maxDepth`와 함께 쓸 수 있습니다. 그 밖의 유효한 값과 오류 및 위치는 바뀌지 않습니다.
 

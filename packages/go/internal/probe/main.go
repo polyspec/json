@@ -124,12 +124,12 @@ func main() {
 		}
 		value, err := orderedjson.ParseBytes(source)
 		if err != nil {
-			var failure *orderedjson.ParseError
+			var failure orderedjson.Error
 			if !errors.As(err, &failure) {
 				panic(err)
 			}
 			fmt.Printf("{\"ok\":false,\"offset\":%d,\"unit\":\"byte\",\"kind\":%s}\n",
-				failure.Offset, quote(failure.Kind()))
+				failure.Offset(), quote(string(failure.Kind())))
 			continue
 		}
 		compact, err := value.Compact()
