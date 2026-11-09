@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: eb11e68072afb9182861280979824a7cfcc3f4d3c93f9c8eb10eb279422bf831 -->
+<!-- source-sha256: e34b846a77877d4f3185be4af44a598045e301a2bcaf415b83835f739b6c2365 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- T2.149-1: Rust crate의 README는 T2.42가 없앤 함수 `polyspec_ordered_json::serde::{to_string, from_str, from_slice}` 대신 `Value`가 `serde_json`을 위해 Serde `Serialize`와 `Deserialize`를 구현한다고 적는다(T2.149-1).
 - T2.149: Rust crate는 모든 error를 `Error::kind()`가 반환하는 공개 exhaustive enum `ErrorKind`로 이름 붙인다: 파싱 거부는 공유 목록의 이름을, strict parse는 `duplicate_object_key`를, 거부된 인자는 `non_string_key`(OrderedMap::insert), `wrong_kind`(Value::string_value), `invalid_number_literal`(Value::number), `depth_limit_out_of_range`(parse_with_max_depth)를 가진다; 빈 kind를 가진 error는 없고, 다른 kind의 `string_value()`는 더 이상 `expected_object_key`를 보고하지 않는다. `Error::message`는 kind에서 나오는 method `message()`이다(T2.149).
 
 ## 0.0.23

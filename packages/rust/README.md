@@ -18,10 +18,10 @@ let value = parse(source)?;
 let output = stringify(&value);
 ~~~
 
-Typed values use `polyspec_ordered_json::serde::{to_string, from_str, from_slice}` with Serde
-`Serialize` and owned `Deserialize`. Struct fields retain declaration order. Duplicate keys,
-unknown fields, type errors and non-finite numbers fail. Embedded `Value` fields preserve
-object order and number tokens.
+`Value` implements Serde `Serialize` and `Deserialize`: `Serialize` writes the compact bytes of the value and
+`Deserialize` parses the raw JSON text of a field with the library parser, so `serde_json` encodes and decodes a native
+structure that holds `Value` fields with their object order and number tokens. The crate has no typed encoder of its
+own; the rest of the structure follows the rules of `serde_json`.
 
 
 The [JSON contract](https://github.com/polyspec/ordered-json/blob/main/docs/spec/json-contract.md) and [API contract](https://github.com/polyspec/ordered-json/blob/main/docs/operations/api.md) define behavior. Source is provided by this repository. The Cargo package is not configured for registry publication. Registry publication and versioned releases are not verified; a source version string is not a release record.

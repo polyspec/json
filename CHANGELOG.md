@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- T2.149-1: the README of the Rust crate states that `Value` implements Serde `Serialize` and `Deserialize` for `serde_json`, instead of the functions `polyspec_ordered_json::serde::{to_string, from_str, from_slice}` that T2.42 removed (T2.149-1).
 - T2.149: the Rust crate names every error by the public exhaustive enum `ErrorKind`, which `Error::kind()` returns: the parse rejections carry the names of the shared list, the strict parse `duplicate_object_key`, and the refused arguments `non_string_key` (OrderedMap::insert), `wrong_kind` (Value::string_value), `invalid_number_literal` (Value::number) and `depth_limit_out_of_range` (parse_with_max_depth); no error has an empty kind, and `string_value()` of another kind no longer reports `expected_object_key`. `Error::message` is the method `message()`, derived from the kind (T2.149).
 
 ## 0.0.23
