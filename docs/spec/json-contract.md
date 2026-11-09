@@ -50,6 +50,20 @@ The shared list of the rejection kinds. Every implementation names one of them f
 - `maximum_depth_exceeded`
 - `trailing_input`
 
+<a id="argument-kinds"></a>
+### Argument kinds
+
+The shared list of the argument kinds. A function of the library that refuses an argument names one of them, the same in every implementation; each binding throws the error class of its host for the case, keeps its own wording and exposes the kind through the accessor of its rejection kinds. A refused argument that is not UTF-8 names `invalid_utf8` of the rejection kinds. The shared verifier reads this list, sends the argument cases of [arguments.json](../../contracts/fixtures/arguments.json) to every implementation and fails on another kind. A kind that cannot arise in a language is stated with it.
+
+- `non_string_key` — an object key that is not a string. It cannot arise in PHP, whose array keys are strings or integers.
+- `wrong_kind` — an accessor that refuses a value of another kind.
+- `invalid_number_literal` — a number constructor given a literal that is another JSON value or holds whitespace; a literal that does not parse names its rejection kind.
+- `depth_limit_out_of_range` — a depth limit that is not an integer from 0 through 256.
+- `invalid_argument_type` — an argument of a type that the function does not take, a value that the library did not make included (a Go nil or zero `Value`). It cannot arise in Rust, whose types the compiler checks; in PHP the declared parameter types refuse a host type before the library runs, so it arises there only where a signature cannot declare the type, as for the elements of an array.
+- `invalid_code_unit` — a UTF-16 code unit that is not an integer from 0 through 65535. It cannot arise in Rust and Go, whose code units are `u16` and `uint16`, or in JavaScript, which takes code units only as a string.
+- `host_serialization_refused` — the standard JSON interface of a language that would rewrite a value ([RQ-020](#requirements)). It cannot arise in Rust and Go, whose interfaces write the contract bytes.
+- `direct_construction` — a constructor of the library called outside it: the `Value` constructor of JavaScript and Python, and an error constructor given a message or a kind outside these lists. It cannot arise in Rust and Go, whose values and errors keep their fields private.
+
 <a id="numbers"></a>
 ## Numbers
 
@@ -117,3 +131,4 @@ Each requirement is one testable statement of this contract.
 - **RQ-022** Every implementation gives the official examples the expected results.
 - **RQ-023** The public API exports the parse, serialization, factory and accessor functions.
 - **RQ-024** A parse error exposes its kind, its offset and its message.
+- **RQ-025** A refused argument names one kind of the shared list of argument kinds, in the error class of its host.

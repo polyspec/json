@@ -10,11 +10,42 @@ import json
 import sys
 from pathlib import Path
 
-from polyspec.ordered_json import ParseError, Value, parse_bytes, stringify
+from polyspec.ordered_json import (
+    ParseError,
+    ParseOptions,
+    Value,
+    parse,
+    parse_bytes,
+    stringify,
+)
 from shape import rebuild, tree
+
+# The calls of an argument request {"call": call, "argument": argument} of the shared verifier.
+CALLS = {
+    "number": lambda argument: Value.number(argument.string_value()),
+    "max_depth": lambda argument: parse(
+        "1", ParseOptions(max_depth=int(argument.number_literal()))
+    ),
+    "string_value": lambda argument: argument.string_value(),
+    "object_key": lambda argument: Value.object([(argument, Value.null())]),
+}
+
+
+def call(line):
+    request = parse(line)
+    try:
+        CALLS[request.get("call").string_value()](request.get("argument"))
+    except (TypeError, ValueError) as error:
+        if not isinstance(getattr(error, "kind", None), str):
+            raise
+        return {"ok": False, "kind": error.kind}
+    return {"ok": True}
 
 
 for line in sys.stdin:
+    if line.startswith("{"):
+        print(json.dumps(call(line.rstrip("\r\n"))), flush=True)
+        continue
     data = Path(line.rstrip("\r\n")).read_bytes()
     try:
         value = parse_bytes(data)

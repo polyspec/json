@@ -17,21 +17,27 @@ import { reference, Rejected, type Accepted } from './reference.mts';
 import { AGGREGATE_RECORD, externalPins, inputIssues, manifestDifferences, packageRevisions, sourceManifest, supplementaryManifest, writeRecord, type Manifest, type Supplementary } from './records.mts';
 import { parseJson } from './json.mts';
 import { present } from './present.mts';
-import { Failures, IMPLEMENTATIONS, ROOT, officialCases, endGroup, fixturePaths, prepare, probeCommands, runtimeVersions, withRun, type Argv, type Run } from './registry.mts';
+import { Failures, IMPLEMENTATIONS, ROOT, argumentCases, officialCases, endGroup, fixturePaths, prepare, probeCommands, runtimeVersions, withRun, type Argv, type Call, type Run } from './registry.mts';
 
 /** The text that every probe builds through its string factory, compact. */
 const FACTORY_STRING = '"quote \\" slash \\\\ line\\n \\ud55c \\ud83c\\udf0d"';
 // The shared list of rejection kinds: the items of the section of that anchor of the JSON contract.
 const CONTRACT = 'docs/spec/json-contract.md';
 const KINDS_ANCHOR = '<a id="rejection-kinds"></a>';
+// The shared list of argument kinds, the section of that anchor.
+const ARGUMENT_KINDS_ANCHOR = '<a id="argument-kinds"></a>';
 /** Each probe reply has this long after its request; a whole run has no limit. */
 const CASE_SECONDS = 60;
 export const SUITE_FIX = 'run make install-tools, which installs the http:jsontestsuite of mise.toml';
 
 type Expected = Accepted | { ok: false };
 export type Case = { name: string; file: string; expected: Expected };
+/** The reply that an argument case expects: acceptance, the kind of the refusal, or absent where its call cannot be written. */
+type ArgumentReply = { ok: true } | { ok: false; kind: string } | { absent: true };
+/** An argument case: the request line its probe reads, its call and its expected reply, by implementation where absent. */
+export type ArgumentCheck = { name: string; request: string; call: Call; kind: string | null; absent: string[] };
 type Reply = Record<string, unknown> & { ok?: boolean; offset?: unknown; unit?: unknown; kind?: unknown };
-export type Counts = { official: number; fixtures: number; supplementary: number };
+export type Counts = { official: number; fixtures: number; arguments: number; supplementary: number };
 
 /** The expected result of a supplementary or fixture input that the reference rejects: a rejection. */
 function referenceOrRejection(bytes: Uint8Array): Expected {
@@ -43,8 +49,30 @@ function referenceOrRejection(bytes: Uint8Array): Expected {
   }
 }
 
+/**
+ * The argument cases of `root`: each names a kind of the rejection or the argument kinds of the JSON contract, or null, and
+ * each absent implementation is one of config/implementations.json.
+ */
+export function argumentChecks(root = ROOT): ArgumentCheck[] {
+  const { absent, cases } = argumentCases(root);
+  const known = [...rejectionKinds(root), ...argumentKinds(root)];
+  const unknown = cases.filter(({ kind }) => kind !== null && !known.includes(kind)).map(({ name, kind }) => `${name}: ${kind}`);
+  const strangers = Object.values(absent).flat().filter(name => !IMPLEMENTATIONS.includes(name));
+  const names = cases.map(({ name }) => name);
+  if (unknown.length || strangers.length || new Set(names).size !== names.length) {
+    throw new Error(`the argument cases name kinds outside the JSON contract (${unknown.join(', ')}), implementations outside config/implementations.json (${strangers.join(', ')}) or a name twice`);
+  }
+  return cases.map(({ name, call, argument, kind }) => ({ name: `arguments/${name}`, request: JSON.stringify({ call, argument }), call, kind, absent: absent[call] ?? [] }));
+}
+
+/** The reply that `check` expects from `language`. */
+export function expectedArgumentReply(check: ArgumentCheck, language: string): ArgumentReply {
+  if (check.absent.includes(language)) return { absent: true };
+  return check.kind === null ? { ok: true } : { ok: false, kind: check.kind };
+}
+
 /** The shared cases: the official examples (written into `directory`), the fixtures and the cases of the optional suite. */
-export function sharedCases(directory: string, suite?: string, root = ROOT): { cases: Case[]; counts: Counts } {
+export function sharedCases(directory: string, suite?: string, root = ROOT): { cases: Case[]; counts: Omit<Counts, 'arguments'> } {
   const cases: Case[] = [];
   const official = officialCases(root);
   for (const example of official) {
@@ -102,17 +130,22 @@ export function positionDisagreements(rejections: Map<string, Map<string, Reply>
   return disagreements.length ? [`the implementations reject the same input at different positions:\n${disagreements.join('\n')}`] : [];
 }
 
-/** The rejection kinds: the list items of the section that KINDS_ANCHOR opens in the JSON contract, up to the next heading or anchor. */
-export function rejectionKinds(root = ROOT): string[] {
+/** The kinds of a list of the JSON contract: the list items of the section that `anchor` opens, up to the next heading or anchor. */
+function listedKinds(anchor: string, root: string): string[] {
   const text = readFileSync(path.join(root, CONTRACT), 'utf8');
-  const start = text.indexOf(KINDS_ANCHOR);
-  if (start < 0) throw new Error(`${CONTRACT} has no section ${KINDS_ANCHOR}`);
+  const start = text.indexOf(anchor);
+  if (start < 0) throw new Error(`${CONTRACT} has no section ${anchor}`);
   const [section] = text.slice(start).split('\n').slice(2).join('\n').split(/^(?:<a id=|#)/m);
-  if (section === undefined) throw new Error(`${CONTRACT} has no text after ${KINDS_ANCHOR}`);
+  if (section === undefined) throw new Error(`${CONTRACT} has no text after ${anchor}`);
   const kinds = [...section.matchAll(/^- `([a-z][a-z0-9_]*)`/gm)].map(match => present(match[1], 'the kind of a list item'));
-  if (kinds.length === 0 || new Set(kinds).size !== kinds.length) throw new Error(`${CONTRACT} lists no rejection kind, or one twice, in its section ${KINDS_ANCHOR}: ${kinds.join(', ')}`);
+  if (kinds.length === 0 || new Set(kinds).size !== kinds.length) throw new Error(`${CONTRACT} lists no kind, or one twice, in its section ${anchor}: ${kinds.join(', ')}`);
   return kinds;
 }
+
+/** The rejection kinds of the JSON contract. */
+export const rejectionKinds = (root = ROOT): string[] => listedKinds(KINDS_ANCHOR, root);
+/** The argument kinds of the JSON contract. */
+export const argumentKinds = (root = ROOT): string[] => listedKinds(ARGUMENT_KINDS_ANCHOR, root);
 
 /** The disagreements of the kinds that the implementations name for each rejected document, each a kind of `known`. */
 export function kindDisagreements(rejections: Map<string, Map<string, Reply>>, known: string[] = rejectionKinds()): string[] {
@@ -186,10 +219,10 @@ export class Probe {
     return false;
   }
 
-  /** The reply to the document `file` of the case `name`, and its time in milliseconds. */
-  async exchange(name: string, file: string): Promise<[string, number]> {
+  /** The reply to the `request` of the case `name`, a document path or an argument request, and its time in milliseconds. */
+  async exchange(name: string, request: string): Promise<[string, number]> {
     const sent = performance.now();
-    this.child.stdin.write(`${file}\n`);
+    this.child.stdin.write(`${request}\n`);
     if (await this.until(() => this.stdout.includes('\n'))) {
       this.stop();
       throw new Error(`${this.language} ${name}: no reply within ${this.seconds} s; stopped after ${this.elapsed}`);
@@ -250,7 +283,9 @@ function mismatches(language: string, name: string, expected: Expected, reply: R
 export async function verifyProbes(commands: Record<string, Argv>, suite?: string, root = ROOT): Promise<{ results: Record<string, { status: 'passed'; cases: number }>; counts: Counts }> {
   const directory = mkdtempSync(path.join(tmpdir(), 'ordered-json-examples-'));
   try {
-    const { cases, counts } = sharedCases(directory, suite, root);
+    const { cases, counts: documentCounts } = sharedCases(directory, suite, root);
+    const checks = argumentChecks(root);
+    const counts: Counts = { ...documentCounts, arguments: checks.length };
     const documents = new Map(cases.map(({ name, file }) => [name, readFileSync(file)]));
     const rejections = new Map<string, Map<string, Reply>>();
     const results: Record<string, { status: 'passed'; cases: number }> = {};
@@ -272,6 +307,13 @@ export async function verifyProbes(commands: Record<string, Argv>, suite?: strin
           found.push(...differences);
           if (!differences.length) console.log(`${language}: ${name} ok (${Math.round(elapsed)} ms)`);
         }
+        for (const check of checks) {
+          const [line, elapsed] = await probe.exchange(check.name, check.request);
+          const reply = parseJson<Reply>(line, 'probe-reply.schema.json', `${language} ${check.name}`);
+          const wanted = expectedArgumentReply(check, language);
+          if (isDeepStrictEqual(reply, wanted)) console.log(`${language}: ${check.name} ok (${Math.round(elapsed)} ms)`);
+          else found.push(`${language} ${check.name}: ${check.request}\nexpected ${shown(wanted)}\nactual   ${shown(reply)}`);
+        }
         await probe.finish();
       } catch (error) {
         // The probe stopped answering or broke the protocol; its remaining cases cannot run.
@@ -285,8 +327,8 @@ export async function verifyProbes(commands: Record<string, Argv>, suite?: strin
         console.log(`${language}: ${found.length} failures in ${cases.length} cases (${probe.elapsed})`);
         continue;
       }
-      console.log(`${language}: ${counts.official} official examples + ${cases.length - counts.official} shared cases passed (${probe.elapsed})`);
-      results[language] = { status: 'passed', cases: cases.length };
+      console.log(`${language}: ${counts.official} official examples + ${cases.length - counts.official} shared cases + ${checks.length} argument cases passed (${probe.elapsed})`);
+      results[language] = { status: 'passed', cases: cases.length + checks.length };
     }
     failures.push(...positionDisagreements(rejections, documents), ...kindDisagreements(rejections));
     if (failures.length) throw new Failures(failures, failed);
@@ -333,8 +375,8 @@ export async function verify(selected: string[], run: Run, suite?: string, warni
 export function createRecord(root: string, before: Manifest, results: Record<string, { status: string; cases: number }>, counts: Counts, versions: Record<string, Record<string, string>>, supplementary: Supplementary | null, warnings: { implementation: string; message: string }[] = []) {
   const current = sourceManifest(root);
   if (current.sha256 !== before.sha256) throw new Error(`the sources changed during verification; no record was written:\n${manifestDifferences(before, current).join('\n')}`);
-  const total = counts.official + counts.fixtures + counts.supplementary;
-  if (!counts.official || !counts.fixtures) throw new Error('a record needs the official examples and the repository fixtures');
+  const total = counts.official + counts.fixtures + counts.arguments + counts.supplementary;
+  if (!counts.official || !counts.fixtures || !counts.arguments) throw new Error('a record needs the official examples, the repository fixtures and the argument cases');
   const missing = IMPLEMENTATIONS.filter(name => results[name]?.status !== 'passed' || results[name].cases !== total || !Object.keys(versions[name] ?? {}).length);
   if (missing.length) throw new Error(`a record needs every implementation passed with every case and its runtime versions; ${missing.join(', ')} did not`);
   return {

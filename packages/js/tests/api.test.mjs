@@ -152,7 +152,7 @@ test('text_input_rejects_lone_surrogates', () => {
 
 // Requirements: RQ-016
 test('ordered_map_rejects_non_string_key', () => {
-  assert.throws(() => Value.object([[Value.number('1'), Value.null()]]), {name: 'TypeError', message: 'Expected string, got number'});
+  assert.throws(() => Value.object([[Value.number('1'), Value.null()]]), {name: 'TypeError', message: 'Key must be a string', kind: 'non_string_key'});
   for (const key of [1, null]) assert.throws(() => Value.object([[key, Value.null()]]), {name: 'TypeError'});
 });
 

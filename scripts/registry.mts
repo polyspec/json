@@ -155,6 +155,17 @@ export const officialCases = (root = ROOT): OfficialCase[] =>
 
 export const fixturePaths = (root: string, category: 'valid' | 'invalid'): string[] => filesIn(root, `${FIXTURES}/${category}`, '.json');
 
+/** The argument cases of the shared verifier, which docs/spec/json-contract.md#argument-kinds describes. */
+export const ARGUMENTS = `${FIXTURES}/arguments.json`;
+/** The functions that an argument case applies to its argument. */
+export type Call = 'number' | 'max_depth' | 'string_value' | 'object_key';
+export type ArgumentCase = { name: string; call: Call; argument: unknown; kind: string | null };
+export type ArgumentCases = { absent: Partial<Record<Call, string[]>>; cases: ArgumentCase[] };
+
+/** The argument cases of `root`. */
+export const argumentCases = (root = ROOT): ArgumentCases =>
+  readJsonFile<ArgumentCases>(path.join(root, ARGUMENTS), 'argument-cases.schema.json');
+
 /** Replaces each {name} of `value` with its variable; a variable that none names fails. */
 function expand(value: string, variables: Record<string, string>): string {
   const expanded = value.replace(/\{([a-z][a-z0-9-]*)\}/g, (whole, name: string) => {

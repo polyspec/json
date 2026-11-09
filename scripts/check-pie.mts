@@ -55,7 +55,7 @@ async function buildAndVerify(run: Run, pie: string, suite: string | undefined) 
     commands: commands.map(command => ({ ...command, arguments: command.arguments.map(argument => argument.replaceAll(`${ROOT}/`, '')) })),
     build_warnings: warnings,
     artifact: { path: path.relative(run.root, module) },
-    cases: { ...counts, total: counts.official + counts.fixtures + counts.supplementary },
+    cases: { ...counts, total: counts.official + counts.fixtures + counts.arguments + counts.supplementary },
     implementations: { 'php-extension': { ...results['php-extension'], runtime: versions['php-extension'] } },
     supplementary,
   };

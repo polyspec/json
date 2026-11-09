@@ -24,13 +24,6 @@ var allKinds = []ErrorKind{
 	InvalidArgumentTypeError,
 }
 
-// outsideSharedList holds the kinds that the shared list of rejection kinds does not: the strict parse and the refused
-// arguments. The argument error of String with invalid UTF-8 reuses invalid_utf8 of the list.
-var outsideSharedList = []ErrorKind{
-	DuplicateObjectKeyError, NonStringKeyError, WrongKindError, InvalidNumberLiteralError, DepthLimitOutOfRangeError,
-	InvalidArgumentTypeError,
-}
-
 func discard[T any](_ T, err error) error { return err }
 
 func parseText(source string) error { return discard(Parse(source)) }
@@ -156,41 +149,51 @@ func TestArgumentErrorsCarryTheirKind(t *testing.T) {
 	}
 }
 
-// Requirements: RQ-005
-func TestParseKindsAreTheSharedList(t *testing.T) {
-	// The module names each parse rejection by the shared list of docs/spec/json-contract.md. Its text is a Go string, whose
-	// unpaired surrogate is invalid UTF-8, so it has no unescaped_lone_surrogate; the kinds outside the list are the strict
-	// parse and the refused arguments.
+// listed holds the items of the list of the section of anchor in docs/spec/json-contract.md: each kind with its text.
+func listed(t *testing.T, anchor string) map[string]string {
 	spec, err := os.ReadFile("../../docs/spec/json-contract.md")
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, section, _ := strings.Cut(string(spec), `<a id="rejection-kinds"></a>`)
+	_, section, _ := strings.Cut(string(spec), anchor)
 	section, _, _ = strings.Cut(section, "\n<a id=")
-	var shared []string
+	items := map[string]string{}
 	for _, line := range strings.Split(section, "\n") {
-		if name, ok := strings.CutPrefix(line, "- `"); ok && name != "unescaped_lone_surrogate`" {
-			shared = append(shared, strings.TrimSuffix(name, "`"))
+		if item, ok := strings.CutPrefix(line, "- `"); ok {
+			name, text, _ := strings.Cut(item, "`")
+			items[name] = text
 		}
 	}
-	var parsed []string
-	for _, kind := range allKinds {
-		if !slices.Contains(outsideSharedList, kind) {
-			parsed = append(parsed, string(kind))
+	return items
+}
+
+// Requirements: RQ-005, RQ-025
+func TestKindsAreTheSharedLists(t *testing.T) {
+	// The module names each refusal by the shared lists of docs/spec/json-contract.md. A kind of a list that the module lacks
+	// is one that the list states cannot arise in Go: unescaped_lone_surrogate, since a Go string holds an unpaired surrogate
+	// only as invalid UTF-8, and the argument kinds that the types of Go exclude. DuplicateObjectKeyError of the strict parse
+	// is the one kind outside the lists.
+	items := listed(t, `<a id="rejection-kinds"></a>`)
+	arguments := listed(t, `<a id="argument-kinds"></a>`)
+	for name, text := range arguments {
+		items[name] = text
+	}
+	covered := map[ErrorKind]bool{DuplicateObjectKeyError: true}
+	for name, text := range items {
+		switch {
+		case slices.Contains(allKinds, ErrorKind(name)):
+			covered[ErrorKind(name)] = true
+		case name == "unescaped_lone_surrogate":
+		case !strings.Contains(text, "cannot arise in") || !strings.Contains(text, " Go"):
+			t.Errorf("%s is no ErrorKind and its item does not state that it cannot arise in Go", name)
 		}
 	}
-	slices.Sort(shared)
-	slices.Sort(parsed)
-	if !slices.Equal(shared, parsed) {
-		t.Fatalf("parse kinds %v, shared list %v", parsed, shared)
+	if len(covered) != len(allKinds) {
+		t.Errorf("the lists name %d kinds of the module, which has %d", len(covered), len(allKinds))
 	}
-	api, err := os.ReadFile("../../docs/operations/api.md")
-	if err != nil {
-		t.Fatal(err)
-	}
-	for _, kind := range outsideSharedList {
-		if !strings.Contains(string(api), "`"+string(kind)+"`") {
-			t.Errorf("docs/operations/api.md names no `%s`", kind)
+	for _, kind := range []ErrorKind{NonStringKeyError, WrongKindError, InvalidNumberLiteralError, DepthLimitOutOfRangeError, InvalidArgumentTypeError} {
+		if _, ok := arguments[string(kind)]; !ok {
+			t.Errorf("the argument kinds hold no %s", kind)
 		}
 	}
 }

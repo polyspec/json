@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/polyspec/ordered-json/packages/go"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -115,9 +116,65 @@ func rebuild(v *orderedjson.Value) *orderedjson.Value {
 		return v
 	}
 }
+// call is the reply to an argument request {"call": call, "argument": argument} of the shared verifier.
+func call(line string) string {
+	request, err := orderedjson.Parse(line)
+	if err != nil {
+		panic(err)
+	}
+	argument := request.Get("argument")
+	name, err := request.Get("call").StringValue()
+	if err != nil {
+		panic(err)
+	}
+	switch name {
+	case "number":
+		literal, err := argument.StringValue()
+		if err != nil {
+			panic(err)
+		}
+		_, err = orderedjson.Number(literal)
+		return outcome(err)
+	case "max_depth":
+		literal, err := argument.NumberLiteral()
+		if err != nil {
+			panic(err)
+		}
+		limit, err := strconv.Atoi(literal)
+		if err != nil {
+			panic(err)
+		}
+		_, err = orderedjson.ParseWithMaxDepth("1", limit)
+		return outcome(err)
+	case "string_value":
+		_, err := argument.StringValue()
+		return outcome(err)
+	case "object_key":
+		var members orderedjson.OrderedMap
+		return outcome(members.Set(argument, orderedjson.Null()))
+	}
+	panic("unknown call " + name)
+}
+
+// outcome is the reply to an argument request whose function returned err.
+func outcome(err error) string {
+	if err == nil {
+		return `{"ok":true}`
+	}
+	var failure orderedjson.Error
+	if !errors.As(err, &failure) {
+		panic(err)
+	}
+	return `{"ok":false,"kind":` + quote(string(failure.Kind())) + "}"
+}
+
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
+		if line := scanner.Text(); strings.HasPrefix(line, "{") {
+			fmt.Println(call(line))
+			continue
+		}
 		source, err := os.ReadFile(scanner.Text())
 		if err != nil {
 			panic(err)

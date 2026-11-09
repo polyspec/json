@@ -4,6 +4,7 @@
 # references them.
 StandardCases  # tests/test_api.py
 PackageCases  # tests/test_api.py
+ErrorKindCases  # tests/test_errors.py
 
 # The members of the public enumeration Kind, which callers read and the library names by value.
 Kind.Object

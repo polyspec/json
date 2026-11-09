@@ -5,8 +5,8 @@ import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import { sourceManifest } from '../../scripts/records.mts';
-import { FIXTURES, Failures, IMPLEMENTATIONS, OFFICIAL, REGISTRY, ROOT, fixturePaths, officialCases, type Argv } from '../../scripts/registry.mts';
-import { Probe, byteOffset, createRecord, kindDisagreements, positionDisagreements, rejectionKinds, sharedCases, verifyProbes } from '../../scripts/verify.mts';
+import { ARGUMENTS, FIXTURES, Failures, IMPLEMENTATIONS, OFFICIAL, REGISTRY, ROOT, argumentCases, fixturePaths, officialCases, type Argv } from '../../scripts/registry.mts';
+import { Probe, argumentChecks, argumentKinds, byteOffset, createRecord, expectedArgumentReply, kindDisagreements, positionDisagreements, rejectionKinds, sharedCases, verifyProbes } from '../../scripts/verify.mts';
 import { checkout, known } from './checkout.mts';
 
 /** A probe that runs `source` with node. */
@@ -20,6 +20,58 @@ test('the rejection kinds are the list of the section of the JSON contract', (co
   assert.deepEqual(rejectionKinds(root), ['first_kind', 'second_kind']);
   write('docs/spec/json-contract.md', '# JSON contract\n');
   assert.throws(() => rejectionKinds(root), /has no section/);
+});
+
+test('the argument kinds are the list of their section of the JSON contract', (context) => {
+  assert.deepEqual(argumentKinds(), ['non_string_key', 'wrong_kind', 'invalid_number_literal', 'depth_limit_out_of_range', 'invalid_argument_type', 'invalid_code_unit', 'host_serialization_refused', 'direct_construction']);
+  assert.equal(rejectionKinds().filter(kind => argumentKinds().includes(kind)).length, 0);
+  const { root, write } = checkout(context);
+  write('docs/spec/json-contract.md', '# JSON contract\n\n<a id="rejection-kinds"></a>\n### Rejection kinds\n\n- `first_kind`\n\n<a id="argument-kinds"></a>\n### Argument kinds\n\nThe list.\n\n- `third_kind` — a refused argument.\n\n<a id="numbers"></a>\n## Numbers\n');
+  assert.deepEqual(argumentKinds(root), ['third_kind']);
+  write('docs/spec/json-contract.md', '# JSON contract\n\n<a id="rejection-kinds"></a>\n### Rejection kinds\n\n- `first_kind`\n');
+  assert.throws(() => argumentKinds(root), /has no section <a id="argument-kinds">/);
+});
+
+test('the argument cases name kinds of the contract and reach every argument kind of the shared calls', (context) => {
+  const checks = argumentChecks();
+  assert.equal(checks.length, argumentCases().cases.length);
+  const kinds = new Set(checks.map(check => check.kind));
+  for (const kind of [null, 'non_string_key', 'wrong_kind', 'invalid_number_literal', 'depth_limit_out_of_range', 'expected_value']) assert.ok(kinds.has(kind), `no argument case names ${kind}`);
+  // Every call has an accepted case and a refused one.
+  for (const call of ['number', 'max_depth', 'string_value', 'object_key']) {
+    assert.ok(checks.some(check => check.call === call && check.kind === null), call);
+    assert.ok(checks.some(check => check.call === call && check.kind !== null), call);
+  }
+  const key = known(checks.find(check => check.call === 'object_key' && check.kind !== null), 'an object key case');
+  assert.deepEqual(expectedArgumentReply(key, 'php'), { absent: true });
+  assert.deepEqual(expectedArgumentReply(key, 'rust'), { ok: false, kind: 'non_string_key' });
+  assert.match(key.request, /^\{"call":"object_key","argument":/);
+  const { root, write, json } = checkout(context);
+  write('docs/spec/json-contract.md', '<a id="rejection-kinds"></a>\n### R\n\n- `expected_value`\n\n<a id="argument-kinds"></a>\n### A\n\n- `wrong_kind`\n');
+  const comment = 'synthetic';
+  json(ARGUMENTS, { schema: 1, comment, absent: {}, cases: [{ name: 'a', call: 'number', argument: 'x', kind: 'not_a_kind' }] });
+  assert.throws(() => argumentChecks(root), /kinds outside the JSON contract \(a: not_a_kind\)/);
+  json(ARGUMENTS, { schema: 1, comment, absent: { number: ['cobol'] }, cases: [{ name: 'a', call: 'number', argument: 'x', kind: null }] });
+  assert.throws(() => argumentChecks(root), /outside config\/implementations.json \(cobol\)/);
+  json(ARGUMENTS, { schema: 1, comment, absent: {}, cases: [{ name: 'a', call: 'parse', argument: 'x', kind: null }] });
+  assert.throws(() => argumentChecks(root), /arguments.json/);
+});
+
+test('an argument case passes only with its expected reply', async () => {
+  // A probe that accepts every document as an empty object and answers every argument request with its expected reply.
+  const checks = argumentChecks();
+  const replies = Object.fromEntries(checks.map(check => [check.request, expectedArgumentReply(check, 'synthetic')]));
+  const source = `const replies = ${JSON.stringify(replies)}; require('node:readline').createInterface({ input: process.stdin }).on('line', line => console.log(JSON.stringify(replies[line] ?? { ok: false, offset: 0, unit: 'byte', kind: 'expected_value' })))`;
+  await assert.rejects(verifyProbes({ synthetic: node(source) }), (error: Failures) => {
+    assert.ok(!error.failures.some(failure => failure.startsWith('synthetic arguments/')), error.message.slice(0, 500));
+    return true;
+  });
+  const wrong = `require('node:readline').createInterface({ input: process.stdin }).on('line', line => console.log(JSON.stringify(line.startsWith('{') ? { ok: true } : { ok: false, offset: 0, unit: 'byte', kind: 'expected_value' })))`;
+  await assert.rejects(verifyProbes({ synthetic: node(wrong) }), (error: Failures) => {
+    assert.ok(error.failures.some(failure => failure.startsWith('synthetic arguments/number-array:') && failure.includes('"kind":"invalid_number_literal"')), error.message.slice(0, 500));
+    assert.ok(!error.failures.some(failure => failure.startsWith('synthetic arguments/number-literal:')), error.message.slice(0, 500));
+    return true;
+  });
 });
 
 test('a UTF-16 offset is the byte offset of its character', () => {
@@ -81,13 +133,14 @@ test('only a complete run of the current sources makes a record', (context) => {
   write(source, 'export const fixture = true;\n');
   json(OFFICIAL, { cases: [{ id: 'fixture', input: '{}', tree: ['object', []], compact: '{}' }] });
   write(`${FIXTURES}/valid/object.json`, '{}');
-  const counts = { official: 1, fixtures: 1, supplementary: 0 };
-  const results = Object.fromEntries(IMPLEMENTATIONS.map(name => [name, { status: 'passed', cases: 2 }]));
+  const counts = { official: 1, fixtures: 1, arguments: 1, supplementary: 0 };
+  const results = Object.fromEntries(IMPLEMENTATIONS.map(name => [name, { status: 'passed', cases: 3 }]));
   const versions = Object.fromEntries(IMPLEMENTATIONS.map(name => [name, { version: 'synthetic' }]));
   const before = sourceManifest(root);
-  assert.equal(createRecord(root, before, results, counts, versions, null).cases.total, 2);
-  assert.throws(() => createRecord(root, before, { ...results, go: { status: 'failed', cases: 2 } }, counts, versions, null), /go did not/);
+  assert.equal(createRecord(root, before, results, counts, versions, null).cases.total, 3);
+  assert.throws(() => createRecord(root, before, { ...results, go: { status: 'failed', cases: 3 } }, counts, versions, null), /go did not/);
   assert.throws(() => createRecord(root, before, results, { ...counts, fixtures: 0 }, versions, null), /repository fixtures/);
+  assert.throws(() => createRecord(root, before, results, { ...counts, arguments: 0 }, versions, null), /argument cases/);
   write(source, '// changed during the run\n');
   assert.throws(() => createRecord(root, before, results, counts, versions, null), new RegExp(`sources changed during verification[^]*changed ${source}`));
 });

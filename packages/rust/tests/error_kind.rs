@@ -53,15 +53,6 @@ fn position(kind: ErrorKind) -> usize {
     }
 }
 
-/// The kinds of the crate that the shared list does not hold: the strict parse and the refused arguments.
-const OUTSIDE_SHARED_LIST: [ErrorKind; 5] = [
-    ErrorKind::DuplicateObjectKey,
-    ErrorKind::NonStringKey,
-    ErrorKind::WrongKind,
-    ErrorKind::InvalidNumberLiteral,
-    ErrorKind::DepthLimitOutOfRange,
-];
-
 type Site = fn() -> Result<(), Error>;
 
 /// Each kind with an input its site accepts, an input it refuses and the offset of that refusal.
@@ -261,43 +252,57 @@ fn argument_errors_carry_their_kind() {
     );
 }
 
-// Requirements: RQ-005
-#[test]
-fn parse_kinds_are_the_shared_list() {
-    // The crate names each parse rejection by the shared list of docs/spec/json-contract.md. Its text input is a Rust str,
-    // which cannot hold an unpaired surrogate, so it has no unescaped_lone_surrogate; every other kind of the list is a
-    // variant, and the variants outside the list are the strict parse and the refused arguments.
+/// The items of the list of the section of `anchor` in docs/spec/json-contract.md: each kind with the text of its item.
+fn listed(anchor: &str) -> Vec<(String, String)> {
     let spec = std::fs::read_to_string(concat!(
         env!("CARGO_MANIFEST_DIR"),
         "/../../docs/spec/json-contract.md"
     ))
     .unwrap();
-    let section = spec
-        .split(r#"<a id="rejection-kinds"></a>"#)
-        .nth(1)
-        .unwrap();
+    let section = spec.split(anchor).nth(1).unwrap();
     let section = &section[..section.find("\n<a id=").unwrap()];
-    let shared: BTreeSet<&str> = section
+    section
         .lines()
-        .filter_map(|line| line.strip_prefix("- `")?.strip_suffix('`'))
-        .filter(|name| *name != "unescaped_lone_surrogate")
-        .collect();
-    let parse_kinds: BTreeSet<&str> = ALL
-        .iter()
-        .filter(|kind| !OUTSIDE_SHARED_LIST.contains(kind))
-        .map(|kind| kind.as_str())
-        .collect();
-    assert_eq!(parse_kinds, shared);
-    let api = std::fs::read_to_string(concat!(
-        env!("CARGO_MANIFEST_DIR"),
-        "/../../docs/operations/api.md"
-    ))
-    .unwrap();
-    for kind in OUTSIDE_SHARED_LIST {
-        assert!(!shared.contains(kind.as_str()), "{kind}");
+        .filter_map(|line| {
+            let (name, text) = line.strip_prefix("- `")?.split_once('`')?;
+            Some((name.to_owned(), text.to_owned()))
+        })
+        .collect()
+}
+
+// Requirements: RQ-005, RQ-025
+#[test]
+fn kinds_are_the_shared_lists() {
+    // The crate names each refusal by the shared lists of docs/spec/json-contract.md. A kind of a list that the crate lacks
+    // is one that the list states cannot arise in Rust: unescaped_lone_surrogate, since a Rust str cannot hold an unpaired
+    // surrogate, and the argument kinds that the types of Rust exclude. DuplicateObjectKey of the strict parse is the one
+    // kind outside the lists.
+    let rejections = listed(r#"<a id="rejection-kinds"></a>"#);
+    let arguments = listed(r#"<a id="argument-kinds"></a>"#);
+    let names: BTreeSet<&str> = ALL.iter().map(|kind| kind.as_str()).collect();
+    let mut covered = BTreeSet::from(["duplicate_object_key"]);
+    for (name, text) in rejections.iter().chain(&arguments) {
+        if names.contains(name.as_str()) {
+            covered.insert(name.as_str());
+        } else if name == "unescaped_lone_surrogate" {
+            continue;
+        } else {
+            assert!(
+                text.contains("cannot arise in Rust"),
+                "{name} is no ErrorKind and its item does not state that it cannot arise in Rust"
+            );
+        }
+    }
+    assert_eq!(covered, names);
+    for kind in [
+        ErrorKind::NonStringKey,
+        ErrorKind::WrongKind,
+        ErrorKind::InvalidNumberLiteral,
+        ErrorKind::DepthLimitOutOfRange,
+    ] {
         assert!(
-            api.contains(&format!("`{}`", kind.as_str())),
-            "docs/operations/api.md names no `{kind}`"
+            arguments.iter().any(|(name, _)| name == kind.as_str()),
+            "{kind}"
         );
     }
 }

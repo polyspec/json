@@ -10,6 +10,17 @@ const utf8 = new TextDecoder('utf-8', {fatal: true, ignoreBOM: true});
 const ROOT = 1, COMPACT = 2, KEY_VALUES = 4;
 let isValue;
 
+/**
+ * Throws the host error `Type` with `message` and the argument kind `kind` of the JSON contract, which every implementation
+ * names alike.
+ */
+function refuse(Type, kind, message) {
+  const error = new Type(message);
+  error.kind = kind;
+  throw error;
+}
+const isIterable = value => value != null && typeof value[Symbol.iterator] === 'function';
+
 const hexValue = code => {
   if (code >= 48 && code <= 57) return code - 48;
   if (code >= 65 && code <= 70) return code - 55;
@@ -79,6 +90,7 @@ export const Kind = Object.freeze({
 
 export class ParseError extends SyntaxError {
   constructor(message, offset, unit = 'UTF-16 offset') {
+    if (!Object.hasOwn(KINDS, message)) refuse(TypeError, 'direct_construction', `ParseError has no kind for the message ${JSON.stringify(message)}`);
     super(`${message} at ${unit} ${offset}`);
     this.name = 'ParseError';
     this.offset = offset;
@@ -94,7 +106,7 @@ export class Value {
   // Object #keys holds first key token offsets until the keys getter replaces them with values.
   #source; #start; #end; #kind; #flags; #members; #keys; #items; #text;
   constructor(token, source, start, end, kind, flags = 0, members = null, items = noItems, text, keys = null) {
-    if (token !== internal) throw new TypeError('Use parse() or Value factories');
+    if (token !== internal) refuse(TypeError, 'direct_construction', 'Use parse() or Value factories');
     this.#source = source; this.#start = start; this.#end = end;
     this.#kind = kind; this.#flags = flags; this.#members = members; this.#keys = keys;
     this.#items = items === noItems ? items : Object.freeze(items); this.#text = text;
@@ -121,7 +133,7 @@ export class Value {
   }
   get items() { this.#expect('array'); return this.#items; }
   #expect(kind) {
-    if (this.#kind !== kind) throw new TypeError(`Expected ${kind}, got ${this.#kind}`);
+    if (this.#kind !== kind) refuse(TypeError, 'wrong_kind', `Expected ${kind}, got ${this.#kind}`);
   }
   stringValue() { this.#expect('string'); return this.#text; }
   stringUnits() {
@@ -131,7 +143,7 @@ export class Value {
   numberLiteral() { this.#expect('number'); return this.raw.trim(); }
   booleanValue() { this.#expect('boolean'); return this.raw.trim() === 'true'; }
   get(key) {
-    if (typeof key !== 'string') throw new TypeError('Key must be a string');
+    if (typeof key !== 'string') refuse(TypeError, 'non_string_key', 'Key must be a string');
     this.#expect('object');
     return this.#members.get(key);
   }
@@ -160,37 +172,43 @@ export class Value {
   }
   toString() { return stringify(this); }
   // Host JSON serialization must not silently serialize the AST as an ordinary object.
-  toJSON() { throw new TypeError('Use stringify(value) from ordered-json'); }
+  toJSON() { refuse(TypeError, 'host_serialization_refused', 'Use stringify(value) from ordered-json'); }
   static string(text) {
-    if (typeof text !== 'string') throw new TypeError('Expected string');
+    if (typeof text !== 'string') refuse(TypeError, 'invalid_argument_type', 'Expected string');
     return parse(quoteUnits(codeUnits(text)));
   }
   static number(literal) {
-    if (typeof literal !== 'string') throw new TypeError('Pass a number literal as a string');
+    if (typeof literal !== 'string') refuse(TypeError, 'invalid_argument_type', 'Pass a number literal as a string');
     const v = parse(literal);
-    v.#expect('number');
-    if (v.raw !== v.raw.trim()) throw new TypeError('Number literal cannot contain whitespace');
+    if (v.#kind !== 'number') refuse(TypeError, 'invalid_number_literal', `Expected a number literal, got ${v.#kind}`);
+    if (v.raw !== v.raw.trim()) refuse(TypeError, 'invalid_number_literal', 'Number literal cannot contain whitespace');
     return v;
   }
   static boolean(value) {
-    if (typeof value !== 'boolean') throw new TypeError('Expected boolean');
+    if (typeof value !== 'boolean') refuse(TypeError, 'invalid_argument_type', 'Expected boolean');
     return parse(value ? 'true' : 'false');
   }
   static null() { return parse('null'); }
   static array(items) {
+    if (!isIterable(items)) refuse(TypeError, 'invalid_argument_type', 'Expected an iterable of values');
     return parse('[' + Array.from(items, stringify).join(',') + ']');
   }
   static object(entries) {
-    return parse('{' + Array.from(entries, ([key, value]) => {
+    if (!isIterable(entries)) refuse(TypeError, 'invalid_argument_type', 'Expected an iterable of entries');
+    return parse('{' + Array.from(entries, entry => {
+      const pair = isIterable(entry) && typeof entry !== 'string' ? Array.from(entry) : [];
+      if (pair.length !== 2) refuse(TypeError, 'invalid_argument_type', 'Expected an entry of a key and a value');
+      let [key, value] = pair;
       if (typeof key === 'string') key = Value.string(key);
-      checkValue(key); key.#expect('string'); checkValue(value);
+      if (!isValue(key) || key.#kind !== 'string') refuse(TypeError, 'non_string_key', 'Key must be a string');
+      checkValue(value);
       return key.raw.trim() + ':' + stringify(value);
     }).join(',') + '}');
   }
 }
 
 function checkValue(value) {
-  if (!isValue(value)) throw new TypeError('Expected a ordered-json Value');
+  if (!isValue(value)) refuse(TypeError, 'invalid_argument_type', 'Expected an ordered-json Value');
 }
 
 // Parser state. Parsing never re-enters itself, so one module-level cursor suffices.
@@ -330,11 +348,13 @@ function parseValue(depth) {
 }
 
 // rejectDuplicates rejects a repeated decoded object key at the second key token.
-export function parse(source, {maxDepth = MAX_DEPTH, rejectDuplicates: reject = false} = noOptions) {
-  if (typeof source !== 'string') throw new TypeError('Expected JSON text');
+export function parse(source, options = noOptions) {
+  if (typeof source !== 'string') refuse(TypeError, 'invalid_argument_type', 'Expected JSON text');
+  if (typeof options !== 'object' || options === null) refuse(TypeError, 'invalid_argument_type', 'Expected an options object');
+  const {maxDepth = MAX_DEPTH, rejectDuplicates: reject = false} = options;
   if (!Number.isInteger(maxDepth) || maxDepth < 0 || maxDepth > MAX_DEPTH)
-    throw new RangeError(`maxDepth must be between 0 and ${MAX_DEPTH}`);
-  if (typeof reject !== 'boolean') throw new TypeError('rejectDuplicates must be a boolean');
+    refuse(RangeError, 'depth_limit_out_of_range', `maxDepth must be between 0 and ${MAX_DEPTH}`);
+  if (typeof reject !== 'boolean') refuse(TypeError, 'invalid_argument_type', 'rejectDuplicates must be a boolean');
   // Text with an unpaired surrogate has no UTF-8 encoding, so it is rejected at that unit before its grammar is read, as
   // parseBytes rejects invalid UTF-8.
   if (!source.isWellFormed()) failAt('Unescaped unpaired surrogate', source.search(/\p{Cs}/u));
@@ -350,7 +370,7 @@ export function parse(source, {maxDepth = MAX_DEPTH, rejectDuplicates: reject = 
 }
 
 export function parseBytes(bytes, options) {
-  if (!(bytes instanceof Uint8Array)) throw new TypeError('Expected Uint8Array');
+  if (!(bytes instanceof Uint8Array)) refuse(TypeError, 'invalid_argument_type', 'Expected Uint8Array');
   let source;
   try { source = utf8.decode(bytes); }
   catch (error) {

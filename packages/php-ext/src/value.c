@@ -28,11 +28,12 @@ static inline oj_value *oj_from_object(zend_object *object) {
     return (oj_value *)((char *)object - XtOffsetOf(oj_value, std));
 }
 #define OJ_THIS oj_from_object(Z_OBJ_P(ZEND_THIS))
-/* A Value made without its constructor, as Reflection can, holds no document. */
+/* A Value without a document: Reflection refuses to make the final internal class without its constructor and the class
+ * is not serializable, so the factories make every Value; the guard keeps the tape from being read when none was set. */
 #define OJ_SELF(v) \
     oj_value *v = OJ_THIS; \
     if (UNEXPECTED(!v->tape)) { \
-        zend_throw_error(NULL, "Value holds no document"); \
+        oj_throw_kind(oj_usage_error_ce, "direct_construction", "Value holds no document"); \
         RETURN_THROWS(); \
     }
 
@@ -110,14 +111,8 @@ static bool oj_parse_into(zval *out, zend_string *source, zend_long max_depth, b
 
 /* --- ParseError --------------------------------------------------------------------------------------------------- */
 
-static void oj_fill_error(zend_object *exception, const char *message, size_t message_length, zend_long offset) {
-    char kind_message[64];
-    const char *kind = "";
-    if (message_length < sizeof(kind_message)) {
-        memcpy(kind_message, message, message_length);
-        kind_message[message_length] = '\0';
-        kind = oj_kind(kind_message);
-    }
+/* Fills a ParseError for a message of the list, whose kind is `kind`. */
+static void oj_fill_error(zend_object *exception, const char *message, size_t message_length, const char *kind, zend_long offset) {
     zend_string *full = zend_strpprintf(0, "%.*s at byte " ZEND_LONG_FMT, (int)message_length, message, offset);
     zend_update_property_str(zend_ce_exception, exception, "message", sizeof("message") - 1, full);
     zend_string_release(full);
@@ -126,8 +121,10 @@ static void oj_fill_error(zend_object *exception, const char *message, size_t me
 }
 void oj_throw_parse_error(const char *message, size_t offset) {
     zval exception;
+    const char *kind = oj_kind(message);
+    ZEND_ASSERT(kind != NULL);
     object_init_ex(&exception, oj_error_ce);
-    oj_fill_error(Z_OBJ(exception), message, strlen(message), (zend_long)offset);
+    oj_fill_error(Z_OBJ(exception), message, strlen(message), kind, (zend_long)offset);
     zend_throw_exception_object(&exception);
 }
 ZEND_METHOD(Polyspec_OrderedJson_ParseError, __construct) {
@@ -137,11 +134,60 @@ ZEND_METHOD(Polyspec_OrderedJson_ParseError, __construct) {
         Z_PARAM_STR(message)
         Z_PARAM_LONG(offset)
     ZEND_PARSE_PARAMETERS_END();
-    if (strlen(ZSTR_VAL(message)) != ZSTR_LEN(message) || oj_kind(ZSTR_VAL(message))[0] == '\0') {
-        zend_throw_exception_ex(spl_ce_LogicException, 0, "ParseError has no kind for the message \"%s\"", ZSTR_VAL(message));
+    const char *kind = strlen(ZSTR_VAL(message)) == ZSTR_LEN(message) ? oj_kind(ZSTR_VAL(message)) : NULL;
+    if (!kind) {
+        zend_string *text = zend_strpprintf(0, "ParseError has no kind for the message \"%s\"", ZSTR_VAL(message));
+        oj_throw_kind(oj_usage_error_ce, "direct_construction", ZSTR_VAL(text));
+        zend_string_release(text);
         RETURN_THROWS();
     }
-    oj_fill_error(Z_OBJ_P(ZEND_THIS), ZSTR_VAL(message), ZSTR_LEN(message), offset);
+    oj_fill_error(Z_OBJ_P(ZEND_THIS), ZSTR_VAL(message), ZSTR_LEN(message), kind, offset);
+}
+
+/* --- ArgumentError and UsageError --------------------------------------------------------------------------------- */
+
+/* The argument kinds of each class, as the PHP library declares them. */
+static const char *const oj_argument_kinds[] = {"invalid_number_literal", "depth_limit_out_of_range", "invalid_argument_type",
+    "invalid_code_unit", "invalid_utf8", NULL};
+static const char *const oj_usage_kinds[] = {"wrong_kind", "host_serialization_refused", "direct_construction", NULL};
+static bool oj_known_kind(const char *const *kinds, const char *kind, size_t length) {
+    if (strlen(kind) != length) return false;
+    for (; *kinds; kinds++)
+        if (strcmp(*kinds, kind) == 0) return true;
+    return false;
+}
+static void oj_fill_kind(zend_class_entry *ce, zend_object *exception, const char *kind, size_t kind_length, zend_string *message) {
+    zend_update_property_str(zend_ce_exception, exception, "message", sizeof("message") - 1, message);
+    zend_update_property_stringl(ce, exception, "kind", sizeof("kind") - 1, kind, kind_length);
+}
+void oj_throw_kind(zend_class_entry *ce, const char *kind, const char *message) {
+    zval exception;
+    object_init_ex(&exception, ce);
+    zend_string *text = zend_string_init(message, strlen(message), 0);
+    oj_fill_kind(ce, Z_OBJ(exception), kind, strlen(kind), text);
+    zend_string_release(text);
+    zend_throw_exception_object(&exception);
+}
+/* The constructor of ArgumentError or UsageError: a kind outside the list of the class is a direct construction. */
+static void oj_construct_kind(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce, const char *const *kinds, const char *name) {
+    zend_string *kind, *message;
+    ZEND_PARSE_PARAMETERS_START(2, 2)
+        Z_PARAM_STR(kind)
+        Z_PARAM_STR(message)
+    ZEND_PARSE_PARAMETERS_END();
+    if (!oj_known_kind(kinds, ZSTR_VAL(kind), ZSTR_LEN(kind))) {
+        zend_string *text = zend_strpprintf(0, "%s has no kind \"%s\"", name, ZSTR_VAL(kind));
+        oj_throw_kind(oj_usage_error_ce, "direct_construction", ZSTR_VAL(text));
+        zend_string_release(text);
+        RETURN_THROWS();
+    }
+    oj_fill_kind(ce, Z_OBJ_P(ZEND_THIS), ZSTR_VAL(kind), ZSTR_LEN(kind), message);
+}
+ZEND_METHOD(Polyspec_OrderedJson_ArgumentError, __construct) {
+    oj_construct_kind(INTERNAL_FUNCTION_PARAM_PASSTHRU, oj_argument_error_ce, oj_argument_kinds, "ArgumentError");
+}
+ZEND_METHOD(Polyspec_OrderedJson_UsageError, __construct) {
+    oj_construct_kind(INTERNAL_FUNCTION_PARAM_PASSTHRU, oj_usage_error_ce, oj_usage_kinds, "UsageError");
 }
 
 /* --- Reading ------------------------------------------------------------------------------------------------------ */
@@ -154,7 +200,9 @@ ZEND_METHOD(Polyspec_OrderedJson_Value, __construct) {
     ZEND_PARSE_PARAMETERS_NONE();
 }
 static ZEND_COLD void oj_mismatch(const oj_value *v, const char *expected) {
-    zend_throw_exception_ex(spl_ce_LogicException, 0, "Expected %s, got %s", expected, oj_kind_name(oj_meta(v)));
+    zend_string *text = zend_strpprintf(0, "Expected %s, got %s", expected, oj_kind_name(oj_meta(v)));
+    oj_throw_kind(oj_usage_error_ce, "wrong_kind", ZSTR_VAL(text));
+    zend_string_release(text);
 }
 /* Whether the value is of the kind; otherwise throws the LogicException of the library. */
 static bool oj_require(const oj_value *v, zend_long kind, const char *expected) {
@@ -320,7 +368,7 @@ static zend_string *oj_units_to_utf8(HashTable *units) {
     ZEND_HASH_FOREACH_VAL(units, entry) {
         if (Z_TYPE_P(entry) != IS_LONG || Z_LVAL_P(entry) < 0 || Z_LVAL_P(entry) > 65535) {
             efree(values);
-            zend_throw_exception(spl_ce_InvalidArgumentException, "Expected UTF-16 code units", 0);
+            oj_throw_kind(oj_argument_error_ce, "invalid_code_unit", "Expected UTF-16 code units");
             return NULL;
         }
         values[n++] = Z_LVAL_P(entry);
@@ -356,7 +404,7 @@ ZEND_METHOD(Polyspec_OrderedJson_Value, getUnits) {
 
 static void oj_check_depth_and_parse(zval *return_value, zend_string *source, zend_long max_depth, bool reject) {
     if (max_depth < 0 || max_depth > 256) {
-        zend_throw_exception(spl_ce_InvalidArgumentException, "maxDepth must be between 0 and 256", 0);
+        oj_throw_kind(oj_argument_error_ce, "depth_limit_out_of_range", "maxDepth must be between 0 and 256");
         RETURN_THROWS();
     }
     if (!oj_parse_into(return_value, source, max_depth, reject)) RETURN_THROWS();
@@ -440,7 +488,7 @@ static bool oj_quote_text(smart_str *out, const unsigned char *s, size_t n, bool
     smart_str_appendc(out, '"');
     return true;
 invalid:
-    zend_throw_exception(spl_ce_InvalidArgumentException, "Invalid UTF-8", 0);
+    oj_throw_kind(oj_argument_error_ce, "invalid_utf8", "Invalid UTF-8");
     return false;
 }
 /* Parses the text that smart_str holds, as the library parses what its constructors build. */
@@ -475,7 +523,7 @@ ZEND_METHOD(Polyspec_OrderedJson_Value, fromUnits) {
     ZEND_HASH_FOREACH_VAL(units, entry) {
         if (Z_TYPE_P(entry) != IS_LONG || Z_LVAL_P(entry) < 0 || Z_LVAL_P(entry) > 65535) {
             smart_str_free(&out);
-            zend_throw_exception(spl_ce_InvalidArgumentException, "Expected UTF-16 code units", 0);
+            oj_throw_kind(oj_argument_error_ce, "invalid_code_unit", "Expected UTF-16 code units");
             RETURN_THROWS();
         }
         smart_str_appendl(&out, "\\u", 2);
@@ -496,7 +544,7 @@ ZEND_METHOD(Polyspec_OrderedJson_Value, number) {
     if ((oj_meta(oj_from_object(Z_OBJ_P(return_value))) & OJ_KIND_MASK) != OJ_NUMBER || !plain) {
         zval_ptr_dtor(return_value);
         ZVAL_UNDEF(return_value);
-        zend_throw_exception(spl_ce_InvalidArgumentException, "Expected number literal without whitespace", 0);
+        oj_throw_kind(oj_argument_error_ce, "invalid_number_literal", "Expected number literal without whitespace");
         RETURN_THROWS();
     }
 }
@@ -534,7 +582,7 @@ ZEND_METHOD(Polyspec_OrderedJson_Value, array) {
         Z_PARAM_ARRAY_HT(items)
     ZEND_PARSE_PARAMETERS_END();
     if (!zend_array_is_list(items)) {
-        zend_throw_exception(spl_ce_InvalidArgumentException, "Expected a list of values", 0);
+        oj_throw_kind(oj_argument_error_ce, "invalid_argument_type", "Expected a list of values");
         RETURN_THROWS();
     }
     smart_str out = {0};
@@ -544,7 +592,7 @@ ZEND_METHOD(Polyspec_OrderedJson_Value, array) {
     ZEND_HASH_FOREACH_VAL(items, entry) {
         if (Z_TYPE_P(entry) != IS_OBJECT || Z_OBJCE_P(entry) != oj_value_ce) {
             smart_str_free(&out);
-            zend_argument_type_error(1, "must contain only values of type %s, %s given", ZSTR_VAL(oj_value_ce->name), zend_zval_type_name(entry));
+            oj_throw_kind(oj_argument_error_ce, "invalid_argument_type", "Expected ordered_json Value");
             RETURN_THROWS();
         }
         if (!first) smart_str_appendc(&out, ',');
@@ -568,7 +616,7 @@ ZEND_METHOD(Polyspec_OrderedJson_Value, object) {
     ZEND_HASH_FOREACH_KEY_VAL(members, index, key, entry) {
         if (Z_TYPE_P(entry) != IS_OBJECT || Z_OBJCE_P(entry) != oj_value_ce) {
             smart_str_free(&out);
-            zend_throw_exception(spl_ce_InvalidArgumentException, "Expected ordered_json Value", 0);
+            oj_throw_kind(oj_argument_error_ce, "invalid_argument_type", "Expected ordered_json Value");
             RETURN_THROWS();
         }
         if (!first) smart_str_appendc(&out, ',');
@@ -604,7 +652,7 @@ ZEND_METHOD(Polyspec_OrderedJson_Value, __toString) {
 }
 ZEND_METHOD(Polyspec_OrderedJson_Value, jsonSerialize) {
     ZEND_PARSE_PARAMETERS_NONE();
-    zend_throw_exception(spl_ce_LogicException, "Use Polyspec\\OrderedJson\\stringify($value)", 0);
+    oj_throw_kind(oj_usage_error_ce, "host_serialization_refused", "Use Polyspec\\OrderedJson\\stringify($value)");
     RETURN_THROWS();
 }
 ZEND_FUNCTION(Polyspec_OrderedJson_stringify) {

@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "contracts/fixtures/arguments.json, the argument cases of the shared verifier: each applies a function of the library to its argument and names the kind of its refusal, or null for an accepted argument; absent names the implementations where a call cannot be written.",
+  "type": "object",
+  "required": ["schema", "comment", "absent", "cases"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": { "const": 1 },
+    "comment": { "type": "string" },
+    "absent": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/call" },
+      "additionalProperties": { "type": "array", "items": { "type": "string" }, "minItems": 1, "uniqueItems": true }
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "call", "argument", "kind"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+          "call": { "$ref": "#/$defs/call" },
+          "argument": true,
+          "kind": { "anyOf": [{ "type": "string", "pattern": "^[a-z][a-z0-9_]*$" }, { "type": "null" }] }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "call": { "enum": ["number", "max_depth", "string_value", "object_key"] }
+  }
+}

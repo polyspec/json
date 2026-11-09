@@ -1,5 +1,5 @@
 /* This is a generated file, edit the .stub.php file instead.
- * Stub hash: de6e4eadd5108a9e4bfa5aa3be830abd9bfabc3d */
+ * Stub hash: 1d67296eee0bd2d769c37876fdebf5217063f58c */
 
 ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_Polyspec_OrderedJson_parse, 0, 1, Polyspec\\OrderedJson\\Value, 0)
 	ZEND_ARG_TYPE_INFO(0, source, IS_STRING, 0)
@@ -14,6 +14,13 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_class_Polyspec_OrderedJson_ParseError___construct
 	ZEND_ARG_TYPE_INFO(0, message, IS_STRING, 0)
 	ZEND_ARG_TYPE_INFO(0, offset, IS_LONG, 0)
 ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_class_Polyspec_OrderedJson_ArgumentError___construct, 0, 0, 2)
+	ZEND_ARG_TYPE_INFO(0, kind, IS_STRING, 0)
+	ZEND_ARG_TYPE_INFO(0, message, IS_STRING, 0)
+ZEND_END_ARG_INFO()
+
+#define arginfo_class_Polyspec_OrderedJson_UsageError___construct arginfo_class_Polyspec_OrderedJson_ArgumentError___construct
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_class_Polyspec_OrderedJson_Value___construct, 0, 0, 0)
 ZEND_END_ARG_INFO()
@@ -88,6 +95,8 @@ ZEND_END_ARG_INFO()
 ZEND_FUNCTION(Polyspec_OrderedJson_parse);
 ZEND_FUNCTION(Polyspec_OrderedJson_stringify);
 ZEND_METHOD(Polyspec_OrderedJson_ParseError, __construct);
+ZEND_METHOD(Polyspec_OrderedJson_ArgumentError, __construct);
+ZEND_METHOD(Polyspec_OrderedJson_UsageError, __construct);
 ZEND_METHOD(Polyspec_OrderedJson_Value, __construct);
 ZEND_METHOD(Polyspec_OrderedJson_Value, parse);
 ZEND_METHOD(Polyspec_OrderedJson_Value, parseRejectDuplicates);
@@ -120,6 +129,16 @@ static const zend_function_entry ext_functions[] = {
 
 static const zend_function_entry class_Polyspec_OrderedJson_ParseError_methods[] = {
 	ZEND_ME(Polyspec_OrderedJson_ParseError, __construct, arginfo_class_Polyspec_OrderedJson_ParseError___construct, ZEND_ACC_PUBLIC)
+	ZEND_FE_END
+};
+
+static const zend_function_entry class_Polyspec_OrderedJson_ArgumentError_methods[] = {
+	ZEND_ME(Polyspec_OrderedJson_ArgumentError, __construct, arginfo_class_Polyspec_OrderedJson_ArgumentError___construct, ZEND_ACC_PUBLIC)
+	ZEND_FE_END
+};
+
+static const zend_function_entry class_Polyspec_OrderedJson_UsageError_methods[] = {
+	ZEND_ME(Polyspec_OrderedJson_UsageError, __construct, arginfo_class_Polyspec_OrderedJson_UsageError___construct, ZEND_ACC_PUBLIC)
 	ZEND_FE_END
 };
 
@@ -210,6 +229,38 @@ static zend_class_entry *register_class_Polyspec_OrderedJson_ParseError(zend_cla
 	zend_string *property_offset_name = zend_string_init("offset", sizeof("offset") - 1, 1);
 	zend_declare_typed_property(class_entry, property_offset_name, &property_offset_default_value, ZEND_ACC_PUBLIC|ZEND_ACC_READONLY, NULL, (zend_type) ZEND_TYPE_INIT_MASK(MAY_BE_LONG));
 	zend_string_release(property_offset_name);
+
+	return class_entry;
+}
+
+static zend_class_entry *register_class_Polyspec_OrderedJson_ArgumentError(zend_class_entry *class_entry_InvalidArgumentException)
+{
+	zend_class_entry ce, *class_entry;
+
+	INIT_NS_CLASS_ENTRY(ce, "Polyspec\\OrderedJson", "ArgumentError", class_Polyspec_OrderedJson_ArgumentError_methods);
+	class_entry = zend_register_internal_class_with_flags(&ce, class_entry_InvalidArgumentException, ZEND_ACC_FINAL);
+
+	zval property_kind_default_value;
+	ZVAL_UNDEF(&property_kind_default_value);
+	zend_string *property_kind_name = zend_string_init("kind", sizeof("kind") - 1, 1);
+	zend_declare_typed_property(class_entry, property_kind_name, &property_kind_default_value, ZEND_ACC_PUBLIC|ZEND_ACC_READONLY, NULL, (zend_type) ZEND_TYPE_INIT_MASK(MAY_BE_STRING));
+	zend_string_release(property_kind_name);
+
+	return class_entry;
+}
+
+static zend_class_entry *register_class_Polyspec_OrderedJson_UsageError(zend_class_entry *class_entry_LogicException)
+{
+	zend_class_entry ce, *class_entry;
+
+	INIT_NS_CLASS_ENTRY(ce, "Polyspec\\OrderedJson", "UsageError", class_Polyspec_OrderedJson_UsageError_methods);
+	class_entry = zend_register_internal_class_with_flags(&ce, class_entry_LogicException, ZEND_ACC_FINAL);
+
+	zval property_kind_default_value;
+	ZVAL_UNDEF(&property_kind_default_value);
+	zend_string *property_kind_name = zend_string_init("kind", sizeof("kind") - 1, 1);
+	zend_declare_typed_property(class_entry, property_kind_name, &property_kind_default_value, ZEND_ACC_PUBLIC|ZEND_ACC_READONLY, NULL, (zend_type) ZEND_TYPE_INIT_MASK(MAY_BE_STRING));
+	zend_string_release(property_kind_name);
 
 	return class_entry;
 }

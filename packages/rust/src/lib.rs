@@ -10,7 +10,7 @@ pub const MAX_DEPTH: usize = 256;
 
 mod serde;
 
-/// Why the crate refused an input. The rejection kinds of the parser are the names of the shared list of
+/// Why the crate refused an input, named by the shared lists of rejection kinds and argument kinds of
 /// docs/spec/json-contract.md; `DuplicateObjectKey` is the rejection of the strict parse, and the last four are the
 /// refused arguments of the API. Every error of the crate carries one of them, and no other kind exists.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

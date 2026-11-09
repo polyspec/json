@@ -11,9 +11,20 @@ export interface ParseOptions {
   rejectDuplicates?: boolean;
 }
 export declare const MAX_DEPTH: 256;
+/** A rejection kind of the JSON contract, or duplicate_object_key of rejectDuplicates: the kind of a ParseError. */
+export type RejectionKind = 'expected_value' | 'expected_digit' | 'expected_colon' | 'expected_delimiter'
+  | 'expected_object_key' | 'invalid_escape' | 'invalid_unicode_escape' | 'unfinished_escape' | 'unterminated_string'
+  | 'unescaped_control_character' | 'unescaped_lone_surrogate' | 'invalid_utf8' | 'maximum_depth_exceeded'
+  | 'trailing_input' | 'duplicate_object_key';
+/** An argument kind of the JSON contract that can arise in JavaScript: the kind of a TypeError or RangeError of the package. */
+export type ArgumentKind = 'non_string_key' | 'wrong_kind' | 'invalid_number_literal' | 'depth_limit_out_of_range'
+  | 'invalid_argument_type' | 'host_serialization_refused' | 'direct_construction';
+/** A refused argument: the host TypeError or RangeError that the package throws, with its argument kind. */
+export type ArgumentError = (TypeError | RangeError) & { readonly kind: ArgumentKind };
 export declare class ParseError extends SyntaxError {
   readonly offset: number;
-  readonly kind: string;
+  readonly unit: 'utf16' | 'byte';
+  readonly kind: RejectionKind;
 }
 export declare class Value {
   private constructor();
