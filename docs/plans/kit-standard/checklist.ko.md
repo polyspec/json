@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 1a45b9b10bd1601c5657f67c50ade41aa0bd0cb8ab8f8e1a8f980bcc8a05debb -->
+<!-- source-sha256: 40cf2027ecbee7c70de3c4bd538edffb484a76d99ad6cf525dd2ced3734c1a9d -->
 # kit 표준 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -168,3 +168,4 @@
 | T2.146 | 0.0.22 릴리즈 | every manifest, the three composer.lock files, CHANGELOG.md(.ko) | GREEN: `make docs-check` passes and every manifest declares 0.0.22 | [o] |
 | T2.147 | 설치가 실패하면 uv-install이 provider 링크를 되돌리는 kit 0.0.102를 채택한다: 0.0.102 release asset을 고정하며, recipe 줄은 바뀌지 않는다 | package.json, package-lock.json | `make docs-check` and `make lint-ts` exit 0 | [o] |
 | T2.148 | 0.0.23 릴리즈 | every manifest, the three composer.lock files, CHANGELOG.md(.ko) | GREEN: `make docs-check` passes and every manifest declares 0.0.23 | [o] |
+| T2.149 | Rust crate의 모든 error를 fallback 없는 공개 enum ErrorKind로 이름 붙인다: Error::kind()는 message에서 대응시킨 &'static str를 `_ => ""` fallback arm과 함께 반환해서, 문자열이 아닌 key의 OrderedMap::insert, whitespace가 있거나 다른 kind인 literal의 Value::number, 256을 넘는 parse_with_max_depth가 빈 kind를 보고했고, 다른 kind의 Value::string_value는 expected_object_key를 보고했다; Error는 crate가 만드는 공유 rejection kind, duplicate_object_key, 인자 kind non_string_key, wrong_kind, invalid_number_literal, depth_limit_out_of_range를 variant로 가진 ErrorKind를 담고, message는 kind에서 나온다 | packages/rust/src/lib.rs, packages/rust/examples/probe.rs, packages/rust/tests/api.rs, packages/rust/tests/duplicate_keys.rs, docs/operations/api.md(.ko), packages/rust/README.md(.ko), CHANGELOG.md(.ko) | `make test-rust` and `make lint-rust` exit 0; `make verify-rust` passes the shared cases | [~] |
