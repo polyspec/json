@@ -69,7 +69,7 @@ fn main() {
             Err(error) => println!(
                 "{{\"ok\":false,\"offset\":{},\"unit\":\"byte\",\"kind\":{}}}",
                 error.offset,
-                quote(error.kind())
+                quote(error.kind().as_str())
             ),
             Ok(v) => {
                 let serialized = stringify(&v);

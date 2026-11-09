@@ -9,7 +9,7 @@ use polyspec_ordered_json::{
 #[test]
 fn depth_argument_is_bounded() {
     let error = parse_with_max_depth("[]", MAX_DEPTH + 1).unwrap_err();
-    assert_eq!(error.message, "max_depth exceeds 256");
+    assert_eq!(error.message(), "max_depth exceeds 256");
     assert_eq!(error.offset, 0);
 }
 
@@ -18,14 +18,14 @@ fn depth_argument_is_bounded() {
 fn depth_limit_is_enforced() {
     assert!(parse_with_max_depth("[[1]]", 2).is_ok());
     let shallow = parse_with_max_depth("[[1]]", 1).unwrap_err();
-    assert_eq!(shallow.message, "maximum nesting depth exceeded");
+    assert_eq!(shallow.message(), "maximum nesting depth exceeded");
 }
 
 // Requirements: RQ-007
 #[test]
 fn bytes_input_is_validated() {
     let error = parse_bytes(b"[\"\xff\"]").unwrap_err();
-    assert_eq!(error.message, "invalid UTF-8");
+    assert_eq!(error.message(), "invalid UTF-8");
     assert_eq!(error.offset, 2);
     assert_eq!(
         parse_bytes("[\"\u{d55c}\"]".as_bytes()).unwrap().compact(),
@@ -45,7 +45,12 @@ fn rejection_names_its_kind() {
         ("[1] x", "trailing_input"),
     ] {
         let error = parse(document).unwrap_err();
-        assert_eq!(error.kind(), kind, "{document}: {}", error.message);
+        assert_eq!(
+            error.kind().as_str(),
+            kind,
+            "{document}: {}",
+            error.message()
+        );
     }
 }
 
@@ -54,7 +59,7 @@ fn rejection_names_its_kind() {
 fn invalid_utf8_reports_the_first_bad_byte() {
     // The bad byte sits at index 2 of ["<bad>"]; the error names that position.
     let error = parse_bytes(b"[\"\xff\"]").unwrap_err();
-    assert_eq!(error.message, "invalid UTF-8");
+    assert_eq!(error.message(), "invalid UTF-8");
     assert_eq!(error.offset, 2);
 }
 
@@ -68,7 +73,7 @@ fn utf8_validation_holds_for_long_multibyte_text() {
         text.as_bytes()
     );
     let error = parse_bytes(b"[\"\xff\"]").unwrap_err();
-    assert_eq!(error.message, "invalid UTF-8");
+    assert_eq!(error.message(), "invalid UTF-8");
     assert_eq!(error.offset, 2);
 }
 
@@ -87,7 +92,7 @@ fn ordered_map_rejects_non_string_key() {
     let error = members
         .insert(Value::number("1").unwrap(), Value::null())
         .unwrap_err();
-    assert_eq!(error.message, "object key must be a string");
+    assert_eq!(error.message(), "object key must be a string");
     assert!(members.is_empty());
 }
 
@@ -154,11 +159,11 @@ fn surrogate_pair_decodes() {
 #[test]
 fn factories_validate_arguments() {
     assert_eq!(
-        Value::number(" 1").unwrap_err().message,
+        Value::number(" 1").unwrap_err().message(),
         "expected a number literal without whitespace"
     );
     assert_eq!(
-        Value::number("x").unwrap_err().message,
+        Value::number("x").unwrap_err().message(),
         "expected JSON value"
     );
     assert_eq!(
@@ -233,9 +238,9 @@ fn public_api_exports_the_entry_points() {
 fn parse_error_exposes_kind_offset_and_message() {
     // RQ-024: a parse error exposes its kind, its offset and its message.
     let error = parse("[1,]").unwrap_err();
-    assert_eq!(error.kind(), "expected_value");
+    assert_eq!(error.kind().as_str(), "expected_value");
     assert_eq!(error.offset, 3);
-    assert_eq!(error.message, "expected JSON value");
+    assert_eq!(error.message(), "expected JSON value");
 }
 
 // Requirements: RQ-012
@@ -294,7 +299,7 @@ fn text_input_rejects_lone_surrogates() {
         b"[\"\xed\xa0\x80",
     ] {
         let error = parse_bytes(source).unwrap_err();
-        assert_eq!(error.message, "invalid UTF-8", "{source:?}");
+        assert_eq!(error.message(), "invalid UTF-8", "{source:?}");
         assert_eq!(error.offset, 2, "{source:?}");
     }
 }
@@ -340,7 +345,7 @@ fn number_tokens_are_kept_exactly() {
         ("-Infinity", "expected_digit"),
         ("[NaN]", "expected_value"),
     ] {
-        assert_eq!(parse(source).unwrap_err().kind(), kind, "{source}");
+        assert_eq!(parse(source).unwrap_err().kind().as_str(), kind, "{source}");
     }
 }
 

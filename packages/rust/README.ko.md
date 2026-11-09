@@ -1,5 +1,5 @@
 <!-- doc-id: rust-overview -->
-<!-- source-sha256: 1fa030fbcc9d46989603e0bc0e86d9b9514a777178ff57a147d9d914a79cf93e -->
+<!-- source-sha256: 5d6a54b8ed073467bf98964fe148e2f8a6192d04c9b48a2ab45073227019d834 -->
 # ordered-json for Rust
 
 [English](README.md)
@@ -11,7 +11,7 @@
 
 Rust >= 1.71이며 Cargo 패키지는 `polyspec-ordered-json`, 가져오기는 `polyspec_ordered_json`입니다.
 
-사용 코드의 `source` 또는 `$source`는 [공통 공식 예제](https://github.com/polyspec/ordered-json/blob/main/examples/official.json)의 객체 사례에서 가져옵니다. 오류를 반환할 수 있는 함수 안에서 사용합니다.
+사용 코드의 `source` 또는 `$source`는 [공통 공식 예제](https://github.com/polyspec/ordered-json/blob/main/examples/official.json)의 객체 사례에서 가져옵니다. 오류를 반환할 수 있는 함수 안에서 사용합니다. 모든 오류는 `Error`이며, 그 `kind()`는 [API 계약](https://github.com/polyspec/ordered-json/blob/main/docs/operations/api.ko.md#bindings)이 정한 이름의 exhaustive enum `ErrorKind`입니다.
 
 ~~~rust
 use polyspec_ordered_json::{parse, stringify};

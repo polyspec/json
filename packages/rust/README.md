@@ -10,7 +10,7 @@ Strict JSON with associative objects that preserve document key order recursivel
 
 Rust >= 1.71; Cargo package `polyspec-ordered-json`, import `polyspec_ordered_json`.
 
-The usage fragment takes `source` (or `$source`) from an object case in the [common official examples](https://github.com/polyspec/ordered-json/blob/main/examples/official.json). Use the fragment inside a function that can return an error.
+The usage fragment takes `source` (or `$source`) from an object case in the [common official examples](https://github.com/polyspec/ordered-json/blob/main/examples/official.json). Use the fragment inside a function that can return an error. Every error is an `Error` whose `kind()` is the exhaustive enum `ErrorKind`, named as the [API contract](https://github.com/polyspec/ordered-json/blob/main/docs/operations/api.md#bindings) states.
 
 ~~~rust
 use polyspec_ordered_json::{parse, stringify};

@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- T2.149: the Rust crate names every error by the public exhaustive enum `ErrorKind`, which `Error::kind()` returns: the parse rejections carry the names of the shared list, the strict parse `duplicate_object_key`, and the refused arguments `non_string_key` (OrderedMap::insert), `wrong_kind` (Value::string_value), `invalid_number_literal` (Value::number) and `depth_limit_out_of_range` (parse_with_max_depth); no error has an empty kind, and `string_value()` of another kind no longer reports `expected_object_key`. `Error::message` is the method `message()`, derived from the kind (T2.149).
+
 ## 0.0.23
 
 - ordered-json 0.0.23 runs kit 0.0.102 (T2.147) (T2.148).
