@@ -25,6 +25,20 @@ final class ParseError extends \InvalidArgumentException
     public function __construct(string $message, int $offset) {}
 }
 
+final class ArgumentError extends \InvalidArgumentException
+{
+    public readonly string $kind;
+
+    public function __construct(string $kind, string $message) {}
+}
+
+final class UsageError extends \LogicException
+{
+    public readonly string $kind;
+
+    public function __construct(string $kind, string $message) {}
+}
+
 final class Value implements \JsonSerializable, \Stringable
 {
     private function __construct() {}

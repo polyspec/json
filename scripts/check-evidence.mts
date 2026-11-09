@@ -15,7 +15,7 @@ import { gfm } from 'micromark-extension-gfm';
 import { readJsonFile } from './json.mts';
 import { present } from './present.mts';
 import { AGGREGATE_RECORD, PIE_RECORD, externalPins, manifestDifferences, packageRevisions, sourceManifest, type Manifest } from './records.mts';
-import { IMPLEMENTATIONS, ROOT, artifactPaths, fixturePaths, officialCases, repositoryPaths, trackedFiles } from './registry.mts';
+import { IMPLEMENTATIONS, ROOT, argumentCases, artifactPaths, fixturePaths, officialCases, repositoryPaths, trackedFiles } from './registry.mts';
 
 const PRIVATE_PATH = /\/(?:Users|home)\/[^/\s"<>]+\//;
 const STATES = ['implemented', 'partial', 'planned'];
@@ -107,17 +107,18 @@ function trackerErrors(name: string, text: string): string[] {
   return errors.sort(([a, b], [c, d]) => a - c || b - d).map(([line, column, message]) => `${name}:${line}:${column}: ${message}`);
 }
 
-type Counts = { official: number; fixtures: number; supplementary: number; total: number };
+type Counts = { official: number; fixtures: number; arguments: number; supplementary: number; total: number };
 
 /** The case counts of a record: complete, consistent and equal to the shared inputs of `root`. */
 function checkCounts(root: string, counts: Counts, label: string): void {
-  if (!isDeepStrictEqual(Object.keys(counts ?? {}).sort(), ['fixtures', 'official', 'supplementary', 'total']) || Object.values(counts).some(count => !Number.isInteger(count) || count < 0)) {
-    throw new Error(`${label} names the case counts ${JSON.stringify(counts)}, not official, fixtures, supplementary and total`);
+  if (!isDeepStrictEqual(Object.keys(counts ?? {}).sort(), ['arguments', 'fixtures', 'official', 'supplementary', 'total']) || Object.values(counts).some(count => !Number.isInteger(count) || count < 0)) {
+    throw new Error(`${label} names the case counts ${JSON.stringify(counts)}, not official, fixtures, arguments, supplementary and total`);
   }
-  if (counts.total !== counts.official + counts.fixtures + counts.supplementary) throw new Error(`${label}: the case total ${counts.total} is not the sum of its counts`);
+  if (counts.total !== counts.official + counts.fixtures + counts.arguments + counts.supplementary) throw new Error(`${label}: the case total ${counts.total} is not the sum of its counts`);
   const official = officialCases(root).length;
   const fixtures = fixturePaths(root, 'valid').length + fixturePaths(root, 'invalid').length;
-  if (counts.official !== official || counts.fixtures !== fixtures || !fixtures) throw new Error(`${label} counts ${counts.official} official examples and ${counts.fixtures} fixtures; the repository holds ${official} and ${fixtures}`);
+  const argumentCount = argumentCases(root).cases.length;
+  if (counts.official !== official || counts.fixtures !== fixtures || !fixtures || counts.arguments !== argumentCount) throw new Error(`${label} counts ${counts.official} official examples, ${counts.fixtures} fixtures and ${counts.arguments} argument cases; the repository holds ${official}, ${fixtures} and ${argumentCount}`);
 }
 
 /** Supplementary inputs come from outside the repository, so a record names the pinned ones or none. */

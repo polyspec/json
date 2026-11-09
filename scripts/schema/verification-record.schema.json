@@ -55,6 +55,7 @@
       "required": [
         "official",
         "fixtures",
+        "arguments",
         "supplementary",
         "total"
       ],
@@ -64,6 +65,10 @@
           "minimum": 0
         },
         "fixtures": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "arguments": {
           "type": "integer",
           "minimum": 0
         },

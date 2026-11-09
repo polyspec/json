@@ -57,7 +57,7 @@ const char *oj_kind(const char *message) {
     };
     for (size_t i = 0; i < sizeof(pairs) / sizeof(pairs[0]); i++)
         if (strcmp(pairs[i][0], message) == 0) return pairs[i][1];
-    return "";
+    return NULL;
 }
 
 static bool oj_fail(oj_parser *p, const char *message) {
@@ -425,13 +425,15 @@ zend_string *oj_compact(zend_string *source, const oj_tape *t, size_t index) {
     return out;
 }
 
-zend_class_entry *oj_value_ce, *oj_error_ce;
+zend_class_entry *oj_value_ce, *oj_error_ce, *oj_argument_error_ce, *oj_usage_error_ce;
 
 PHP_MINIT_FUNCTION(polyspec_ordered_json) {
     register_polyspec_ordered_json_symbols(module_number);
     /* Reflection reports a userland enum as final, as an enum is; the registration of an internal enum does not set it. */
     register_class_Polyspec_OrderedJson_Kind()->ce_flags |= ZEND_ACC_FINAL;
     oj_error_ce = register_class_Polyspec_OrderedJson_ParseError(spl_ce_InvalidArgumentException);
+    oj_argument_error_ce = register_class_Polyspec_OrderedJson_ArgumentError(spl_ce_InvalidArgumentException);
+    oj_usage_error_ce = register_class_Polyspec_OrderedJson_UsageError(spl_ce_LogicException);
     oj_value_ce = register_class_Polyspec_OrderedJson_Value(php_json_serializable_ce, zend_ce_stringable);
     oj_init_value_class();
     return SUCCESS;

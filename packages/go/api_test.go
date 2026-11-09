@@ -13,7 +13,7 @@ import (
 
 // Requirements: RQ-006
 func TestDepthArgumentIsBounded(t *testing.T) {
-	if _, err := ParseWithMaxDepth("[]", MaxDepth+1); err == nil || err.Error() != "maxDepth must be between 0 and 256" {
+	if _, err := ParseWithMaxDepth("[]", MaxDepth+1); !isKind(err, DepthLimitOutOfRangeError) {
 		t.Fatalf("ParseWithMaxDepth(257) error = %v", err)
 	}
 }
@@ -23,9 +23,9 @@ func TestDepthLimitIsEnforced(t *testing.T) {
 	if _, err := ParseWithMaxDepth("[[1]]", 2); err != nil {
 		t.Fatalf("ParseWithMaxDepth(2) error = %v", err)
 	}
-	var shallow *ParseError
+	var shallow Error
 	_, err := ParseWithMaxDepth("[[1]]", 1)
-	if !errors.As(err, &shallow) || shallow.Message != "maximum nesting depth exceeded" {
+	if !errors.As(err, &shallow) || shallow.Message() != "maximum nesting depth exceeded" {
 		t.Fatalf("ParseWithMaxDepth(1) error = %v", err)
 	}
 }
@@ -41,13 +41,13 @@ func TestRejectionNamesItsKind(t *testing.T) {
 		"[1] x":      "trailing_input",
 	}
 	for document, kind := range cases {
-		var failure *ParseError
+		var failure Error
 		_, err := Parse(document)
 		if !errors.As(err, &failure) {
 			t.Fatalf("%q was accepted: %v", document, err)
 		}
-		if failure.Kind() != kind {
-			t.Errorf("%q: kind = %q, want %q (%s)", document, failure.Kind(), kind, failure.Message)
+		if string(failure.Kind()) != kind {
+			t.Errorf("%q: kind = %q, want %q (%s)", document, failure.Kind(), kind, failure.Message())
 		}
 	}
 }
@@ -55,38 +55,38 @@ func TestRejectionNamesItsKind(t *testing.T) {
 // Requirements: RQ-004, RQ-007
 func TestInvalidUTF8ReportsTheFirstBadByte(t *testing.T) {
 	// The bad byte sits at index 2 of ["<bad>"]; the error names that position.
-	var failure *ParseError
+	var failure Error
 	_, err := ParseBytes([]byte{'[', '"', 0xff, '"', ']'})
-	if !errors.As(err, &failure) || failure.Message != "invalid UTF-8" {
+	if !errors.As(err, &failure) || failure.Message() != "invalid UTF-8" {
 		t.Fatalf("ParseBytes error = %v", err)
 	}
-	if failure.Offset != 2 {
-		t.Fatalf("offset = %d, want 2", failure.Offset)
+	if failure.Offset() != 2 {
+		t.Fatalf("offset = %d, want 2", failure.Offset())
 	}
 }
 
 // Requirements: RQ-004
 func TestParseErrorsReportOffsets(t *testing.T) {
-	var failure *ParseError
+	var failure Error
 	_, err := Parse("[1,]")
 	if !errors.As(err, &failure) {
 		t.Fatalf("Parse error = %v", err)
 	}
-	if failure.Offset != 3 || failure.Error() != "expected JSON value at byte 3" {
-		t.Fatalf("offset = %d, message = %q", failure.Offset, failure.Error())
+	if failure.Offset() != 3 || failure.Error() != "expected JSON value at byte 3" {
+		t.Fatalf("offset = %d, message = %q", failure.Offset(), failure.Error())
 	}
 	// Byte offsets, not rune counts: the emoji occupies four bytes.
 	_, err = Parse(`["🌍",]`)
-	if !errors.As(err, &failure) || failure.Offset != 8 {
+	if !errors.As(err, &failure) || failure.Offset() != 8 {
 		t.Fatalf("astral offset = %v", err)
 	}
 }
 
 // Requirements: RQ-007
 func TestBytesInputIsValidated(t *testing.T) {
-	var invalid *ParseError
+	var invalid Error
 	_, err := ParseBytes([]byte{'[', '"', 0xff, '"', ']'})
-	if !errors.As(err, &invalid) || invalid.Message != "invalid UTF-8" {
+	if !errors.As(err, &invalid) || invalid.Message() != "invalid UTF-8" {
 		t.Fatalf("ParseBytes error = %v", err)
 	}
 	value, parseErr := ParseBytes([]byte(`["한"]`))
@@ -112,14 +112,9 @@ func TestWrongKindAccessIsReported(t *testing.T) {
 		{"boolean value of an object", secondBool(object.BooleanValue())},
 		{"string units of an array", second(array.StringUnits())},
 	}
-	want := map[string]string{
-		"members of an array": "expected object", "items of an object": "expected array",
-		"string value of an object": "expected string", "number literal of an object": "expected number",
-		"boolean value of an object": "expected boolean", "string units of an array": "expected string",
-	}
 	for _, test := range cases {
-		if test.err == nil || test.err.Error() != want[test.name] {
-			t.Errorf("%s: error = %v, want %q", test.name, test.err, want[test.name])
+		if !isKind(test.err, WrongKindError) {
+			t.Errorf("%s: error = %v, want the kind %s", test.name, test.err, WrongKindError)
 		}
 	}
 }
@@ -131,7 +126,7 @@ func TestOrderedMapRejectsNonStringKey(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := members.Set(number, Null()); err == nil || err.Error() != "object key must be string" {
+	if err := members.Set(number, Null()); !isKind(err, NonStringKeyError) {
 		t.Fatalf("Set with a number key error = %v", err)
 	}
 	if members.Len() != 0 {
@@ -229,24 +224,24 @@ func TestUtf8ValidationHoldsForLongMultibyteText(t *testing.T) {
 	if got, err := value.Get("key").StringValue(); err != nil || got != text {
 		t.Fatalf("StringValue() = %q, %v", got, err)
 	}
-	var parseError *ParseError
-	if _, err := ParseBytes([]byte("[\"\xff\"]")); !errors.As(err, &parseError) || parseError.Kind() != "invalid_utf8" || parseError.Offset != 2 {
+	var parseError Error
+	if _, err := ParseBytes([]byte("[\"\xff\"]")); !errors.As(err, &parseError) || parseError.Kind() != InvalidUTF8Error || parseError.Offset() != 2 {
 		t.Fatalf("ParseBytes of an invalid byte error = %v", err)
 	}
 }
 
 // Requirements: RQ-015
 func TestFactoriesValidateArguments(t *testing.T) {
-	if _, err := Number(" 1"); err == nil || err.Error() != "expected number literal without whitespace" {
+	if _, err := Number(" 1"); !isKind(err, InvalidNumberLiteralError) {
 		t.Fatalf("Number(\" 1\") error = %v", err)
 	}
 	if _, err := Number("x"); err == nil {
 		t.Fatal("Number accepted a non-number literal")
 	}
-	if _, err := Array([]*Value{nil}); err == nil || err.Error() != "expected orderedjson Value" {
+	if _, err := Array([]*Value{nil}); !isKind(err, InvalidArgumentTypeError) {
 		t.Fatalf("Array with an invalid item error = %v", err)
 	}
-	if _, err := Object(nil); err == nil || err.Error() != "expected ordered map" {
+	if _, err := Object(nil); !isKind(err, InvalidArgumentTypeError) {
 		t.Fatalf("Object(nil) error = %v", err)
 	}
 	text, err := String(`"q"`)
@@ -264,7 +259,7 @@ func TestFactoriesValidateArguments(t *testing.T) {
 // Requirements: RQ-012
 func TestValuesComeOnlyFromTheLibrary(t *testing.T) {
 	var zero Value
-	if _, err := Stringify(&zero); err == nil || err.Error() != "expected orderedjson Value" {
+	if _, err := Stringify(&zero); !isKind(err, InvalidArgumentTypeError) {
 		t.Fatalf("Stringify(zero) error = %v", err)
 	}
 	if _, err := (&zero).Compact(); err == nil {
@@ -362,7 +357,7 @@ func TestHostDeserializationEmbedsValues(t *testing.T) {
 	}
 	// A document that the library parser rejects, here one nested deeper than its limit, is an error of the decoder.
 	deep := strings.Repeat("[", MaxDepth+1) + strings.Repeat("]", MaxDepth+1)
-	var failure *ParseError
+	var failure Error
 	if err := json.Unmarshal([]byte(`{"props":`+deep+`}`), &got); !errors.As(err, &failure) {
 		t.Fatalf("json.Unmarshal(deep) error = %v", err)
 	}
@@ -448,13 +443,13 @@ func TestPublicApiExportsTheEntryPoints(t *testing.T) {
 
 func TestParseErrorExposesKindOffsetAndMessage(t *testing.T) {
 	// RQ-024: a parse error exposes its kind, its offset and its message.
-	var failure *ParseError
+	var failure Error
 	_, err := Parse("[1,]")
 	if !errors.As(err, &failure) {
 		t.Fatalf("Parse error = %v", err)
 	}
-	if failure.Kind() != "expected_value" || failure.Offset != 3 || failure.Message != "expected JSON value" {
-		t.Fatalf("kind = %q, offset = %d, message = %q", failure.Kind(), failure.Offset, failure.Message)
+	if failure.Kind() != ExpectedValueError || failure.Offset() != 3 || failure.Message() != "expected JSON value" {
+		t.Fatalf("kind = %q, offset = %d, message = %q", failure.Kind(), failure.Offset(), failure.Message())
 	}
 }
 
@@ -470,13 +465,13 @@ func TestStrictParseRejectsDuplicateKeys(t *testing.T) {
 		if _, err := Parse(source); err != nil {
 			t.Fatalf("Parse(%s) error = %v", source, err)
 		}
-		var failure *ParseError
+		var failure Error
 		_, err := ParseRejectDuplicates(source)
 		if !errors.As(err, &failure) {
 			t.Fatalf("ParseRejectDuplicates(%s) error = %v", source, err)
 		}
-		if failure.Message != "duplicate object key" || failure.Kind() != "duplicate_object_key" || failure.Offset != strings.LastIndex(source, `,"`)+1 {
-			t.Fatalf("ParseRejectDuplicates(%s) = %q %q at %d", source, failure.Message, failure.Kind(), failure.Offset)
+		if failure.Message() != "duplicate object key" || failure.Kind() != DuplicateObjectKeyError || failure.Offset() != strings.LastIndex(source, `,"`)+1 {
+			t.Fatalf("ParseRejectDuplicates(%s) = %q %q at %d", source, failure.Message(), failure.Kind(), failure.Offset())
 		}
 	}
 }
@@ -491,8 +486,8 @@ func TestStrictParseAcceptsUniqueKeys(t *testing.T) {
 	if compact := must(parsed.Compact()); compact != source {
 		t.Fatalf("Compact() = %s", compact)
 	}
-	var failure *ParseError
-	if _, err := ParseRejectDuplicates("\xff"); !errors.As(err, &failure) || failure.Message != "invalid UTF-8" || failure.Offset != 0 {
+	var failure Error
+	if _, err := ParseRejectDuplicates("\xff"); !errors.As(err, &failure) || failure.Message() != "invalid UTF-8" || failure.Offset() != 0 {
 		t.Fatalf("invalid UTF-8 error = %v", err)
 	}
 }
@@ -513,8 +508,8 @@ func TestTextInputRejectsLoneSurrogates(t *testing.T) {
 	// A literal unpaired surrogate has only its WTF-8 encoding in a Go string, which is no UTF-8: it is rejected before the
 	// grammar is read, at the byte of the surrogate.
 	for source, offset := range map[string]int{"[\"\xed\xa0\x80\"]": 2, "[\"\xed\xb0\x80\"]": 2, "{\"\xed\xa0\x80\":1}": 2, "[\"\xed\xa0\x80": 2} {
-		var failure *ParseError
-		if _, err := Parse(source); !errors.As(err, &failure) || failure.Message != "invalid UTF-8" || failure.Offset != offset {
+		var failure Error
+		if _, err := Parse(source); !errors.As(err, &failure) || failure.Message() != "invalid UTF-8" || failure.Offset() != offset {
 			t.Fatalf("Parse(%q) error = %v", source, err)
 		}
 	}
@@ -553,8 +548,8 @@ func TestNumberTokensAreKeptExactly(t *testing.T) {
 		}
 	}
 	for source, kind := range map[string]string{"NaN": "expected_value", "Infinity": "expected_value", "-Infinity": "expected_digit", "[NaN]": "expected_value"} {
-		var failure *ParseError
-		if _, err := Parse(source); !errors.As(err, &failure) || failure.Kind() != kind {
+		var failure Error
+		if _, err := Parse(source); !errors.As(err, &failure) || string(failure.Kind()) != kind {
 			t.Fatalf("Parse(%s) error = %v", source, err)
 		}
 	}

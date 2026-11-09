@@ -1,4 +1,4 @@
-use polyspec_ordered_json::{parse_bytes, parse_bytes_reject_duplicates};
+use polyspec_ordered_json::{parse_bytes, parse_bytes_reject_duplicates, ErrorKind};
 
 // Requirements: RQ-017
 #[test]
@@ -12,8 +12,8 @@ fn strict_parse_rejects_duplicate_keys() {
     ] {
         assert!(parse_bytes(source.as_bytes()).is_ok());
         let error = parse_bytes_reject_duplicates(source.as_bytes()).unwrap_err();
-        assert_eq!(error.message, "duplicate object key", "{source}");
-        assert_eq!(error.kind(), "duplicate_object_key", "{source}");
+        assert_eq!(error.message(), "duplicate object key", "{source}");
+        assert_eq!(error.kind(), ErrorKind::DuplicateObjectKey, "{source}");
         assert_eq!(error.offset, source.rfind(",\"").unwrap() + 1, "{source}");
     }
 }
@@ -25,6 +25,6 @@ fn strict_parse_accepts_unique_keys() {
     let parsed = parse_bytes_reject_duplicates(source).unwrap();
     assert_eq!(parsed.compact().as_bytes(), source);
     let error = parse_bytes_reject_duplicates(&[0xff]).unwrap_err();
-    assert_eq!(error.message, "invalid UTF-8");
+    assert_eq!(error.message(), "invalid UTF-8");
     assert_eq!(error.offset, 0);
 }

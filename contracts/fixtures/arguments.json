@@ -1,0 +1,34 @@
+{
+  "schema": 1,
+  "comment": "The argument cases of the shared verifier (docs/spec/json-contract.md#argument-kinds): each sends the request {\"call\": call, \"argument\": argument} to every probe, which applies the function of the call to the argument and replies {\"ok\": true} or {\"ok\": false, \"kind\": kind}. number: the number constructor of the argument text. max_depth: the depth-limited parse of the document 1 with the argument as the limit. string_value: the string accessor of the argument value. object_key: an object built from the argument value as its key and null as its value. absent names the implementations where a call cannot be written, as the specification states for the kind of its refusal.",
+  "absent": {
+    "object_key": ["php", "php-extension"]
+  },
+  "cases": [
+    {"name": "number-literal", "call": "number", "argument": "-0.5e3", "kind": null},
+    {"name": "number-leading-whitespace", "call": "number", "argument": " 1", "kind": "invalid_number_literal"},
+    {"name": "number-trailing-whitespace", "call": "number", "argument": "1\n", "kind": "invalid_number_literal"},
+    {"name": "number-array", "call": "number", "argument": "[]", "kind": "invalid_number_literal"},
+    {"name": "number-string", "call": "number", "argument": "\"1\"", "kind": "invalid_number_literal"},
+    {"name": "number-boolean", "call": "number", "argument": "true", "kind": "invalid_number_literal"},
+    {"name": "number-null", "call": "number", "argument": "null", "kind": "invalid_number_literal"},
+    {"name": "number-not-json", "call": "number", "argument": "x", "kind": "expected_value"},
+    {"name": "number-empty", "call": "number", "argument": "", "kind": "expected_value"},
+    {"name": "depth-zero", "call": "max_depth", "argument": 0, "kind": null},
+    {"name": "depth-maximum", "call": "max_depth", "argument": 256, "kind": null},
+    {"name": "depth-above-maximum", "call": "max_depth", "argument": 257, "kind": "depth_limit_out_of_range"},
+    {"name": "depth-far-above-maximum", "call": "max_depth", "argument": 100000, "kind": "depth_limit_out_of_range"},
+    {"name": "string-value-of-string", "call": "string_value", "argument": "x", "kind": null},
+    {"name": "string-value-of-number", "call": "string_value", "argument": 1, "kind": "wrong_kind"},
+    {"name": "string-value-of-array", "call": "string_value", "argument": [], "kind": "wrong_kind"},
+    {"name": "string-value-of-object", "call": "string_value", "argument": {}, "kind": "wrong_kind"},
+    {"name": "string-value-of-boolean", "call": "string_value", "argument": true, "kind": "wrong_kind"},
+    {"name": "string-value-of-null", "call": "string_value", "argument": null, "kind": "wrong_kind"},
+    {"name": "object-key-string", "call": "object_key", "argument": "a", "kind": null},
+    {"name": "object-key-number", "call": "object_key", "argument": 1, "kind": "non_string_key"},
+    {"name": "object-key-array", "call": "object_key", "argument": [], "kind": "non_string_key"},
+    {"name": "object-key-object", "call": "object_key", "argument": {}, "kind": "non_string_key"},
+    {"name": "object-key-boolean", "call": "object_key", "argument": false, "kind": "non_string_key"},
+    {"name": "object-key-null", "call": "object_key", "argument": null, "kind": "non_string_key"}
+  ]
+}

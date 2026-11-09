@@ -111,12 +111,14 @@ static inline size_t oj_decode_name(const unsigned char *s, size_t i, size_t end
     return n;
 }
 
-extern zend_class_entry *oj_value_ce, *oj_error_ce;
+extern zend_class_entry *oj_value_ce, *oj_error_ce, *oj_argument_error_ce, *oj_usage_error_ce;
 
-/* Why a document was rejected, named the same way by every implementation; "" for an unknown message. */
+/* Why a document was rejected, named the same way by every implementation; NULL for a message outside the list. */
 const char *oj_kind(const char *message);
-/* Throws Polyspec\OrderedJson\ParseError for the message at the byte offset. */
+/* Throws Polyspec\OrderedJson\ParseError for the message of the parser, one of the list, at the byte offset. */
 void oj_throw_parse_error(const char *message, size_t offset);
+/* Throws the Polyspec\OrderedJson\ArgumentError or UsageError of `ce` with the argument kind and the message. */
+void oj_throw_kind(zend_class_entry *ce, const char *kind, const char *message);
 /* Scans source into a tape of `count` slots (emalloc), or throws ParseError and returns NULL. A repeated key is an error
  * at the first byte of its second token when reject_duplicates. */
 zend_long *oj_scan(zend_string *source, zend_long max_depth, bool reject_duplicates, size_t *count);

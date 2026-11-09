@@ -1,5 +1,7 @@
 // Adapter only. The shared Python verifier owns examples and expectations.
-use polyspec_ordered_json::{parse_bytes, stringify, Kind, OrderedMap, Value};
+use polyspec_ordered_json::{
+    parse, parse_bytes, parse_with_max_depth, stringify, Error, Kind, OrderedMap, Value,
+};
 use std::{
     fs,
     io::{self, BufRead},
@@ -62,14 +64,46 @@ fn rebuild(v: &Value) -> Value {
         _ => v.clone(),
     }
 }
+/// The reply to an argument request {"call": call, "argument": argument} of the shared verifier.
+fn call(request: &str) -> String {
+    let request = parse(request).expect("an argument request is JSON");
+    let argument = request
+        .get("argument")
+        .expect("a request names its argument");
+    let call = request.get("call").expect("a request names its call");
+    let outcome: Result<(), Error> = match &call.string_value().unwrap()[..] {
+        b"number" => {
+            let text = String::from_utf8(argument.string_value().unwrap()).unwrap();
+            Value::number(&text).map(drop)
+        }
+        b"max_depth" => {
+            let limit = argument.number_literal().unwrap().parse().unwrap();
+            parse_with_max_depth("1", limit).map(drop)
+        }
+        b"string_value" => argument.string_value().map(drop),
+        b"object_key" => OrderedMap::new()
+            .insert(argument.clone(), Value::null())
+            .map(drop),
+        other => panic!("unknown call {}", String::from_utf8_lossy(other)),
+    };
+    match outcome {
+        Ok(()) => "{\"ok\":true}".to_owned(),
+        Err(error) => format!("{{\"ok\":false,\"kind\":{}}}", quote(error.kind().as_str())),
+    }
+}
 fn main() {
     for line in io::stdin().lock().lines() {
-        let bytes = fs::read(line.unwrap()).expect("cannot read document");
+        let line = line.unwrap();
+        if line.starts_with('{') {
+            println!("{}", call(&line));
+            continue;
+        }
+        let bytes = fs::read(line).expect("cannot read document");
         match parse_bytes(&bytes) {
             Err(error) => println!(
                 "{{\"ok\":false,\"offset\":{},\"unit\":\"byte\",\"kind\":{}}}",
                 error.offset,
-                quote(error.kind())
+                quote(error.kind().as_str())
             ),
             Ok(v) => {
                 let serialized = stringify(&v);

@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use LogicException;
 use PHPUnit\Framework\TestCase;
 use Polyspec\OrderedJson\ParseError;
+use Polyspec\OrderedJson\UsageError;
 use Polyspec\OrderedJson\Value;
 use Throwable;
 use TypeError;
@@ -465,7 +466,7 @@ final class ValueApiTest extends TestCase
     {
         foreach (['no such message', str_repeat('x', 80), "Expected JSON value\0ignored"] as $message) {
             self::expectThrown(
-                LogicException::class,
+                UsageError::class,
                 'ParseError has no kind',
                 static fn() => new ParseError($message, 0),
             );

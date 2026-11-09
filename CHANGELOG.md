@@ -6,6 +6,11 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- T2.151: every error of the five languages carries a kind of the shared lists of the JSON contract, which now lists the argument kinds `non_string_key`, `wrong_kind`, `invalid_number_literal`, `depth_limit_out_of_range`, `invalid_argument_type`, `invalid_code_unit`, `host_serialization_refused` and `direct_construction` and states where a kind cannot arise (RQ-025); JavaScript and Python put the kind on `kind` of the host `TypeError`, `ValueError` or `RangeError`, PHP throws the new `ArgumentError` (an `InvalidArgumentException`) and `UsageError` (a `LogicException`) in both backends, the `ParseError` constructor refuses an unknown message with `direct_construction`, JavaScript `parse` refuses options that are not an object and Python `Value.number` raises `ValueError` for a literal of another kind; the shared verifier runs the 25 argument cases of `contracts/fixtures/arguments.json` in every language (T2.151).
+- T2.150: every error of the Go module is an `orderedjson.Error`, an interface that only the module implements, whose `Kind()` returns an `ErrorKind` constant: `ParseError`, whose `Kind()` returned `""` for a message outside its map, is replaced, and the argument errors that were `fmt.Errorf` carry `non_string_key`, `wrong_kind`, `invalid_number_literal`, `depth_limit_out_of_range`, `invalid_utf8` and `invalid_argument_type`; `Offset()` and `Message()` are methods (T2.150).
+- T2.149-1: the README of the Rust crate states that `Value` implements Serde `Serialize` and `Deserialize` for `serde_json`, instead of the functions `polyspec_ordered_json::serde::{to_string, from_str, from_slice}` that T2.42 removed (T2.149-1).
+- T2.149: the Rust crate names every error by the public exhaustive enum `ErrorKind`, which `Error::kind()` returns: the parse rejections carry the names of the shared list, the strict parse `duplicate_object_key`, and the refused arguments `non_string_key` (OrderedMap::insert), `wrong_kind` (Value::string_value), `invalid_number_literal` (Value::number) and `depth_limit_out_of_range` (parse_with_max_depth); no error has an empty kind, and `string_value()` of another kind no longer reports `expected_object_key`. `Error::message` is the method `message()`, derived from the kind (T2.149).
+
 ## 0.0.23
 
 - ordered-json 0.0.23 runs kit 0.0.102 (T2.147) (T2.148).

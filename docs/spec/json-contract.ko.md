@@ -1,5 +1,5 @@
 <!-- doc-id: json-contract -->
-<!-- source-sha256: 5b2dba014b07f0dc6bc097051f91f6d49a5ad27ba2ca8cf885dd4d86112d149a -->
+<!-- source-sha256: 864401f1c8c88126cbf2f3e012f063f6ad7e059fa694ac560cc399520dd10e06 -->
 # JSON 계약
 
 [English](json-contract.md)
@@ -50,6 +50,20 @@ JSON 배열은 입력 순서대로 값을 저장합니다. 빈 배열과 빈 객
 - `invalid_utf8`
 - `maximum_depth_exceeded`
 - `trailing_input`
+
+<a id="argument-kinds"></a>
+### 인자 종류
+
+인자 종류의 공통 목록입니다. 인자를 거부하는 라이브러리 함수는 이 중 하나를 모든 구현에서 같게 알립니다. 각 바인딩은 그 경우에 맞는 host의 오류 class를 던지고, 자기 문구를 유지하며, 거부 종류의 접근자로 종류를 노출합니다. UTF-8이 아닌 인자의 거부는 거부 종류의 `invalid_utf8`을 알립니다. 공통 검증기는 이 목록을 읽고 [arguments.json](../../contracts/fixtures/arguments.json)의 인자 사례를 모든 구현에 보내며 다른 종류에서 실패합니다. 어떤 언어에서 생길 수 없는 종류는 그 언어와 함께 적습니다.
+
+- `non_string_key` — 문자열이 아닌 객체 키. 배열 키가 문자열이나 정수인 PHP에서는 생길 수 없습니다.
+- `wrong_kind` — 다른 종류의 값을 거부하는 접근자.
+- `invalid_number_literal` — 다른 JSON 값이거나 공백을 가진 literal을 받은 숫자 생성자. 파싱되지 않는 literal은 그 거부 종류를 알립니다.
+- `depth_limit_out_of_range` — 0부터 256까지의 정수가 아닌 깊이 한도.
+- `invalid_argument_type` — 함수가 받지 않는 타입의 인자. 라이브러리가 만들지 않은 값(Go의 nil 또는 영값 `Value`)을 포함합니다. compiler가 타입을 검사하는 Rust에서는 생길 수 없습니다. PHP에서는 선언된 매개변수 타입이 라이브러리 실행 전에 host 타입을 거부하므로, 배열 원소처럼 signature가 타입을 선언할 수 없는 곳에서만 생깁니다.
+- `invalid_code_unit` — 0부터 65535까지의 정수가 아닌 UTF-16 code unit. code unit이 `u16`과 `uint16`인 Rust와 Go, code unit을 문자열로만 받는 JavaScript에서는 생길 수 없습니다.
+- `host_serialization_refused` — 값을 다시 쓰게 될 언어의 표준 JSON 인터페이스([RQ-020](#requirements)). 인터페이스가 계약 바이트를 쓰는 Rust와 Go에서는 생길 수 없습니다.
+- `direct_construction` — 라이브러리 밖에서 호출한 라이브러리 생성자: JavaScript와 Python의 `Value` 생성자, 이 목록 밖의 메시지나 종류를 받은 오류 생성자. 값과 오류의 필드를 비공개로 두는 Rust와 Go에서는 생길 수 없습니다.
 
 <a id="numbers"></a>
 ## 숫자
@@ -118,3 +132,4 @@ JavaScript의 `compact` 옵션과 PHP의 `compact` 인자는 호환성을 위해
 - **RQ-022** 모든 구현은 공식 예제에 기대 결과를 냅니다.
 - **RQ-023** 공개 API는 파싱, 직렬화, 생성과 접근자 함수를 내보냅니다.
 - **RQ-024** 파싱 오류는 종류, 위치와 메시지를 노출합니다.
+- **RQ-025** 거부된 인자는 공유 인자 종류 목록의 한 종류를 그 host의 오류 class로 알립니다.

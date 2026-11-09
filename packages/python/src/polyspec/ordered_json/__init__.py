@@ -57,6 +57,15 @@ _MESSAGES = {
     "duplicate_object_key": "Duplicate object key",
 }
 
+
+def _refuse(error_class: type[Exception], kind: str, message: str) -> Exception:
+    """The host error of error_class with the message and the argument kind of the JSON contract on `kind`, which every
+    implementation names alike."""
+    error = error_class(message)
+    error.kind = kind  # type: ignore[attr-defined]
+    return error
+
+
 _ESCAPED_UNITS = {
     0x62: 8,
     0x66: 12,
@@ -160,6 +169,10 @@ class ParseError(ValueError):
     __slots__ = ("kind", "offset", "unit")
 
     def __init__(self, kind: str, offset: int):
+        if kind not in _MESSAGES:
+            raise _refuse(
+                TypeError, "direct_construction", f"ParseError has no kind {kind!r}"
+            )
         super().__init__(f"{_MESSAGES[kind]} at byte {offset}")
         self.kind = kind
         self.offset = offset
@@ -172,7 +185,11 @@ class JSONEncoder(json.JSONEncoder):
 
     def default(self, o):
         if isinstance(o, Value):
-            raise TypeError("Use ordered_json.stringify(value)")
+            raise _refuse(
+                TypeError,
+                "host_serialization_refused",
+                "Use ordered_json.stringify(value)",
+            )
         return super().default(o)
 
 
@@ -183,11 +200,21 @@ class ParseOptions:
 
     def __init__(self, max_depth: int = MAX_DEPTH, reject_duplicates: bool = False):
         if isinstance(max_depth, bool) or not isinstance(max_depth, int):
-            raise TypeError("max_depth must be an integer")
+            raise _refuse(
+                TypeError, "depth_limit_out_of_range", "max_depth must be an integer"
+            )
         if not 0 <= max_depth <= MAX_DEPTH:
-            raise ValueError(f"max_depth must be between 0 and {MAX_DEPTH}")
+            raise _refuse(
+                ValueError,
+                "depth_limit_out_of_range",
+                f"max_depth must be between 0 and {MAX_DEPTH}",
+            )
         if not isinstance(reject_duplicates, bool):
-            raise TypeError("reject_duplicates must be a boolean")
+            raise _refuse(
+                TypeError,
+                "invalid_argument_type",
+                "reject_duplicates must be a boolean",
+            )
         self.max_depth = max_depth
         self.reject_duplicates = reject_duplicates
 
@@ -236,15 +263,24 @@ def _combine(units: Iterable[int]) -> str:
     return "".join(characters)
 
 
+def _listed(values: object, what: str) -> list:
+    """The items of an iterable argument; another argument is refused."""
+    if isinstance(values, (str, bytes)) or not isinstance(values, Iterable):
+        raise _refuse(
+            TypeError, "invalid_argument_type", f"Expected an iterable of {what}"
+        )
+    return list(values)
+
+
 def _validated_units(units: Iterable[int]) -> list[int]:
-    items = list(units)
+    items = _listed(units, "UTF-16 code units")
     for unit in items:
         if (
             isinstance(unit, bool)
             or not isinstance(unit, int)
             or not 0 <= unit <= 0xFFFF
         ):
-            raise ValueError("Expected UTF-16 code units")
+            raise _refuse(ValueError, "invalid_code_unit", "Expected UTF-16 code units")
     return items
 
 
@@ -324,7 +360,11 @@ class Value:
 
     def __init__(self, token=None):
         if token is not _INTERNAL:
-            raise TypeError("Use parse(), parse_bytes() or the Value factories")
+            raise _refuse(
+                TypeError,
+                "direct_construction",
+                "Use parse(), parse_bytes() or the Value factories",
+            )
 
     @property
     def kind(self) -> Kind:
@@ -372,7 +412,7 @@ class Value:
     def get(self, key: str) -> "Value | None":
         """The member of the decoded key, or None on a miss."""
         if not isinstance(key, str):
-            raise TypeError("Key must be a string")
+            raise _refuse(TypeError, "non_string_key", "Key must be a string")
         self._expect("object")
         return self._members.get(_combine(_expand(key)))
 
@@ -389,7 +429,7 @@ class Value:
     @staticmethod
     def string(text: str) -> "Value":
         if not isinstance(text, str):
-            raise TypeError("Expected string")
+            raise _refuse(TypeError, "invalid_argument_type", "Expected string")
         return parse_bytes(_quote_units(_expand(text)))
 
     @staticmethod
@@ -404,17 +444,28 @@ class Value:
     @staticmethod
     def number(literal: str) -> "Value":
         if not isinstance(literal, str):
-            raise TypeError("Pass a number literal as a string")
+            raise _refuse(
+                TypeError, "invalid_argument_type", "Pass a number literal as a string"
+            )
         value = parse(literal)
-        value._expect("number")
+        if value._kind != "number":
+            raise _refuse(
+                ValueError,
+                "invalid_number_literal",
+                f"Expected a number literal, got {value._kind}",
+            )
         if literal.strip() != literal:
-            raise ValueError("Number literal cannot contain whitespace")
+            raise _refuse(
+                ValueError,
+                "invalid_number_literal",
+                "Number literal cannot contain whitespace",
+            )
         return value
 
     @staticmethod
     def boolean(flag: bool) -> "Value":
         if not isinstance(flag, bool):
-            raise TypeError("Expected boolean")
+            raise _refuse(TypeError, "invalid_argument_type", "Expected boolean")
         return parse_bytes(b"true" if flag else b"false")
 
     @staticmethod
@@ -423,24 +474,39 @@ class Value:
 
     @staticmethod
     def array(items: Iterable["Value"]) -> "Value":
-        values = list(items)
+        values = _listed(items, "values")
         for item in values:
             _expect_value(item)
         return parse_bytes(b"[" + b",".join(_write(value) for value in values) + b"]")
 
     @staticmethod
     def object(entries) -> "Value":
-        pairs = entries.items() if isinstance(entries, Mapping) else entries
+        pairs = (
+            entries.items()
+            if isinstance(entries, Mapping)
+            else _listed(entries, "entries")
+        )
         parts = []
-        for key, value in pairs:
-            _expect_value(value)
-            if isinstance(key, Value):
-                key._expect("string")
+        for entry in pairs:
+            pair = (
+                _listed(entry, "a key and a value")
+                if not isinstance(entry, tuple)
+                else list(entry)
+            )
+            if len(pair) != 2:
+                raise _refuse(
+                    TypeError,
+                    "invalid_argument_type",
+                    "Expected an entry of a key and a value",
+                )
+            key, value = pair
+            if isinstance(key, Value) and key._kind == "string":
                 token = _write(key)
             elif isinstance(key, str):
                 token = _quote_units(_expand(key))
             else:
-                raise TypeError("Expected a string key")
+                raise _refuse(TypeError, "non_string_key", "Key must be a string")
+            _expect_value(value)
             parts.append(token + b":" + _write(value))
         return parse_bytes(b"{" + b",".join(parts) + b"}")
 
@@ -449,12 +515,14 @@ class Value:
 
     def _expect(self, kind: str) -> None:
         if self._kind != kind:
-            raise TypeError(f"Expected {kind}, got {self._kind}")
+            raise _refuse(TypeError, "wrong_kind", f"Expected {kind}, got {self._kind}")
 
 
 def _expect_value(value: object) -> None:
     if not isinstance(value, Value):
-        raise TypeError("Expected a polyspec.ordered_json Value")
+        raise _refuse(
+            TypeError, "invalid_argument_type", "Expected a polyspec.ordered_json Value"
+        )
 
 
 def _write(value: Value, out: list[bytes] | None = None) -> bytes:
@@ -795,7 +863,7 @@ def parse(source: str, options: ParseOptions | None = None) -> Value:
     """Parses JSON text; a literal unpaired surrogate of the text is
     rejected at its byte position."""
     if not isinstance(source, str):
-        raise TypeError("Expected JSON text")
+        raise _refuse(TypeError, "invalid_argument_type", "Expected JSON text")
     settings = _settings(options)
     try:
         data = source.encode("utf-8")
@@ -810,7 +878,7 @@ def parse_bytes(
 ) -> Value:
     """Parses a UTF-8 byte document."""
     if not isinstance(data, (bytes, bytearray, memoryview)):
-        raise TypeError("Expected UTF-8 bytes")
+        raise _refuse(TypeError, "invalid_argument_type", "Expected UTF-8 bytes")
     return _parse_bytes(bytes(data), _settings(options))
 
 
@@ -825,5 +893,5 @@ def _settings(options: ParseOptions | None) -> ParseOptions:
     if options is None:
         return ParseOptions()
     if not isinstance(options, ParseOptions):
-        raise TypeError("Expected ParseOptions")
+        raise _refuse(TypeError, "invalid_argument_type", "Expected ParseOptions")
     return options

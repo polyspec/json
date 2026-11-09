@@ -52,7 +52,7 @@ final class Value implements \JsonSerializable, \Stringable
     public static function parse(string $source, int $maxDepth = MAX_DEPTH): Value
     {
         if ($maxDepth < 0 || $maxDepth > MAX_DEPTH) {
-            throw new \InvalidArgumentException('maxDepth must be between 0 and 256');
+            throw new ArgumentError('depth_limit_out_of_range', 'maxDepth must be between 0 and 256');
         }
         return self::root($source, self::scan($source, $maxDepth, false));
     }
@@ -136,7 +136,7 @@ final class Value implements \JsonSerializable, \Stringable
     }
     private function mismatch(string $kind): never
     {
-        throw new \LogicException("Expected $kind, got {$this->kind()}");
+        throw new UsageError('wrong_kind', "Expected $kind, got {$this->kind()}");
     }
     /** @return array<string|int, Value> Key order is the first insertion order. */
     public function members(): array
@@ -216,7 +216,7 @@ final class Value implements \JsonSerializable, \Stringable
         $raw = '"';
         foreach ($units as $unit) {
             if (!is_int($unit) || $unit < 0 || $unit > 65535) {
-                throw new \InvalidArgumentException('Expected UTF-16 code units');
+                throw new ArgumentError('invalid_code_unit', 'Expected UTF-16 code units');
             }
             $raw .= sprintf('\\u%04x', $unit);
         }
@@ -226,7 +226,7 @@ final class Value implements \JsonSerializable, \Stringable
     {
         $v = self::parse($literal);
         if ($v->kind() !== 'number' || trim($literal) !== $literal) {
-            throw new \InvalidArgumentException('Expected number literal without whitespace');
+            throw new ArgumentError('invalid_number_literal', 'Expected number literal without whitespace');
         }
         return $v;
     }
@@ -241,9 +241,16 @@ final class Value implements \JsonSerializable, \Stringable
     public static function array(array $items): Value
     {
         if (!array_is_list($items)) {
-            throw new \InvalidArgumentException('Expected a list of values');
+            throw new ArgumentError('invalid_argument_type', 'Expected a list of values');
         }
-        return self::parse('[' . implode(',', array_map(fn(self $v) => $v->compact(), $items)) . ']');
+        $parts = [];
+        foreach ($items as $item) {
+            if (!$item instanceof self) {
+                throw new ArgumentError('invalid_argument_type', 'Expected ordered_json Value');
+            }
+            $parts[] = $item->compact();
+        }
+        return self::parse('[' . implode(',', $parts) . ']');
     }
     /** @param array<string|int, Value> $members */
     public static function object(array $members): Value
@@ -251,7 +258,7 @@ final class Value implements \JsonSerializable, \Stringable
         $parts = [];
         foreach ($members as $key => $value) {
             if (!$value instanceof self) {
-                throw new \InvalidArgumentException('Expected ordered_json Value');
+                throw new ArgumentError('invalid_argument_type', 'Expected ordered_json Value');
             }
             $parts[] = self::quoteUnits(self::utf8Units((string)$key, true)) . ':' . $value->compact();
         }
@@ -292,7 +299,7 @@ final class Value implements \JsonSerializable, \Stringable
     }
     public function jsonSerialize(): never
     {
-        throw new \LogicException('Use Polyspec\\OrderedJson\\stringify($value)');
+        throw new UsageError('host_serialization_refused', 'Use Polyspec\\OrderedJson\\stringify($value)');
     }
 
     /**
@@ -552,7 +559,7 @@ final class Value implements \JsonSerializable, \Stringable
         for ($i = 0, $n = count($units); $i < $n; $i++) {
             $point = $units[$i];
             if (!is_int($point) || $point < 0 || $point > 65535) {
-                throw new \InvalidArgumentException('Expected UTF-16 code units');
+                throw new ArgumentError('invalid_code_unit', 'Expected UTF-16 code units');
             }
             if (
                 $point >= 0xd800 && $point <= 0xdbff && $i + 1 < $n
@@ -575,42 +582,42 @@ final class Value implements \JsonSerializable, \Stringable
                 $point = $first;
             } elseif ($first >= 0xc2 && $first <= 0xdf) {
                 if ($i >= $n) {
-                    throw new \InvalidArgumentException('Invalid UTF-8');
+                    throw new ArgumentError('invalid_utf8', 'Invalid UTF-8');
                 }
                 $next = ord($text[$i++]);
                 if (($next & 0xc0) !== 0x80) {
-                    throw new \InvalidArgumentException('Invalid UTF-8');
+                    throw new ArgumentError('invalid_utf8', 'Invalid UTF-8');
                 }
                 $point = (($first & 0x1f) << 6) | ($next & 63);
             } elseif ($first >= 0xe0 && $first <= 0xef) {
                 if ($i + 1 >= $n) {
-                    throw new \InvalidArgumentException('Invalid UTF-8');
+                    throw new ArgumentError('invalid_utf8', 'Invalid UTF-8');
                 }
                 $b1 = ord($text[$i++]);
                 $b2 = ord($text[$i++]);
                 if (($b1 & 0xc0) !== 0x80 || ($b2 & 0xc0) !== 0x80) {
-                    throw new \InvalidArgumentException('Invalid UTF-8');
+                    throw new ArgumentError('invalid_utf8', 'Invalid UTF-8');
                 }
                 $point = (($first & 15) << 12) | (($b1 & 63) << 6) | ($b2 & 63);
                 if ($point < 0x800 || ($point >= 0xd800 && $point <= 0xdfff && !$allowWtf8)) {
-                    throw new \InvalidArgumentException('Invalid UTF-8');
+                    throw new ArgumentError('invalid_utf8', 'Invalid UTF-8');
                 }
             } elseif ($first >= 0xf0 && $first <= 0xf4) {
                 if ($i + 2 >= $n) {
-                    throw new \InvalidArgumentException('Invalid UTF-8');
+                    throw new ArgumentError('invalid_utf8', 'Invalid UTF-8');
                 }
                 $b1 = ord($text[$i++]);
                 $b2 = ord($text[$i++]);
                 $b3 = ord($text[$i++]);
                 if (($b1 & 0xc0) !== 0x80 || ($b2 & 0xc0) !== 0x80 || ($b3 & 0xc0) !== 0x80) {
-                    throw new \InvalidArgumentException('Invalid UTF-8');
+                    throw new ArgumentError('invalid_utf8', 'Invalid UTF-8');
                 }
                 $point = (($first & 7) << 18) | (($b1 & 63) << 12) | (($b2 & 63) << 6) | ($b3 & 63);
                 if ($point < 0x10000 || $point > 0x10ffff) {
-                    throw new \InvalidArgumentException('Invalid UTF-8');
+                    throw new ArgumentError('invalid_utf8', 'Invalid UTF-8');
                 }
             } else {
-                throw new \InvalidArgumentException('Invalid UTF-8');
+                throw new ArgumentError('invalid_utf8', 'Invalid UTF-8');
             }
             if ($point <= 0xffff) {
                 $units[] = $point;
@@ -736,7 +743,7 @@ final class Value implements \JsonSerializable, \Stringable
         $out = '"';
         foreach ($units as $unit) {
             if (!is_int($unit) || $unit < 0 || $unit > 65535) {
-                throw new \InvalidArgumentException('Expected UTF-16 code units');
+                throw new ArgumentError('invalid_code_unit', 'Expected UTF-16 code units');
             }
             $out .= match ($unit) {
                 34 => '\"', 92 => '\\\\', 8 => '\b', 12 => '\f', 10 => '\n',

@@ -1,5 +1,5 @@
 <!-- doc-id: api -->
-<!-- source-sha256: b3189419db770aabbe7e542c45dec2be665f1594a5789a905056bb63de544730 -->
+<!-- source-sha256: 7b4e5169fb944f9757157f9e20d53ae2154380e42168eb9cc8f03a1d3687ec9d -->
 # API 계약
 
 [English](api.md)
@@ -11,7 +11,7 @@
 <a id="values"></a>
 ## 값과 파싱
 
-파싱된 `Value` 객체는 라이브러리 API로 변경할 수 없습니다. 생성자는 문자열, 숫자 토큰, 불리언, null, 배열, 객체를 생성합니다. 생성자는 라이브러리 parser를 통해 값을 검사합니다. 종류가 맞지 않는 접근은 접근자에 따라 값 없음 또는 오류를 반환하며 잘못된 생성 인자는 언어별 오류를 발생시킵니다. 핵심 parser와 serializer는 JSON 동작을 host JSON API에 위임하지 않습니다.
+파싱된 `Value` 객체는 라이브러리 API로 변경할 수 없습니다. 생성자는 문자열, 숫자 토큰, 불리언, null, 배열, 객체를 생성합니다. 생성자는 라이브러리 parser를 통해 값을 검사합니다. 종류가 맞지 않는 접근은 접근자에 따라 값 없음 또는 오류를 반환하며 거부된 인자는 그 언어의 host 오류 class를 발생시키며 공유 [argument kind](../spec/json-contract.md#argument-kinds) 중 하나를 가지므로 빈 kind를 가진 오류는 없습니다. 핵심 parser와 serializer는 JSON 동작을 host JSON API에 위임하지 않습니다.
 
 | 동작 | JavaScript | Rust | Go | PHP | Python |
 | --- | --- | --- | --- | --- | --- |
@@ -30,9 +30,15 @@ JavaScript 파싱 오류는 UTF-16 위치를 반환합니다. Rust, Go, PHP, Pyt
 
 바인딩은 해당 언어에만 필요한 API를 추가할 수 있습니다. 바인딩 확장은 공유 parser와 serializer를 사용하고, 허용한 입력의 결과와 오류 위치를 바꾸지 않으며, 추가로 거부하는 입력을 문서화합니다. 공유 동작 표가 아니라 이 절에 적습니다. 해당 패키지는 자체 테스트를 그 언어의 native test runner로 실행합니다(`make test-<language>`). 공통 사례가 닿지 못하는 API는 그 테스트로만 검증됩니다.
 
-Rust 바인딩은 `parse_bytes_reject_duplicates(source)`를 제공합니다. 일반 문법과 깊이 한도로 UTF-8 바이트를 파싱하지만 어느 깊이든 해석된 객체 키가 반복되면 거부합니다. 이스케이프 표기가 같은 UTF-16 키를 만드는 경우를 포함하여 두 번째 키 토큰의 첫 바이트 위치에 `duplicate object key` 오류를 반환합니다. `parse_bytes`는 공통 중복 키 동작을 유지합니다. 그 밖의 유효한 값과 오류 및 위치는 바뀌지 않습니다.
+Rust 바인딩은 `parse_bytes_reject_duplicates(source)`를 제공합니다. 일반 문법과 깊이 한도로 UTF-8 바이트를 파싱하지만 어느 깊이든 해석된 객체 키가 반복되면 거부합니다. 이스케이프 표기가 같은 UTF-16 키를 만드는 경우를 포함하여 두 번째 키 토큰의 첫 바이트 위치에 `duplicate object key` 오류(kind `duplicate_object_key`)를 반환합니다. `parse_bytes`는 공통 중복 키 동작을 유지합니다. 그 밖의 유효한 값과 오류 및 위치는 바뀌지 않습니다.
+
+Rust 바인딩의 모든 오류는 `Error`이며, 그 `kind()`는 enum `ErrorKind`를 반환합니다. `ErrorKind`는 exhaustive이므로 호출자는 wildcard arm 없이 모든 kind를 match합니다. `ErrorKind::as_str()`는 kind의 이름, `message()`는 Rust 문구이고, `offset`은 거부의 바이트 위치이며 거부된 인자에서는 0입니다. 파싱 거부는 공유 rejection kind 목록의 이름을 가지며, Rust `str`가 담을 수 없는 `unescaped_lone_surrogate`는 제외하고, strict parse가 `duplicate_object_key`를 더합니다. 거부된 인자는 공유 argument 목록의 kind를 가집니다: 문자열이 아닌 key의 `OrderedMap::insert`는 `non_string_key`, 다른 kind 값의 `string_value()`는 `wrong_kind`, 다른 JSON 값이거나 whitespace를 가진 literal의 `Value::number`는 `invalid_number_literal`(파싱되지 않는 literal은 그 거부의 kind를 가집니다), 256을 넘는 한도의 `parse_with_max_depth`는 `depth_limit_out_of_range`입니다. 빈 kind를 가진 오류는 없습니다.
 
 Go 바인딩은 `ParseRejectDuplicates(source)`를 제공합니다. 일반 문법과 기본 깊이 한도로 텍스트를 파싱하지만 어느 깊이든 해석된 객체 키가 반복되면 거부합니다. 이스케이프 표기가 같은 UTF-16 키를 만드는 경우를 포함하여 두 번째 키 토큰의 첫 바이트 위치에 `duplicate object key` 오류(kind `duplicate_object_key`)를 반환합니다. `Parse`는 공통 중복 키 동작을 유지합니다. 그 밖의 유효한 값과 오류 및 위치는 바뀌지 않습니다.
+
+Go 바인딩의 모든 오류는 module만 구현하는 interface `orderedjson.Error`이므로 module의 어떤 오류도 빈 kind를 갖지 않습니다: `Kind()`는 그 문자열이 kind 이름인 `ErrorKind` 상수를, `Offset()`은 거부의 바이트 위치를(거부된 인자에서는 0), `Message()`는 Go 문구를 반환합니다. 호출자는 `orderedjson.Error` 타입의 `target`에 대해 `errors.As(err, &target)`로 읽습니다. 파싱 거부는 공유 목록의 이름을 가지며, Go 문자열은 unpaired surrogate를 잘못된 UTF-8로만 담으므로 `unescaped_lone_surrogate`는 제외되고, `ParseRejectDuplicates`가 `duplicate_object_key`를 더합니다. 거부된 인자는 공유 argument 목록의 kind를 가집니다: 문자열이 아닌 key의 `OrderedMap.Set`에 `non_string_key`, 다른 kind 값의 `Members`, `Items`, `StringUnits`, `StringValue`, `NumberLiteral`, `BooleanValue`에 `wrong_kind`, `Number`에 `invalid_number_literal`, 0부터 256 밖의 한도인 `ParseWithMaxDepth`에 `depth_limit_out_of_range`, UTF-8이 아닌 text의 `String`에 `invalid_utf8`, `Set`, `Array`, `Stringify`, `Compact`에 준 nil 또는 영값 `Value`와 `Object`에 준 nil `OrderedMap`에 `invalid_argument_type`을 가집니다.
+
+JavaScript, Python, PHP에서 라이브러리의 모든 오류는 `kind`에 Rust, Go와 같은 이름의 kind를 가집니다: `ParseError`는 rejection kind를, 거부된 인자는 그 언어의 host class로 공유 argument 목록의 kind를 가집니다. JavaScript는 `RangeError`인 `depth_limit_out_of_range`를 제외한 모든 argument kind에 `TypeError`를 발생시키며, `parse`는 object가 아닌 option을 거부합니다. Python은 `non_string_key`, `wrong_kind`, `invalid_argument_type`, `host_serialization_refused`, `direct_construction`에 `TypeError`를, `invalid_number_literal`, `invalid_code_unit`, 0부터 256 밖의 `max_depth`(`depth_limit_out_of_range`, 한도가 정수가 아니면 `TypeError`)에 `ValueError`를 발생시킵니다. PHP는 `invalid_number_literal`, `depth_limit_out_of_range`, `invalid_argument_type`, `invalid_code_unit`, `invalid_utf8`에 `InvalidArgumentException`인 `Polyspec\OrderedJson\ArgumentError`를, `wrong_kind`, `host_serialization_refused`, `direct_construction`에 `LogicException`인 `Polyspec\OrderedJson\UsageError`를 발생시킵니다. PHP array key는 문자열 또는 정수이므로 `non_string_key`는 생기지 않습니다. 목록 밖의 kind나 메시지를 받은 오류 생성자와 JavaScript, Python의 `Value` 생성자는 `direct_construction`을 발생시킵니다.
 
 JavaScript 바인딩은 `parse(source, options)`와 `parseBytes(bytes, options)`의 options에서 `rejectDuplicates: true`를 받습니다. 이 옵션이 있으면 이스케이프 표기가 같은 UTF-16 키를 만드는 경우를 포함하여 어느 깊이든 해석된 객체 키가 반복될 때 `Duplicate object key at UTF-16 offset N` 메시지와 `duplicate_object_key` `kind`의 `ParseError`로 거부하며, `N`은 두 번째 키 토큰의 UTF-16 위치입니다. `rejectDuplicates`는 boolean이어야 하며 기본값 `false`는 공통 중복 키 동작을 유지합니다. 이 옵션은 `maxDepth`와 함께 쓸 수 있습니다. 그 밖의 유효한 값과 오류 및 위치는 바뀌지 않습니다.
 
@@ -90,10 +96,10 @@ JavaScript는 기존 UTF-16 텍스트로 문자열을 생성할 수 있습니다
 <a id="php"></a>
 ## PHP 파서
 
-PHP 라이브러리는 `polyspec/ordered-json`입니다. 공개 symbol은 class `Polyspec\OrderedJson\Value`, 예외 `Polyspec\OrderedJson\ParseError`, 함수 `Polyspec\OrderedJson\parse`와 `Polyspec\OrderedJson\stringify`, 상수 `Polyspec\OrderedJson\MAX_DEPTH`이며 라이브러리의 나머지는 이들에 대해 비공개입니다.
+PHP 라이브러리는 `polyspec/ordered-json`입니다. 공개 symbol은 class `Polyspec\OrderedJson\Value`, 예외 `Polyspec\OrderedJson\ParseError`, `Polyspec\OrderedJson\ArgumentError`, `Polyspec\OrderedJson\UsageError`, 함수 `Polyspec\OrderedJson\parse`와 `Polyspec\OrderedJson\stringify`, 상수 `Polyspec\OrderedJson\MAX_DEPTH`이며 라이브러리의 나머지는 이들에 대해 비공개입니다.
 
 PIE package `polyspec/ordered-json-php-ext`인 확장 `polyspec_ordered_json`은 라이브러리를 C로 구현하고 그 class, 함수, 상수를 같은 이름과 signature로 등록합니다. 프로세스는 라이브러리나 확장 중 하나만 로드하며(라이브러리는 source를 무조건 올리므로 함수를 다시 선언하게 됩니다), 하나의 test suite가 순수 PHP 구현과 라이브러리 source 없이 확장에 대해 실행되며 결과, 오류, offset은 같습니다. 확장은 자기 package의 version, 곧 `packages/php-ext`의 `composer.json` version을 보고합니다.
 
-ParseError 생성자는 공통 rejection kind에 대응하는 parser 메시지만 받습니다. 알 수 없는 메시지는 두 PHP backend 모두 LogicException으로 거부하며 알려진 메시지 뒤에 NUL byte를 붙인 경우도 포함합니다.
+ParseError 생성자는 공통 rejection kind에 대응하는 parser 메시지만 받습니다. 알 수 없는 메시지는 두 PHP backend 모두 kind `direct_construction`의 `UsageError`로 거부하며 알려진 메시지 뒤에 NUL byte를 붙인 경우도 포함합니다.
 
 네이티브 빌드는 PHP 버전, 플랫폼, 스레드 안전 설정과 일치해야 합니다. [네이티브 설치](installation.ko.md#native-php)를 확인합니다.

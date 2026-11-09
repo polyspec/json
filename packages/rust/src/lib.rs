@@ -10,44 +10,114 @@ pub const MAX_DEPTH: usize = 256;
 
 mod serde;
 
+/// Why the crate refused an input, named by the shared lists of rejection kinds and argument kinds of
+/// docs/spec/json-contract.md; `DuplicateObjectKey` is the rejection of the strict parse, and the last four are the
+/// refused arguments of the API. Every error of the crate carries one of them, and no other kind exists.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum ErrorKind {
+    ExpectedValue,
+    ExpectedDigit,
+    ExpectedColon,
+    ExpectedDelimiter,
+    ExpectedObjectKey,
+    InvalidEscape,
+    InvalidUnicodeEscape,
+    UnfinishedEscape,
+    UnterminatedString,
+    UnescapedControlCharacter,
+    InvalidUtf8,
+    MaximumDepthExceeded,
+    TrailingInput,
+    DuplicateObjectKey,
+    /// `OrderedMap::insert` of a key that is not a string.
+    NonStringKey,
+    /// `Value::string_value` of a value of another kind.
+    WrongKind,
+    /// `Value::number` of a literal that is a JSON value of another kind or holds whitespace.
+    InvalidNumberLiteral,
+    /// `parse_with_max_depth` with a limit above [`MAX_DEPTH`].
+    DepthLimitOutOfRange,
+}
+impl ErrorKind {
+    /// The name of the kind, the same in every implementation.
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::ExpectedValue => "expected_value",
+            Self::ExpectedDigit => "expected_digit",
+            Self::ExpectedColon => "expected_colon",
+            Self::ExpectedDelimiter => "expected_delimiter",
+            Self::ExpectedObjectKey => "expected_object_key",
+            Self::InvalidEscape => "invalid_escape",
+            Self::InvalidUnicodeEscape => "invalid_unicode_escape",
+            Self::UnfinishedEscape => "unfinished_escape",
+            Self::UnterminatedString => "unterminated_string",
+            Self::UnescapedControlCharacter => "unescaped_control_character",
+            Self::InvalidUtf8 => "invalid_utf8",
+            Self::MaximumDepthExceeded => "maximum_depth_exceeded",
+            Self::TrailingInput => "trailing_input",
+            Self::DuplicateObjectKey => "duplicate_object_key",
+            Self::NonStringKey => "non_string_key",
+            Self::WrongKind => "wrong_kind",
+            Self::InvalidNumberLiteral => "invalid_number_literal",
+            Self::DepthLimitOutOfRange => "depth_limit_out_of_range",
+        }
+    }
+    /// The Rust wording of the kind.
+    pub fn message(self) -> &'static str {
+        match self {
+            Self::ExpectedValue => "expected JSON value",
+            Self::ExpectedDigit => "expected digit",
+            Self::ExpectedColon => "expected colon",
+            Self::ExpectedDelimiter => "expected comma or closing delimiter",
+            Self::ExpectedObjectKey => "expected string",
+            Self::InvalidEscape => "invalid escape",
+            Self::InvalidUnicodeEscape => "invalid Unicode escape",
+            Self::UnfinishedEscape => "unfinished escape",
+            Self::UnterminatedString => "unterminated string",
+            Self::UnescapedControlCharacter => "unescaped control character",
+            Self::InvalidUtf8 => "invalid UTF-8",
+            Self::MaximumDepthExceeded => "maximum nesting depth exceeded",
+            Self::TrailingInput => "unexpected trailing input",
+            Self::DuplicateObjectKey => "duplicate object key",
+            Self::NonStringKey => "object key must be a string",
+            Self::WrongKind => "expected a string value",
+            Self::InvalidNumberLiteral => "expected a number literal without whitespace",
+            Self::DepthLimitOutOfRange => "max_depth exceeds 256",
+        }
+    }
+}
+impl fmt::Display for ErrorKind {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Error {
-    /// Byte offset into the UTF-8 input (zero for API/type errors).
+    /// Byte offset into the UTF-8 input (zero for an argument error).
     pub offset: usize,
-    pub message: &'static str,
+    kind: ErrorKind,
 }
 impl Error {
-    /// Why the document was rejected, named the same way by every implementation.
-    pub fn kind(&self) -> &'static str {
-        match self.message {
-            "expected JSON value" => "expected_value",
-            "expected digit" => "expected_digit",
-            "expected colon" => "expected_colon",
-            "expected comma or closing delimiter" => "expected_delimiter",
-            "expected string" => "expected_object_key",
-            "invalid escape" => "invalid_escape",
-            "invalid Unicode escape" => "invalid_unicode_escape",
-            "unfinished escape" => "unfinished_escape",
-            "unterminated string" => "unterminated_string",
-            "unescaped control character" => "unescaped_control_character",
-            "invalid UTF-8" => "invalid_utf8",
-            "maximum nesting depth exceeded" => "maximum_depth_exceeded",
-            "unexpected trailing input" => "trailing_input",
-            "duplicate object key" => "duplicate_object_key",
-            _ => "",
-        }
+    /// Why the input was refused.
+    pub fn kind(&self) -> ErrorKind {
+        self.kind
+    }
+    pub fn message(&self) -> &'static str {
+        self.kind.message()
     }
 }
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{} at byte {}", self.message, self.offset)
+        write!(f, "{} at byte {}", self.message(), self.offset)
     }
 }
 impl std::error::Error for Error {}
 type Result<T> = std::result::Result<T, Error>;
-fn error(message: &'static str) -> Error {
-    Error { offset: 0, message }
+/// An argument error, which has no position in an input.
+fn error(kind: ErrorKind) -> Error {
+    Error { offset: 0, kind }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -131,7 +201,7 @@ impl OrderedMap {
     }
     pub fn insert(&mut self, key: Value, value: Value) -> Result<Option<Value>> {
         if key.kind() != Kind::String {
-            return Err(error("object key must be a string"));
+            return Err(error(ErrorKind::NonStringKey));
         }
         Ok(self.set(key, value))
     }
@@ -303,7 +373,7 @@ impl Value {
     /// the string holds one, which a Rust `String` cannot.
     pub fn string_value(&self) -> Result<Vec<u8>> {
         if !matches!(self.node, Node::String(_)) {
-            return Err(error("expected string"));
+            return Err(error(ErrorKind::WrongKind));
         }
         if self.flags & ESCAPED == 0 {
             return Ok(self.content().as_bytes().to_vec());
@@ -412,7 +482,7 @@ impl Value {
     pub fn number(literal: &str) -> Result<Self> {
         let value = parse(literal)?;
         if value.kind() != Kind::Number || literal.trim() != literal {
-            return Err(error("expected a number literal without whitespace"));
+            return Err(error(ErrorKind::InvalidNumberLiteral));
         }
         Ok(value)
     }
@@ -501,7 +571,7 @@ pub fn parse_bytes_reject_duplicates(source: &[u8]) -> Result<Value> {
 fn parse_bytes_internal(source: &[u8], reject_duplicates: bool) -> Result<Value> {
     let text = std::str::from_utf8(source).map_err(|e| Error {
         offset: e.valid_up_to(),
-        message: "invalid UTF-8",
+        kind: ErrorKind::InvalidUtf8,
     })?;
     parse_internal(text, MAX_DEPTH, reject_duplicates)
 }
@@ -510,7 +580,7 @@ pub fn parse_with_max_depth(source: &str, max_depth: usize) -> Result<Value> {
 }
 fn parse_internal(source: &str, max_depth: usize, reject_duplicates: bool) -> Result<Value> {
     if max_depth > MAX_DEPTH {
-        return Err(error("max_depth exceeds 256"));
+        return Err(error(ErrorKind::DepthLimitOutOfRange));
     }
     let mut p = Parser {
         bytes: source.as_bytes(),
@@ -525,7 +595,7 @@ fn parse_internal(source: &str, max_depth: usize, reject_duplicates: bool) -> Re
     let mut value = p.value(0)?;
     p.ws();
     if p.pos != source.len() {
-        return Err(p.error("unexpected trailing input"));
+        return Err(p.error(ErrorKind::TrailingInput));
     }
     value.flags |= ROOT;
     Ok(value)
@@ -546,10 +616,10 @@ impl Parser<'_> {
     fn peek(&self) -> Option<u8> {
         self.bytes.get(self.pos).copied()
     }
-    fn error(&self, message: &'static str) -> Error {
+    fn error(&self, kind: ErrorKind) -> Error {
         Error {
             offset: self.pos,
-            message,
+            kind,
         }
     }
     fn ws(&mut self) {
@@ -559,9 +629,9 @@ impl Parser<'_> {
         }
         self.whitespace += self.pos - start;
     }
-    fn expect(&mut self, byte: u8, message: &'static str) -> Result<()> {
+    fn expect(&mut self, byte: u8, kind: ErrorKind) -> Result<()> {
         if self.peek() != Some(byte) {
-            return Err(self.error(message));
+            return Err(self.error(kind));
         }
         self.pos += 1;
         Ok(())
@@ -577,7 +647,7 @@ impl Parser<'_> {
     }
     /// Validates a string token and returns its value flags.
     fn string(&mut self) -> Result<u8> {
-        self.expect(b'"', "expected string")?;
+        self.expect(b'"', ErrorKind::ExpectedObjectKey)?;
         let mut flags = COMPACT;
         while let Some(byte) = self.peek() {
             match byte {
@@ -585,16 +655,18 @@ impl Parser<'_> {
                     self.pos += 1;
                     return Ok(flags);
                 }
-                0..=31 => return Err(self.error("unescaped control character")),
+                0..=31 => return Err(self.error(ErrorKind::UnescapedControlCharacter)),
                 b'\\' => {
                     flags |= ESCAPED;
                     self.pos += 1;
-                    let escape = self.peek().ok_or_else(|| self.error("unfinished escape"))?;
+                    let escape = self
+                        .peek()
+                        .ok_or_else(|| self.error(ErrorKind::UnfinishedEscape))?;
                     self.pos += 1;
                     if escape == b'u' {
                         for _ in 0..4 {
                             if !self.peek().is_some_and(|b| b.is_ascii_hexdigit()) {
-                                return Err(self.error("invalid Unicode escape"));
+                                return Err(self.error(ErrorKind::InvalidUnicodeEscape));
                             }
                             self.pos += 1;
                         }
@@ -605,18 +677,18 @@ impl Parser<'_> {
                         // The escape character has been consumed; the offset names it.
                         return Err(Error {
                             offset: self.pos - 1,
-                            message: "invalid escape",
+                            kind: ErrorKind::InvalidEscape,
                         });
                     }
                 }
                 _ => self.pos += 1,
             }
         }
-        Err(self.error("unterminated string"))
+        Err(self.error(ErrorKind::UnterminatedString))
     }
     fn digits(&mut self) -> Result<()> {
         if !matches!(self.peek(), Some(b'0'..=b'9')) {
-            return Err(self.error("expected digit"));
+            return Err(self.error(ErrorKind::ExpectedDigit));
         }
         while matches!(self.peek(), Some(b'0'..=b'9')) {
             self.pos += 1;
@@ -629,7 +701,7 @@ impl Parser<'_> {
         match self.peek() {
             Some(open @ (b'{' | b'[')) => {
                 if depth >= self.max_depth {
-                    return Err(self.error("maximum nesting depth exceeded"));
+                    return Err(self.error(ErrorKind::MaximumDepthExceeded));
                 }
                 let object = open == b'{';
                 let close = if object { b'}' } else { b']' };
@@ -650,11 +722,11 @@ impl Parser<'_> {
                             {
                                 return Err(Error {
                                     offset: key_start,
-                                    message: "duplicate object key",
+                                    kind: ErrorKind::DuplicateObjectKey,
                                 });
                             }
                             self.ws();
-                            self.expect(b':', "expected colon")?;
+                            self.expect(b':', ErrorKind::ExpectedColon)?;
                             let child = self.value(depth + 1)?;
                             if members.set(key, child).is_some() {
                                 self.duplicates += 1;
@@ -667,7 +739,7 @@ impl Parser<'_> {
                         if self.peek() == Some(close) {
                             break;
                         }
-                        self.expect(b',', "expected comma or closing delimiter")?;
+                        self.expect(b',', ErrorKind::ExpectedDelimiter)?;
                         self.ws();
                     }
                 }
@@ -723,7 +795,7 @@ impl Parser<'_> {
                 } else if tail.starts_with(b"null") {
                     (4, Node::Null)
                 } else {
-                    return Err(self.error("expected JSON value"));
+                    return Err(self.error(ErrorKind::ExpectedValue));
                 };
                 self.pos += length;
                 Ok(self.new_value(start, COMPACT, node))

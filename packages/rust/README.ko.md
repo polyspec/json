@@ -1,5 +1,5 @@
 <!-- doc-id: rust-overview -->
-<!-- source-sha256: 1fa030fbcc9d46989603e0bc0e86d9b9514a777178ff57a147d9d914a79cf93e -->
+<!-- source-sha256: 18d02aa11d8a5b6cd9066b519eea4eb892a53ad79cb90594e87a5169e14227aa -->
 # ordered-json for Rust
 
 [English](README.md)
@@ -11,7 +11,7 @@
 
 Rust >= 1.71이며 Cargo 패키지는 `polyspec-ordered-json`, 가져오기는 `polyspec_ordered_json`입니다.
 
-사용 코드의 `source` 또는 `$source`는 [공통 공식 예제](https://github.com/polyspec/ordered-json/blob/main/examples/official.json)의 객체 사례에서 가져옵니다. 오류를 반환할 수 있는 함수 안에서 사용합니다.
+사용 코드의 `source` 또는 `$source`는 [공통 공식 예제](https://github.com/polyspec/ordered-json/blob/main/examples/official.json)의 객체 사례에서 가져옵니다. 오류를 반환할 수 있는 함수 안에서 사용합니다. 모든 오류는 `Error`이며, 그 `kind()`는 [API 계약](https://github.com/polyspec/ordered-json/blob/main/docs/operations/api.ko.md#bindings)이 정한 이름의 exhaustive enum `ErrorKind`입니다.
 
 ~~~rust
 use polyspec_ordered_json::{parse, stringify};
@@ -19,10 +19,10 @@ let value = parse(source)?;
 let output = stringify(&value);
 ~~~
 
-타입 값은 Serde `Serialize`와 소유한 `Deserialize`를 통해
-`polyspec_ordered_json::serde::{to_string, from_str, from_slice}`를 사용합니다. 구조체 필드는
-선언 순서를 유지합니다. 반복 키, 알 수 없는 필드, 타입 오류와 유한하지 않은 숫자는 오류로 처리합니다.
-포함된 `Value` 필드는 객체 순서와 숫자 토큰을 유지합니다.
+`Value`는 Serde `Serialize`와 `Deserialize`를 구현합니다: `Serialize`는 값의 compact bytes를 쓰고
+`Deserialize`는 field의 raw JSON text를 라이브러리 parser로 파싱하므로, `serde_json`은 `Value` field를 가진 native
+구조를 객체 순서와 숫자 토큰을 유지한 채 encode하고 decode합니다. crate에는 자체 typed encoder가 없으며, 구조의 나머지는
+`serde_json`의 규칙을 따릅니다.
 
 
 동작은 [JSON 계약](https://github.com/polyspec/ordered-json/blob/main/docs/spec/json-contract.ko.md)과 [API 계약](https://github.com/polyspec/ordered-json/blob/main/docs/operations/api.ko.md)에 정의합니다. 소스는 이 저장소에서 제공합니다. Cargo 패키지는 레지스트리 게시가 설정되지 않았습니다. 레지스트리 게시와 버전 릴리스는 검증되지 않았으며 소스 버전 문자열은 릴리스 기록이 아닙니다.
