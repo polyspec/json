@@ -111,7 +111,7 @@
 | T2.90 | Remove the .githooks/reference-transaction main writer hook that kit K801 deleted | .githooks/reference-transaction | `make owner-validate` | [o] |
 | T2.91 | Refresh the kit copies that rules-check flags, with make kit-sync | PRINCIPLES.md AGENTS.md | `make rules-check` | [o] |
 | T2.92 | Adopt kit K804, K805 and K798: hooks, push-gate, commits-check, release proof | .githooks/pre-commit .githooks/pre-merge-commit .githooks/pre-push config/commit-identity.json config/release.json config/checklist.json Makefile .github/workflows/push-gate.yml .github/workflows/ci.yml config/owner-checks.json AGENTS.md | `make owner-validate` | [o] |
-| T2.93 | Adopt kit 0.0.70 in this repository | package.json package-lock.json config/checklist.json | `make kit-check` | [ ] |
+| T2.93 | Adopt kit 0.0.70 in this repository | package.json package-lock.json config/checklist.json | `make kit-check` | [-] cause: superseded by T2.94 and T2.147: commit 3e4c6a0 pinned kit 0.0.70, T2.94 (c14eca8) replaced the pin with 0.0.72 and T2.147 pins 0.0.102 now; T2.140 removed make kit-check, so the Verification cannot run on the current tree |
 | T2.94 | Adopt kit 0.0.72 in this repository | package.json package-lock.json .github/workflows/gates.yml config/checklist.json | `make kit-check` | [o] |
 | T2.95 | Adopt kit 0.0.73 in this repository | package.json package-lock.json .github/workflows/gates.yml config/checklist.json | `make kit-check` | [o] |
 | T2.96 | Adopt kit 0.0.74 in this repository | package.json package-lock.json Makefile .github/workflows/ci.yml config/ci.json config/*.json | `make kit-check` | [ ] |

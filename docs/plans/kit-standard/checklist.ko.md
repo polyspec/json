@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 16e5f8c68641f0be160b208b6267cd05687aac1877ea9bafc48add640ff6c2b4 -->
+<!-- source-sha256: 457f22d2bab0805ff1d164ad8c9f20f78e97d21bcf87569401414ec1cb167e03 -->
 # kit 표준 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -112,7 +112,7 @@
 | T2.90 | kit K801이 삭제한 main 쓰기 훅 .githooks/reference-transaction을 제거한다 | .githooks/reference-transaction | `make owner-validate` | [o] |
 | T2.91 | rules-check가 지적하는 kit 사본을 make kit-sync로 갱신한다 | PRINCIPLES.md AGENTS.md | `make rules-check` | [o] |
 | T2.92 | kit K804, K805, K798 채택: hook, push-gate, commits-check, release proof 제거 | .githooks/pre-commit .githooks/pre-merge-commit .githooks/pre-push config/commit-identity.json config/release.json config/checklist.json Makefile .github/workflows/push-gate.yml .github/workflows/ci.yml config/owner-checks.json AGENTS.md | `make owner-validate` | [o] |
-| T2.93 | 이 저장소에 kit 0.0.70 채택 | package.json package-lock.json config/checklist.json | `make kit-check` | [ ] |
+| T2.93 | 이 저장소에 kit 0.0.70 채택 | package.json package-lock.json config/checklist.json | `make kit-check` | [-] 원인: T2.94와 T2.147이 대체했다: 커밋 3e4c6a0이 kit 0.0.70을 고정했고, T2.94(c14eca8)가 그 고정을 0.0.72로 바꿨으며 지금은 T2.147이 0.0.102를 고정한다. T2.140이 make kit-check를 제거해서 현재 트리에서는 Verification을 실행할 수 없다 |
 | T2.94 | 이 저장소에 kit 0.0.72 채택 | package.json package-lock.json .github/workflows/gates.yml config/checklist.json | `make kit-check` | [o] |
 | T2.95 | 이 저장소에 kit 0.0.73 채택 | package.json package-lock.json .github/workflows/gates.yml config/checklist.json | `make kit-check` | [o] |
 | T2.96 | 이 저장소에 kit 0.0.74 채택 | package.json package-lock.json Makefile .github/workflows/ci.yml config/ci.json config/*.json | `make kit-check` | [ ] |
