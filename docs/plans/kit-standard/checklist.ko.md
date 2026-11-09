@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: cf1ba558c784b310a279822bf9fadad943875bbf3573c1972a65ac63f99ab2ac -->
+<!-- source-sha256: 16e5f8c68641f0be160b208b6267cd05687aac1877ea9bafc48add640ff6c2b4 -->
 # kit 표준 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -104,7 +104,7 @@
 | T2.84 | main CI 통과 뒤 공개할 OrderedJSON 0.0.11의 release manifest, native candidate asset, consumer lock, dependency review를 준비한다. | release manifests, native lock files, config/dependency-review.json, CHANGELOG.md(.ko) | `var/tools/bin/node --test tests/scripts/environment.test.mts` | [o] |
 | T2.85 | issue #5를 수정한 공개 Kit 0.0.62를 채택하고 수정하지 않은 native language CI, 독립 parity, consumer lock 및 release metadata로 OrderedJSON 0.0.12를 준비한다. | package manifests and locks, canonical gates workflow, tests/scripts/workflow-rules.test.mts, native consumer locks, dependency review, CHANGELOG.md(.ko) | `var/tools/bin/node --test tests/scripts/workflow-rules.test.mts tests/scripts/environment.test.mts` | [o] |
 | T2.85-1 | issue #15를 수정한 공개 Kit 0.0.63을 채택하고 수정하지 않은 fresh checkout language/parity CI 및 OrderedJSON 0.0.12 공개 입력을 준비한다. | Kit dependency and lock, canonical copies, review record, complete hosted CI and release proof | `var/tools/bin/node --test tests/scripts/workflow-rules.test.mts tests/scripts/environment.test.mts` | [o] |
-| T2.85-2 | issue #18의 공개 Kit 수정본을 채택하고 선택한 필수 provider parity 경로의 실제 실행과 전체 native CI를 확인한 뒤 OrderedJSON 0.0.12를 공개한다. | Kit dependency and lock, canonical gates, dependency review, complete native and provider CI, release proof | `var/tools/bin/node --test tests/scripts/workflow-rules.test.mts tests/scripts/environment.test.mts`; the CI run of the release commit is green | [ ] |
+| T2.85-2 | issue #18의 공개 Kit 수정본을 채택하고 선택한 필수 provider parity 경로의 실제 실행과 전체 native CI를 확인한 뒤 OrderedJSON 0.0.12를 공개한다. | Kit dependency and lock, canonical gates, dependency review, complete native and provider CI, release proof | `var/tools/bin/node --test tests/scripts/workflow-rules.test.mts tests/scripts/environment.test.mts`; the CI run of the release commit is green | [-] 원인: T2.130과 T2.144가 대체했다: OrderedJSON 0.0.12는 태그된 적이 없고 0.0.13부터 0.0.23까지의 릴리스가 이를 대신했다. T2.144가 kit issue #18이 보고한 parity_mode 출력으로 건너뛰던 provider parity 작업을 삭제했고, T2.130 이후 release.yml은 main에서 성공한 ci 실행의 커밋만 릴리스하며 그 kit / required 작업은 모든 runtime 작업을 요구한다(0.0.23 커밋의 CI 실행 42507666863에서 shared, verify와 여섯 runtime 작업이 모두 success로 실행됐다) |
 | T2.86 | kit-sync로 공유 파일 사본을 채택하고 kit-check를 통과시킨다 (K671-2) | .github/workflows | `make kit-check` | [o] |
 | T2.87 | kit K784이 삭제한 dependency-policy-check 참조(CI 대상, CHECK_TARGETS, owner-checks, dependency-policy.json, dependency-review.json)를 제거한다 | ci.yml Makefile config/owner-checks.json config/toolchain.json config/dependency-policy.json config/dependency-review.json | `make owner-validate` | [o] |
 | T2.88 | kit K789가 삭제한 wheel polyspec 소비자를 config/release.json에서 제거한다 | config/release.json | `make owner-validate` | [o] |
