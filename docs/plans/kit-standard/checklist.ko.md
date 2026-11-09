@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 457f22d2bab0805ff1d164ad8c9f20f78e97d21bcf87569401414ec1cb167e03 -->
+<!-- source-sha256: 1a45b9b10bd1601c5657f67c50ade41aa0bd0cb8ab8f8e1a8f980bcc8a05debb -->
 # kit 표준 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -115,7 +115,7 @@
 | T2.93 | 이 저장소에 kit 0.0.70 채택 | package.json package-lock.json config/checklist.json | `make kit-check` | [-] 원인: T2.94와 T2.147이 대체했다: 커밋 3e4c6a0이 kit 0.0.70을 고정했고, T2.94(c14eca8)가 그 고정을 0.0.72로 바꿨으며 지금은 T2.147이 0.0.102를 고정한다. T2.140이 make kit-check를 제거해서 현재 트리에서는 Verification을 실행할 수 없다 |
 | T2.94 | 이 저장소에 kit 0.0.72 채택 | package.json package-lock.json .github/workflows/gates.yml config/checklist.json | `make kit-check` | [o] |
 | T2.95 | 이 저장소에 kit 0.0.73 채택 | package.json package-lock.json .github/workflows/gates.yml config/checklist.json | `make kit-check` | [o] |
-| T2.96 | 이 저장소에 kit 0.0.74 채택 | package.json package-lock.json Makefile .github/workflows/ci.yml config/ci.json config/*.json | `make kit-check` | [ ] |
+| T2.96 | 이 저장소에 kit 0.0.74 채택 | package.json package-lock.json Makefile .github/workflows/ci.yml config/ci.json config/*.json | `make kit-check` | [-] 원인: T2.99, T2.130과 T2.140이 대체했다: T2.99(d956ca2)가 kit 0.0.74를 고정했다. Makefile에는 cargo-downloads-check와 link-state-check가 없고 link-check를 실행하며 deps-<runtime> 대상을 정의한다. T2.130이 kit-gates 선행 대상의 CI 중복을 제거했다. kit 0.0.102는 rustNightly 예외를 읽지 않는다. T2.140이 make kit-check를 제거했다 |
 | T2.97 | kit이 삭제한 release versions를 부르는 release-config-check를 제거한다 | Makefile .github/workflows/ci.yml config/owner-checks.json tests/scripts/workflow-rules.test.mts docs/operations/validation.md docs/operations/validation.ko.md | `make kit-check` | [o] |
 | T2.98 | php-extension binding이 userland parse 함수를 다시 선언하지 않게 한다 | packages/php/src/OrderedJson.php | `make ordered-json-php-test` | [o] |
 | T2.99 | 이 저장소에 kit 0.0.74 채택 | package.json package-lock.json CHANGELOG.md CHANGELOG.ko.md | `make kit-check` | [o] |
