@@ -576,6 +576,18 @@ static void oj_append_compact(smart_str *out, zval *value) {
     smart_str_append(out, text);
     zend_string_release(text);
 }
+/* Starts the next item of a list or object that array() or object() writes into `out`: refuses an entry that is no
+ * Value, freeing `out`, and writes the separator before every item but the first. */
+static bool oj_begin_item(smart_str *out, zval *entry, bool *first) {
+    if (Z_TYPE_P(entry) != IS_OBJECT || Z_OBJCE_P(entry) != oj_value_ce) {
+        smart_str_free(out);
+        oj_throw_kind(oj_argument_error_ce, "invalid_argument_type", "Expected ordered_json Value");
+        return false;
+    }
+    if (!*first) smart_str_appendc(out, ',');
+    *first = false;
+    return true;
+}
 ZEND_METHOD(Polyspec_OrderedJson_Value, array) {
     HashTable *items;
     ZEND_PARSE_PARAMETERS_START(1, 1)
@@ -590,13 +602,7 @@ ZEND_METHOD(Polyspec_OrderedJson_Value, array) {
     bool first = true;
     zval *entry;
     ZEND_HASH_FOREACH_VAL(items, entry) {
-        if (Z_TYPE_P(entry) != IS_OBJECT || Z_OBJCE_P(entry) != oj_value_ce) {
-            smart_str_free(&out);
-            oj_throw_kind(oj_argument_error_ce, "invalid_argument_type", "Expected ordered_json Value");
-            RETURN_THROWS();
-        }
-        if (!first) smart_str_appendc(&out, ',');
-        first = false;
+        if (!oj_begin_item(&out, entry, &first)) RETURN_THROWS();
         oj_append_compact(&out, entry);
     } ZEND_HASH_FOREACH_END();
     smart_str_appendc(&out, ']');
@@ -614,13 +620,7 @@ ZEND_METHOD(Polyspec_OrderedJson_Value, object) {
     zend_string *key;
     zval *entry;
     ZEND_HASH_FOREACH_KEY_VAL(members, index, key, entry) {
-        if (Z_TYPE_P(entry) != IS_OBJECT || Z_OBJCE_P(entry) != oj_value_ce) {
-            smart_str_free(&out);
-            oj_throw_kind(oj_argument_error_ce, "invalid_argument_type", "Expected ordered_json Value");
-            RETURN_THROWS();
-        }
-        if (!first) smart_str_appendc(&out, ',');
-        first = false;
+        if (!oj_begin_item(&out, entry, &first)) RETURN_THROWS();
         if (key) {
             if (!oj_quote_text(&out, (const unsigned char *)ZSTR_VAL(key), ZSTR_LEN(key), true)) {
                 smart_str_free(&out);
