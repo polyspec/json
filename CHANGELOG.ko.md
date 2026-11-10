@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 4844cd285fc74f055ca954eb04434ed72cc952afa1d3d961428e4a7194c537c0 -->
+<!-- source-sha256: c5b83300401d856158f19afa45fb30b8160c87eea1c6e8c79db54b8f3c9e1f47 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,11 +7,13 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.25
+
 - 저장소는 run-tests의 시간 제한을 없앤 kit 0.0.105(kit K1175)를 채택하고 run-tests에 `--timeout`을 넘기지 않는다(T2.155).
+- PHP 확장은 `Value::array`와 `Value::object`의 entry를 두 사본 대신 함수 하나로 확인한다(T2.154).
 
 ## 0.0.24
 
-- PHP 확장은 `Value::array`와 `Value::object`의 entry를 두 사본 대신 함수 하나로 확인한다(T2.154).
 - 저장소는 kit이 조용히 버리던 출력, 오류, 실패를 남기는 kit 0.0.103(kit K1136–K1165)를 채택한다(T2.152).
 
 - T2.151: 다섯 언어의 모든 error는 JSON contract의 공유 목록 kind를 가진다. 목록은 이제 argument kind `non_string_key`, `wrong_kind`, `invalid_number_literal`, `depth_limit_out_of_range`, `invalid_argument_type`, `invalid_code_unit`, `host_serialization_refused`, `direct_construction`과 kind가 생기지 않는 곳을 적는다(RQ-025). JavaScript와 Python은 host `TypeError`, `ValueError`, `RangeError`의 `kind`에 kind를 두고, PHP는 두 backend 모두 새 `ArgumentError`(`InvalidArgumentException`)와 `UsageError`(`LogicException`)를 던지며, `ParseError` 생성자는 알 수 없는 message를 `direct_construction`으로 거부하고, JavaScript `parse`는 object가 아닌 option을 거부하며, Python `Value.number`는 다른 kind의 literal에 `ValueError`를 발생시킨다. 공유 verifier는 `contracts/fixtures/arguments.json`의 argument case 25개를 모든 언어에서 실행한다(T2.151).

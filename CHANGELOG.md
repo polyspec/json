@@ -6,11 +6,13 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.25
+
 - The repository adopts kit 0.0.105, which removed the time limits of run-tests (kit K1175), and passes no `--timeout` to run-tests (T2.155).
+- The PHP extension checks the entries of `Value::array` and `Value::object` in one function instead of two copies (T2.154).
 
 ## 0.0.24
 
-- The PHP extension checks the entries of `Value::array` and `Value::object` in one function instead of two copies (T2.154).
 - The repository adopts kit 0.0.103, which keeps the output, errors and failures that kit used to drop silently (kit K1136–K1165) (T2.152).
 
 - T2.151: every error of the five languages carries a kind of the shared lists of the JSON contract, which now lists the argument kinds `non_string_key`, `wrong_kind`, `invalid_number_literal`, `depth_limit_out_of_range`, `invalid_argument_type`, `invalid_code_unit`, `host_serialization_refused` and `direct_construction` and states where a kind cannot arise (RQ-025); JavaScript and Python put the kind on `kind` of the host `TypeError`, `ValueError` or `RangeError`, PHP throws the new `ArgumentError` (an `InvalidArgumentException`) and `UsageError` (a `LogicException`) in both backends, the `ParseError` constructor refuses an unknown message with `direct_construction`, JavaScript `parse` refuses options that are not an object and Python `Value.number` raises `ValueError` for a literal of another kind; the shared verifier runs the 25 argument cases of `contracts/fixtures/arguments.json` in every language (T2.151).

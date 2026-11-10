@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 96afbee5ae8d38bbe08a64cf53f5be45603961e0d7dc949cd9167cddbe1022c7 -->
+<!-- source-sha256: 529842925c70559e5305fd9e838ec7373dd583a07c499e96f7ede92b6cbde74b -->
 # kit 표준 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -176,3 +176,4 @@
 | T2.153 | 0.0.24 release | version commit과 release asset | `make release-coverage`와 version commit의 CI run에서 만들어진 release | [o] |
 | T2.154 | PHP 확장은 `Value::array`와 `Value::object`의 각 entry 확인과 구분자 쓰기를 duplication-check가 보고한 두 사본 대신 함수 `oj_begin_item` 하나로 한다(CI run 42764582385, kit / shared) | `packages/php-ext/src/value.c` | `make duplication-check`와 `make test-php-ext` exit 0 | [o] |
 | T2.155 | run-tests의 시간 제한을 없앤 kit 0.0.105(kit K1175)를 채택한다: 0.0.105 release asset을 고정하고, 0.0.105가 알 수 없는 option으로 거부하는 `ordered-json-test-scripts`의 run-tests `--timeout`을 뺀다 | `package.json`, `package-lock.json`, `Makefile` | `make ordered-json-test-scripts`, `make docs-check`, `make lint-ts` exit 0 | [o] |
+| T2.156 | 0.0.25 release | version commit과 release asset | `make release-coverage`와 version commit의 CI run에서 만들어진 release | [o] |
