@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: de50b808f2ef8e2c7e50b4cecb39742e0f8a2437edb495df7cfd2d8eb73a4abb -->
+<!-- source-sha256: ffaa390f2464305eadf28a4364521a3b241919b4d0778d2a601d482efca65765 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- 저장소는 kit이 조용히 버리던 출력, 오류, 실패를 남기는 kit 0.0.103(kit K1136–K1165)를 채택한다(T2.152).
 
 - T2.151: 다섯 언어의 모든 error는 JSON contract의 공유 목록 kind를 가진다. 목록은 이제 argument kind `non_string_key`, `wrong_kind`, `invalid_number_literal`, `depth_limit_out_of_range`, `invalid_argument_type`, `invalid_code_unit`, `host_serialization_refused`, `direct_construction`과 kind가 생기지 않는 곳을 적는다(RQ-025). JavaScript와 Python은 host `TypeError`, `ValueError`, `RangeError`의 `kind`에 kind를 두고, PHP는 두 backend 모두 새 `ArgumentError`(`InvalidArgumentException`)와 `UsageError`(`LogicException`)를 던지며, `ParseError` 생성자는 알 수 없는 message를 `direct_construction`으로 거부하고, JavaScript `parse`는 object가 아닌 option을 거부하며, Python `Value.number`는 다른 kind의 literal에 `ValueError`를 발생시킨다. 공유 verifier는 `contracts/fixtures/arguments.json`의 argument case 25개를 모든 언어에서 실행한다(T2.151).
 - T2.150: Go module의 모든 error는 module만 구현하는 interface `orderedjson.Error`이며 그 `Kind()`는 `ErrorKind` 상수를 반환한다: map 밖의 message에 `Kind()`가 `""`를 반환하던 `ParseError`는 대체되고, `fmt.Errorf`이던 인자 error는 `non_string_key`, `wrong_kind`, `invalid_number_literal`, `depth_limit_out_of_range`, `invalid_utf8`, `invalid_argument_type`을 가진다; `Offset()`과 `Message()`는 method이다(T2.150).
