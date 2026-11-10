@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: ffaa390f2464305eadf28a4364521a3b241919b4d0778d2a601d482efca65765 -->
+<!-- source-sha256: 7453a8e097e98ba67df8ad1e0dbaee4168e96fb586267ac6cd9ac3e9f5a92939 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+## 0.0.24
 
 - 저장소는 kit이 조용히 버리던 출력, 오류, 실패를 남기는 kit 0.0.103(kit K1136–K1165)를 채택한다(T2.152).
 
