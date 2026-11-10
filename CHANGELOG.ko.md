@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: e065e1bb3defdf2eafcb4da4ddae56f10ce82cf92ba48840a602bb741a12379d -->
+<!-- source-sha256: 4844cd285fc74f055ca954eb04434ed72cc952afa1d3d961428e4a7194c537c0 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- 저장소는 run-tests의 시간 제한을 없앤 kit 0.0.105(kit K1175)를 채택하고 run-tests에 `--timeout`을 넘기지 않는다(T2.155).
 
 ## 0.0.24
 

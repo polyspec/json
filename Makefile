@@ -127,10 +127,10 @@ ordered-json-install-pie: ordered-json-install-suite
 ordered-json-install-verify: ordered-json-install-rust-packages ordered-json-install-php ordered-json-install-python ordered-json-install-suite
 
 # ordered-json-test-scripts runs the node:test tool tests of tests/scripts, or the files of TESTS, through run-tests of @polyspec/kit,
-# which gives each test its own deadline; typecheck checks the TypeScript of scripts/, tests/scripts/ and benchmarks/ with the tsc
-# of package.json (tsconfig.json), which Node runs by type stripping and so never checks itself.
+# which runs the command and passes its output and exit code through; typecheck checks the TypeScript of scripts/, tests/scripts/
+# and benchmarks/ with the tsc of package.json (tsconfig.json), which Node runs by type stripping and so never checks itself.
 ordered-json-test-scripts:
-	$(NODE) $(KIT)/run-tests.mjs node --timeout 30 -- --test-concurrency=1 $(or $(TESTS),tests/scripts/)
+	$(NODE) $(KIT)/run-tests.mjs node -- --test-concurrency=1 $(or $(TESTS),tests/scripts/)
 
 typecheck:
 	$(NODE) node_modules/typescript/bin/tsc -p tsconfig.json

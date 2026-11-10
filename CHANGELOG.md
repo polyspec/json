@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- The repository adopts kit 0.0.105, which removed the time limits of run-tests (kit K1175), and passes no `--timeout` to run-tests (T2.155).
+
 ## 0.0.24
 
 - The PHP extension checks the entries of `Value::array` and `Value::object` in one function instead of two copies (T2.154).
