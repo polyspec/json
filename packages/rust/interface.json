@@ -1,0 +1,1669 @@
+{
+  "schema": "polyspec/interface@1",
+  "library": "ordered-json",
+  "core": {
+    "crate": "polyspec-ordered-json",
+    "path": "packages/rust"
+  },
+  "targets": [
+    "php",
+    "python",
+    "node",
+    "go",
+    "wasm"
+  ],
+  "packages": {
+    "php": {
+      "package": "polyspec/ordered-json",
+      "namespace": "Polyspec\\OrderedJson"
+    },
+    "python": {
+      "package": "polyspec-ordered-json",
+      "module": "polyspec.ordered_json"
+    },
+    "node": {
+      "package": "@polyspec/ordered-json",
+      "entries": {
+        ".": {
+          "conditions": {
+            "node": "napi",
+            "browser": "wasm"
+          },
+          "formats": [
+            "import"
+          ]
+        }
+      }
+    },
+    "go": {
+      "module": "github.com/polyspec/ordered-json/packages/go"
+    }
+  },
+  "naming": {
+    "exceptions": []
+  },
+  "types": {
+    "json_value": {
+      "library": "ordered-json",
+      "unit": "value"
+    }
+  },
+  "errors": {
+    "classes": {
+      "value": {
+        "php": "Polyspec\\OrderedJson\\OrderedJsonValueError",
+        "python": "OrderedJsonValueError",
+        "node": "OrderedJsonValueError",
+        "wasm": "OrderedJsonValueError"
+      },
+      "type": {
+        "php": "Polyspec\\OrderedJson\\OrderedJsonTypeError",
+        "python": "OrderedJsonTypeError",
+        "node": "OrderedJsonTypeError",
+        "wasm": "OrderedJsonTypeError"
+      },
+      "io": {
+        "php": "Polyspec\\OrderedJson\\OrderedJsonIoError",
+        "python": "OrderedJsonIoError",
+        "node": "OrderedJsonIoError",
+        "wasm": "OrderedJsonIoError"
+      },
+      "store": {
+        "php": "Polyspec\\OrderedJson\\OrderedJsonStoreError",
+        "python": "OrderedJsonStoreError",
+        "node": "OrderedJsonStoreError",
+        "wasm": "OrderedJsonStoreError"
+      },
+      "busy": {
+        "php": "Polyspec\\OrderedJson\\OrderedJsonBusyError",
+        "python": "OrderedJsonBusyError",
+        "node": "OrderedJsonBusyError",
+        "wasm": "OrderedJsonBusyError"
+      },
+      "internal": {
+        "php": "Polyspec\\OrderedJson\\OrderedJsonInternalError",
+        "python": "OrderedJsonInternalError",
+        "node": "OrderedJsonInternalError",
+        "wasm": "OrderedJsonInternalError"
+      }
+    },
+    "fixed": [
+      {
+        "lang": "php",
+        "class": "ArgumentCountError"
+      },
+      {
+        "lang": "php",
+        "class": "Error"
+      },
+      {
+        "lang": "python",
+        "class": "TypeError"
+      },
+      {
+        "lang": "node",
+        "class": "TypeError"
+      },
+      {
+        "lang": "wasm",
+        "class": "TypeError"
+      }
+    ],
+    "kinds": [
+      {
+        "variant": "polyspec_ordered_json::Error::ExpectedValue",
+        "category": "value",
+        "class": "parse_error"
+      },
+      {
+        "variant": "polyspec_ordered_json::Error::ExpectedDigit",
+        "category": "value",
+        "class": "parse_error"
+      },
+      {
+        "variant": "polyspec_ordered_json::Error::ExpectedColon",
+        "category": "value",
+        "class": "parse_error"
+      },
+      {
+        "variant": "polyspec_ordered_json::Error::ExpectedDelimiter",
+        "category": "value",
+        "class": "parse_error"
+      },
+      {
+        "variant": "polyspec_ordered_json::Error::ExpectedObjectKey",
+        "category": "value",
+        "class": "parse_error"
+      },
+      {
+        "variant": "polyspec_ordered_json::Error::InvalidEscape",
+        "category": "value",
+        "class": "parse_error"
+      },
+      {
+        "variant": "polyspec_ordered_json::Error::InvalidUnicodeEscape",
+        "category": "value",
+        "class": "parse_error"
+      },
+      {
+        "variant": "polyspec_ordered_json::Error::UnfinishedEscape",
+        "category": "value",
+        "class": "parse_error"
+      },
+      {
+        "variant": "polyspec_ordered_json::Error::UnterminatedString",
+        "category": "value",
+        "class": "parse_error"
+      },
+      {
+        "variant": "polyspec_ordered_json::Error::UnescapedControlCharacter",
+        "category": "value",
+        "class": "parse_error"
+      },
+      {
+        "variant": "polyspec_ordered_json::Error::InvalidUtf8",
+        "category": "value",
+        "class": "parse_error"
+      },
+      {
+        "variant": "polyspec_ordered_json::Error::MaximumDepthExceeded",
+        "category": "value",
+        "class": "parse_error"
+      },
+      {
+        "variant": "polyspec_ordered_json::Error::TrailingInput",
+        "category": "value",
+        "class": "parse_error"
+      },
+      {
+        "variant": "polyspec_ordered_json::Error::DuplicateObjectKey",
+        "category": "value",
+        "class": "parse_error"
+      },
+      {
+        "variant": "polyspec_ordered_json::Error::NonStringKey",
+        "category": "type"
+      },
+      {
+        "variant": "polyspec_ordered_json::Error::WrongKind",
+        "category": "type"
+      },
+      {
+        "variant": "polyspec_ordered_json::Error::HostSerializationRefused",
+        "category": "type"
+      },
+      {
+        "variant": "polyspec_ordered_json::Error::InvalidNumberLiteral",
+        "category": "value"
+      },
+      {
+        "variant": "polyspec_ordered_json::Error::DepthLimitOutOfRange",
+        "category": "value"
+      },
+      {
+        "variant": "polyspec_ordered_json::Error::InvalidCodeUnit",
+        "category": "value"
+      },
+      {
+        "variant": "polyspec_ordered_json::Error::UnpairedSurrogate",
+        "category": "value"
+      },
+      {
+        "variant": "polyspec_ordered_json::Error::NonFiniteNumber",
+        "category": "value"
+      },
+      {
+        "variant": "polyspec_ordered_json::Error::Internal",
+        "category": "internal"
+      }
+    ],
+    "binding": [],
+    "wrapped": []
+  },
+  "units": [
+    {
+      "id": "functions",
+      "name": [
+        "ordered",
+        "json"
+      ],
+      "module": "",
+      "kind": "functions",
+      "visibility": "public",
+      "origin": "generated",
+      "members": [
+        {
+          "id": "parse",
+          "name": [
+            "parse"
+          ],
+          "kind": "function",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "source"
+              ],
+              "type": "source",
+              "required": true
+            },
+            {
+              "name": [
+                "options"
+              ],
+              "type": {
+                "unit": "parse_options"
+              },
+              "default": {
+                "empty": "object"
+              }
+            }
+          ],
+          "returns": "json_value",
+          "raises": [
+            "polyspec_ordered_json::Error::ExpectedValue",
+            "polyspec_ordered_json::Error::ExpectedDigit",
+            "polyspec_ordered_json::Error::ExpectedColon",
+            "polyspec_ordered_json::Error::ExpectedDelimiter",
+            "polyspec_ordered_json::Error::ExpectedObjectKey",
+            "polyspec_ordered_json::Error::InvalidEscape",
+            "polyspec_ordered_json::Error::InvalidUnicodeEscape",
+            "polyspec_ordered_json::Error::UnfinishedEscape",
+            "polyspec_ordered_json::Error::UnterminatedString",
+            "polyspec_ordered_json::Error::UnescapedControlCharacter",
+            "polyspec_ordered_json::Error::InvalidUtf8",
+            "polyspec_ordered_json::Error::MaximumDepthExceeded",
+            "polyspec_ordered_json::Error::TrailingInput",
+            "polyspec_ordered_json::Error::DuplicateObjectKey",
+            "polyspec_ordered_json::Error::DepthLimitOutOfRange",
+            "polyspec_ordered_json::Error::Internal"
+          ],
+          "wait": "none",
+          "core": {
+            "path": "polyspec_ordered_json::parse"
+          }
+        },
+        {
+          "id": "stringify",
+          "name": [
+            "stringify"
+          ],
+          "kind": "function",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "value"
+              ],
+              "type": "json_value",
+              "required": true
+            },
+            {
+              "name": [
+                "options"
+              ],
+              "type": {
+                "unit": "stringify_options"
+              },
+              "default": {
+                "empty": "object"
+              }
+            }
+          ],
+          "returns": "text",
+          "raises": [],
+          "wait": "none",
+          "core": {
+            "path": "polyspec_ordered_json::stringify"
+          }
+        },
+        {
+          "id": "max_depth",
+          "name": [
+            "max",
+            "depth"
+          ],
+          "kind": "constant",
+          "visibility": "public",
+          "type": "uint",
+          "value": 256,
+          "core": "polyspec_ordered_json::MAX_DEPTH"
+        }
+      ]
+    },
+    {
+      "id": "value",
+      "name": [
+        "value"
+      ],
+      "module": "",
+      "kind": "class",
+      "visibility": "public",
+      "origin": "value",
+      "core_type": "polyspec_ordered_json::Value",
+      "constructible": false,
+      "final": true,
+      "members": [
+        {
+          "id": "value.kind",
+          "name": [
+            "kind"
+          ],
+          "kind": "property",
+          "visibility": "public",
+          "parameters": [],
+          "returns": {
+            "unit": "kind"
+          },
+          "raises": [],
+          "wait": "none",
+          "core": {
+            "path": "polyspec_ordered_json::Value::kind",
+            "receiver": "&self"
+          }
+        },
+        {
+          "id": "value.raw",
+          "name": [
+            "raw"
+          ],
+          "kind": "property",
+          "visibility": "public",
+          "parameters": [],
+          "returns": "text",
+          "raises": [],
+          "wait": "none",
+          "core": {
+            "path": "polyspec_ordered_json::Value::raw",
+            "receiver": "&self"
+          }
+        },
+        {
+          "id": "value.members",
+          "name": [
+            "members"
+          ],
+          "kind": "method",
+          "visibility": "public",
+          "parameters": [],
+          "returns": {
+            "unit": "ordered_map"
+          },
+          "raises": [
+            "polyspec_ordered_json::Error::WrongKind"
+          ],
+          "wait": "none",
+          "core": {
+            "path": "polyspec_ordered_json::Value::members",
+            "receiver": "&self"
+          }
+        },
+        {
+          "id": "value.items",
+          "name": [
+            "items"
+          ],
+          "kind": "method",
+          "visibility": "public",
+          "parameters": [],
+          "returns": {
+            "list": "json_value"
+          },
+          "raises": [
+            "polyspec_ordered_json::Error::WrongKind"
+          ],
+          "wait": "none",
+          "core": {
+            "path": "polyspec_ordered_json::Value::items",
+            "receiver": "&self"
+          }
+        },
+        {
+          "id": "value.string_value",
+          "name": [
+            "string",
+            "value"
+          ],
+          "kind": "method",
+          "visibility": "public",
+          "parameters": [],
+          "returns": "text",
+          "raises": [
+            "polyspec_ordered_json::Error::WrongKind",
+            "polyspec_ordered_json::Error::UnpairedSurrogate",
+            "polyspec_ordered_json::Error::Internal"
+          ],
+          "wait": "none",
+          "core": {
+            "path": "polyspec_ordered_json::Value::string_value",
+            "receiver": "&self"
+          }
+        },
+        {
+          "id": "value.string_units",
+          "name": [
+            "string",
+            "units"
+          ],
+          "kind": "method",
+          "visibility": "public",
+          "parameters": [],
+          "returns": {
+            "list": "uint"
+          },
+          "raises": [
+            "polyspec_ordered_json::Error::WrongKind",
+            "polyspec_ordered_json::Error::Internal"
+          ],
+          "wait": "none",
+          "core": {
+            "path": "polyspec_ordered_json::Value::string_units",
+            "receiver": "&self"
+          }
+        },
+        {
+          "id": "value.number_literal",
+          "name": [
+            "number",
+            "literal"
+          ],
+          "kind": "method",
+          "visibility": "public",
+          "parameters": [],
+          "returns": "text",
+          "raises": [
+            "polyspec_ordered_json::Error::WrongKind"
+          ],
+          "wait": "none",
+          "core": {
+            "path": "polyspec_ordered_json::Value::number_literal",
+            "receiver": "&self"
+          }
+        },
+        {
+          "id": "value.boolean_value",
+          "name": [
+            "boolean",
+            "value"
+          ],
+          "kind": "method",
+          "visibility": "public",
+          "parameters": [],
+          "returns": "bool",
+          "raises": [
+            "polyspec_ordered_json::Error::WrongKind"
+          ],
+          "wait": "none",
+          "core": {
+            "path": "polyspec_ordered_json::Value::boolean_value",
+            "receiver": "&self"
+          }
+        },
+        {
+          "id": "value.get",
+          "name": [
+            "get"
+          ],
+          "kind": "method",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "key"
+              ],
+              "type": "text",
+              "required": true
+            }
+          ],
+          "returns": {
+            "optional": "json_value"
+          },
+          "raises": [
+            "polyspec_ordered_json::Error::WrongKind",
+            "polyspec_ordered_json::Error::Internal"
+          ],
+          "wait": "none",
+          "core": {
+            "path": "polyspec_ordered_json::Value::get",
+            "receiver": "&self"
+          },
+          "optional_reason": "RQ-032"
+        },
+        {
+          "id": "value.get_units",
+          "name": [
+            "get",
+            "units"
+          ],
+          "kind": "method",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "units"
+              ],
+              "type": {
+                "list": "uint"
+              },
+              "required": true
+            }
+          ],
+          "returns": {
+            "optional": "json_value"
+          },
+          "raises": [
+            "polyspec_ordered_json::Error::WrongKind",
+            "polyspec_ordered_json::Error::InvalidCodeUnit",
+            "polyspec_ordered_json::Error::Internal"
+          ],
+          "wait": "none",
+          "core": {
+            "path": "polyspec_ordered_json::Value::get_units",
+            "receiver": "&self"
+          },
+          "optional_reason": "RQ-032"
+        },
+        {
+          "id": "value.string",
+          "name": [
+            "string"
+          ],
+          "kind": "static",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "text"
+              ],
+              "type": "text",
+              "required": true
+            }
+          ],
+          "returns": "json_value",
+          "raises": [],
+          "wait": "none",
+          "core": {
+            "path": "polyspec_ordered_json::Value::string"
+          }
+        },
+        {
+          "id": "value.from_units",
+          "name": [
+            "from",
+            "units"
+          ],
+          "kind": "static",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "units"
+              ],
+              "type": {
+                "list": "uint"
+              },
+              "required": true
+            }
+          ],
+          "returns": "json_value",
+          "raises": [
+            "polyspec_ordered_json::Error::InvalidCodeUnit"
+          ],
+          "wait": "none",
+          "core": {
+            "path": "polyspec_ordered_json::Value::from_units"
+          }
+        },
+        {
+          "id": "value.number",
+          "name": [
+            "number"
+          ],
+          "kind": "static",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "literal"
+              ],
+              "type": "text",
+              "required": true
+            }
+          ],
+          "returns": "json_value",
+          "raises": [
+            "polyspec_ordered_json::Error::ExpectedValue",
+            "polyspec_ordered_json::Error::ExpectedDigit",
+            "polyspec_ordered_json::Error::ExpectedColon",
+            "polyspec_ordered_json::Error::ExpectedDelimiter",
+            "polyspec_ordered_json::Error::ExpectedObjectKey",
+            "polyspec_ordered_json::Error::InvalidEscape",
+            "polyspec_ordered_json::Error::InvalidUnicodeEscape",
+            "polyspec_ordered_json::Error::UnfinishedEscape",
+            "polyspec_ordered_json::Error::UnterminatedString",
+            "polyspec_ordered_json::Error::UnescapedControlCharacter",
+            "polyspec_ordered_json::Error::MaximumDepthExceeded",
+            "polyspec_ordered_json::Error::TrailingInput",
+            "polyspec_ordered_json::Error::InvalidNumberLiteral",
+            "polyspec_ordered_json::Error::Internal"
+          ],
+          "wait": "none",
+          "core": {
+            "path": "polyspec_ordered_json::Value::number"
+          }
+        },
+        {
+          "id": "value.from_float",
+          "name": [
+            "from",
+            "float"
+          ],
+          "kind": "static",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "value"
+              ],
+              "type": "float",
+              "required": true
+            }
+          ],
+          "returns": "json_value",
+          "raises": [
+            "polyspec_ordered_json::Error::NonFiniteNumber"
+          ],
+          "wait": "none",
+          "core": {
+            "path": "polyspec_ordered_json::Value::from_f64"
+          }
+        },
+        {
+          "id": "value.boolean",
+          "name": [
+            "boolean"
+          ],
+          "kind": "static",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "value"
+              ],
+              "type": "bool",
+              "required": true
+            }
+          ],
+          "returns": "json_value",
+          "raises": [],
+          "wait": "none",
+          "core": {
+            "path": "polyspec_ordered_json::Value::boolean"
+          }
+        },
+        {
+          "id": "value.null",
+          "name": [
+            "null"
+          ],
+          "kind": "static",
+          "visibility": "public",
+          "parameters": [],
+          "returns": "json_value",
+          "raises": [],
+          "wait": "none",
+          "core": {
+            "path": "polyspec_ordered_json::Value::null"
+          }
+        },
+        {
+          "id": "value.array",
+          "name": [
+            "array"
+          ],
+          "kind": "static",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "items"
+              ],
+              "type": {
+                "list": "json_value"
+              },
+              "required": true
+            }
+          ],
+          "returns": "json_value",
+          "raises": [
+            "polyspec_ordered_json::Error::MaximumDepthExceeded",
+            "polyspec_ordered_json::Error::Internal"
+          ],
+          "wait": "none",
+          "core": {
+            "path": "polyspec_ordered_json::Value::array"
+          }
+        },
+        {
+          "id": "value.object",
+          "name": [
+            "object"
+          ],
+          "kind": "static",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "members"
+              ],
+              "type": {
+                "unit": "ordered_map"
+              },
+              "required": true
+            }
+          ],
+          "returns": "json_value",
+          "raises": [
+            "polyspec_ordered_json::Error::MaximumDepthExceeded",
+            "polyspec_ordered_json::Error::Internal"
+          ],
+          "wait": "none",
+          "core": {
+            "path": "polyspec_ordered_json::Value::object"
+          }
+        },
+        {
+          "id": "value.to_string",
+          "name": [
+            "to",
+            "string"
+          ],
+          "kind": "stringify",
+          "visibility": "public",
+          "parameters": [],
+          "returns": "text",
+          "raises": [],
+          "wait": "none",
+          "core": {
+            "path": "std::string::ToString::to_string",
+            "receiver": "&self"
+          }
+        },
+        {
+          "id": "value.to_json",
+          "name": [
+            "to",
+            "json"
+          ],
+          "kind": "to_json",
+          "visibility": "public",
+          "parameters": [],
+          "returns": "never",
+          "raises": [
+            "polyspec_ordered_json::Error::HostSerializationRefused"
+          ],
+          "wait": "none",
+          "core": {
+            "path": "polyspec_ordered_json::Value::host_json",
+            "receiver": "&self"
+          },
+          "only": {
+            "targets": [
+              "php",
+              "node",
+              "go",
+              "wasm"
+            ],
+            "reason": "RQ-034"
+          }
+        }
+      ],
+      "out": [
+        {
+          "kind": "null",
+          "make": {
+            "php": "value.null",
+            "python": "value.null",
+            "node": "value.null",
+            "go": "value.null",
+            "wasm": "value.null"
+          }
+        },
+        {
+          "kind": "bool",
+          "make": {
+            "php": "value.boolean",
+            "python": "value.boolean",
+            "node": "value.boolean",
+            "go": "value.boolean",
+            "wasm": "value.boolean"
+          }
+        },
+        {
+          "kind": "number",
+          "make": {
+            "php": "value.number",
+            "python": "value.number",
+            "node": "value.number",
+            "go": "value.number",
+            "wasm": "value.number"
+          }
+        },
+        {
+          "kind": "text",
+          "make": {
+            "php": "value.string",
+            "python": "value.string",
+            "node": "value.string",
+            "go": "value.string",
+            "wasm": "value.string"
+          }
+        },
+        {
+          "kind": "list",
+          "make": {
+            "php": "value.array",
+            "python": "value.array",
+            "node": "value.array",
+            "go": "value.array",
+            "wasm": "value.array"
+          }
+        },
+        {
+          "kind": "map",
+          "make": {
+            "php": "value.object",
+            "python": "value.object",
+            "node": "value.object",
+            "go": "value.object",
+            "wasm": "value.object"
+          }
+        }
+      ],
+      "in": [
+        {
+          "php": "value",
+          "by": "value.kind",
+          "cases": [
+            {
+              "is": "object",
+              "kind": "map",
+              "read": "value.members"
+            },
+            {
+              "is": "array",
+              "kind": "list",
+              "read": "value.items"
+            },
+            {
+              "is": "string",
+              "kind": "text",
+              "read": "value.string_value"
+            },
+            {
+              "is": "number",
+              "kind": "number",
+              "read": "value.number_literal"
+            },
+            {
+              "is": "boolean",
+              "kind": "bool",
+              "read": "value.boolean_value"
+            },
+            {
+              "is": "null",
+              "kind": "null",
+              "read": "value.raw"
+            }
+          ]
+        },
+        {
+          "python": "value",
+          "by": "value.kind",
+          "cases": [
+            {
+              "is": "object",
+              "kind": "map",
+              "read": "value.members"
+            },
+            {
+              "is": "array",
+              "kind": "list",
+              "read": "value.items"
+            },
+            {
+              "is": "string",
+              "kind": "text",
+              "read": "value.string_value"
+            },
+            {
+              "is": "number",
+              "kind": "number",
+              "read": "value.number_literal"
+            },
+            {
+              "is": "boolean",
+              "kind": "bool",
+              "read": "value.boolean_value"
+            },
+            {
+              "is": "null",
+              "kind": "null",
+              "read": "value.raw"
+            }
+          ]
+        },
+        {
+          "node": "value",
+          "by": "value.kind",
+          "cases": [
+            {
+              "is": "object",
+              "kind": "map",
+              "read": "value.members"
+            },
+            {
+              "is": "array",
+              "kind": "list",
+              "read": "value.items"
+            },
+            {
+              "is": "string",
+              "kind": "text",
+              "read": "value.string_value"
+            },
+            {
+              "is": "number",
+              "kind": "number",
+              "read": "value.number_literal"
+            },
+            {
+              "is": "boolean",
+              "kind": "bool",
+              "read": "value.boolean_value"
+            },
+            {
+              "is": "null",
+              "kind": "null",
+              "read": "value.raw"
+            }
+          ]
+        },
+        {
+          "go": "value",
+          "by": "value.kind",
+          "cases": [
+            {
+              "is": "object",
+              "kind": "map",
+              "read": "value.members"
+            },
+            {
+              "is": "array",
+              "kind": "list",
+              "read": "value.items"
+            },
+            {
+              "is": "string",
+              "kind": "text",
+              "read": "value.string_value"
+            },
+            {
+              "is": "number",
+              "kind": "number",
+              "read": "value.number_literal"
+            },
+            {
+              "is": "boolean",
+              "kind": "bool",
+              "read": "value.boolean_value"
+            },
+            {
+              "is": "null",
+              "kind": "null",
+              "read": "value.raw"
+            }
+          ]
+        },
+        {
+          "wasm": "value",
+          "by": "value.kind",
+          "cases": [
+            {
+              "is": "object",
+              "kind": "map",
+              "read": "value.members"
+            },
+            {
+              "is": "array",
+              "kind": "list",
+              "read": "value.items"
+            },
+            {
+              "is": "string",
+              "kind": "text",
+              "read": "value.string_value"
+            },
+            {
+              "is": "number",
+              "kind": "number",
+              "read": "value.number_literal"
+            },
+            {
+              "is": "boolean",
+              "kind": "bool",
+              "read": "value.boolean_value"
+            },
+            {
+              "is": "null",
+              "kind": "null",
+              "read": "value.raw"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ordered_map",
+      "name": [
+        "ordered",
+        "map"
+      ],
+      "module": "",
+      "kind": "class",
+      "visibility": "public",
+      "origin": "generated",
+      "core_type": "polyspec_ordered_json::OrderedMap",
+      "final": true,
+      "members": [
+        {
+          "id": "ordered_map.constructor",
+          "name": [
+            "constructor"
+          ],
+          "kind": "constructor",
+          "visibility": "public",
+          "parameters": [],
+          "raises": [],
+          "wait": "none",
+          "core": {
+            "path": "polyspec_ordered_json::OrderedMap::new"
+          }
+        },
+        {
+          "id": "ordered_map.insert",
+          "name": [
+            "insert"
+          ],
+          "kind": "method",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "key"
+              ],
+              "type": "json_value",
+              "required": true
+            },
+            {
+              "name": [
+                "value"
+              ],
+              "type": "json_value",
+              "required": true
+            }
+          ],
+          "returns": {
+            "optional": "json_value"
+          },
+          "raises": [
+            "polyspec_ordered_json::Error::NonStringKey",
+            "polyspec_ordered_json::Error::Internal"
+          ],
+          "wait": "none",
+          "core": {
+            "path": "polyspec_ordered_json::OrderedMap::insert",
+            "receiver": "&mut self"
+          },
+          "optional_reason": "RQ-001"
+        },
+        {
+          "id": "ordered_map.get",
+          "name": [
+            "get"
+          ],
+          "kind": "method",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "key"
+              ],
+              "type": "text",
+              "required": true
+            }
+          ],
+          "returns": {
+            "optional": "json_value"
+          },
+          "raises": [
+            "polyspec_ordered_json::Error::Internal"
+          ],
+          "wait": "none",
+          "core": {
+            "path": "polyspec_ordered_json::OrderedMap::get",
+            "receiver": "&self"
+          },
+          "optional_reason": "RQ-019"
+        },
+        {
+          "id": "ordered_map.get_units",
+          "name": [
+            "get",
+            "units"
+          ],
+          "kind": "method",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "units"
+              ],
+              "type": {
+                "list": "uint"
+              },
+              "required": true
+            }
+          ],
+          "returns": {
+            "optional": "json_value"
+          },
+          "raises": [
+            "polyspec_ordered_json::Error::InvalidCodeUnit",
+            "polyspec_ordered_json::Error::Internal"
+          ],
+          "wait": "none",
+          "core": {
+            "path": "polyspec_ordered_json::OrderedMap::get_units",
+            "receiver": "&self"
+          },
+          "optional_reason": "RQ-019"
+        },
+        {
+          "id": "ordered_map.size",
+          "name": [
+            "size"
+          ],
+          "kind": "property",
+          "visibility": "public",
+          "parameters": [],
+          "returns": "uint",
+          "raises": [],
+          "wait": "none",
+          "core": {
+            "path": "polyspec_ordered_json::OrderedMap::len",
+            "receiver": "&self"
+          }
+        },
+        {
+          "id": "ordered_map.entries",
+          "name": [
+            "entries"
+          ],
+          "kind": "iterate",
+          "visibility": "public",
+          "raises": [],
+          "wait": "none",
+          "core": {
+            "path": "polyspec_ordered_json::OrderedMap::iter",
+            "receiver": "&self"
+          },
+          "yields": {
+            "key": "json_value",
+            "value": "json_value"
+          }
+        }
+      ]
+    },
+    {
+      "id": "kind",
+      "name": [
+        "kind"
+      ],
+      "module": "",
+      "kind": "enum",
+      "visibility": "public",
+      "origin": "generated",
+      "core_type": "polyspec_ordered_json::Kind",
+      "variants": [
+        {
+          "name": [
+            "object"
+          ],
+          "value": "object"
+        },
+        {
+          "name": [
+            "array"
+          ],
+          "value": "array"
+        },
+        {
+          "name": [
+            "string"
+          ],
+          "value": "string"
+        },
+        {
+          "name": [
+            "number"
+          ],
+          "value": "number"
+        },
+        {
+          "name": [
+            "boolean"
+          ],
+          "value": "boolean"
+        },
+        {
+          "name": [
+            "null"
+          ],
+          "value": "null"
+        }
+      ]
+    },
+    {
+      "id": "parse_options",
+      "name": [
+        "parse",
+        "options"
+      ],
+      "module": "",
+      "kind": "record",
+      "visibility": "public",
+      "origin": "generated",
+      "core_type": "polyspec_ordered_json::ParseOptions",
+      "fields": [
+        {
+          "name": [
+            "max",
+            "depth"
+          ],
+          "type": "uint",
+          "default": {
+            "const": "max_depth"
+          },
+          "default_core": "polyspec_ordered_json::MAX_DEPTH"
+        },
+        {
+          "name": [
+            "reject",
+            "duplicates"
+          ],
+          "type": "bool",
+          "default": {
+            "literal": false
+          },
+          "default_core": "polyspec_ordered_json::DEFAULT_REJECT_DUPLICATES"
+        }
+      ]
+    },
+    {
+      "id": "stringify_options",
+      "name": [
+        "stringify",
+        "options"
+      ],
+      "module": "",
+      "kind": "record",
+      "visibility": "public",
+      "origin": "generated",
+      "core_type": "polyspec_ordered_json::StringifyOptions",
+      "fields": [
+        {
+          "name": [
+            "html",
+            "safe"
+          ],
+          "type": "bool",
+          "default": {
+            "literal": false
+          },
+          "default_core": "polyspec_ordered_json::DEFAULT_HTML_SAFE"
+        }
+      ]
+    },
+    {
+      "id": "parse_error",
+      "name": [
+        "parse",
+        "error"
+      ],
+      "module": "",
+      "kind": "error",
+      "visibility": "public",
+      "origin": "generated",
+      "category": "value",
+      "final": true,
+      "members": [
+        {
+          "id": "parse_error.offset",
+          "name": [
+            "offset"
+          ],
+          "kind": "property",
+          "visibility": "public",
+          "parameters": [],
+          "returns": {
+            "optional": "uint"
+          },
+          "raises": [],
+          "wait": "none",
+          "core": {
+            "path": "polyspec_ordered_json::Error::offset",
+            "receiver": "&self"
+          },
+          "optional_reason": "RQ-033"
+        }
+      ]
+    }
+  ],
+  "changes": [
+    {
+      "id": "change-parse-source",
+      "rule": "RQ-026",
+      "reason": "RQ-026: JSON text is UTF-8 (RFC 8259 8.1), so one parse of the contract type source takes a text or its bytes; a second entry point per input form or per option is a second API of one rule (P-1)",
+      "symbol": "parse",
+      "from": {
+        "node": "parse(source: string, options?: ParseOptions): Value; parseBytes(bytes: Uint8Array, options?: ParseOptions): Value",
+        "python": "parse(source: str, options: ParseOptions | None = None) -> Value; parse_bytes(data, options=None) -> Value",
+        "php": "parse(string $source, int $maxDepth = MAX_DEPTH): Value; Value::parse(string $source); Value::parseRejectDuplicates(string $source)",
+        "go": "Parse(source string) (Value, error); ParseBytes(source []byte); ParseWithMaxDepth(source string, limit int); ParseRejectDuplicates(source string)"
+      },
+      "to": "parse"
+    },
+    {
+      "id": "change-offsets",
+      "rule": "RQ-026",
+      "reason": "RQ-026: every offset counts bytes of the UTF-8 text in every language, so one case has one offset; a text with an unpaired surrogate has no UTF-8 encoding and is refused by the binding (B-3) instead of the core kind unescaped_lone_surrogate",
+      "symbol": "parse",
+      "from": {
+        "node": "ParseError.offset counts UTF-16 units of a text, ParseError.unit is 'utf16' or 'byte'; a lone surrogate of a text is unescaped_lone_surrogate",
+        "python": "a lone surrogate of a text is unescaped_lone_surrogate"
+      },
+      "to": "parse_error.offset"
+    },
+    {
+      "id": "change-parse-options",
+      "rule": "RQ-035",
+      "reason": "RQ-035, design T-4: the options of parse are one record with one form in every language (P-10)",
+      "symbol": "ParseOptions",
+      "from": {
+        "node": "interface ParseOptions { maxDepth?: number; rejectDuplicates?: boolean }",
+        "python": "class ParseOptions(max_depth: int = MAX_DEPTH, reject_duplicates: bool = False)",
+        "php": "parse(string $source, int $maxDepth = MAX_DEPTH)",
+        "go": "ParseWithMaxDepth(source, limit); ParseRejectDuplicates(source)"
+      },
+      "to": "parse_options"
+    },
+    {
+      "id": "change-stringify",
+      "rule": "RQ-034",
+      "reason": "RQ-034: the serializer is the one function stringify and the string hook; compact wrote the same text under a second name",
+      "symbol": "stringify, compact",
+      "from": {
+        "node": "stringify(value: Value): string",
+        "python": "stringify(value) -> str; Value.compact() -> str",
+        "php": "stringify(Value $value, bool $compact = true): string; Value::compact(): string",
+        "go": "Stringify(value Value) (string, error); Value.Compact() (string, error)"
+      },
+      "to": "stringify"
+    },
+    {
+      "id": "change-html-safe",
+      "rule": "RQ-031",
+      "reason": "RQ-031: the HTML-safe output of template FUN-27 is an option of the one JSON serializer, so no library writes JSON a second time",
+      "symbol": "stringify_options",
+      "from": {
+        "node": "none",
+        "python": "none",
+        "php": "none",
+        "go": "none"
+      },
+      "to": "stringify_options"
+    },
+    {
+      "id": "change-string-value",
+      "rule": "RQ-027",
+      "reason": "RQ-027, P-3: a string with an unpaired surrogate has no Unicode text; returning a lone surrogate gives the caller a text that no UTF-8 output holds, and string_units keeps it losslessly",
+      "symbol": "Value.string_value",
+      "from": {
+        "node": "stringValue(): string returns lone surrogates",
+        "python": "string_value() -> str returns lone surrogates"
+      },
+      "to": "value.string_value"
+    },
+    {
+      "id": "change-string-constructor",
+      "rule": "RQ-028",
+      "reason": "RQ-028: the string constructor escapes only what RFC 8259 section 7 requires and writes the rest as UTF-8, as JSON.stringify does; a text that is no UTF-8 is refused by the binding (B-3)",
+      "symbol": "Value.string",
+      "from": {
+        "node": "Value.string(text) writes \\u escapes for non-ASCII and keeps lone surrogates",
+        "python": "Value.string(text) writes \\u escapes for non-ASCII and keeps lone surrogates",
+        "php": "Value::string($text) writes \\u escapes for non-ASCII",
+        "go": "String(text) writes \\u escapes for non-ASCII"
+      },
+      "to": "value.string"
+    },
+    {
+      "id": "change-from-units",
+      "rule": "RQ-028",
+      "reason": "RQ-028, RQ-029: a string with unpaired surrogates is built from code units in every language, the text of a language being UTF-8 at the boundary (RQ-026)",
+      "symbol": "Value.from_units",
+      "from": {
+        "node": "none: Value.string(text) took lone surrogates"
+      },
+      "to": "value.from_units"
+    },
+    {
+      "id": "change-from-float",
+      "rule": "RQ-030",
+      "reason": "RQ-030: the token of a float is the one rule of the core, which template and crudui also use",
+      "symbol": "Value.from_float",
+      "from": {
+        "node": "none",
+        "python": "none",
+        "php": "none",
+        "go": "none"
+      },
+      "to": "value.from_float"
+    },
+    {
+      "id": "change-accessors",
+      "rule": "RQ-032",
+      "reason": "RQ-032, P-2: an access of another kind is a failure with the kind wrong_kind, never an absence, and lookup is absent only for a missing name; the accessors that a failure ends are methods (design I-3)",
+      "symbol": "Value accessors",
+      "from": {
+        "node": "readonly members: ReadonlyMap<string, Value>; readonly items: readonly Value[]; readonly keys: readonly Value[]; get(key): Value | undefined",
+        "python": "members() -> Mapping[str, Value]; items() -> tuple[Value, ...]; get(key) -> Value | None",
+        "php": "members(): array; items(): array; get(string $key): ?Value",
+        "go": "Members() (OrderedMap, error); Get(key) *Value; GetUnits(units) *Value"
+      },
+      "to": "value.members"
+    },
+    {
+      "id": "change-ordered-map",
+      "rule": "RQ-009",
+      "reason": "RQ-009, RQ-002: the members of an object are an OrderedMap whose keys are values in every language, so a key with an unpaired surrogate is not lost; object takes an OrderedMap (design T-2 has no union of input forms)",
+      "symbol": "OrderedMap, Value.object",
+      "from": {
+        "node": "Value.object(entries: Iterable<[string | Value, Value]>)",
+        "python": "Value.object(entries: Mapping | Iterable[tuple])",
+        "php": "Value::object(array $members); members(): array<string, Value>",
+        "go": "OrderedMap.Set(key, value); Keys(); Object(map)"
+      },
+      "to": "ordered_map"
+    },
+    {
+      "id": "change-errors",
+      "rule": "E-2",
+      "reason": "design E-2, E-3, plan B-4: every error is a library class of its category with kind and status, the parse rejections parse_error with offset; a host class with an added kind and a class of two categories (PHP ArgumentError) do not let a caller catch by category",
+      "symbol": "errors",
+      "from": {
+        "node": "class ParseError extends SyntaxError { offset; unit; kind }; TypeError and RangeError with kind",
+        "python": "class ParseError(ValueError) with kind and offset; TypeError and ValueError with kind",
+        "php": "ParseError extends InvalidArgumentException; ArgumentError extends InvalidArgumentException; UsageError extends LogicException; public readonly string $kind",
+        "go": "type Error interface { Kind() ErrorKind; Offset() int; Message() string }"
+      },
+      "to": "parse_error"
+    },
+    {
+      "id": "change-host-hooks",
+      "rule": "RQ-034",
+      "reason": "RQ-020, RQ-034: Go encoding/json rewrites <, > and & of the text of MarshalJSON, so the hook cannot keep the contract bytes and refuses in every language; Python has no hook and json.dumps refuses with its own error",
+      "symbol": "MarshalJSON, JSONEncoder",
+      "from": {
+        "go": "Value.MarshalJSON writes the compact text; Value.UnmarshalJSON parses",
+        "python": "class JSONEncoder(json.JSONEncoder) refuses in default()"
+      },
+      "to": "value.to_json"
+    },
+    {
+      "id": "change-kind-enum",
+      "rule": "T-6",
+      "reason": "design T-6: an enum has one form in every language; the kind of a value is the enum Kind",
+      "symbol": "Value.kind",
+      "from": {
+        "node": "enum Kind; readonly kind: Kind",
+        "php": "kind(): string",
+        "go": "const ObjectKind ... NullKind Kind"
+      },
+      "to": "kind"
+    },
+    {
+      "id": "change-php-package",
+      "rule": "P-1",
+      "reason": "design P-1: the PHP package of the extension is polyspec/<repository> of type php-ext, and the classes are those of the contract",
+      "symbol": "Polyspec\\OrderedJson",
+      "from": {
+        "php": "Composer polyspec/ordered-json (PHP) and PIE polyspec/ordered-json-php-ext (C)"
+      },
+      "to": "functions"
+    },
+    {
+      "id": "change-wasm-init",
+      "rule": "P-5",
+      "reason": "design P-5: the browser loads the WASM binding, which initializes asynchronously with init()",
+      "symbol": "init",
+      "from": {
+        "node": "none: the package was JavaScript and needed no initialization"
+      },
+      "to": null
+    }
+  ],
+  "cases": [
+    {
+      "member": "parse",
+      "file": "contracts/core.json",
+      "group": "parse"
+    },
+    {
+      "member": "value.string_value",
+      "file": "contracts/core.json",
+      "group": "string_value"
+    },
+    {
+      "member": "value.string_units",
+      "file": "contracts/core.json",
+      "group": "string_units"
+    },
+    {
+      "member": "value.string",
+      "file": "contracts/core.json",
+      "group": "string"
+    },
+    {
+      "member": "value.from_units",
+      "file": "contracts/core.json",
+      "group": "from_units"
+    },
+    {
+      "member": "value.from_float",
+      "file": "contracts/core.json",
+      "group": "from_float"
+    },
+    {
+      "member": "stringify",
+      "file": "contracts/core.json",
+      "group": "stringify"
+    },
+    {
+      "member": "value.members",
+      "file": "contracts/core.json",
+      "group": "accessors"
+    },
+    {
+      "member": "value.items",
+      "file": "contracts/core.json",
+      "group": "accessors"
+    },
+    {
+      "member": "value.number_literal",
+      "file": "contracts/core.json",
+      "group": "accessors"
+    },
+    {
+      "member": "value.boolean_value",
+      "file": "contracts/core.json",
+      "group": "accessors"
+    },
+    {
+      "member": "value.get",
+      "file": "contracts/core.json",
+      "group": "accessors"
+    },
+    {
+      "member": "value.get_units",
+      "file": "contracts/core.json",
+      "group": "accessors"
+    },
+    {
+      "member": "value.array",
+      "file": "contracts/core.json",
+      "group": "constructors"
+    },
+    {
+      "member": "value.object",
+      "file": "contracts/core.json",
+      "group": "constructors"
+    },
+    {
+      "member": "ordered_map.insert",
+      "file": "contracts/core.json",
+      "group": "constructors"
+    },
+    {
+      "member": "value.number",
+      "file": "contracts/core.json",
+      "group": "constructors"
+    },
+    {
+      "member": "value.to_json",
+      "file": "contracts/core.json",
+      "group": "hooks"
+    },
+    {
+      "member": "parse",
+      "file": "examples/official.json",
+      "group": "cases"
+    },
+    {
+      "member": "value.number",
+      "file": "contracts/fixtures/arguments.json",
+      "group": "cases"
+    }
+  ]
+}
