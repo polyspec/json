@@ -1,0 +1,21 @@
+{
+  "name": "@polyspec/ordered-json",
+  "version": "0.0.25",
+  "description": "The ordered-json library of polyspec for Node",
+  "license": "MIT",
+  "main": "./generated/index.cjs",
+  "types": "./generated/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./generated/index.d.ts",
+      "import": "./generated/index.mjs",
+      "require": "./generated/index.cjs"
+    }
+  },
+  "files": [
+    "generated/index.cjs",
+    "generated/index.mjs",
+    "generated/index.d.ts",
+    "generated/*.node"
+  ]
+}

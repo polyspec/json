@@ -386,6 +386,16 @@
       "targets": [
         "lint-rust"
       ]
+    },
+    {
+      "paths": [
+        "packages/ts/**",
+        "packages/python/**",
+        "packages/php-ext/**"
+      ],
+      "targets": [
+        "layout-check"
+      ]
     }
   ]
 }

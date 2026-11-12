@@ -30,3 +30,6 @@ go.work.sum
 
 # The link declaration of kit (K869), which the local links read from the main checkout.
 /.links
+
+# The bindings that bindgen writes from packages/rust/interface.json (bindgen design L-1); make bindings writes them again.
+/packages/*/generated/
