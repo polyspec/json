@@ -13,6 +13,9 @@ include = ["/src/**/*.rs", "/interface.json", "/README.md"]
 
 [dependencies]
 ryu-js = "=1.0.3"
+# The kind interface that the generated bindings read from the core error (bindgen design E-1, I-2 (3)). The git source is
+# the bindgen repository; Cargo.lock pins its commit.
+polyspec-bindgen-core = { git = "file:///home/claude/v1/bindgen", branch = "v1/rust-core" }
 serde = { version = "=1.0.229", features = ["derive"] }
 serde_json = { version = "=1.0.151", features = ["raw_value", "unbounded_depth"] }
 

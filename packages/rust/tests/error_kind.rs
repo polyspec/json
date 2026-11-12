@@ -226,3 +226,14 @@ fn kinds_are_the_shared_lists() {
         ])
     );
 }
+
+// Requirements: RQ-033. The kind interface of the bindings gives the kind of the crate, no status and no errno.
+#[test]
+fn the_kind_interface_of_the_bindings_is_the_kind() {
+    use bindgen_core::Kinds;
+    for (error, _, _) in cases() {
+        assert_eq!(Kinds::kind(&error), error.kind());
+        assert_eq!(Kinds::status(&error), None);
+        assert_eq!(Kinds::errno(&error), None);
+    }
+}
