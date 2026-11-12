@@ -912,8 +912,7 @@
             },
             {
               "is": "null",
-              "kind": "null",
-              "read": "value.raw"
+              "kind": "null"
             }
           ]
         },
@@ -948,8 +947,7 @@
             },
             {
               "is": "null",
-              "kind": "null",
-              "read": "value.raw"
+              "kind": "null"
             }
           ]
         },
@@ -984,8 +982,7 @@
             },
             {
               "is": "null",
-              "kind": "null",
-              "read": "value.raw"
+              "kind": "null"
             }
           ]
         },
@@ -1020,8 +1017,7 @@
             },
             {
               "is": "null",
-              "kind": "null",
-              "read": "value.raw"
+              "kind": "null"
             }
           ]
         },
@@ -1056,8 +1052,7 @@
             },
             {
               "is": "null",
-              "kind": "null",
-              "read": "value.raw"
+              "kind": "null"
             }
           ]
         }
