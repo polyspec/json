@@ -262,10 +262,11 @@ function mismatches(language: string, name: string, expected: Expected, reply: R
   if (reply.ok) {
     // An expected rejection has no compact text or tree, so an accepted reply differs from it in those fields too.
     const accepted = expected.ok ? expected : undefined;
-    wanted = { ...expected, roundtrip: accepted?.compact, roundtrip_tree: accepted?.tree, factory: FACTORY_STRING };
-    // Constructors may quote names differently, so the rebuilt JSON is compared by its tree, with unique names.
+    wanted = { ...expected, roundtrip: accepted?.compact, roundtrip_tree: accepted?.tree, factory: reference(Buffer.from(FACTORY_STRING), true).tree };
+    // Constructors may quote names differently, so the rebuilt JSON is compared by its tree, with unique names, and the
+    // factory string by its tree too: the Rust core writes UTF-8 where the language packages write escapes (RQ-028).
     try {
-      actual = { ...reply, rebuilt: reference(Buffer.from(String(reply.rebuilt)), true).tree };
+      actual = { ...reply, rebuilt: reference(Buffer.from(String(reply.rebuilt)), true).tree, factory: reference(Buffer.from(String(reply.factory)), true).tree };
     } catch (error) {
       if (error instanceof Rejected) return [`${language} ${name}: invalid rebuilt JSON: ${error.message}`];
       throw error;

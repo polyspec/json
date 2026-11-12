@@ -3,14 +3,25 @@
 //! value rebuilt through the factories (docs/spec/json-contract.md#acceptance). The examples are read with the library:
 //! their trees hold lone surrogates, which serde_json refuses, and every string of a tree is compared as its UTF-16 code
 //! units.
+#![allow(
+    clippy::unwrap_used,
+    reason = "R-1: the examples are tracked inputs, and a harness that cannot read them fails by its panic"
+)]
+
 use libtest_mimic::{Arguments, Failed, Trial};
-use polyspec_ordered_json::{parse, stringify, Kind, OrderedMap, Value};
+use polyspec_ordered_json::{
+    parse as parse_bytes, stringify, Error, Kind, OrderedMap, ParseOptions, StringifyOptions, Value,
+};
+
+fn parse(source: &str) -> Result<Value, Error> {
+    parse_bytes(source.as_bytes(), &ParseOptions::default())
+}
 
 #[derive(Debug, PartialEq)]
 enum Tree {
-    Object(Vec<(Vec<u16>, Tree)>),
+    Object(Vec<(Vec<u64>, Tree)>),
     Array(Vec<Tree>),
-    String(Vec<u16>),
+    String(Vec<u64>),
     Number(String),
     Boolean(bool),
     Null,
@@ -23,11 +34,11 @@ fn tree(value: &Value) -> Tree {
                 .members()
                 .unwrap()
                 .iter()
-                .map(|(key, member)| (key.string_units().unwrap().to_vec(), tree(member)))
+                .map(|(key, member)| (key.string_units().unwrap(), tree(member)))
                 .collect(),
         ),
         Kind::Array => Tree::Array(value.items().unwrap().iter().map(tree).collect()),
-        Kind::String => Tree::String(value.string_units().unwrap().to_vec()),
+        Kind::String => Tree::String(value.string_units().unwrap()),
         Kind::Number => Tree::Number(value.number_literal().unwrap().to_owned()),
         Kind::Boolean => Tree::Boolean(value.boolean_value().unwrap()),
         Kind::Null => Tree::Null,
@@ -35,7 +46,7 @@ fn tree(value: &Value) -> Tree {
 }
 
 fn text(value: &Value) -> String {
-    String::from_utf8(value.string_value().unwrap()).unwrap()
+    value.string_value().unwrap()
 }
 
 fn expected_tree(value: &Value) -> Tree {
@@ -48,10 +59,7 @@ fn expected_tree(value: &Value) -> Tree {
                 .iter()
                 .map(|member| {
                     let pair = member.items().unwrap();
-                    (
-                        pair[0].string_units().unwrap().to_vec(),
-                        expected_tree(&pair[1]),
-                    )
+                    (pair[0].string_units().unwrap(), expected_tree(&pair[1]))
                 })
                 .collect(),
         ),
@@ -63,7 +71,7 @@ fn expected_tree(value: &Value) -> Tree {
                 .map(expected_tree)
                 .collect(),
         ),
-        "string" => Tree::String(parts[1].string_units().unwrap().to_vec()),
+        "string" => Tree::String(parts[1].string_units().unwrap()),
         "number" => Tree::Number(text(&parts[1])),
         "boolean" => Tree::Boolean(parts[1].boolean_value().unwrap()),
         _ => Tree::Null,
@@ -102,14 +110,17 @@ fn check(input: &str, compact: &str, expected: &Tree) -> Result<(), Failed> {
     if value.raw() != input {
         return Err(format!("raw() = {:?}, want {input:?}", value.raw()).into());
     }
-    let serialized = stringify(&value);
+    let serialized = stringify(&value, &StringifyOptions::default());
     if serialized != compact {
         return Err(format!("stringify() = {serialized:?}, want {compact:?}").into());
     }
     for (name, source) in [
         ("input", input.to_owned()),
         ("serialization", serialized),
-        ("rebuilt value", stringify(&rebuild(&value))),
+        (
+            "rebuilt value",
+            stringify(&rebuild(&value), &StringifyOptions::default()),
+        ),
     ] {
         let actual = tree(&parse(&source).map_err(|error| format!("{name}: {error}"))?);
         if &actual != expected {
@@ -125,19 +136,20 @@ fn main() {
         "/../../examples/official.json"
     ))
     .unwrap();
-    let official = polyspec_ordered_json::parse_bytes(&source).unwrap();
+    let official = parse_bytes(&source, &ParseOptions::default()).unwrap();
     let trials = official
         .get("cases")
+        .unwrap()
         .unwrap()
         .items()
         .unwrap()
         .iter()
         .map(|example| {
-            let input = text(example.get("input").unwrap());
-            let compact = text(example.get("compact").unwrap());
-            let expected = expected_tree(example.get("tree").unwrap());
+            let input = text(example.get("input").unwrap().unwrap());
+            let compact = text(example.get("compact").unwrap().unwrap());
+            let expected = expected_tree(example.get("tree").unwrap().unwrap());
             Trial::test(
-                format!("official::{}", text(example.get("id").unwrap())),
+                format!("official::{}", text(example.get("id").unwrap().unwrap())),
                 move || check(&input, &compact, &expected),
             )
         })

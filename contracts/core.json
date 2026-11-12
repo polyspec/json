@@ -682,14 +682,14 @@
    "id": "array_at_limit",
    "rule": "RQ-033",
    "wrap": "array",
-   "nest": 255,
+   "nest": 256,
    "ok": true
   },
   {
    "id": "array_past_limit",
    "rule": "RQ-033",
    "wrap": "array",
-   "nest": 256,
+   "nest": 257,
    "raises": {
     "kind": "maximum_depth_exceeded",
     "status": null,
@@ -704,7 +704,7 @@
    "id": "object_past_limit",
    "rule": "RQ-033",
    "wrap": "object",
-   "nest": 256,
+   "nest": 257,
    "raises": {
     "kind": "maximum_depth_exceeded",
     "status": null,

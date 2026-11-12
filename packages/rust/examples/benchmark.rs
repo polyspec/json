@@ -1,4 +1,11 @@
-use polyspec_ordered_json::{parse_bytes, stringify};
+//! The benchmark of the parser and the serializer (benchmarks/).
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    reason = "R-1: the benchmark is a tool, and a fixture it cannot read stops it by its panic"
+)]
+
+use polyspec_ordered_json::{parse, stringify, ParseOptions, StringifyOptions};
 use serde_json::Value as NativeValue;
 use sha2::{Digest, Sha256};
 use std::{env, fs, hint::black_box, time::Instant};
@@ -53,7 +60,9 @@ fn measure<F: FnMut() -> Vec<u8>>(
         values.push(start.elapsed().as_secs_f64() * 1e9 / count as f64);
     }
     values.sort_by(f64::total_cmp);
-    let p95 = values[((values.len() as f64 * 0.95).ceil() as usize)
+    // The 95th percentile is the sample of rank ceil(0.95 n), counted from 1.
+    let p95 = values[(values.len() * 95)
+        .div_ceil(100)
         .saturating_sub(1)
         .min(values.len() - 1)];
     let median = values[values.len() / 2];
@@ -80,7 +89,8 @@ fn main() {
     let sample_count = setting("OJ_BENCH_SAMPLES", 9);
     for file in env::args().skip(1) {
         let source = fs::read(&file).expect("cannot read benchmark fixture");
-        let parse_ordered = || parse_bytes(&source).expect("ordered-json parse failed");
+        let parse_ordered =
+            || parse(&source, &ParseOptions::default()).expect("ordered-json parse failed");
         let (parse_stats, _) = measure(
             || {
                 black_box(parse_ordered());
@@ -93,14 +103,14 @@ fn main() {
         );
         let value = parse_ordered();
         let (stringify_stats, output) = measure(
-            || stringify(&value).into_bytes(),
+            || stringify(&value, &StringifyOptions::default()).into_bytes(),
             count,
             warmup,
             warmup_ms,
             sample_count,
         );
         let (roundtrip_stats, _) = measure(
-            || stringify(&parse_ordered()).into_bytes(),
+            || stringify(&parse_ordered(), &StringifyOptions::default()).into_bytes(),
             count,
             warmup,
             warmup_ms,

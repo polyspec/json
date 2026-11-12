@@ -1,17 +1,30 @@
-// Adapter only. The shared Python verifier owns examples and expectations.
+//! The probe of the shared verifier (scripts/verify.mts): one JSON reply per document path or argument request.
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    reason = "R-1: the probe is a tool, and a request it cannot read stops it by its panic"
+)]
+
 use polyspec_ordered_json::{
-    parse, parse_bytes, parse_with_max_depth, stringify, Error, Kind, OrderedMap, Value,
+    parse, stringify, Error, Kind, OrderedMap, ParseOptions, StringifyOptions, Value,
 };
 use std::{
     fs,
     io::{self, BufRead},
 };
 
+fn read(bytes: &[u8]) -> Result<Value, Error> {
+    parse(bytes, &ParseOptions::default())
+}
+fn compact(value: &Value) -> String {
+    stringify(value, &StringifyOptions::default())
+}
 fn quote(s: &str) -> String {
     Value::string(s).raw().to_owned()
 }
 fn text(v: &Value) -> String {
-    Value::from_units(v.string_units().unwrap())
+    Value::from_units(&v.string_units().unwrap())
+        .unwrap()
         .raw()
         .to_owned()
 }
@@ -49,12 +62,8 @@ fn rebuild(v: &Value) -> Value {
                 members.insert(key.clone(), Value::null()).unwrap();
             }
             for (key, _) in v.members().unwrap().iter().rev() {
-                members
-                    .insert(
-                        key.clone(),
-                        rebuild(v.get_units(key.string_units().unwrap()).unwrap()),
-                    )
-                    .unwrap();
+                let member = v.get_units(&key.string_units().unwrap()).unwrap().unwrap();
+                members.insert(key.clone(), rebuild(member)).unwrap();
             }
             Value::object(&members).unwrap()
         }
@@ -66,29 +75,33 @@ fn rebuild(v: &Value) -> Value {
 }
 /// The reply to an argument request {"call": call, "argument": argument} of the shared verifier.
 fn call(request: &str) -> String {
-    let request = parse(request).expect("an argument request is JSON");
+    let request = read(request.as_bytes()).expect("an argument request is JSON");
     let argument = request
         .get("argument")
+        .unwrap()
         .expect("a request names its argument");
-    let call = request.get("call").expect("a request names its call");
-    let outcome: Result<(), Error> = match &call.string_value().unwrap()[..] {
-        b"number" => {
-            let text = String::from_utf8(argument.string_value().unwrap()).unwrap();
-            Value::number(&text).map(drop)
+    let call = request
+        .get("call")
+        .unwrap()
+        .expect("a request names its call");
+    let outcome: Result<(), Error> = match call.string_value().unwrap().as_str() {
+        "number" => Value::number(&argument.string_value().unwrap()).map(drop),
+        "max_depth" => {
+            let options = ParseOptions {
+                max_depth: Some(argument.number_literal().unwrap().parse().unwrap()),
+                ..ParseOptions::default()
+            };
+            parse(b"1", &options).map(drop)
         }
-        b"max_depth" => {
-            let limit = argument.number_literal().unwrap().parse().unwrap();
-            parse_with_max_depth("1", limit).map(drop)
-        }
-        b"string_value" => argument.string_value().map(drop),
-        b"object_key" => OrderedMap::new()
+        "string_value" => argument.string_value().map(drop),
+        "object_key" => OrderedMap::new()
             .insert(argument.clone(), Value::null())
             .map(drop),
-        other => panic!("unknown call {}", String::from_utf8_lossy(other)),
+        other => panic!("unknown call {other}"),
     };
     match outcome {
         Ok(()) => "{\"ok\":true}".to_owned(),
-        Err(error) => format!("{{\"ok\":false,\"kind\":{}}}", quote(error.kind().as_str())),
+        Err(error) => format!("{{\"ok\":false,\"kind\":{}}}", quote(error.kind())),
     }
 }
 fn main() {
@@ -99,28 +112,28 @@ fn main() {
             continue;
         }
         let bytes = fs::read(line).expect("cannot read document");
-        match parse_bytes(&bytes) {
+        match read(&bytes) {
             Err(error) => println!(
                 "{{\"ok\":false,\"offset\":{},\"unit\":\"byte\",\"kind\":{}}}",
-                error.offset,
-                quote(error.kind().as_str())
+                error.offset().expect("a parse rejection has an offset"),
+                quote(error.kind())
             ),
             Ok(v) => {
-                let serialized = stringify(&v);
-                let roundtrip = parse_bytes(serialized.as_bytes()).unwrap();
+                let serialized = compact(&v);
+                let roundtrip = read(serialized.as_bytes()).unwrap();
                 let factory = Value::string("quote \" slash \\ line\n 한 🌍")
                     .raw()
                     .to_owned();
                 println!(
-                "{{\"ok\":true,\"raw\":{},\"serialized\":{},\"compact\":{},\"tree\":{},\"roundtrip\":{},\"roundtrip_tree\":{},\"rebuilt\":{},\"factory\":{}}}",
-                quote(v.raw()),
-                quote(&serialized),
-                quote(&v.compact()),
-                tree(&v),
-                quote(&stringify(&roundtrip)),
-                tree(&roundtrip),
-                quote(&rebuild(&v).compact()),
-                quote(&factory)
+                    "{{\"ok\":true,\"raw\":{},\"serialized\":{},\"compact\":{},\"tree\":{},\"roundtrip\":{},\"roundtrip_tree\":{},\"rebuilt\":{},\"factory\":{}}}",
+                    quote(v.raw()),
+                    quote(&serialized),
+                    quote(&v.to_string()),
+                    tree(&v),
+                    quote(&compact(&roundtrip)),
+                    tree(&roundtrip),
+                    quote(&compact(&rebuild(&v))),
+                    quote(&factory)
                 )
             }
         }
