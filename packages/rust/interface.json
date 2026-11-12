@@ -1564,11 +1564,10 @@
       "reason": "plan N-3, N-1: a library of a data format is named after the format, so the repository is json; design P-1 and E-2 give its package, module and error class names: Composer polyspec/json, PHP Polyspec\\Json, PyPI polyspec-json, Python polyspec.json, npm @polyspec/json, Go module github.com/polyspec/json/packages/go, PHP extension polyspec_json, the error classes Json<Category>Error in PHP, Node and WASM and JSON<Category>Error in Python (N-2: an acronym word is one capital word in PHP and Node and all capitals in Python and Go)",
       "symbol": "polyspec/ordered-json, Polyspec\\OrderedJson, polyspec-ordered-json, polyspec.ordered_json, @polyspec/ordered-json",
       "from": {
-        "php": "Composer polyspec/ordered-json, namespace Polyspec\\OrderedJson, extension polyspec_ordered_json, OrderedJson<Category>Error",
-        "python": "PyPI polyspec-ordered-json, module polyspec.ordered_json, OrderedJson<Category>Error",
-        "node": "npm @polyspec/ordered-json, OrderedJson<Category>Error",
-        "go": "module github.com/polyspec/ordered-json/packages/go",
-        "wasm": "npm @polyspec/ordered-json, OrderedJson<Category>Error"
+        "php": "Composer polyspec/ordered-json, namespace Polyspec\\OrderedJson, extension polyspec_ordered_json",
+        "python": "PyPI polyspec-ordered-json, module polyspec.ordered_json",
+        "node": "npm @polyspec/ordered-json",
+        "go": "module github.com/polyspec/ordered-json/packages/go"
       },
       "to": "functions"
     }
