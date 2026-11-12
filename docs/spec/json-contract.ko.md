@@ -1,10 +1,10 @@
 <!-- doc-id: json-contract -->
-<!-- source-sha256: 864401f1c8c88126cbf2f3e012f063f6ad7e059fa694ac560cc399520dd10e06 -->
+<!-- source-sha256: f2c384b031cfc2021bbad99668d0fbd9609886dc164dbb87cd04026e9a68cf45 -->
 # JSON 계약
 
 [English](json-contract.md)
 
-이 명세는 현재 JSON 동작을 정의합니다. 구현 및 게시 상태는 [기능 상태](../features.ko.md)에 기록합니다. 실행 가능한 인수 사례는 [official.json](../../examples/official.json)에서 관리합니다.
+이 명세는 현재 JSON 동작을 정의합니다. 구현 및 게시 상태는 [기능 상태](../features.ko.md)에 기록합니다. 실행 가능한 인수 사례는 [official.json](../../examples/official.json)에서 관리합니다. Rust 코어와 그것에서 생성한 바인딩의 규칙은 [Rust 코어](#core)에 있고, 그 사례는 [core.json](../../contracts/core.json)입니다.
 
 <a id="objects"></a>
 ## 객체
@@ -51,6 +51,8 @@ JSON 배열은 입력 순서대로 값을 저장합니다. 빈 배열과 빈 객
 - `maximum_depth_exceeded`
 - `trailing_input`
 
+`unescaped_lone_surrogate`는 [이행 기간](#transition)의 언어 패키지에서만 생깁니다. 코어는 바이트를 읽고, 바인딩은 짝 없는 surrogate가 든 언어 텍스트를 코어가 실행되기 전에 거부합니다([RQ-026](#requirements)).
+
 <a id="argument-kinds"></a>
 ### 인자 종류
 
@@ -62,18 +64,21 @@ JSON 배열은 입력 순서대로 값을 저장합니다. 빈 배열과 빈 객
 - `depth_limit_out_of_range` — 0부터 256까지의 정수가 아닌 깊이 한도.
 - `invalid_argument_type` — 함수가 받지 않는 타입의 인자. 라이브러리가 만들지 않은 값(Go의 nil 또는 영값 `Value`)을 포함합니다. compiler가 타입을 검사하는 Rust에서는 생길 수 없습니다. PHP에서는 선언된 매개변수 타입이 라이브러리 실행 전에 host 타입을 거부하므로, 배열 원소처럼 signature가 타입을 선언할 수 없는 곳에서만 생깁니다.
 - `invalid_code_unit` — 0부터 65535까지의 정수가 아닌 UTF-16 code unit. code unit이 `u16`과 `uint16`인 Rust와 Go, code unit을 문자열로만 받는 JavaScript에서는 생길 수 없습니다.
-- `host_serialization_refused` — 값을 다시 쓰게 될 언어의 표준 JSON 인터페이스([RQ-020](#requirements)). 인터페이스가 계약 바이트를 쓰는 Rust와 Go에서는 생길 수 없습니다.
+- `host_serialization_refused` — 값을 다시 쓰게 될 언어의 표준 JSON 인터페이스([RQ-020](#requirements)). serde 인터페이스가 계약 바이트를 쓰는 Rust와, `MarshalJSON`이 그 바이트를 쓰는 [이행 기간](#transition)의 Go 패키지에서는 생길 수 없습니다.
 - `direct_construction` — 라이브러리 밖에서 호출한 라이브러리 생성자: JavaScript와 Python의 `Value` 생성자, 이 목록 밖의 메시지나 종류를 받은 오류 생성자. 값과 오류의 필드를 비공개로 두는 Rust와 Go에서는 생길 수 없습니다.
+- `unpaired_surrogate` — 이스케이프한 짝 없는 surrogate가 든 문자열의 유니코드 텍스트. 어떤 유니코드 텍스트도 그것을 담지 못합니다([RQ-027](#requirements)). 코어와 그 바인딩에서 생깁니다.
+- `non_finite_number` — NaN, 양의 무한대, 음의 무한대인 실수로 만든 숫자. 어떤 JSON 숫자 토큰도 그것을 쓰지 못합니다([RQ-030](#requirements)). 코어와 그 바인딩에서 생깁니다.
+- `internal` — 코어의 불변식 위반. 결함이며 거부된 입력이 아닙니다([RQ-033](#requirements)).
 
 <a id="numbers"></a>
 ## 숫자
 
-숫자는 JSON 토큰 문자열을 유지합니다. 라이브러리는 파싱이나 직렬화 중 숫자를 부동소수점으로 변환하지 않습니다. 따라서 큰 정수, `-0`, 소수 정밀도, 지수 표기가 유지됩니다. 숫자 생성자는 앞뒤 공백이 없는 유효한 JSON 숫자 토큰을 요구합니다. `NaN`과 `Infinity`는 거부합니다.
+숫자는 JSON 토큰 문자열을 유지합니다. 라이브러리는 파싱이나 직렬화 중 숫자를 부동소수점으로 변환하지 않습니다. 따라서 큰 정수, `-0`, 소수 정밀도, 지수 표기가 유지됩니다. 숫자 생성자는 앞뒤 공백이 없는 유효한 JSON 숫자 토큰을 요구합니다. `NaN`과 `Infinity`는 거부합니다. binary64 실수로 만든 숫자는 ECMAScript `Number::toString`이 쓰는 대로 씁니다([RQ-030](#requirements)).
 
 <a id="strings"></a>
 ## 문자열
 
-문자열은 해석된 UTF-16 코드 단위와 파싱된 토큰 문자열을 유지합니다. 이스케이프된 단독 surrogate는 코드 단위 API로 조회할 수 있습니다. Rust, Go, PHP는 단독 surrogate를 일반 유니코드 문자열로 변환하는 것을 거부합니다. JavaScript와 Python은 해당 문자열을 반환합니다.
+문자열은 해석된 UTF-16 코드 단위와 파싱된 토큰 문자열을 유지합니다. 이스케이프된 단독 surrogate는 코드 단위 API로 조회할 수 있습니다. 단독 surrogate가 든 문자열의 유니코드 텍스트는 `unpaired_surrogate`로 거부합니다([RQ-027](#requirements)). [이행 기간](#transition)의 언어 패키지에서는 Go와 PHP가 거부하고, Rust는 그 WTF-8 바이트를 돌려주었으며, JavaScript와 Python은 해당 문자열을 반환합니다.
 
 PHP는 일반 객체 키를 UTF-8 배열 키로 저장합니다. 키에 포함된 이스케이프된 단독 surrogate는 내부에서 WTF-8을 사용하며 직렬화할 때 이스케이프합니다. 숫자 PHP 배열 키는 JSON 문자열 키로 출력합니다.
 
@@ -128,8 +133,38 @@ JavaScript의 `compact` 옵션과 PHP의 `compact` 인자는 호환성을 위해
 - **RQ-017** 엄격한 파싱은 중복 키를 거부하고, 중복이 없는 문서는 받아들입니다.
 - **RQ-018** 값의 원문 span은 원래 텍스트이며, 루트의 앞뒤 공백과 덮어쓰인 키를 포함합니다.
 - **RQ-019** member 조회는 디코딩된 이름으로 member를 찾습니다.
-- **RQ-020** 값은 언어의 표준 JSON 직렬화 인터페이스와 통합됩니다: 그 인터페이스가 라이브러리처럼 값을 쓸 수 있으면(Go `encoding/json`, Rust serde) 값을 native 구조가 포함하는 경우에도 contract bytes를 쓰고, 값의 순서를 바꾸거나 다시 쓰게 되면(JavaScript `JSON.stringify`, PHP `json_encode`, Python `json`) 거부하고 호출자를 라이브러리 직렬화기로 안내합니다. 어떤 인터페이스도 다른 문서를 쓰지 않습니다.
+- **RQ-020** 값은 언어의 표준 JSON 직렬화 인터페이스와 통합됩니다: 그 인터페이스가 라이브러리처럼 값을 쓰면(Rust serde) 값을 native 구조가 포함하는 경우에도 contract bytes를 쓰고, 값의 순서를 바꾸거나 다시 쓰게 되면(JavaScript `JSON.stringify`, PHP `json_encode`, Python `json`, 그리고 `MarshalJSON`이 돌려준 텍스트의 `<`, `>`, `&`를 다시 쓰는 Go `encoding/json`) `host_serialization_refused`로 거부하고 호출자를 라이브러리 직렬화기로 안내합니다. 어떤 인터페이스도 다른 문서를 쓰지 않습니다. [이행 기간](#transition)의 Go 패키지는 아직 `MarshalJSON`으로 씁니다.
 - **RQ-022** 모든 구현은 공식 예제에 기대 결과를 냅니다.
 - **RQ-023** 공개 API는 파싱, 직렬화, 생성과 접근자 함수를 내보냅니다.
 - **RQ-024** 파싱 오류는 종류, 위치와 메시지를 노출합니다.
 - **RQ-025** 거부된 인자는 공유 인자 종류 목록의 한 종류를 그 host의 오류 class로 알립니다.
+- **RQ-026** 코어는 UTF-8 바이트를 파싱하고 모든 위치는 바이트로 셉니다. 바인딩은 언어 텍스트의 UTF-8 인코딩을 코어에 넘깁니다. 짝 없는 surrogate가 든 언어 텍스트에는 그 인코딩이 없으므로 바인딩이 코어를 실행하기 전에 `invalid_text`로 거부합니다([RFC 8259](https://www.rfc-editor.org/rfc/rfc8259) 8.1절: 시스템 사이에 주고받는 JSON 텍스트는 UTF-8입니다).
+- **RQ-027** `string_value`는 문자열의 유니코드 텍스트를 돌려주고, 문자열에 이스케이프한 짝 없는 surrogate가 있으면 `unpaired_surrogate`로 실패합니다. `string_units`는 모든 문자열의 UTF-16 코드 단위를 돌려주며 짝 없는 surrogate도 담습니다.
+- **RQ-028** 문자열 생성자는 텍스트를 UTF-8로 쓰고 [RFC 8259](https://www.rfc-editor.org/rfc/rfc8259) 7절이 요구하는 것만 이스케이프합니다: `"`와 `\`는 `\"`와 `\\`, U+0008, U+0009, U+000A, U+000C, U+000D는 `\b`, `\t`, `\n`, `\f`, `\r`, 그 밖의 U+0000~U+001F는 `\u00`과 소문자 16진수 두 자리. 코드 단위 생성자는 같게 쓰고 짝 없는 surrogate를 `\u`와 소문자 16진수 네 자리로 씁니다. U+2028과 U+2029를 포함한 그 밖의 모든 문자는 그대로 쓰며, ECMAScript `JSON.stringify`가 쓰는 것과 같습니다(ECMA-262 QuoteJSONString).
+- **RQ-029** 코드 단위 생성자와 코드 단위 조회는 0부터 65535까지의 정수를 받고 그 밖의 값은 `invalid_code_unit`으로 거부합니다.
+- **RQ-030** binary64 실수의 숫자 생성자는 ECMAScript `Number::toString`(ECMA-262, 기수 10)이 쓰는 토큰을 씁니다: 같은 실수로 읽히는 가장 짧은 숫자열, `-0`은 `0`, 지수 -7부터 20까지는 자리 표기, 그 밖은 `e+`/`e-` 표기. NaN, 양의 무한대, 음의 무한대는 `non_finite_number`로 거부합니다. `number_text`는 같은 텍스트를 돌려주며, 다른 polyspec 라이브러리가 쓰는 유일한 실수→텍스트 함수입니다.
+- **RQ-031** 직렬화 옵션 `html_safe`(기본값 false)는 키를 포함한 모든 문자열 토큰의 `<`, `>`, `&`, U+2028, U+2029를 `<`, `>`, `&`, ` `, ` `로 써서 텍스트가 HTML `script` 요소 안에 있을 수 있게 합니다. 출력의 다른 부분은 바뀌지 않습니다. 이 문자들은 JSON 텍스트에서 문자열 안에만 있으므로 옵션은 문자열 토큰만 바꿉니다.
+- **RQ-032** 종류별 접근자(`members`, `items`, `string_units`, `string_value`, `number_literal`, `boolean_value`)와 member 조회(`get`, `get_units`)는 다른 종류의 값에서 `wrong_kind`로 실패합니다. 객체의 조회는 객체에 없는 이름에서만 부재를 돌려줍니다.
+- **RQ-033** 코어의 모든 실패는 공통 목록의 종류를 가진 오류입니다. 파싱 거부는 바이트 위치를 가지며, 생성자의 `maximum_depth_exceeded`와 인자 오류는 위치를 갖지 않습니다. 그 실패를 일으킨 입력 위치가 없기 때문입니다. 코어의 불변식 위반은 `internal`입니다.
+- **RQ-034** 바인딩의 표준 JSON 직렬화 hook(JavaScript `toJSON`, PHP `jsonSerialize`, Go `MarshalJSON`)은 `host_serialization_refused`로 실패합니다([RQ-020](#requirements)). Python에는 그런 hook이 없습니다. 라이브러리 직렬화기는 함수 `stringify` 하나이며, 각 언어의 문자열 hook(`toString`, `__toString`, `__str__`)은 기본 옵션으로 같은 텍스트를 씁니다.
+- **RQ-035** 파싱 옵션은 0부터 256까지의 정수인 `max_depth`([RQ-006](#requirements))와 기본값 false인 `reject_duplicates`([RQ-017](#requirements))이고, 직렬화 옵션은 `html_safe`([RQ-031](#requirements))입니다.
+
+<a id="ignored-input"></a>
+## 무시하는 입력
+
+파서가 읽지만 값에 영향이 없는 모든 입력입니다. 그것을 건너뛰는 코드는 행 id를 적습니다.
+
+| Id | 무시하는 입력 | 옳은 근거 | 사례 |
+| --- | --- | --- | --- |
+| IG-1 | 토큰 앞뒤의 공백(U+0020, U+0009, U+000A, U+000D) | [RFC 8259](https://www.rfc-editor.org/rfc/rfc8259) 2절: 구조 문자 앞뒤의 의미 없는 공백을 허용합니다 | official.json의 `whitespace`. 루트의 `raw`는 공백을 유지합니다([RQ-018](#requirements)) |
+| IG-2 | 같은 해석된 이름의 뒤 member가 교체하는 객체 member의 값 | [RFC 8259](https://www.rfc-editor.org/rfc/rfc8259) 4절: 이름은 고유해야 하며(should) 고유하지 않은 문서의 동작은 구현에 맡깁니다. [RQ-001](#requirements)은 마지막 값을 유지하고, `reject_duplicates`는 대신 문서를 거부하며([RQ-017](#requirements)), `raw`는 교체된 member를 유지합니다([RQ-018](#requirements)) | official.json의 `duplicate-keys` |
+
+<a id="core"></a>
+## Rust 코어
+
+`packages/rust`의 crate `polyspec-ordered-json`이 이 계약의 모든 규칙을 한 번 가집니다. PHP, Python, Node.js, Go, 브라우저의 바인딩은 crate 패키지가 담는 인터페이스 계약 `packages/rust/interface.json`에서 bindgen이 생성하며 자기 규칙을 갖지 않습니다. [core.json](../../contracts/core.json)은 RQ-026부터 RQ-035까지의 사례를 담고 각 실패를 종류와 category를 가진 `raises`로 적으며, crate는 `tests/contract.rs`에서 그것을 실행합니다.
+
+<a id="transition"></a>
+### 이행 기간
+
+언어 패키지 `packages/js`, `packages/go`, `packages/php`, `packages/php-ext`, `packages/python`은 생성된 바인딩이 공통 suite와 그 패키지 시험을 통과하고 각 패키지를 그 패키지만의 변경으로 없앨 때까지 지금의 API와 자기 구현을 유지합니다. 그때까지 이 레포는 언어마다 구현 둘을 가지며, 이는 그 제거로 끝나는 PRINCIPLES S6의 예외입니다. 이 패키지들만 따르는 규칙은 해당하는 곳에 적고, 그 API와 인터페이스 계약의 모든 차이는 `packages/rust/interface.json`의 `changes` 항목과 그 규칙입니다.

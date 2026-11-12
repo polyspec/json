@@ -181,7 +181,8 @@
     },
     {
       "paths": [
-        "packages/rust/**"
+        "packages/rust/**",
+        "contracts/core.json"
       ],
       "targets": [
         "verify-rust",

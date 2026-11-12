@@ -3,7 +3,7 @@
 
 [한국어](json-contract.ko.md)
 
-This specification defines the current JSON behavior. Implementation and publication status are recorded in [features](../features.md). The executable acceptance cases are maintained in [official.json](../../examples/official.json).
+This specification defines the current JSON behavior. Implementation and publication status are recorded in [features](../features.md). The executable acceptance cases are maintained in [official.json](../../examples/official.json). The rules of the Rust core and of the bindings generated from it are in [Rust core](#core), whose cases are [core.json](../../contracts/core.json).
 
 <a id="objects"></a>
 ## Objects
@@ -50,6 +50,8 @@ The shared list of the rejection kinds. Every implementation names one of them f
 - `maximum_depth_exceeded`
 - `trailing_input`
 
+`unescaped_lone_surrogate` arises only in the language packages of the [transition](#transition): the core reads bytes, and a binding refuses a language text with an unpaired surrogate before the core runs ([RQ-026](#requirements)).
+
 <a id="argument-kinds"></a>
 ### Argument kinds
 
@@ -61,18 +63,21 @@ The shared list of the argument kinds. A function of the library that refuses an
 - `depth_limit_out_of_range` — a depth limit that is not an integer from 0 through 256.
 - `invalid_argument_type` — an argument of a type that the function does not take, a value that the library did not make included (a Go nil or zero `Value`). It cannot arise in Rust, whose types the compiler checks; in PHP the declared parameter types refuse a host type before the library runs, so it arises there only where a signature cannot declare the type, as for the elements of an array.
 - `invalid_code_unit` — a UTF-16 code unit that is not an integer from 0 through 65535. It cannot arise in Rust and Go, whose code units are `u16` and `uint16`, or in JavaScript, which takes code units only as a string.
-- `host_serialization_refused` — the standard JSON interface of a language that would rewrite a value ([RQ-020](#requirements)). It cannot arise in Rust and Go, whose interfaces write the contract bytes.
+- `host_serialization_refused` — the standard JSON interface of a language that would rewrite a value ([RQ-020](#requirements)). It cannot arise in Rust, whose serde interface writes the contract bytes, or in the Go package of the [transition](#transition), whose `MarshalJSON` writes them.
 - `direct_construction` — a constructor of the library called outside it: the `Value` constructor of JavaScript and Python, and an error constructor given a message or a kind outside these lists. It cannot arise in Rust and Go, whose values and errors keep their fields private.
+- `unpaired_surrogate` — the Unicode text of a string that holds an escaped unpaired surrogate, which no Unicode text holds ([RQ-027](#requirements)). It arises in the core and its bindings.
+- `non_finite_number` — a number built from a float that is NaN, positive infinity or negative infinity, which no JSON number token writes ([RQ-030](#requirements)). It arises in the core and its bindings.
+- `internal` — a broken invariant of the core: a defect, never a refused input ([RQ-033](#requirements)).
 
 <a id="numbers"></a>
 ## Numbers
 
-Numbers retain their JSON token text. The library does not convert them to floating point during parsing or serialization. Large integers, `-0`, fractional precision, and exponent notation therefore remain unchanged. Number constructors require a valid JSON number token without surrounding whitespace. `NaN` and `Infinity` are rejected.
+Numbers retain their JSON token text. The library does not convert them to floating point during parsing or serialization. Large integers, `-0`, fractional precision, and exponent notation therefore remain unchanged. Number constructors require a valid JSON number token without surrounding whitespace. `NaN` and `Infinity` are rejected. A number built from a binary64 float is written as ECMAScript `Number::toString` writes it ([RQ-030](#requirements)).
 
 <a id="strings"></a>
 ## Strings
 
-Strings retain their decoded UTF-16 code units and parsed token text. Escaped unpaired surrogates can be inspected through the code-unit APIs. Rust, Go, and PHP reject conversion of an unpaired surrogate to an ordinary Unicode string. JavaScript and Python return the corresponding string.
+Strings retain their decoded UTF-16 code units and parsed token text. Escaped unpaired surrogates can be inspected through the code-unit APIs. The Unicode text of a string that holds one is refused with `unpaired_surrogate` ([RQ-027](#requirements)); in the language packages of the [transition](#transition), Go and PHP refuse it, Rust returned its WTF-8 bytes, and JavaScript and Python return the corresponding string.
 
 PHP stores ordinary object keys as UTF-8 array keys. Escaped unpaired surrogates in keys use WTF-8 internally and are escaped when serialized. Numeric PHP array keys are serialized as JSON string keys.
 
@@ -127,8 +132,38 @@ Each requirement is one testable statement of this contract.
 - **RQ-017** The strict parse rejects a duplicate key and accepts a document without one.
 - **RQ-018** The raw source span of a value is the original text, including the surrounding whitespace of the root and the overwritten keys.
 - **RQ-019** Member lookup finds a member by its decoded name.
-- **RQ-020** A value integrates with the standard JSON serialization interface of its language: where that interface can write a value as the library does (Go `encoding/json`, Rust serde) it writes the contract bytes, also when a native structure embeds the value; where it would reorder or rewrite it (JavaScript `JSON.stringify`, PHP `json_encode`, Python `json`) it refuses and directs the caller to the library serializer. No interface writes another document.
+- **RQ-020** A value integrates with the standard JSON serialization interface of its language: where that interface writes a value as the library does (Rust serde) it writes the contract bytes, also when a native structure embeds the value; where it would reorder or rewrite it (JavaScript `JSON.stringify`, PHP `json_encode`, Python `json`, and Go `encoding/json`, which rewrites `<`, `>` and `&` of the text that `MarshalJSON` returns) it refuses with `host_serialization_refused` and directs the caller to the library serializer. No interface writes another document. The Go package of the [transition](#transition) still writes through `MarshalJSON`.
 - **RQ-022** Every implementation gives the official examples the expected results.
 - **RQ-023** The public API exports the parse, serialization, factory and accessor functions.
 - **RQ-024** A parse error exposes its kind, its offset and its message.
 - **RQ-025** A refused argument names one kind of the shared list of argument kinds, in the error class of its host.
+- **RQ-026** The core parses UTF-8 bytes, and every offset counts bytes. A binding gives the core the UTF-8 encoding of a language text; a language text that holds an unpaired surrogate has none, and the binding refuses it with `invalid_text` before the core runs ([RFC 8259](https://www.rfc-editor.org/rfc/rfc8259) section 8.1: JSON text exchanged between systems is UTF-8).
+- **RQ-027** `string_value` returns the Unicode text of a string and fails with `unpaired_surrogate` when the string holds an escaped unpaired surrogate; `string_units` returns the UTF-16 code units of every string, which keep an unpaired surrogate.
+- **RQ-028** The string constructor writes its text as UTF-8 and escapes only what [RFC 8259](https://www.rfc-editor.org/rfc/rfc8259) section 7 requires: `"` and `\` as `\"` and `\\`, U+0008, U+0009, U+000A, U+000C and U+000D as `\b`, `\t`, `\n`, `\f` and `\r`, and the other characters U+0000 to U+001F as `\u00` and two lowercase hex digits. The code-unit constructor writes the same and an unpaired surrogate as `\u` and four lowercase hex digits. Every other character, U+2028 and U+2029 included, is written as itself, as ECMAScript `JSON.stringify` writes it (ECMA-262 QuoteJSONString).
+- **RQ-029** The code-unit constructor and the code-unit lookup take integers from 0 through 65535 and refuse another with `invalid_code_unit`.
+- **RQ-030** The number constructor of a binary64 float writes the token that ECMAScript `Number::toString` (ECMA-262, radix 10) writes: the shortest digits that read back as the same float, `-0` as `0`, positional notation for exponents from -7 through 20 and `e+`/`e-` notation beyond. NaN, positive infinity and negative infinity are refused with `non_finite_number`. `number_text` returns the same text, the one float-to-text function that other polyspec libraries use.
+- **RQ-031** The serializer option `html_safe`, false by default, writes `<`, `>`, `&`, U+2028 and U+2029 of every string token, keys included, as `\u003c`, `\u003e`, `\u0026`, `\u2028` and `\u2029`, so the text can stand inside an HTML `script` element; nothing else of the output changes. These characters stand in a JSON text only inside strings, so the option changes string tokens only.
+- **RQ-032** The accessors of a kind (`members`, `items`, `string_units`, `string_value`, `number_literal`, `boolean_value`) and member lookup (`get`, `get_units`) fail with `wrong_kind` on a value of another kind. Lookup in an object returns absence only for a name that the object does not hold.
+- **RQ-033** Every failure of the core is an error with a kind of the shared lists. A parse rejection has its byte offset; `maximum_depth_exceeded` of a constructor and an argument error have none, since no input position caused them. A broken invariant of the core is `internal`.
+- **RQ-034** The standard JSON serialization hook of a binding (JavaScript `toJSON`, PHP `jsonSerialize`, Go `MarshalJSON`) fails with `host_serialization_refused` ([RQ-020](#requirements)); Python has no such hook. The library serializer is `stringify`, the one function, and the string hook of each language (`toString`, `__toString`, `__str__`) writes the same text with the default options.
+- **RQ-035** The parse options are `max_depth`, an integer from 0 through 256 ([RQ-006](#requirements)), and `reject_duplicates`, false by default ([RQ-017](#requirements)); the serializer options are `html_safe` ([RQ-031](#requirements)).
+
+<a id="ignored-input"></a>
+## Ignored input
+
+Every input that the parser reads without effect on the value. The code that skips it names the row id.
+
+| Id | Input ignored | Why it is correct | Case |
+| --- | --- | --- | --- |
+| IG-1 | Whitespace (U+0020, U+0009, U+000A, U+000D) before and after a token | [RFC 8259](https://www.rfc-editor.org/rfc/rfc8259) section 2: insignificant whitespace is allowed before or after any of the structural characters | `whitespace` of official.json; the root `raw` keeps it ([RQ-018](#requirements)) |
+| IG-2 | The value of an object member that a later member of the same decoded name replaces | [RFC 8259](https://www.rfc-editor.org/rfc/rfc8259) section 4: names should be unique, and the behavior of a document whose names are not is left to the implementation; [RQ-001](#requirements) keeps the last value, `reject_duplicates` refuses the document instead ([RQ-017](#requirements)), and `raw` keeps the replaced member ([RQ-018](#requirements)) | `duplicate-keys` of official.json |
+
+<a id="core"></a>
+## Rust core
+
+The crate `polyspec-ordered-json` of `packages/rust` holds every rule of this contract once. The bindings of PHP, Python, Node.js, Go and the browser are generated by bindgen from the interface contract `packages/rust/interface.json`, which the crate package includes, and hold no rule of their own. [core.json](../../contracts/core.json) holds the cases of RQ-026 to RQ-035, each failure as `raises` with its kind and category; the crate runs them in `tests/contract.rs`.
+
+<a id="transition"></a>
+### Transition
+
+The language packages `packages/js`, `packages/go`, `packages/php`, `packages/php-ext` and `packages/python` keep their current API and their own implementation until the generated bindings pass the shared suite and their package tests and each package is removed by a change of its own. Until then this repository holds two implementations of each language, an exception to PRINCIPLES S6 whose end is that removal. The rules that only these packages follow are stated where they apply; every difference between their API and the interface contract is an entry of `changes` of `packages/rust/interface.json` with its rule.

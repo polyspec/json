@@ -1,0 +1,756 @@
+{
+ "comment": "The cases of the Rust core and of the bindings generated from it (docs/spec/json-contract.md#core, RQ-026 to RQ-035). A failure is raises: its kind, its category (F-3) and, where the rule fixes them, properties. json is a JSON text that the default parse reads; bytes is the base64 of raw input; nest is the number of nested arrays of the input; bits is the big-endian hex of a binary64 float.",
+ "parse": [
+  {
+   "id": "nest_256",
+   "rule": "RQ-006",
+   "nest": 256,
+   "ok": true
+  },
+  {
+   "id": "nest_257",
+   "rule": "RQ-006",
+   "nest": 257,
+   "raises": {
+    "kind": "maximum_depth_exceeded",
+    "status": null,
+    "category": "value",
+    "message": null,
+    "properties": {
+     "offset": 256
+    }
+   }
+  },
+  {
+   "id": "max_depth_0_scalar",
+   "rule": "RQ-035",
+   "json": "1",
+   "options": {
+    "max_depth": 0
+   },
+   "ok": true
+  },
+  {
+   "id": "max_depth_0_container",
+   "rule": "RQ-035",
+   "json": "[]",
+   "options": {
+    "max_depth": 0
+   },
+   "raises": {
+    "kind": "maximum_depth_exceeded",
+    "status": null,
+    "category": "value",
+    "message": null,
+    "properties": {
+     "offset": 0
+    }
+   }
+  },
+  {
+   "id": "max_depth_2",
+   "rule": "RQ-035",
+   "json": "[[[]]]",
+   "options": {
+    "max_depth": 2
+   },
+   "raises": {
+    "kind": "maximum_depth_exceeded",
+    "status": null,
+    "category": "value",
+    "message": null,
+    "properties": {
+     "offset": 2
+    }
+   }
+  },
+  {
+   "id": "max_depth_256",
+   "rule": "RQ-035",
+   "nest": 256,
+   "options": {
+    "max_depth": 256
+   },
+   "ok": true
+  },
+  {
+   "id": "max_depth_257",
+   "rule": "RQ-035",
+   "json": "1",
+   "options": {
+    "max_depth": 257
+   },
+   "raises": {
+    "kind": "depth_limit_out_of_range",
+    "status": null,
+    "category": "value",
+    "message": null
+   }
+  },
+  {
+   "id": "reject_duplicates",
+   "rule": "RQ-035",
+   "json": "{\"a\":1,\"\\u0061\":2}",
+   "options": {
+    "reject_duplicates": true
+   },
+   "raises": {
+    "kind": "duplicate_object_key",
+    "status": null,
+    "category": "value",
+    "message": null,
+    "properties": {
+     "offset": 7
+    }
+   }
+  },
+  {
+   "id": "duplicates_by_default",
+   "rule": "RQ-035",
+   "json": "{\"a\":1,\"a\":2}",
+   "ok": true
+  },
+  {
+   "id": "offset_counts_bytes",
+   "rule": "RQ-026",
+   "json": "[\"한\",x]",
+   "raises": {
+    "kind": "expected_value",
+    "status": null,
+    "category": "value",
+    "message": null,
+    "properties": {
+     "offset": 7
+    }
+   }
+  },
+  {
+   "id": "invalid_utf8",
+   "rule": "RQ-026",
+   "bytes": "WyL/Il0=",
+   "raises": {
+    "kind": "invalid_utf8",
+    "status": null,
+    "category": "value",
+    "message": null,
+    "properties": {
+     "offset": 2
+    }
+   }
+  },
+  {
+   "id": "lone_surrogate_bytes",
+   "rule": "RQ-026",
+   "bytes": "WyLtoIAiXQ==",
+   "raises": {
+    "kind": "invalid_utf8",
+    "status": null,
+    "category": "value",
+    "message": null,
+    "properties": {
+     "offset": 2
+    }
+   }
+  }
+ ],
+ "string_value": [
+  {
+   "id": "plain",
+   "rule": "RQ-027",
+   "json": "\"a\"",
+   "text": "a"
+  },
+  {
+   "id": "escaped",
+   "rule": "RQ-027",
+   "json": "\"\\u00e9\\n\"",
+   "text": "é\n"
+  },
+  {
+   "id": "pair",
+   "rule": "RQ-027",
+   "json": "\"\\ud83c\\udf0d\"",
+   "text": "🌍"
+  },
+  {
+   "id": "lone_high",
+   "rule": "RQ-027",
+   "json": "\"\\ud800\"",
+   "raises": {
+    "kind": "unpaired_surrogate",
+    "status": null,
+    "category": "value",
+    "message": null
+   }
+  },
+  {
+   "id": "lone_low",
+   "rule": "RQ-027",
+   "json": "\"x\\udc00\"",
+   "raises": {
+    "kind": "unpaired_surrogate",
+    "status": null,
+    "category": "value",
+    "message": null
+   }
+  },
+  {
+   "id": "reversed_pair",
+   "rule": "RQ-027",
+   "json": "\"\\udf0d\\ud83c\"",
+   "raises": {
+    "kind": "unpaired_surrogate",
+    "status": null,
+    "category": "value",
+    "message": null
+   }
+  }
+ ],
+ "string_units": [
+  {
+   "id": "lone_high",
+   "rule": "RQ-027",
+   "json": "\"\\ud800x\"",
+   "units": [
+    55296,
+    120
+   ]
+  },
+  {
+   "id": "pair",
+   "rule": "RQ-027",
+   "json": "\"🌍\"",
+   "units": [
+    55356,
+    57101
+   ]
+  },
+  {
+   "id": "empty",
+   "rule": "RQ-027",
+   "json": "\"\"",
+   "units": []
+  }
+ ],
+ "string": [
+  {
+   "id": "ascii",
+   "rule": "RQ-028",
+   "text": "plain",
+   "token": "\"plain\""
+  },
+  {
+   "id": "quote_and_backslash",
+   "rule": "RQ-028",
+   "text": "a\"b\\c",
+   "token": "\"a\\\"b\\\\c\""
+  },
+  {
+   "id": "short_forms",
+   "rule": "RQ-028",
+   "text": "\b\t\n\f\r",
+   "token": "\"\\b\\t\\n\\f\\r\""
+  },
+  {
+   "id": "other_controls",
+   "rule": "RQ-028",
+   "text": "\u0000\u0001\u000b\u001f",
+   "token": "\"\\u0000\\u0001\\u000b\\u001f\""
+  },
+  {
+   "id": "utf8_as_is",
+   "rule": "RQ-028",
+   "text": "한 🌍 é",
+   "token": "\"한 🌍 é\""
+  },
+  {
+   "id": "line_separators_as_is",
+   "rule": "RQ-028",
+   "text": "  ",
+   "token": "\"  \""
+  },
+  {
+   "id": "html_characters_as_is",
+   "rule": "RQ-028",
+   "text": "</script>&",
+   "token": "\"</script>&\""
+  },
+  {
+   "id": "solidus_and_delete_as_is",
+   "rule": "RQ-028",
+   "text": "/",
+   "token": "\"/\""
+  }
+ ],
+ "from_units": [
+  {
+   "id": "lone_high",
+   "rule": "RQ-028",
+   "units": [
+    55296
+   ],
+   "token": "\"\\ud800\""
+  },
+  {
+   "id": "lone_low_then_letter",
+   "rule": "RQ-028",
+   "units": [
+    56320,
+    65
+   ],
+   "token": "\"\\udc00A\""
+  },
+  {
+   "id": "pair",
+   "rule": "RQ-028",
+   "units": [
+    55356,
+    57101
+   ],
+   "token": "\"🌍\""
+  },
+  {
+   "id": "control",
+   "rule": "RQ-028",
+   "units": [
+    10,
+    31
+   ],
+   "token": "\"\\n\\u001f\""
+  },
+  {
+   "id": "largest",
+   "rule": "RQ-029",
+   "units": [
+    65535
+   ],
+   "token": "\"￿\""
+  },
+  {
+   "id": "above_largest",
+   "rule": "RQ-029",
+   "units": [
+    65,
+    65536
+   ],
+   "raises": {
+    "kind": "invalid_code_unit",
+    "status": null,
+    "category": "value",
+    "message": null
+   }
+  }
+ ],
+ "from_float": [
+  {
+   "id": "zero",
+   "rule": "RQ-030",
+   "bits": "0000000000000000",
+   "token": "0"
+  },
+  {
+   "id": "negative_zero",
+   "rule": "RQ-030",
+   "bits": "8000000000000000",
+   "token": "0"
+  },
+  {
+   "id": "one",
+   "rule": "RQ-030",
+   "bits": "3ff0000000000000",
+   "token": "1"
+  },
+  {
+   "id": "negative_one_half",
+   "rule": "RQ-030",
+   "bits": "bff8000000000000",
+   "token": "-1.5"
+  },
+  {
+   "id": "tenth",
+   "rule": "RQ-030",
+   "bits": "3fb999999999999a",
+   "token": "0.1"
+  },
+  {
+   "id": "sum_tenths",
+   "rule": "RQ-030",
+   "bits": "3fd3333333333334",
+   "token": "0.30000000000000004"
+  },
+  {
+   "id": "hundred",
+   "rule": "RQ-030",
+   "bits": "4059000000000000",
+   "token": "100"
+  },
+  {
+   "id": "safe_max",
+   "rule": "RQ-030",
+   "bits": "433fffffffffffff",
+   "token": "9007199254740991"
+  },
+  {
+   "id": "two_pow_53",
+   "rule": "RQ-030",
+   "bits": "4340000000000000",
+   "token": "9007199254740992"
+  },
+  {
+   "id": "e20",
+   "rule": "RQ-030",
+   "bits": "4415af1d78b58c40",
+   "token": "100000000000000000000"
+  },
+  {
+   "id": "e21",
+   "rule": "RQ-030",
+   "bits": "444b1ae4d6e2ef50",
+   "token": "1e+21"
+  },
+  {
+   "id": "large_positional",
+   "rule": "RQ-030",
+   "bits": "441ac53a7e04bcda",
+   "token": "123456789012345680000"
+  },
+  {
+   "id": "e_minus_6",
+   "rule": "RQ-030",
+   "bits": "3eb0c6f7a0b5ed8d",
+   "token": "0.000001"
+  },
+  {
+   "id": "e_minus_7",
+   "rule": "RQ-030",
+   "bits": "3e7ad7f29abcaf48",
+   "token": "1e-7"
+  },
+  {
+   "id": "small_fraction",
+   "rule": "RQ-030",
+   "bits": "3e80c6f7a0b5ed8d",
+   "token": "1.25e-7"
+  },
+  {
+   "id": "subnormal_min",
+   "rule": "RQ-030",
+   "bits": "0000000000000001",
+   "token": "5e-324"
+  },
+  {
+   "id": "max",
+   "rule": "RQ-030",
+   "bits": "7fefffffffffffff",
+   "token": "1.7976931348623157e+308"
+  },
+  {
+   "id": "negative_max",
+   "rule": "RQ-030",
+   "bits": "ffefffffffffffff",
+   "token": "-1.7976931348623157e+308"
+  },
+  {
+   "id": "third",
+   "rule": "RQ-030",
+   "bits": "3fd5555555555555",
+   "token": "0.3333333333333333"
+  },
+  {
+   "id": "nan",
+   "rule": "RQ-030",
+   "bits": "7ff8000000000000",
+   "raises": {
+    "kind": "non_finite_number",
+    "status": null,
+    "category": "value",
+    "message": null
+   }
+  },
+  {
+   "id": "infinity",
+   "rule": "RQ-030",
+   "bits": "7ff0000000000000",
+   "raises": {
+    "kind": "non_finite_number",
+    "status": null,
+    "category": "value",
+    "message": null
+   }
+  },
+  {
+   "id": "negative_infinity",
+   "rule": "RQ-030",
+   "bits": "fff0000000000000",
+   "raises": {
+    "kind": "non_finite_number",
+    "status": null,
+    "category": "value",
+    "message": null
+   }
+  }
+ ],
+ "stringify": [
+  {
+   "id": "default_keeps_html_characters",
+   "rule": "RQ-031",
+   "json": "{\"<a>\":\"&\\u2028\"}",
+   "text": "{\"<a>\":\"&\\u2028\"}"
+  },
+  {
+   "id": "html_safe_values_and_keys",
+   "rule": "RQ-031",
+   "json": "{\"<a>\":\"x&y\"}",
+   "options": {
+    "html_safe": true
+   },
+   "text": "{\"\\u003ca\\u003e\":\"x\\u0026y\"}"
+  },
+  {
+   "id": "html_safe_line_separators",
+   "rule": "RQ-031",
+   "json": "[\"  \"]",
+   "options": {
+    "html_safe": true
+   },
+   "text": "[\"\\u2028\\u2029\"]"
+  },
+  {
+   "id": "html_safe_keeps_other_tokens",
+   "rule": "RQ-031",
+   "json": "[1e5, \"\\/\\u00e9\", true]",
+   "options": {
+    "html_safe": true
+   },
+   "text": "[1e5,\"\\/\\u00e9\",true]"
+  },
+  {
+   "id": "html_safe_off",
+   "rule": "RQ-031",
+   "json": "\"<\"",
+   "options": {
+    "html_safe": false
+   },
+   "text": "\"<\""
+  }
+ ],
+ "accessors": [
+  {
+   "id": "members_of_array",
+   "rule": "RQ-032",
+   "json": "[]",
+   "accessor": "members",
+   "raises": {
+    "kind": "wrong_kind",
+    "status": null,
+    "category": "type",
+    "message": null
+   }
+  },
+  {
+   "id": "items_of_object",
+   "rule": "RQ-032",
+   "json": "{}",
+   "accessor": "items",
+   "raises": {
+    "kind": "wrong_kind",
+    "status": null,
+    "category": "type",
+    "message": null
+   }
+  },
+  {
+   "id": "string_units_of_number",
+   "rule": "RQ-032",
+   "json": "1",
+   "accessor": "string_units",
+   "raises": {
+    "kind": "wrong_kind",
+    "status": null,
+    "category": "type",
+    "message": null
+   }
+  },
+  {
+   "id": "string_value_of_null",
+   "rule": "RQ-032",
+   "json": "null",
+   "accessor": "string_value",
+   "raises": {
+    "kind": "wrong_kind",
+    "status": null,
+    "category": "type",
+    "message": null
+   }
+  },
+  {
+   "id": "number_literal_of_string",
+   "rule": "RQ-032",
+   "json": "\"1\"",
+   "accessor": "number_literal",
+   "raises": {
+    "kind": "wrong_kind",
+    "status": null,
+    "category": "type",
+    "message": null
+   }
+  },
+  {
+   "id": "boolean_value_of_null",
+   "rule": "RQ-032",
+   "json": "null",
+   "accessor": "boolean_value",
+   "raises": {
+    "kind": "wrong_kind",
+    "status": null,
+    "category": "type",
+    "message": null
+   }
+  },
+  {
+   "id": "get_of_array",
+   "rule": "RQ-032",
+   "json": "[1]",
+   "accessor": "get",
+   "key": "0",
+   "raises": {
+    "kind": "wrong_kind",
+    "status": null,
+    "category": "type",
+    "message": null
+   }
+  },
+  {
+   "id": "get_units_of_string",
+   "rule": "RQ-032",
+   "json": "\"a\"",
+   "accessor": "get_units",
+   "units": [
+    97
+   ],
+   "raises": {
+    "kind": "wrong_kind",
+    "status": null,
+    "category": "type",
+    "message": null
+   }
+  },
+  {
+   "id": "get_absent",
+   "rule": "RQ-032",
+   "json": "{\"a\":1}",
+   "accessor": "get",
+   "key": "b",
+   "result": null
+  },
+  {
+   "id": "get_present",
+   "rule": "RQ-032",
+   "json": "{\"a\":1}",
+   "accessor": "get",
+   "key": "a",
+   "result": "1"
+  },
+  {
+   "id": "get_units_lone",
+   "rule": "RQ-032",
+   "json": "{\"\\ud800\":true}",
+   "accessor": "get_units",
+   "units": [
+    55296
+   ],
+   "result": "true"
+  },
+  {
+   "id": "get_units_above_largest",
+   "rule": "RQ-029",
+   "json": "{}",
+   "accessor": "get_units",
+   "units": [
+    70000
+   ],
+   "raises": {
+    "kind": "invalid_code_unit",
+    "status": null,
+    "category": "value",
+    "message": null
+   }
+  }
+ ],
+ "constructors": [
+  {
+   "id": "array_at_limit",
+   "rule": "RQ-033",
+   "wrap": "array",
+   "nest": 255,
+   "ok": true
+  },
+  {
+   "id": "array_past_limit",
+   "rule": "RQ-033",
+   "wrap": "array",
+   "nest": 256,
+   "raises": {
+    "kind": "maximum_depth_exceeded",
+    "status": null,
+    "category": "value",
+    "message": null,
+    "properties": {
+     "offset": null
+    }
+   }
+  },
+  {
+   "id": "object_past_limit",
+   "rule": "RQ-033",
+   "wrap": "object",
+   "nest": 256,
+   "raises": {
+    "kind": "maximum_depth_exceeded",
+    "status": null,
+    "category": "value",
+    "message": null,
+    "properties": {
+     "offset": null
+    }
+   }
+  },
+  {
+   "id": "non_string_key",
+   "rule": "RQ-016",
+   "wrap": "key",
+   "json": "1",
+   "raises": {
+    "kind": "non_string_key",
+    "status": null,
+    "category": "type",
+    "message": null
+   }
+  },
+  {
+   "id": "number_literal_whitespace",
+   "rule": "RQ-015",
+   "wrap": "number",
+   "literal": " 1",
+   "raises": {
+    "kind": "invalid_number_literal",
+    "status": null,
+    "category": "value",
+    "message": null
+   }
+  }
+ ],
+ "hooks": [
+  {
+   "id": "to_json",
+   "rule": "RQ-034",
+   "json": "{}",
+   "raises": {
+    "kind": "host_serialization_refused",
+    "status": null,
+    "category": "type",
+    "message": null
+   }
+  }
+ ]
+}
