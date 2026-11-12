@@ -14,11 +14,11 @@ Parsed `Value` objects cannot be modified through the library API. Factories con
 
 | Operation | JavaScript | Rust | Go | PHP | Python |
 | --- | --- | --- | --- | --- | --- |
-| Text parsing | `parse(source, options)` | `parse(source)` | `Parse(source)` | `parse(source, maxDepth)` | `parse(source, options)` |
-| UTF-8 bytes | `parseBytes(bytes, options)` | `parse_bytes(bytes)` | `ParseBytes(bytes)` | `parse(source)` | `parse_bytes(data, options)` |
-| Depth limit | `options.maxDepth` | `parse_with_max_depth(source, limit)` | `ParseWithMaxDepth(source, limit)` | `maxDepth` | `options.max_depth` |
-| Default output | `stringify(value)` | `stringify(&value)` | `Stringify(value)` | `stringify($value)` | `stringify(value)` |
-| Compact output | `stringify(value)` | `value.compact()` | `value.Compact()` | `$value->compact()` | `value.compact()` |
+| Text parsing | `parse(source, options)` | `parse(source.as_bytes(), &options)` | `Parse(source)` | `parse(source, maxDepth)` | `parse(source, options)` |
+| UTF-8 bytes | `parseBytes(bytes, options)` | `parse(bytes, &options)` | `ParseBytes(bytes)` | `parse(source.as_bytes(), &options)` | `parse_bytes(data, options)` |
+| Depth limit | `options.maxDepth` | `ParseOptions { max_depth }` | `ParseWithMaxDepth(source, limit)` | `maxDepth` | `options.max_depth` |
+| Default output | `stringify(value)` | `stringify(&value, &options)` | `Stringify(value)` | `stringify($value)` | `stringify(value)` |
+| Compact output | `stringify(value)` | `value.to_string()` | `value.Compact()` | `$value->compact()` | `value.compact()` |
 | Source inspection | `value.raw` | `value.raw()` | `value.Raw()` | `$value->raw()` | `value.raw` |
 | Kind | `value.kind` | `value.kind()` | `value.Kind()` | `$value->kind()` | `value.kind` |
 
@@ -29,9 +29,9 @@ JavaScript parse errors report UTF-16 offsets. Rust, Go, PHP and Python parse er
 
 A binding may add an API that only its language needs. A binding extension uses the shared parser and serializer, leaves results and error offsets unchanged for inputs it accepts, and documents any additional rejection. It appears in this section instead of the shared operation tables. Its package runs its own tests with the native test runner of its language (`make test-<language>`); an API that no shared case can reach is verified only by those tests.
 
-The Rust binding provides `parse_bytes_reject_duplicates(source)`. It parses UTF-8 bytes with the normal grammar and depth limit but rejects a repeated decoded object key at any depth. It reports `duplicate object key` (the kind `duplicate_object_key`) at the first byte of the second key token, including when escape sequences spell the same UTF-16 key. `parse_bytes` retains the shared duplicate-key behavior. All other valid values, errors and offsets are unchanged.
+The Rust crate is the core of the [Rust core](../spec/json-contract.md#core) rules: `parse(source, &ParseOptions)` takes UTF-8 bytes with the options `max_depth` and `reject_duplicates`, which rejects a repeated decoded object key at any depth with `duplicate_object_key` at the first byte of the second key token, and `stringify(&value, &StringifyOptions)` takes `html_safe`. The language packages of this document keep their API during the [transition](../spec/json-contract.md#transition); the bindings generated from `packages/rust/interface.json` replace them.
 
-Every error of the Rust binding is an `Error` whose `kind()` returns the enum `ErrorKind`, which is exhaustive, so a caller matches every kind without a wildcard arm; `ErrorKind::as_str()` is the name of the kind, `message()` the Rust wording, and `offset` the byte offset of a rejection, zero for a refused argument. A parse rejection carries the name of the shared list of rejection kinds, except `unescaped_lone_surrogate`, which a Rust `str` cannot hold, and the strict parse adds `duplicate_object_key`. A refused argument carries a kind of the shared argument list: `non_string_key` for `OrderedMap::insert` of a key that is not a string, `wrong_kind` for `string_value()` of a value of another kind, `invalid_number_literal` for `Value::number` of a literal that is another JSON value or holds whitespace (a literal that does not parse carries the kind of its rejection), and `depth_limit_out_of_range` for `parse_with_max_depth` with a limit above 256. No error has an empty kind.
+Every error of the Rust crate is a variant of the exhaustive enum `Error`, so a caller matches every kind without a wildcard arm; `kind()` is the name of the kind of the shared lists, `message()` the Rust wording, and `offset()` the byte offset of a parse rejection, `None` for an argument error and for the depth failure of a constructor. Accessors and lookups of another kind fail with `wrong_kind`, `string_value()` of a string with an unpaired surrogate with `unpaired_surrogate`, code units above 65535 with `invalid_code_unit`, `Value::from_f64` of NaN or an infinity with `non_finite_number`, and `host_json()` always with `host_serialization_refused`. No error has an empty kind.
 
 The Go binding provides `ParseRejectDuplicates(source)`. It parses text with the normal grammar and the default depth limit but rejects a repeated decoded object key at any depth. It reports `duplicate object key` (the kind `duplicate_object_key`) at the first byte of the second key token, including when escape sequences spell the same UTF-16 key. `Parse` retains the shared duplicate-key behavior. All other valid values, errors and offsets are unchanged.
 
@@ -45,7 +45,7 @@ The PHP binding provides `Value::parseRejectDuplicates(source)`. It parses UTF-8
 
 The Python binding accepts `reject_duplicates=True` in the `ParseOptions` of `parse(source, options)` and `parse_bytes(data, options)`, the spelling of the JavaScript option in snake case. With that option the parser rejects a repeated decoded object key at any depth with a `ParseError` of the kind `duplicate_object_key` at the first byte of the second key token, including when escape sequences spell the same UTF-16 key. Text input also rejects a literal unpaired surrogate of the source text with the kind `unescaped_lone_surrogate` at the byte position of that character, the position its UTF-8 encoding would take, because the text has no valid UTF-8 encoding there. `Value.string_value()` returns a surrogate pair as one character and an unpaired surrogate as its own character, as the JavaScript binding does. All other valid values, errors and offsets are unchanged. The distribution ships the `py.typed` marker of PEP 561 in the package `polyspec.ordered_json`, so type checkers read its annotations.
 
-String access returns a surrogate pair as one character. An escaped unpaired surrogate is never replaced: the string value keeps it in the form of the library, as a lone surrogate of the host string in JavaScript and Python and as WTF-8 bytes in Go, PHP and Rust, whose `string_value()` returns those bytes (`Vec<u8>`, valid UTF-8 unless the string holds an unpaired surrogate) because a Rust `String` cannot hold it. A literal unpaired surrogate of text input has no UTF-8 encoding, so Rust, Go and PHP reject its WTF-8 bytes as `invalid UTF-8` before the grammar is read, and JavaScript and Python reject it as `unescaped_lone_surrogate`.
+String access returns a surrogate pair as one character. An escaped unpaired surrogate is never replaced: the string value keeps it in the form of the library, as a lone surrogate of the host string in JavaScript and Python and as WTF-8 bytes in Go and PHP; the Rust `string_value()` refuses such a string with `unpaired_surrogate`, and `string_units()` keeps it. A literal unpaired surrogate of text input has no UTF-8 encoding, so Rust, Go and PHP reject its WTF-8 bytes as `invalid UTF-8` before the grammar is read, and JavaScript and Python reject it as `unescaped_lone_surrogate`.
 
 The standard JSON interface of each language is `Value.toJSON` of JavaScript, `Value::jsonSerialize` of PHP, `ordered_json.JSONEncoder` of Python, `Value.MarshalJSON` of Go and the Serde traits of Rust. JavaScript, PHP and Python refuse a value, also when a native structure holds it, with a message that points to `stringify`; Python refuses through `JSONEncoder.default`, which a caller passes as `cls` to `json.dumps`, and `json.dumps` without it refuses with its own `TypeError`. Go and Rust write the compact contract bytes of a value, also inside a native structure.
 
@@ -61,11 +61,11 @@ The integration is the standard interface of the ecosystem, never an encoder of 
 | Member map | `value.members` | `value.members()` | `value.Members()` | `$value->members()` | `value.members()` |
 | String-key lookup | `value.get(key)` | `value.get(key)` | `value.Get(key)` | `$value->get($key)` | `value.get(key)` |
 | Code-unit lookup | `value.get(key)` | `value.get_units(units)` | `value.GetUnits(units)` | `$value->getUnits($units)` | `value.get_units(units)` |
-| Object construction | `Value.object(entries)` | `Value::object(&map)` | `Object(map)` | `Value::object($map)` | `Value.object(entries)` |
+| Object construction | `Value.object(entries)` | `Value::object(&members)` | `Object(map)` | `Value::object($map)` | `Value.object(entries)` |
 
 JavaScript returns a copied `Map<string, Value>`, exposed as `ReadonlyMap` in TypeScript. `value.keys` returns the first parsed key tokens in order. Object factories accept an iterable of `[string or Value, Value]` entries.
 
-Rust returns an immutable `OrderedMap` reference. `OrderedMap::insert(key, value)` accepts a string `Value` key and returns the replaced value when present. `iter()` returns key/value references in insertion order.
+Rust returns an immutable `OrderedMap` reference. `OrderedMap::insert(key, value)` accepts a string `Value` key and returns the replaced value when present. `iter()` returns key/value references in insertion order, and `len()` is a `u64`.
 
 Go returns an independent `OrderedMap` copy. `Set(key, value)` accepts a string `Value` key; `Keys()` returns key values in insertion order. `Get` and `GetUnits` return a value pointer or nil. `ParseBytes` copies its input.
 
@@ -81,7 +81,7 @@ PHP returns an associative array of `Value` objects. Object construction accepts
 | String construction | `Value.string(text)` | `Value::string(text)` | `String(text)` | `Value::string($text)` | `Value.string(text)` |
 | String access | `stringValue()` | `string_value()` | `StringValue()` | `stringValue()` | `string_value()` |
 | UTF-16 access | `stringUnits()` | `string_units()` | `StringUnits()` | `stringUnits()` | `string_units()` |
-| UTF-16 construction | `Value.string(text)` | `Value::from_units(units)` | `StringFromUnits(units)` | `Value::fromUnits($units)` | `Value.from_units(units)` |
+| UTF-16 construction | `Value.string(text)` | `Value::from_units(&units)` | `StringFromUnits(units)` | `Value::fromUnits($units)` | `Value.from_units(units)` |
 | Number construction | `Value.number(token)` | `Value::number(token)` | `Number(token)` | `Value::number($token)` | `Value.number(token)` |
 | Number access | `numberLiteral()` | `number_literal()` | `NumberLiteral()` | `numberLiteral()` | `number_literal()` |
 | Boolean construction | `Value.boolean(flag)` | `Value::boolean(flag)` | `Boolean(flag)` | `Value::boolean($flag)` | `Value.boolean(flag)` |
@@ -90,7 +90,7 @@ PHP returns an associative array of `Value` objects. Object construction accepts
 
 The kind names are the enumeration `Kind` of every implementation: `Object`, `Array`, `String`, `Number`, `Boolean` and `Null`, with the values `object`, `array`, `string`, `number`, `boolean` and `null`. Rust has the enum `Kind`, Go the constants `ObjectKind` to `NullKind` of `Kind`, JavaScript the enum `Kind`, Python the `StrEnum` `Kind` and PHP the backed enum `Kind`. `value.kind` is a `Kind` in Rust and Go, its string value in JavaScript, a member of `Kind` (which is its string) in Python, and `$value->kind()` is the string, which `Kind::from()` turns into the enum.
 
-JavaScript can construct a string from existing UTF-16 text. Rust and Go expose UTF-16 units as slices; PHP and Python take an iterable of integer code units, and Python returns the units as a list. Array access returns immutable data or independent copies.
+JavaScript can construct a string from existing UTF-16 text. Go exposes UTF-16 units as a slice, Rust as a `Vec<u64>` that the core checks against 65535; PHP and Python take an iterable of integer code units, and Python returns the units as a list. Array access returns immutable data or independent copies.
 
 <a id="php"></a>
 ## PHP backends

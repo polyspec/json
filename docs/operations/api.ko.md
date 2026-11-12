@@ -1,5 +1,5 @@
 <!-- doc-id: api -->
-<!-- source-sha256: 7b4e5169fb944f9757157f9e20d53ae2154380e42168eb9cc8f03a1d3687ec9d -->
+<!-- source-sha256: 5c57f6a2f12b102b961de423ad7c54339be6ac53e1bfeb9a8d9a3fec0612ae87 -->
 # API 계약
 
 [English](api.md)
@@ -15,11 +15,11 @@
 
 | 동작 | JavaScript | Rust | Go | PHP | Python |
 | --- | --- | --- | --- | --- | --- |
-| 텍스트 파싱 | `parse(source, options)` | `parse(source)` | `Parse(source)` | `parse(source, maxDepth)` | `parse(source, options)` |
-| UTF-8 바이트 | `parseBytes(bytes, options)` | `parse_bytes(bytes)` | `ParseBytes(bytes)` | `parse(source)` | `parse_bytes(data, options)` |
-| 깊이 한도 | `options.maxDepth` | `parse_with_max_depth(source, limit)` | `ParseWithMaxDepth(source, limit)` | `maxDepth` | `options.max_depth` |
-| 기본 출력 | `stringify(value)` | `stringify(&value)` | `Stringify(value)` | `stringify($value)` | `stringify(value)` |
-| compact 출력 | `stringify(value)` | `value.compact()` | `value.Compact()` | `$value->compact()` | `value.compact()` |
+| 텍스트 파싱 | `parse(source, options)` | `parse(source.as_bytes(), &options)` | `Parse(source)` | `parse(source, maxDepth)` | `parse(source, options)` |
+| UTF-8 바이트 | `parseBytes(bytes, options)` | `parse(bytes, &options)` | `ParseBytes(bytes)` | `parse(source.as_bytes(), &options)` | `parse_bytes(data, options)` |
+| 깊이 한도 | `options.maxDepth` | `ParseOptions { max_depth }` | `ParseWithMaxDepth(source, limit)` | `maxDepth` | `options.max_depth` |
+| 기본 출력 | `stringify(value)` | `stringify(&value, &options)` | `Stringify(value)` | `stringify($value)` | `stringify(value)` |
+| compact 출력 | `stringify(value)` | `value.to_string()` | `value.Compact()` | `$value->compact()` | `value.compact()` |
 | 원문 조회 | `value.raw` | `value.raw()` | `value.Raw()` | `$value->raw()` | `value.raw` |
 | 종류 | `value.kind` | `value.kind()` | `value.Kind()` | `$value->kind()` | `value.kind` |
 
@@ -30,9 +30,9 @@ JavaScript 파싱 오류는 UTF-16 위치를 반환합니다. Rust, Go, PHP, Pyt
 
 바인딩은 해당 언어에만 필요한 API를 추가할 수 있습니다. 바인딩 확장은 공유 parser와 serializer를 사용하고, 허용한 입력의 결과와 오류 위치를 바꾸지 않으며, 추가로 거부하는 입력을 문서화합니다. 공유 동작 표가 아니라 이 절에 적습니다. 해당 패키지는 자체 테스트를 그 언어의 native test runner로 실행합니다(`make test-<language>`). 공통 사례가 닿지 못하는 API는 그 테스트로만 검증됩니다.
 
-Rust 바인딩은 `parse_bytes_reject_duplicates(source)`를 제공합니다. 일반 문법과 깊이 한도로 UTF-8 바이트를 파싱하지만 어느 깊이든 해석된 객체 키가 반복되면 거부합니다. 이스케이프 표기가 같은 UTF-16 키를 만드는 경우를 포함하여 두 번째 키 토큰의 첫 바이트 위치에 `duplicate object key` 오류(kind `duplicate_object_key`)를 반환합니다. `parse_bytes`는 공통 중복 키 동작을 유지합니다. 그 밖의 유효한 값과 오류 및 위치는 바뀌지 않습니다.
+Rust crate는 [Rust 코어](../spec/json-contract.ko.md#core) 규칙의 코어입니다: `parse(source, &ParseOptions)`는 UTF-8 바이트를 옵션 `max_depth`, `reject_duplicates`와 함께 받으며, 후자는 어느 깊이든 반복된 해석된 객체 키를 두 번째 키 토큰의 첫 바이트에서 `duplicate_object_key`로 거부합니다. `stringify(&value, &StringifyOptions)`는 `html_safe`를 받습니다. 이 문서의 언어 패키지는 [이행 기간](../spec/json-contract.ko.md#transition) 동안 지금의 API를 유지하고, `packages/rust/interface.json`에서 생성한 바인딩이 그것을 대체합니다.
 
-Rust 바인딩의 모든 오류는 `Error`이며, 그 `kind()`는 enum `ErrorKind`를 반환합니다. `ErrorKind`는 exhaustive이므로 호출자는 wildcard arm 없이 모든 kind를 match합니다. `ErrorKind::as_str()`는 kind의 이름, `message()`는 Rust 문구이고, `offset`은 거부의 바이트 위치이며 거부된 인자에서는 0입니다. 파싱 거부는 공유 rejection kind 목록의 이름을 가지며, Rust `str`가 담을 수 없는 `unescaped_lone_surrogate`는 제외하고, strict parse가 `duplicate_object_key`를 더합니다. 거부된 인자는 공유 argument 목록의 kind를 가집니다: 문자열이 아닌 key의 `OrderedMap::insert`는 `non_string_key`, 다른 kind 값의 `string_value()`는 `wrong_kind`, 다른 JSON 값이거나 whitespace를 가진 literal의 `Value::number`는 `invalid_number_literal`(파싱되지 않는 literal은 그 거부의 kind를 가집니다), 256을 넘는 한도의 `parse_with_max_depth`는 `depth_limit_out_of_range`입니다. 빈 kind를 가진 오류는 없습니다.
+Rust crate의 모든 오류는 exhaustive enum `Error`의 변형이므로 호출자는 wildcard arm 없이 모든 kind를 match합니다. `kind()`는 공통 목록의 종류 이름, `message()`는 Rust 문구, `offset()`은 파싱 거부의 바이트 위치이며 인자 오류와 생성자의 깊이 실패에서는 `None`입니다. 다른 종류의 접근자와 조회는 `wrong_kind`로, 짝 없는 surrogate가 든 문자열의 `string_value()`는 `unpaired_surrogate`로, 65535를 넘는 코드 단위는 `invalid_code_unit`으로, NaN이나 무한대의 `Value::from_f64`는 `non_finite_number`로, `host_json()`은 늘 `host_serialization_refused`로 실패합니다. 빈 kind를 가진 오류는 없습니다.
 
 Go 바인딩은 `ParseRejectDuplicates(source)`를 제공합니다. 일반 문법과 기본 깊이 한도로 텍스트를 파싱하지만 어느 깊이든 해석된 객체 키가 반복되면 거부합니다. 이스케이프 표기가 같은 UTF-16 키를 만드는 경우를 포함하여 두 번째 키 토큰의 첫 바이트 위치에 `duplicate object key` 오류(kind `duplicate_object_key`)를 반환합니다. `Parse`는 공통 중복 키 동작을 유지합니다. 그 밖의 유효한 값과 오류 및 위치는 바뀌지 않습니다.
 
@@ -46,7 +46,7 @@ PHP 바인딩은 `Value::parseRejectDuplicates(source)`를 제공합니다. 일�
 
 Python 바인딩은 `parse(source, options)`와 `parse_bytes(data, options)`의 `ParseOptions`에서 JavaScript 옵션의 snake case 표기인 `reject_duplicates=True`를 받습니다. 이 옵션이 있으면 이스케이프 표기가 같은 UTF-16 키를 만드는 경우를 포함하여 어느 깊이든 해석된 객체 키가 반복될 때 두 번째 키 토큰의 첫 바이트 위치에서 `duplicate_object_key` 종류의 `ParseError`로 거부합니다. text 입력은 source text의 문자 그대로 된 짝 없는 surrogate도 그 문자의 UTF-8 인코딩이 가질 위치의 바이트 위치에서 `unescaped_lone_surrogate` 종류로 거부합니다. 그 위치에 유효한 UTF-8 인코딩이 없기 때문입니다. `Value.string_value()`는 surrogate pair를 한 문자로, 짝 없는 surrogate를 자기 문자 그대로 돌려주며, 이는 JavaScript 바인딩과 같습니다. 그 밖의 유효한 값과 오류 및 위치는 바뀌지 않습니다. 배포본은 package `polyspec.ordered_json`에 PEP 561의 `py.typed` 표시를 담으므로 type checker가 그 annotation을 읽습니다.
 
-문자열 접근은 surrogate pair를 한 문자로 반환합니다. 이스케이프된 짝 없는 surrogate는 대체되지 않습니다: 문자열 값은 라이브러리의 형태로 이를 유지하며, JavaScript와 Python에서는 host 문자열의 단독 surrogate로, Go, PHP, Rust에서는 WTF-8 바이트로 유지하며, Rust의 `String`이 이를 담을 수 없으므로 Rust의 `string_value()`가 그 바이트(`Vec<u8>`, 짝 없는 surrogate가 없으면 유효한 UTF-8)를 반환합니다. 텍스트 입력의 짝 없는 surrogate 원문은 UTF-8 인코딩이 없으므로 Rust, Go, PHP는 그 WTF-8 바이트를 문법을 읽기 전에 `invalid UTF-8`로 거부하고 JavaScript와 Python은 `unescaped_lone_surrogate`로 거부합니다.
+문자열 접근은 surrogate pair를 한 문자로 반환합니다. 이스케이프된 짝 없는 surrogate는 대체되지 않습니다: 문자열 값은 라이브러리의 형태로 이를 유지하며, JavaScript와 Python에서는 host 문자열의 단독 surrogate로, Go와 PHP에서는 WTF-8 바이트로 유지합니다. Rust의 `string_value()`는 그런 문자열을 `unpaired_surrogate`로 거부하고 `string_units()`가 유지합니다. 텍스트 입력의 짝 없는 surrogate 원문은 UTF-8 인코딩이 없으므로 Rust, Go, PHP는 그 WTF-8 바이트를 문법을 읽기 전에 `invalid UTF-8`로 거부하고 JavaScript와 Python은 `unescaped_lone_surrogate`로 거부합니다.
 
 각 언어의 표준 JSON 인터페이스는 JavaScript의 `Value.toJSON`, PHP의 `Value::jsonSerialize`, Python의 `ordered_json.JSONEncoder`, Go의 `Value.MarshalJSON`, Rust의 Serde trait입니다. JavaScript, PHP, Python은 native 구조가 값을 담고 있어도 값을 거부하며 `stringify`를 가리키는 메시지를 냅니다. Python은 호출자가 `json.dumps`의 `cls`로 넘기는 `JSONEncoder.default`로 거부하고, 그것 없이 `json.dumps`는 자체 `TypeError`로 거부합니다. Go와 Rust는 native 구조 안에서도 값의 compact contract bytes를 씁니다.
 
@@ -62,11 +62,11 @@ Python의 공개 adapter class `JSONEncoder`와 `default` callback은 이 host �
 | 멤버 연관배열 | `value.members` | `value.members()` | `value.Members()` | `$value->members()` | `value.members()` |
 | 문자열 키 조회 | `value.get(key)` | `value.get(key)` | `value.Get(key)` | `$value->get($key)` | `value.get(key)` |
 | 코드 단위 조회 | `value.get(key)` | `value.get_units(units)` | `value.GetUnits(units)` | `$value->getUnits($units)` | `value.get_units(units)` |
-| 객체 생성 | `Value.object(entries)` | `Value::object(&map)` | `Object(map)` | `Value::object($map)` | `Value.object(entries)` |
+| 객체 생성 | `Value.object(entries)` | `Value::object(&members)` | `Object(map)` | `Value::object($map)` | `Value.object(entries)` |
 
 JavaScript는 복사된 `Map<string, Value>`를 반환하며 TypeScript에는 `ReadonlyMap`으로 노출합니다. `value.keys`는 첫 번째로 파싱된 키 토큰을 순서대로 반환합니다. 객체 생성자는 `[string or Value, Value]` 항목의 iterable을 받습니다.
 
-Rust는 불변 `OrderedMap` 참조를 반환합니다. `OrderedMap::insert(key, value)`는 문자열 `Value` 키를 받고 교체된 값이 있으면 반환합니다. `iter()`는 등록 순서대로 키와 값의 참조를 반환합니다.
+Rust는 불변 `OrderedMap` 참조를 반환합니다. `OrderedMap::insert(key, value)`는 문자열 `Value` 키를 받고 교체된 값이 있으면 반환합니다. `iter()`는 등록 순서대로 키와 값의 참조를 반환하고 `len()`은 `u64`입니다.
 
 Go는 독립적인 `OrderedMap` 복사본을 반환합니다. `Set(key, value)`는 문자열 `Value` 키를 받으며 `Keys()`는 등록 순서대로 키 값을 반환합니다. `Get`과 `GetUnits`는 값 포인터 또는 nil을 반환합니다. `ParseBytes`는 입력을 복사합니다.
 
@@ -82,7 +82,7 @@ PHP는 `Value` 객체의 연관배열을 반환합니다. 객체 생성자는 �
 | 문자열 생성 | `Value.string(text)` | `Value::string(text)` | `String(text)` | `Value::string($text)` |
 | 문자열 조회 | `stringValue()` | `string_value()` | `StringValue()` | `stringValue()` |
 | UTF-16 조회 | `stringUnits()` | `string_units()` | `StringUnits()` | `stringUnits()` |
-| UTF-16 생성 | `Value.string(text)` | `Value::from_units(units)` | `StringFromUnits(units)` | `Value::fromUnits($units)` |
+| UTF-16 생성 | `Value.string(text)` | `Value::from_units(&units)` | `StringFromUnits(units)` | `Value::fromUnits($units)` |
 | 숫자 생성 | `Value.number(token)` | `Value::number(token)` | `Number(token)` | `Value::number($token)` |
 | 숫자 조회 | `numberLiteral()` | `number_literal()` | `NumberLiteral()` | `numberLiteral()` |
 | 불리언 생성 | `Value.boolean(flag)` | `Value::boolean(flag)` | `Boolean(flag)` | `Value::boolean($flag)` |
@@ -91,7 +91,7 @@ PHP는 `Value` 객체의 연관배열을 반환합니다. 객체 생성자는 �
 
 종류 이름은 모든 구현의 열거형 `Kind`입니다: `Object`, `Array`, `String`, `Number`, `Boolean`, `Null`이며 값은 `object`, `array`, `string`, `number`, `boolean`, `null`입니다. Rust는 enum `Kind`, Go는 `Kind`의 상수 `ObjectKind`부터 `NullKind`, JavaScript는 enum `Kind`, Python은 `StrEnum` `Kind`, PHP는 backed enum `Kind`를 가집니다. `value.kind`는 Rust와 Go에서 `Kind`, JavaScript에서 그 문자열 값, Python에서 `Kind`의 멤버(곧 문자열)이며, `$value->kind()`는 문자열이고 `Kind::from()`이 이를 enum으로 바꿉니다.
 
-JavaScript는 기존 UTF-16 텍스트로 문자열을 생성할 수 있습니다. Rust와 Go는 UTF-16 단위를 슬라이스로 제공하며 PHP와 Python은 정수 코드 단위의 iterable을 받고 Python은 단위를 list로 돌려줍니다. 배열 조회는 불변 데이터 또는 독립적인 복사본을 반환합니다.
+JavaScript는 기존 UTF-16 텍스트로 문자열을 생성할 수 있습니다. Go는 UTF-16 단위를 슬라이스로, Rust는 코어가 65535와 비교하는 `Vec<u64>`로 제공하며 PHP와 Python은 정수 코드 단위의 iterable을 받고 Python은 단위를 list로 돌려줍니다. 배열 조회는 불변 데이터 또는 독립적인 복사본을 반환합니다.
 
 <a id="php"></a>
 ## PHP 파서

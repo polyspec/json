@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: a720d0a2a25e46494cccdfaba042c6354e6e6371e911a671ee9edbf57590747e -->
+<!-- source-sha256: 1d629f4e668c2b2968a7167f7711fe0d515cc7c688401cd9ecf538282642e435 -->
 # 실행 체크리스트
 
 ## Wave 1 — 전체 suite를 실행하는 hosted CI
@@ -113,3 +113,9 @@
 | T1.60-1-1 | CI Go toolchain을 형제 symbol extractor와 맞추고 검사 전에 설치된 kit 소스를 연결하여 job이 Makefile이 include하는 도구를 사용하게 한다. Toolchain lock과 dependency review를 다시 생성한다. | mise.toml, mise.lock, packages/go/go.mod, .github/workflows/ci.yml, .github/workflows/push-gate.yml, tests/scripts/workflow-rules.test.mts, config/dependency-review.json | `var/tools/bin/node --test tests/scripts/workflow-rules.test.mts` | [o] |
 | T1.60-1-2 | 문서 gate 전에 Git hook과 workspace link를 준비하고 오프라인 suite lint 전에 설치 단계에서 형제 Rust checker crate를 다운로드한다. 모든 검사를 유지한다. | .github/workflows/ci.yml, tests/scripts/workflow-rules.test.mts, docs/operations/validation.md(.ko) | `var/tools/bin/node --test tests/scripts/workflow-rules.test.mts` | [o] |
 | T1.60-2 | 릴리스 준비 기능 설명을 Rust native Serde 통합 및 모든 구현의 중복 키 거부와 맞춘다. Timing data를 편집하지 않고 신뢰할 수 있는 T2.48 측정 전까지 benchmark 검증을 미확인으로 기록한다. | docs/features.md(.ko), CHANGELOG.md(.ko) | `var/tools/bin/node --test tests/scripts/evidence.test.mts` | [o] |
+
+## Wave 3 — Rust 코어와 생성된 바인딩
+
+| ID | Task | Deliverables | Verification | State |
+| --- | --- | --- | --- | --- |
+| T3.1 | Rust crate를 바인딩의 코어로 만든다: 명세의 RQ-026~RQ-035와 무시하는 입력 표, `contracts/core.json`의 사례, crate의 코어 API와 R-1 lint, crate 패키지의 인터페이스 계약 `packages/rust/interface.json`. 언어 패키지는 생성된 바인딩이 공통 suite와 그 패키지 시험을 통과한 뒤 각 패키지만의 변경으로 없앨 때까지 API와 구현을 유지한다. 그 제거가 언어마다 구현 둘이라는 PRINCIPLES S6 예외를 끝낸다. | `docs/spec/json-contract.md`(.ko), `contracts/core.json`, `packages/rust/`, `clippy.toml`, `scripts/verify.mts`, `docs/operations/api.md`(.ko), `CHANGELOG.md`(.ko) | `make test-rust`, `make lint-rust`, bindgen `check` | [~] |
