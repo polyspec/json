@@ -1,5 +1,5 @@
 <!-- doc-id: json-contract -->
-<!-- source-sha256: f2c384b031cfc2021bbad99668d0fbd9609886dc164dbb87cd04026e9a68cf45 -->
+<!-- source-sha256: 61fbcfd1b6ec884bd51ceec0dc489ca80152b31711c52d65790b76bd10e33aa3 -->
 # JSON 계약
 
 [English](json-contract.md)
@@ -63,8 +63,8 @@ JSON 배열은 입력 순서대로 값을 저장합니다. 빈 배열과 빈 객
 - `invalid_number_literal` — 다른 JSON 값이거나 공백을 가진 literal을 받은 숫자 생성자. 파싱되지 않는 literal은 그 거부 종류를 알립니다.
 - `depth_limit_out_of_range` — 0부터 256까지의 정수가 아닌 깊이 한도.
 - `invalid_argument_type` — 함수가 받지 않는 타입의 인자. 라이브러리가 만들지 않은 값(Go의 nil 또는 영값 `Value`)을 포함합니다. compiler가 타입을 검사하는 Rust에서는 생길 수 없습니다. PHP에서는 선언된 매개변수 타입이 라이브러리 실행 전에 host 타입을 거부하므로, 배열 원소처럼 signature가 타입을 선언할 수 없는 곳에서만 생깁니다.
-- `invalid_code_unit` — 0부터 65535까지의 정수가 아닌 UTF-16 code unit. code unit이 `u16`과 `uint16`인 Rust와 Go, code unit을 문자열로만 받는 JavaScript에서는 생길 수 없습니다.
-- `host_serialization_refused` — 값을 다시 쓰게 될 언어의 표준 JSON 인터페이스([RQ-020](#requirements)). serde 인터페이스가 계약 바이트를 쓰는 Rust와, `MarshalJSON`이 그 바이트를 쓰는 [이행 기간](#transition)의 Go 패키지에서는 생길 수 없습니다.
+- `invalid_code_unit` — 0부터 65535까지의 정수가 아닌 UTF-16 코드 단위([RQ-029](#requirements)). [이행 기간](#transition)의 언어 패키지에서는 코드 단위가 `uint16`인 Go와 코드 단위를 문자열로만 받는 JavaScript에서 생길 수 없습니다.
+- `host_serialization_refused` — 값을 다시 쓰게 될 언어의 표준 JSON 인터페이스([RQ-020](#requirements), [RQ-034](#requirements)). 코어와 그 바인딩에서 생깁니다. Rust serde는 계약 바이트를 쓰고, [이행 기간](#transition)의 Go 패키지도 `MarshalJSON`으로 그 바이트를 씁니다.
 - `direct_construction` — 라이브러리 밖에서 호출한 라이브러리 생성자: JavaScript와 Python의 `Value` 생성자, 이 목록 밖의 메시지나 종류를 받은 오류 생성자. 값과 오류의 필드를 비공개로 두는 Rust와 Go에서는 생길 수 없습니다.
 - `unpaired_surrogate` — 이스케이프한 짝 없는 surrogate가 든 문자열의 유니코드 텍스트. 어떤 유니코드 텍스트도 그것을 담지 못합니다([RQ-027](#requirements)). 코어와 그 바인딩에서 생깁니다.
 - `non_finite_number` — NaN, 양의 무한대, 음의 무한대인 실수로 만든 숫자. 어떤 JSON 숫자 토큰도 그것을 쓰지 못합니다([RQ-030](#requirements)). 코어와 그 바인딩에서 생깁니다.
