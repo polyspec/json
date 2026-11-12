@@ -8,7 +8,7 @@ Strict JSON with associative objects that preserve document key order recursivel
 <a id="usage"></a>
 ## Usage
 
-Rust 1.99.0, the pinned toolchain of the repository; Cargo package `polyspec-json`, import `polyspec_json`. The crate is the Rust core of the [JSON contract](https://github.com/polyspec/json/blob/main/docs/spec/json-contract.md#core), and the package includes `interface.json`, the interface contract of the bindings that bindgen generates from it.
+Rust 1.99.0, the pinned toolchain of the repository; Cargo package `polyspec-json`, import `polyspec_json`. The crate is the Rust core of the [JSON contract](https://github.com/polyspec/json/blob/main/docs/spec/json-contract.md#core), and the package includes `interface.json`, the interface contract of the bindings that binding generates from it.
 
 The usage fragment takes `source` (or `$source`) from an object case in the [common official examples](https://github.com/polyspec/json/blob/main/examples/official.json). Use the fragment inside a function that can return an error. Every error is a variant of the exhaustive enum `Error`; `kind()` is the name of its kind of the shared lists and `offset()` the byte offset of a parse rejection. Accessors of another kind fail with `wrong_kind`, `string_value()` of a string with an unpaired surrogate fails with `unpaired_surrogate`, and `string_units()` returns the UTF-16 code units of every string.
 

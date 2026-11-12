@@ -52,37 +52,37 @@
     "classes": {
       "value": {
         "php": "Polyspec\\Json\\JsonValueError",
-        "python": "JsonValueError",
+        "python": "JSONValueError",
         "node": "JsonValueError",
         "wasm": "JsonValueError"
       },
       "type": {
         "php": "Polyspec\\Json\\JsonTypeError",
-        "python": "JsonTypeError",
+        "python": "JSONTypeError",
         "node": "JsonTypeError",
         "wasm": "JsonTypeError"
       },
       "io": {
         "php": "Polyspec\\Json\\JsonIoError",
-        "python": "JsonIoError",
+        "python": "JSONIoError",
         "node": "JsonIoError",
         "wasm": "JsonIoError"
       },
       "store": {
         "php": "Polyspec\\Json\\JsonStoreError",
-        "python": "JsonStoreError",
+        "python": "JSONStoreError",
         "node": "JsonStoreError",
         "wasm": "JsonStoreError"
       },
       "busy": {
         "php": "Polyspec\\Json\\JsonBusyError",
-        "python": "JsonBusyError",
+        "python": "JSONBusyError",
         "node": "JsonBusyError",
         "wasm": "JsonBusyError"
       },
       "internal": {
         "php": "Polyspec\\Json\\JsonInternalError",
-        "python": "JsonInternalError",
+        "python": "JSONInternalError",
         "node": "JsonInternalError",
         "wasm": "JsonInternalError"
       }
@@ -1561,7 +1561,7 @@
     {
       "id": "change-names",
       "rule": "N-3",
-      "reason": "plan N-3, N-1: a library of a data format is named after the format, so the repository is json; design P-1 and E-2 give its package, module and error class names: Composer polyspec/json, PHP Polyspec\\Json, PyPI polyspec-json, Python polyspec.json, npm @polyspec/json, Go module github.com/polyspec/json/packages/go, PHP extension polyspec_json, Json<Category>Error",
+      "reason": "plan N-3, N-1: a library of a data format is named after the format, so the repository is json; design P-1 and E-2 give its package, module and error class names: Composer polyspec/json, PHP Polyspec\\Json, PyPI polyspec-json, Python polyspec.json, npm @polyspec/json, Go module github.com/polyspec/json/packages/go, PHP extension polyspec_json, the error classes Json<Category>Error in PHP, Node and WASM and JSON<Category>Error in Python (N-2: an acronym word is one capital word in PHP and Node and all capitals in Python and Go)",
       "symbol": "polyspec/ordered-json, Polyspec\\OrderedJson, polyspec-ordered-json, polyspec.ordered_json, @polyspec/ordered-json",
       "from": {
         "php": "Composer polyspec/ordered-json, namespace Polyspec\\OrderedJson, extension polyspec_ordered_json, OrderedJson<Category>Error",

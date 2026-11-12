@@ -166,9 +166,9 @@ impl fmt::Display for Error {
 
 impl std::error::Error for Error {}
 
-/// The kind interface that the generated bindings read (bindgen design E-1, E-3): the kind of the shared lists, no HTTP
+/// The kind interface that the generated bindings read (binding design E-1, E-3): the kind of the shared lists, no HTTP
 /// status and no OS error number, since the crate does no I/O (plan F-2).
-impl bindgen_core::Kinds for Error {
+impl binding_core::Kinds for Error {
     fn kind(&self) -> &'static str {
         Error::kind(self)
     }

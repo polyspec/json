@@ -9,7 +9,7 @@
 <a id="usage"></a>
 ## 사용
 
-Rust는 레포가 고정한 toolchain 1.99.0이며 Cargo 패키지는 `polyspec-json`, 가져오기는 `polyspec_json`입니다. crate는 [JSON 계약](https://github.com/polyspec/json/blob/main/docs/spec/json-contract.ko.md#core)의 Rust 코어이고, 패키지는 bindgen이 바인딩을 생성하는 인터페이스 계약 `interface.json`을 담습니다.
+Rust는 레포가 고정한 toolchain 1.99.0이며 Cargo 패키지는 `polyspec-json`, 가져오기는 `polyspec_json`입니다. crate는 [JSON 계약](https://github.com/polyspec/json/blob/main/docs/spec/json-contract.ko.md#core)의 Rust 코어이고, 패키지는 binding이 바인딩을 생성하는 인터페이스 계약 `interface.json`을 담습니다.
 
 사용 코드의 `source` 또는 `$source`는 [공통 공식 예제](https://github.com/polyspec/json/blob/main/examples/official.json)의 객체 사례에서 가져옵니다. 오류를 반환할 수 있는 함수 안에서 사용합니다. 모든 오류는 exhaustive enum `Error`의 변형이며, `kind()`는 공통 목록의 종류 이름, `offset()`은 파싱 거부의 바이트 위치입니다. 다른 종류의 접근자는 `wrong_kind`로, 짝 없는 surrogate가 든 문자열의 `string_value()`는 `unpaired_surrogate`로 실패하고, `string_units()`는 모든 문자열의 UTF-16 코드 단위를 돌려줍니다.
 

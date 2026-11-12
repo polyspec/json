@@ -257,24 +257,24 @@ test-python:
 test-rust:
 	$(NODE) $(KIT)/runtime-targets.mjs test --runner cargo --roots packages/rust -- -p polyspec-json -- --test-threads=1
 
-# ---- Bindings: generated from packages/rust/interface.json by bindgen (C-0) ---------------------------------------------
-# bindgen is not yet a package that package-lock.json pins; until it is, BINDGEN names the cli (packages/ts/src/cli.ts) of
-# a bindgen checkout, and both targets refuse to run without it. bindings writes the generated folders of packages/ts,
+# ---- Bindings: generated from packages/rust/interface.json by binding (C-0) ---------------------------------------------
+# binding is not yet a package that package-lock.json pins; until it is, BINDING names the cli (packages/ts/src/cli.ts) of
+# a binding checkout, and both targets refuse to run without it. bindings writes the generated folders of packages/ts,
 # packages/python and packages/php-ext, which Git ignores; bindings-check runs the contract check, which also compares the
-# tracked binding packages with what bindgen scaffold writes (bindgen L-2, CK-19).
+# tracked binding packages with what binding scaffold writes (binding L-2, CK-19).
 .PHONY: bindings bindings-check lint-bindings test-bindings
 # The lint and the tests of the binding crates, after make bindings writes their generated folders.
 lint-bindings: bindings
 	$(CARGO) clippy --locked $(foreach crate,$(BINDING_CRATES),-p $(crate)) --all-targets -- -D warnings
 test-bindings: bindings
 	$(CARGO) test --locked $(foreach crate,$(BINDING_CRATES),-p $(crate))
-BINDGEN ?=
+BINDING ?=
 bindings:
-	@test -n "$(BINDGEN)" || { echo "bindings: set BINDGEN to the cli of bindgen"; exit 1; }
-	$(NODE) $(BINDGEN) generate --root $(CURDIR)
+	@test -n "$(BINDING)" || { echo "bindings: set BINDING to the cli of binding"; exit 1; }
+	$(NODE) $(BINDING) generate --root $(CURDIR)
 bindings-check:
-	@test -n "$(BINDGEN)" || { echo "bindings-check: set BINDGEN to the cli of bindgen"; exit 1; }
-	$(NODE) $(BINDGEN) check $(CURDIR)/packages/rust/interface.json
+	@test -n "$(BINDING)" || { echo "bindings-check: set BINDING to the cli of binding"; exit 1; }
+	$(NODE) $(BINDING) check $(CURDIR)/packages/rust/interface.json
 
 # The PHP extension of legacy/packages/php-ext: build-php-ext builds var/php-ext/polyspec_ordered_json.so with phpize after the check
 # of its stub and arginfo header; gen_stub.php may fetch its PHP-Parser once.

@@ -8,14 +8,14 @@ readme = "README.md"
 repository = "https://github.com/polyspec/json.git"
 publish = false
 # The package holds the interface contract of the bindings beside the source, so that a library that takes or gives a
-# json_value reads the value table from the package that Cargo resolved (bindgen design I-1, T-3).
+# json_value reads the value table from the package that Cargo resolved (binding design I-1, T-3).
 include = ["/src/**/*.rs", "/interface.json", "/README.md"]
 
 [dependencies]
 ryu-js = "=1.0.3"
-# The kind interface that the generated bindings read from the core error (bindgen design E-1, I-2 (3)). The git source is the
-# bindgen repository; Cargo.lock pins its commit, the same source as the generated binding crates.
-polyspec-bindgen-core = { git = "https://github.com/polyspec/bindgen.git", branch = "v1/rust-core" }
+# The kind interface that the generated bindings read from the core error (binding design E-1, I-2 (3)). The git source is the
+# binding repository; Cargo.lock pins its commit, the same source as the generated binding crates.
+polyspec-binding-core = { git = "https://github.com/polyspec/binding.git", branch = "v1/rust-core" }
 serde = { version = "=1.0.229", features = ["derive"] }
 serde_json = { version = "=1.0.151", features = ["raw_value", "unbounded_depth"] }
 

@@ -1176,9 +1176,9 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f6b464fbc74e149a392436b17d523f769e057cb6877f6a5c4618bc6f11800548"
 
 [[package]]
-name = "polyspec-bindgen-core"
+name = "polyspec-binding-core"
 version = "0.0.1"
-source = "git+https://github.com/polyspec/bindgen.git?branch=v1%2Frust-core#1b20ddaf05d1252e81de2b87d0f6ac26c7345bf9"
+source = "git+https://github.com/polyspec/binding.git?branch=v1%2Frust-core#7cda8c03d825725366fd9957151711f5bac47eb7"
 dependencies = [
  "indexmap",
  "tokio-util",
@@ -1190,7 +1190,7 @@ version = "0.0.25"
 dependencies = [
  "base64 0.22.1",
  "libtest-mimic",
- "polyspec-bindgen-core",
+ "polyspec-binding-core",
  "ryu-js",
  "serde",
  "serde_json",
@@ -1204,7 +1204,7 @@ dependencies = [
  "napi",
  "napi-build",
  "napi-derive",
- "polyspec-bindgen-core",
+ "polyspec-binding-core",
  "polyspec-json",
 ]
 
@@ -1213,7 +1213,7 @@ name = "polyspec-json-php-ext"
 version = "0.0.25"
 dependencies = [
  "ext-php-rs",
- "polyspec-bindgen-core",
+ "polyspec-binding-core",
  "polyspec-json",
 ]
 
@@ -1221,7 +1221,7 @@ dependencies = [
 name = "polyspec-json-python"
 version = "0.0.25"
 dependencies = [
- "polyspec-bindgen-core",
+ "polyspec-binding-core",
  "polyspec-json",
  "pyo3",
 ]
