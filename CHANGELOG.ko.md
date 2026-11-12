@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: fbf9b9fab0bba63b19d27fcd771863783bed5666fa46de3531f25b6eca727b10 -->
+<!-- source-sha256: fc267f7993c17e1da1aed59d80d6d20b403d14f3e55e2bfd8be1bb0677c17818 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- T3.1: root의 Cargo workspace 하나가 코어 crate와 바인딩 crate를 담고 `Cargo.lock` 하나와 코어의 lint를 가집니다. `make bindings`와 `make bindings-check`는 lock이 고정하기 전까지 `BINDGEN`이 가리키는 bindgen cli를 실행하고, `make bindings-check`가 바인딩 패키지의 owner입니다. `make lint-rust`와 `make test-rust`는 코어 crate를, `make lint-bindings`와 `make test-bindings`는 `make bindings` 뒤에 바인딩 crate를 대상으로 합니다(T3.1).
 - T3.1: 언어 패키지를 `legacy/packages/<runtime>`으로 옮기고 각각 없앨 때까지 배포 대상에서 뺍니다(docs/spec/json-contract.md#transition). bindgen이 `packages/ts`, `packages/python`, `packages/php-ext`에 바인딩 패키지를 만듭니다. `Error`는 `Cargo.lock`이 고정한 git 의존 `polyspec-bindgen-core`의 `Kinds`를 구현합니다(T3.1).
 - T3.1: Rust crate는 crate 패키지가 담는 `packages/rust/interface.json`에서 bindgen이 생성하는 바인딩의 코어입니다(docs/spec/json-contract.md#core, RQ-026~RQ-035). API 변경: `max_depth`(0~256)와 `reject_duplicates`를 가진 `parse(source: &[u8], &ParseOptions)`가 `parse`, `parse_bytes`, `parse_with_max_depth`, `parse_bytes_reject_duplicates`를 대체합니다. `stringify(&value, &StringifyOptions)`는 `<`, `>`, `&`, U+2028, U+2029를 `\u` 이스케이프로 쓰는 `html_safe`를 받고 `compact()`는 없어졌습니다(`Display`가 기본 텍스트를 씁니다). `Error`는 종류마다 변형 하나인 exhaustive enum이며 `kind()`는 그 이름, `offset()`은 `Option<u64>`이고 `ErrorKind`는 없어졌습니다. `members`, `items`, `string_units`, `number_literal`, `boolean_value`, `get`, `get_units`는 다른 종류에서 `wrong_kind`로 실패합니다. `string_value()`는 `String`을 돌려주고 `unpaired_surrogate`로 실패합니다. 코드 단위는 `u64`이며 65535를 넘으면 `invalid_code_unit`입니다. `Value::string`은 UTF-8로 쓰고 RFC 8259가 요구하는 것만 이스케이프합니다. `Value::from_f64`와 `number_text`는 ECMAScript `Number::toString`의 토큰을 쓰고(crate `ryu-js` 1.0.3) NaN과 무한대를 `non_finite_number`로 거부합니다. `host_json()`은 `host_serialization_refused`로 거부합니다. `MAX_DEPTH`는 `u64`입니다. R-1의 lint(`unwrap`·`expect` 금지, `Option`·`Result`의 대체 메서드 금지, 값을 잃는 cast 금지)를 crate에 적용합니다. `contracts/core.json`이 사례를 담고 `tests/contract.rs`가 실행합니다. 언어 패키지는 이행 기간 동안 API를 유지합니다(T3.1).
 

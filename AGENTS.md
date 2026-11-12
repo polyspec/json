@@ -92,7 +92,7 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
 <a id="tools"></a>
 ## Shared tools
 
-- Own: The tools that every polyspec repository shares are the package `@polyspec/kit`, a devDependency pinned in `package-lock.json`. The Makefile holds every recipe of this repository and runs the utilities of the installed package (`node_modules/@polyspec/kit/dist`) with explicit arguments; it includes no recipe of kit. The settings of the tools are in their own files: `.npmrc`, the `[settings]` and `[env]` of `mise.toml`, the lint configurations at the root and the `[lints]` of `packages/rust/Cargo.toml`. `PRINCIPLES.md`, the workflows of `.github/workflows`, `.github/actions/kit-bootstrap/action.yml` and `config/layout.kit.yml` are files of this repository, taken from kit, which writes no copy (kit docs/spec/utilities-and-recipes.md).
+- Own: The tools that every polyspec repository shares are the package `@polyspec/kit`, a devDependency pinned in `package-lock.json`. The Makefile holds every recipe of this repository and runs the utilities of the installed package (`node_modules/@polyspec/kit/dist`) with explicit arguments; it includes no recipe of kit. The settings of the tools are in their own files: `.npmrc`, the `[settings]` and `[env]` of `mise.toml`, the lint configurations at the root and the `[workspace.lints]` of the root `Cargo.toml`. `PRINCIPLES.md`, the workflows of `.github/workflows`, `.github/actions/kit-bootstrap/action.yml` and `config/layout.kit.yml` are files of this repository, taken from kit, which writes no copy (kit docs/spec/utilities-and-recipes.md).
   Enforced by: none, judged at review: kit checks no recipe or file of a repository.
 - Own: The folder layout of this repository is `config/layout.yml`, which extends `config/layout.kit.yml` with the folders of this repository.
   Enforced by: `make layout-check`
@@ -112,7 +112,7 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
   Enforced by: none, judged at review.
 - Own: No command installs a tool on demand. Node.js, Rust, Go, Python, PHP and npm are pinned by tracked files: Go, Python, Composer and the other tools of `mise.toml` are exact releases locked by digests in `mise.lock`, and PHP is pinned by its minor release in `.php-version`. Every command except the install targets run cargo, go, npm and Composer offline, so a missing download fails with a message to run `make install`.
   Enforced by: none, judged at review: kit 0.0.77 removed toolchain check (K854), and the pins of mise.toml and mise.lock are read by install-tools.
-- Own: Only `make install-tools TOOLS=npm`, `make install-packages` and `make install` download. The first installs npm, the second the packages of `package-lock.json`, and `make install` the tools of `mise.lock`, the Rust toolchain, and the crates of `packages/rust/Cargo.lock`; the PIE PHAR and the supplementary suite are the tools `http:pie` and `http:jsontestsuite` of `mise.toml`.
+- Own: Only `make install-tools TOOLS=npm`, `make install-packages` and `make install` download. The first installs npm, the second the packages of `package-lock.json`, and `make install` the tools of `mise.lock`, the Rust toolchain, and the crates of the root `Cargo.lock`; the PIE PHAR and the supplementary suite are the tools `http:pie` and `http:jsontestsuite` of `mise.toml`.
   Enforced by: none, judged at review: the crates of a Cargo.lock are the state of cargo, which a make target cannot compare with the lock (K864).
 - Own: A test reads only the outputs it creates and does not depend on untracked state. Records, documentation checks, shared cases and build copies read the files Git tracks, and each run builds in its own run directory with its own `CARGO_TARGET_DIR`.
   Enforced by: `make ordered-json-test-scripts`
@@ -148,7 +148,7 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
   Enforced by: `make lint-rust`
 - Own: The crate is checked alone by `make ordered-json-rust-check`, which runs `make verify-rust`.
   Enforced by: none, judged at review: no workflow, Git hook or Claude Code hook runs this target.
-- Own: Its crates are the locked versions of `packages/rust/Cargo.lock`, which `make install` downloads; no check downloads them.
+- Own: Its crates are the locked versions of the root `Cargo.lock`, which `make install` downloads; no check downloads them.
   Enforced by: none, judged at review: the crates of a Cargo.lock are the state of cargo, which a make target cannot compare with the lock (K864).
 - Own: Its package tests are the native tests of the crate that `make test-rust` runs.
   Enforced by: `make test-rust`

@@ -23,7 +23,7 @@ test('the rejection kinds are the list of the section of the JSON contract', (co
 });
 
 test('the argument kinds are the list of their section of the JSON contract', (context) => {
-  assert.deepEqual(argumentKinds(), ['non_string_key', 'wrong_kind', 'invalid_number_literal', 'depth_limit_out_of_range', 'invalid_argument_type', 'invalid_code_unit', 'host_serialization_refused', 'direct_construction']);
+  assert.deepEqual(argumentKinds(), ['non_string_key', 'wrong_kind', 'invalid_number_literal', 'depth_limit_out_of_range', 'invalid_argument_type', 'invalid_code_unit', 'host_serialization_refused', 'direct_construction', 'unpaired_surrogate', 'non_finite_number', 'internal']);
   assert.equal(rejectionKinds().filter(kind => argumentKinds().includes(kind)).length, 0);
   const { root, write } = checkout(context);
   write('docs/spec/json-contract.md', '# JSON contract\n\n<a id="rejection-kinds"></a>\n### Rejection kinds\n\n- `first_kind`\n\n<a id="argument-kinds"></a>\n### Argument kinds\n\nThe list.\n\n- `third_kind` — a refused argument.\n\n<a id="numbers"></a>\n## Numbers\n');

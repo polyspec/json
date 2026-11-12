@@ -1,0 +1,26 @@
+# One workspace: the core crate and the binding crates, which bindgen scaffold writes (bindgen design L-2). One
+# Cargo.lock at the root pins every dependency of all of them, the commit of polyspec-bindgen-core included.
+[workspace]
+resolver = "2"
+members = ["packages/rust", "packages/ts", "packages/python", "packages/php-ext"]
+
+# The lints of the core crate (R-1): every warning fails, no unsafe code, no unwrap or expect, no discarded result, no
+# cast that can lose or change a value (B-2), and every allow attribute names its rule id; clippy.toml disallows the
+# fallback methods of Option and Result. The binding crates carry the lints that bindgen writes into their manifests.
+# config/cargo.schema.json requires unsafe_code and allow_attributes_without_reason.
+[workspace.lints.rust]
+warnings = "deny"
+unsafe_code = "deny"
+unused_must_use = "deny"
+
+[workspace.lints.clippy]
+all = { level = "deny", priority = -1 }
+allow_attributes_without_reason = "deny"
+unwrap_used = "deny"
+expect_used = "deny"
+cast_possible_truncation = "deny"
+cast_possible_wrap = "deny"
+cast_sign_loss = "deny"
+let_underscore_must_use = "deny"
+let_underscore_untyped = "deny"
+map_err_ignore = "deny"

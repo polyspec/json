@@ -108,7 +108,9 @@
         "legacy/packages/php-ext/composer.json",
         "packages/rust/Cargo.toml",
         "legacy/packages/go/go.mod",
-        "legacy/packages/python/pyproject.toml"
+        "legacy/packages/python/pyproject.toml",
+        "Cargo.toml",
+        "Cargo.lock"
       ],
       "targets": [
         "ordered-json-test-scripts",
@@ -381,7 +383,9 @@
     {
       "paths": [
         "clippy.toml",
-        "packages/rust/Cargo.toml"
+        "packages/rust/Cargo.toml",
+        "Cargo.toml",
+        "Cargo.lock"
       ],
       "targets": [
         "lint-rust"
@@ -394,7 +398,7 @@
         "packages/php-ext/**"
       ],
       "targets": [
-        "layout-check"
+        "bindings-check"
       ]
     }
   ]

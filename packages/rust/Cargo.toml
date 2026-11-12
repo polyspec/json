@@ -39,28 +39,6 @@ harness = false
 name = "contract"
 harness = false
 
-# The crate is its own workspace, whose lints make lint-rust (cargo clippy) reads: every warning fails, no unsafe code,
-# no unwrap or expect, no discarded result, no cast that can lose or change a value (B-2), and every allow attribute
-# names its rule id (R-1); clippy.toml of the root disallows the fallback methods of Option and Result.
-# config/cargo.schema.json requires unsafe_code and allow_attributes_without_reason.
+# The lints of the root workspace (Cargo.toml of the repository), which make lint-rust (cargo clippy) reads.
 [lints]
 workspace = true
-
-[workspace]
-
-[workspace.lints.rust]
-warnings = "deny"
-unsafe_code = "deny"
-unused_must_use = "deny"
-
-[workspace.lints.clippy]
-all = { level = "deny", priority = -1 }
-allow_attributes_without_reason = "deny"
-unwrap_used = "deny"
-expect_used = "deny"
-cast_possible_truncation = "deny"
-cast_possible_wrap = "deny"
-cast_sign_loss = "deny"
-let_underscore_must_use = "deny"
-let_underscore_untyped = "deny"
-map_err_ignore = "deny"

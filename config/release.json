@@ -11,7 +11,20 @@
     "composer.json": "version",
     "packages/rust/Cargo.toml": "git-tag"
   },
-  "notReleased": {},
+  "notReleased": {
+    "Cargo.toml": "the root Cargo workspace; the crate is released by packages/rust/Cargo.toml",
+    "legacy/packages/go/go.mod": "the legacy language package of the transition, which is no release target until it is removed (docs/spec/json-contract.md#transition)",
+    "legacy/packages/js/package.json": "the legacy language package of the transition, which is no release target until it is removed (docs/spec/json-contract.md#transition)",
+    "legacy/packages/php-ext/composer.json": "the legacy language package of the transition, which is no release target until it is removed (docs/spec/json-contract.md#transition)",
+    "legacy/packages/php/composer.json": "the legacy language package of the transition, which is no release target until it is removed (docs/spec/json-contract.md#transition)",
+    "legacy/packages/python/pyproject.toml": "the legacy language package of the transition, which is no release target until it is removed (docs/spec/json-contract.md#transition)",
+    "packages/php-ext/Cargo.toml": "a binding package of bindgen, released after the generated bindings pass the shared suite and the package tests (V-6 (2)) and kit makes its platform assets (K-3)",
+    "packages/php-ext/composer.json": "a binding package of bindgen, released after the generated bindings pass the shared suite and the package tests (V-6 (2)) and kit makes its platform assets (K-3)",
+    "packages/python/Cargo.toml": "a binding package of bindgen, released after the generated bindings pass the shared suite and the package tests (V-6 (2)) and kit makes its platform assets (K-3)",
+    "packages/python/pyproject.toml": "a binding package of bindgen, released after the generated bindings pass the shared suite and the package tests (V-6 (2)) and kit makes its platform assets (K-3)",
+    "packages/ts/Cargo.toml": "a binding package of bindgen, released after the generated bindings pass the shared suite and the package tests (V-6 (2)) and kit makes its platform assets (K-3)",
+    "packages/ts/package.json": "a binding package of bindgen, released after the generated bindings pass the shared suite and the package tests (V-6 (2)) and kit makes its platform assets (K-3)"
+  },
   "goModules": {},
   "annotatedTags": true,
   "packageFiles": [

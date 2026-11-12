@@ -70,7 +70,7 @@ check:
 	$(MAKE) --no-print-directory ci-targets CI_REPORT=var/report/full-run TARGETS="$(CHECK_TARGETS)"
 
 # install makes every download that the checks read after make install-packages: the tools of mise.lock, the Rust toolchain of
-# rust-toolchain.toml, the crates of packages/rust/Cargo.lock, the Composer projects of the PHP packages with their PHPUnit,
+# rust-toolchain.toml, the crates of the root Cargo.lock, the Composer projects of the PHP packages with their PHPUnit,
 # the virtual environment of the Python package; the PIE PHAR and the supplementary suite are tools of mise.toml (http:pie and
 # http:jsontestsuite), which install-tools installs.
 # It is the only target that downloads.
@@ -242,7 +242,7 @@ build-js build-php:
 build-python:
 	$(NODE) $(KIT)/runtime-targets.mjs build --roots legacy/packages/python -- $(UV) build
 build-rust:
-	$(NODE) $(KIT)/runtime-targets.mjs build --roots packages/rust -- cargo build --locked
+	$(NODE) $(KIT)/runtime-targets.mjs build --roots packages/rust -- cargo build --locked -p polyspec-ordered-json
 
 # The unit tests of a runtime; CASES=<pattern> is the name filter of its runner. The runner arguments are those that kit 0.0.98
 # passed (kit K1094, K1106): go -count=1 -timeout=0, one test at a time in node and cargo, and the 30 s test timeout of node.
@@ -255,7 +255,26 @@ test-php:
 test-python:
 	PYTHONUNBUFFERED=1 NO_COLOR=1 PYTHON_COLORS=0 $(NODE) $(KIT)/runtime-targets.mjs test --runner python --roots legacy/packages/python --venv .venv
 test-rust:
-	$(NODE) $(KIT)/runtime-targets.mjs test --runner cargo --roots packages/rust -- -- --test-threads=1
+	$(NODE) $(KIT)/runtime-targets.mjs test --runner cargo --roots packages/rust -- -p polyspec-ordered-json -- --test-threads=1
+
+# ---- Bindings: generated from packages/rust/interface.json by bindgen (C-0) ---------------------------------------------
+# bindgen is not yet a package that package-lock.json pins; until it is, BINDGEN names the cli (packages/ts/src/cli.ts) of
+# a bindgen checkout, and both targets refuse to run without it. bindings writes the generated folders of packages/ts,
+# packages/python and packages/php-ext, which Git ignores; bindings-check runs the contract check, which also compares the
+# tracked binding packages with what bindgen scaffold writes (bindgen L-2, CK-19).
+.PHONY: bindings bindings-check lint-bindings test-bindings
+# The lint and the tests of the binding crates, after make bindings writes their generated folders.
+lint-bindings: bindings
+	$(CARGO) clippy --locked $(foreach crate,$(BINDING_CRATES),-p $(crate)) --all-targets -- -D warnings
+test-bindings: bindings
+	$(CARGO) test --locked $(foreach crate,$(BINDING_CRATES),-p $(crate))
+BINDGEN ?=
+bindings:
+	@test -n "$(BINDGEN)" || { echo "bindings: set BINDGEN to the cli of bindgen"; exit 1; }
+	$(NODE) $(BINDGEN) generate --root $(CURDIR)
+bindings-check:
+	@test -n "$(BINDGEN)" || { echo "bindings-check: set BINDGEN to the cli of bindgen"; exit 1; }
+	$(NODE) $(BINDGEN) check $(CURDIR)/packages/rust/interface.json
 
 # The PHP extension of legacy/packages/php-ext: build-php-ext builds var/php-ext/polyspec_ordered_json.so with phpize after the check
 # of its stub and arginfo header; gen_stub.php may fetch its PHP-Parser once.
@@ -308,7 +327,7 @@ release-coverage:
 
 # The lint of each language, with the configuration files of this repository: .oxlintrc.json and knip.json, phpcs.xml.dist and
 # phpstan.dist.neon, ruff.toml and the [tool.vulture] of legacy/packages/python/pyproject.toml, .golangci.yml, and the [lints] of
-# packages/rust/Cargo.toml with clippy.toml.
+# the root Cargo.toml with clippy.toml.
 lint-ts:
 	$(NODE) $(KIT)/lint-ts.mjs
 lint-php:
@@ -317,8 +336,11 @@ lint-python:
 	$(NODE) $(KIT)/lint-python.mjs
 lint-go:
 	$(NODE) $(KIT)/lint-go.mjs
+# lint-rust lints the core crate: kit runs clippy --workspace, and the binding crates, which need make bindings first, are
+# excluded and linted by lint-bindings.
+BINDING_CRATES := polyspec-ordered-json-node polyspec-ordered-json-python polyspec-ordered-json-php-ext
 lint-rust:
-	$(NODE) $(KIT)/lint-rust.mjs --locked
+	$(NODE) $(KIT)/lint-rust.mjs --locked $(foreach crate,$(BINDING_CRATES),--exclude $(crate))
 
 # ---- Development links (the git-ignored .links of the main checkout) -------------------------------------------------------
 .PHONY: link unlink link-check

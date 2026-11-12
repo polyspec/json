@@ -1,5 +1,5 @@
 <!-- doc-id: development -->
-<!-- source-sha256: bb6c793e4e5790ad899369a41ca0e0c8610145645407733243604735eb82f3a6 -->
+<!-- source-sha256: 942e1ce339d324ce2d461a1834039afe764e6dad530dc30c5ec4a528a8f121a8 -->
 # Development procedure
 
 [English](AGENTS.md)
@@ -93,7 +93,7 @@
 <a id="tools"></a>
 ## Shared tools
 
-- Own: 모든 polyspec 저장소가 공유하는 도구는 `package-lock.json`에 고정된 devDependency 패키지 `@polyspec/kit`입니다. Makefile은 이 저장소의 모든 recipe를 가지며, 설치된 패키지의 유틸리티(`node_modules/@polyspec/kit/dist`)를 명시적 인자로 실행합니다. kit의 recipe는 include하지 않습니다. 도구의 설정은 각 도구의 파일에 있습니다: `.npmrc`, `mise.toml`의 `[settings]`와 `[env]`, root의 lint 설정, `packages/rust/Cargo.toml`의 `[lints]`. `PRINCIPLES.md`, `.github/workflows`의 workflow, `.github/actions/kit-bootstrap/action.yml`, `config/layout.kit.yml`은 kit에서 가져온 이 저장소의 파일이며, kit은 사본을 쓰지 않습니다(kit docs/spec/utilities-and-recipes.md).
+- Own: 모든 polyspec 저장소가 공유하는 도구는 `package-lock.json`에 고정된 devDependency 패키지 `@polyspec/kit`입니다. Makefile은 이 저장소의 모든 recipe를 가지며, 설치된 패키지의 유틸리티(`node_modules/@polyspec/kit/dist`)를 명시적 인자로 실행합니다. kit의 recipe는 include하지 않습니다. 도구의 설정은 각 도구의 파일에 있습니다: `.npmrc`, `mise.toml`의 `[settings]`와 `[env]`, root의 lint 설정, root `Cargo.toml`의 `[workspace.lints]`. `PRINCIPLES.md`, `.github/workflows`의 workflow, `.github/actions/kit-bootstrap/action.yml`, `config/layout.kit.yml`은 kit에서 가져온 이 저장소의 파일이며, kit은 사본을 쓰지 않습니다(kit docs/spec/utilities-and-recipes.md).
   Enforced by: none, review에서 판단합니다: kit은 저장소의 recipe나 파일을 검사하지 않습니다.
 - Own: 이 저장소의 폴더 배치는 `config/layout.yml`이며, 이는 이 저장소의 폴더로 `config/layout.kit.yml`을 확장합니다.
   Enforced by: `make layout-check`
@@ -113,7 +113,7 @@
   Enforced by: none, 검토에서 판단합니다.
 - Own: 어떤 명령도 도구를 필요할 때 설치하지 않습니다. Node.js, Rust, Go, Python, PHP, npm은 추적 파일이 고정합니다. Go, Python, Composer와 mise가 설치하는 다른 도구는 `mise.toml`의 정확한 release이며 `mise.lock`의 digest로 잠깁니다. PHP는 `.php-version`의 minor release로 고정합니다. install target을 제외한 모든 명령은 cargo, go, npm, Composer를 offline으로 실행하므로, 누락된 다운로드는 `make install`을 실행하라는 메시지와 함께 실패합니다.
   Enforced by: none, 판단 사항입니다. kit 0.0.77이 toolchain check를 제거했고(K854), mise.toml과 mise.lock의 고정은 install-tools가 읽습니다.
-- Own: 다운로드하는 것은 `make install-tools TOOLS=npm`, `make install-packages`, `make install`뿐입니다. 첫 번째는 npm을, 두 번째는 `package-lock.json`의 패키지를 설치하며, `make install`은 `mise.lock`의 도구, Rust toolchain, `packages/rust/Cargo.lock`의 crate를 설치하며, PIE PHAR와 보충 suite는 `mise.toml`의 tool `http:pie`와 `http:jsontestsuite`입니다.
+- Own: 다운로드하는 것은 `make install-tools TOOLS=npm`, `make install-packages`, `make install`뿐입니다. 첫 번째는 npm을, 두 번째는 `package-lock.json`의 패키지를 설치하며, `make install`은 `mise.lock`의 도구, Rust toolchain, root `Cargo.lock`의 crate를 설치하며, PIE PHAR와 보충 suite는 `mise.toml`의 tool `http:pie`와 `http:jsontestsuite`입니다.
   Enforced by: none, 판단 사항입니다. crate의 존재는 cargo의 상태이므로 make target이 Cargo.lock과 비교할 수 없습니다(K864).
 - Own: 테스트는 자기가 만든 출력만 읽고 추적되지 않은 상태에 의존하지 않습니다. record, 문서 검사, 공통 사례, build copy는 Git이 추적하는 파일을 읽으며, 각 실행은 자기 run directory와 자기 `CARGO_TARGET_DIR`로 빌드합니다.
   Enforced by: `make ordered-json-test-scripts`
@@ -149,7 +149,7 @@
   Enforced by: `make lint-rust`
 - Own: crate는 `make ordered-json-rust-check`로 이 패키지만 검사하며, 이 target은 `make verify-rust`를 실행합니다.
   Enforced by: none, 판단 사항입니다. workflow, Git hook, Claude Code hook 어디도 이 target을 실행하지 않습니다.
-- Own: crate는 `packages/rust/Cargo.lock`에 고정된 버전이며, `make install`이 내려받고 검사는 내려받지 않습니다.
+- Own: crate는 root `Cargo.lock`에 고정된 버전이며, `make install`이 내려받고 검사는 내려받지 않습니다.
   Enforced by: none, 판단 사항입니다. crate의 존재는 cargo의 상태이므로 make target이 Cargo.lock과 비교할 수 없습니다(K864).
 - Own: 패키지 테스트는 `make test-rust`가 실행하는 crate의 native 테스트입니다.
   Enforced by: `make test-rust`
