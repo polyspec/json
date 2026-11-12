@@ -14,7 +14,7 @@ from polyspec.ordered_json import parse, stringify
 from .shape import rebuild, tree
 
 OFFICIAL = json.loads(
-    (Path(__file__).resolve().parents[3] / "examples/official.json").read_text(
+    (Path(__file__).resolve().parents[4] / "examples/official.json").read_text(
         encoding="utf-8"
     )
 )

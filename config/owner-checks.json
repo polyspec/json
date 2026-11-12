@@ -91,7 +91,7 @@
         "benchmarks/*.{mjs,php,json}",
         "benchmarks/fixtures/*.json",
         "packages/rust/examples/benchmark.rs",
-        "packages/go/internal/benchmark/*.go"
+        "legacy/packages/go/internal/benchmark/*.go"
       ],
       "targets": [
         "benchmark-check"
@@ -103,12 +103,12 @@
         "package.json",
         "composer.json",
         "composer.lock",
-        "packages/js/package.json",
-        "packages/php/composer.json",
-        "packages/php-ext/composer.json",
+        "legacy/packages/js/package.json",
+        "legacy/packages/php/composer.json",
+        "legacy/packages/php-ext/composer.json",
         "packages/rust/Cargo.toml",
-        "packages/go/go.mod",
-        "packages/python/pyproject.toml"
+        "legacy/packages/go/go.mod",
+        "legacy/packages/python/pyproject.toml"
       ],
       "targets": [
         "ordered-json-test-scripts",
@@ -172,7 +172,7 @@
     },
     {
       "paths": [
-        "packages/js/**"
+        "legacy/packages/js/**"
       ],
       "targets": [
         "verify-js",
@@ -191,7 +191,7 @@
     },
     {
       "paths": [
-        "packages/go/**"
+        "legacy/packages/go/**"
       ],
       "targets": [
         "verify-go",
@@ -200,7 +200,7 @@
     },
     {
       "paths": [
-        "packages/php/**"
+        "legacy/packages/php/**"
       ],
       "targets": [
         "verify-php",
@@ -210,7 +210,7 @@
     },
     {
       "paths": [
-        "packages/php-ext/**"
+        "legacy/packages/php-ext/**"
       ],
       "targets": [
         "verify-php-extension",
@@ -219,7 +219,7 @@
     },
     {
       "paths": [
-        "packages/python/**"
+        "legacy/packages/python/**"
       ],
       "targets": [
         "verify-python",
@@ -229,7 +229,7 @@
     {
       "paths": [
         "benchmarks/python-parse/*",
-        "packages/python/src/polyspec/ordered_json/__init__.py"
+        "legacy/packages/python/src/polyspec/ordered_json/__init__.py"
       ],
       "targets": [
         "python-parse-budget"
@@ -264,7 +264,7 @@
         ".php-version",
         "rust-toolchain.toml",
         "config/toolchain.json",
-        "packages/go/go.mod",
+        "legacy/packages/go/go.mod",
         "package.json"
       ],
       "targets": [
@@ -337,7 +337,7 @@
     },
     {
       "paths": [
-        "packages/php-ext/**"
+        "legacy/packages/php-ext/**"
       ],
       "targets": [
         "lint-php-ext",

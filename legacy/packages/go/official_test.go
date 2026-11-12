@@ -14,7 +14,7 @@ import (
 
 // Requirements: RQ-022
 func TestOfficial(t *testing.T) {
-	source, err := os.ReadFile("../../examples/official.json")
+	source, err := os.ReadFile("../../../examples/official.json")
 	if err != nil {
 		t.Fatal(err)
 	}

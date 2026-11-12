@@ -1,5 +1,5 @@
 <!-- doc-id: python-overview -->
-<!-- source-sha256: 7c37befb524f6c4e84c5328e5bdc9ac2b8ba26aa7f82315102db0ed0495590fd -->
+<!-- source-sha256: 71589c3066322909a1cdd00546d12ede42bed3969ee9b1d7d53ea7d608f6ace0 -->
 # Python용 ordered-json
 
 [English](README.md)
@@ -39,4 +39,4 @@ make check
 
 이 명령은 이 패키지만 대상으로 저장소 루트의 검증기를 실행합니다. 루트 통합 검사는 같은 source revision에서 모든 패키지를 시험하고 현재 결과를 실행 기록 `var/records/verification.json`에 씁니다.
 
-보충 사례에는 `make check JSON_TEST_SUITE=/path/to/JSONTestSuite`를 씁니다. [개발 절차](../../AGENTS.ko.md#package-python)와 [변경 기록](../../CHANGELOG.ko.md)이 필수 검사와 변경을 설명합니다.
+보충 사례에는 `make check JSON_TEST_SUITE=/path/to/JSONTestSuite`를 씁니다. [개발 절차](../../../AGENTS.ko.md#package-python)와 [변경 기록](../../../CHANGELOG.ko.md)이 필수 검사와 변경을 설명합니다.

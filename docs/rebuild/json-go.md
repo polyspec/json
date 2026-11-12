@@ -7,7 +7,7 @@ Verdict: **none fits.** The Go package keeps its own parser. Measured on 2026-10
 
 ## Covers
 
-- `packages/go/orderedjson.go`
+- `legacy/packages/go/orderedjson.go`
 
 ## Requirement
 

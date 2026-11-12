@@ -19,7 +19,7 @@
     "node": ">=26.12.0"
   },
   "scripts": {
-    "test": "make -C ../.. verify-js"
+    "test": "make -C ../../.. verify-js"
   },
   "repository": {
     "type": "git",

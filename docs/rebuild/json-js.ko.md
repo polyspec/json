@@ -1,5 +1,5 @@
 <!-- doc-id: rebuild-json-js -->
-<!-- source-sha256: 571ab697bc6eb1360b579236657a1b7ba7f92e035e145832146bf7b06d6451b7 -->
+<!-- source-sha256: 0b84629a41e3fab489db00e7bb7bc48f2ba03183e55c8045405ada566352c566 -->
 # 재구현 기록: JavaScript JSON parser
 
 [English](json-js.md)
@@ -8,7 +8,7 @@
 
 ## 대상
 
-- `packages/js/index.js`
+- `legacy/packages/js/index.js`
 
 ## 요구사항
 

@@ -1,5 +1,5 @@
 <!-- doc-id: overview -->
-<!-- source-sha256: 2c37d971492b9fcf18e0e32be9af225c547f572f139a967cf895aabaaad5c7fd -->
+<!-- source-sha256: bac9d3880498ab3866601c7f742fdd692ed2c4a06a9ae3c8aa8a529ef699d698 -->
 # ordered-json
 
 [English](README.md)
@@ -23,17 +23,17 @@ cd ordered-json
 ~~~sh
 node --input-type=module <<'JS'
 import {readFileSync} from 'node:fs';
-import {parse, stringify} from './packages/js/index.js';
+import {parse, stringify} from './legacy/packages/js/index.js';
 const {cases} = JSON.parse(readFileSync('examples/official.json', 'utf8'));
 const example = cases.find(example => example.id === 'document-order');
 console.log(stringify(parse(example.input)));
 JS
 ~~~
 
-설치 없이 `packages/python/src`에서 같은 예제를 Python으로 실행합니다.
+설치 없이 `legacy/packages/python/src`에서 같은 예제를 Python으로 실행합니다.
 
 ~~~sh
-PYTHONPATH=packages/python/src python3 - <<'PY'
+PYTHONPATH=legacy/packages/python/src python3 - <<'PY'
 import json
 from polyspec.ordered_json import parse, stringify
 with open('examples/official.json', encoding='utf8') as f:
@@ -51,12 +51,12 @@ pip install "https://github.com/polyspec/ordered-json/releases/download/vX.Y.Z/p
 
 | 패키지 | 내용 | 경로 |
 | --- | --- | --- |
-| JavaScript | JavaScript 및 TypeScript 선언 | `packages/js/` |
+| JavaScript | JavaScript 및 TypeScript 선언 | `legacy/packages/js/` |
 | Rust | Rust crate | `packages/rust/` |
-| Go | Go 패키지 | `packages/go/` |
-| PHP | 순수 PHP 및 Value API | `packages/php/` |
-| PHP 확장 | PIE 메타데이터를 제공하는 네이티브 PHP 확장 | `packages/php-ext/` |
-| Python | Python 패키지 `polyspec-ordered-json`, import `polyspec.ordered_json` | `packages/python/` |
+| Go | Go 패키지 | `legacy/packages/go/` |
+| PHP | 순수 PHP 및 Value API | `legacy/packages/php/` |
+| PHP 확장 | PIE 메타데이터를 제공하는 네이티브 PHP 확장 | `legacy/packages/php-ext/` |
+| Python | Python 패키지 `polyspec-ordered-json`, import `polyspec.ordered_json` | `legacy/packages/python/` |
 
 <a id="verification"></a>
 ## 검증

@@ -32,3 +32,12 @@ rules:
       - "tests/**/*.{js,mjs,cjs,py,sh,bash,zsh,rb,pl,php,go,rs,ps1,bat,cmd}"
       - "!tests/kit/fixture/**"
 
+
+  # S6 exception of the transition (docs/spec/json-contract.md#transition): legacy/ holds the language packages that the
+  # generated bindings replace, under their former paths, until each is removed by a change of its own (plan V-6 (5)).
+  - id: layout-root-folders
+    paths: ["*", "!packages", "!contracts", "!docs", "!scripts", "!tests", "!examples", "!benchmarks", "!config", "!.github", "!.githooks", "!.kit", "!.mise", "!.claude", "!legacy"]
+
+  # The stub of the legacy PHP extension stays beside its C sources until the package is removed (plan V-6 (5)).
+  - id: php-ext-stub-place
+    paths: ["**/*.stub.php", "!packages/php-ext/src/*.stub.php", "!legacy/packages/php-ext/src/*.stub.php"]

@@ -1,5 +1,5 @@
-<!-- doc-id: npm-overview -->
-# ordered-json for JavaScript
+<!-- doc-id: go-overview -->
+# ordered-json for Go
 
 [한국어](README.ko.md)
 
@@ -8,18 +8,18 @@ Strict JSON with associative objects that preserve document key order recursivel
 <a id="usage"></a>
 ## Usage
 
-Node.js >= 20; ESM and TypeScript declarations.
+Go >= 1.22; module `github.com/polyspec/ordered-json/packages/go`, package `orderedjson`.
 
-The usage fragment takes `source` (or `$source`) from an object case in the [common official examples](https://github.com/polyspec/ordered-json/blob/main/examples/official.json).
+The usage fragment takes `source` (or `$source`) from an object case in the [common official examples](https://github.com/polyspec/ordered-json/blob/main/examples/official.json). Import `github.com/polyspec/ordered-json/packages/go` and use the fragment inside a function that can return an error.
 
-~~~js
-import {parse, stringify} from './index.js';
-const value = parse(source);
-const members = value.members;
-const output = stringify(value);
+~~~go
+value, err := orderedjson.Parse(source)
+if err != nil { return err }
+output, err := orderedjson.Stringify(value)
+if err != nil { return err }
+_ = output
 ~~~
 
-`parse(source, {rejectDuplicates: true})` and `parseBytes(bytes, {rejectDuplicates: true})` reject a repeated decoded object key at any depth with a `ParseError` of kind `duplicate_object_key` instead of keeping the last value.
 
 The [JSON contract](https://github.com/polyspec/ordered-json/blob/main/docs/spec/json-contract.md) and [API contract](https://github.com/polyspec/ordered-json/blob/main/docs/operations/api.md) define behavior. Source is provided by this repository. Registry publication and versioned releases are not verified; a source version string is not a release record.
 
@@ -34,4 +34,4 @@ make check
 
 The command invokes the root verifier against this package. The root aggregate check tests all packages from the same source revision and writes the current result to `var/records/verification.json`, the record of that run.
 
-Use `make check JSON_TEST_SUITE=/path/to/JSONTestSuite` for supplementary cases. [Development procedure](../../AGENTS.md#package-npm) and [changelog](../../CHANGELOG.md) describe required checks and changes.
+Use `make check JSON_TEST_SUITE=/path/to/JSONTestSuite` for supplementary cases. [Development procedure](../../../AGENTS.md#package-go) and [changelog](../../../CHANGELOG.md) describe required checks and changes.

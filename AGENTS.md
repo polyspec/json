@@ -80,7 +80,7 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
   Enforced by: `make release-tag`
 - Own: The version-bump commit `Release X.Y.Z` sets the version in every manifest of the repository and renames `## Unreleased` of each changelog to `## X.Y.Z`.
   Enforced by: none; judged at review.
-- Own: The Go tag `packages/go/vX.Y.Z` is created with `vX.Y.Z` on the same commit.
+- Own: The Go tag `legacy/packages/go/vX.Y.Z` is created with `vX.Y.Z` on the same commit.
   Enforced by: `make release-tag`
 - Own: A successful run of the `ci` workflow on `main` runs `.github/workflows/release.yml`, which releases the top `## X.Y.Z` at the commit of that run when it is the version commit, or a later commit whose `## Unreleased` is empty while the version is untagged.
   Enforced by: `make release-tag`
@@ -132,7 +132,7 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
   Enforced by: none, judged at review.
 
 <a id="package-npm"></a>
-## Package npm (packages/js)
+## Package npm (legacy/packages/js)
 
 - Own: The package `@polyspec/ordered-json` is checked alone by `make ordered-json-js-check`, which runs `make verify-js` (`scripts/verify.mts --only js`) and compares its adapter with the shared cases and writes no record. Its package tests are native node:test files that `make test-js` runs.
   Enforced by: `make test-js`
@@ -156,7 +156,7 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
   Enforced by: `make docs-check`
 
 <a id="package-go"></a>
-## Package go (packages/go)
+## Package go (legacy/packages/go)
 
 - Own: The module is linted by `make lint-go` (golangci-lint with `.golangci.yml`, and deadcode).
   Enforced by: `make lint-go`
@@ -170,7 +170,7 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
   Enforced by: `make docs-check`
 
 <a id="package-php"></a>
-## Package php (packages/php)
+## Package php (legacy/packages/php)
 
 - Own: The Composer package is linted by `make lint-php` (phpcs and PHPStan).
   Enforced by: `make lint-php`
@@ -178,13 +178,13 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
   Enforced by: none, judged at review: no workflow, Git hook or Claude Code hook runs this target.
 - Own: Its `composer.lock` is locked to the platform `8.4.1` and requires PHP `>=8.4`, and is re-locked with `composer update --lock` when its manifest changes.
   Enforced by: none, judged at review.
-- Own: Its package tests are the PHPUnit tests of `packages/php/tests` that `make test-php` runs, installed by `make install`.
+- Own: Its package tests are the PHPUnit tests of `legacy/packages/php/tests` that `make test-php` runs, installed by `make install`.
   Enforced by: `make test-php`
 - Own: The changes of the package are listed in its section of [CHANGELOG.md](CHANGELOG.md).
   Enforced by: `make docs-check`
 
 <a id="package-php-ext"></a>
-## Package php-ext (packages/php-ext)
+## Package php-ext (legacy/packages/php-ext)
 
 - Own: The extension is checked alone by `make ordered-json-php-ext-check`, which runs `make verify-php-extension`. `make build-php-ext` of kit (S10) builds `var/php-ext/polyspec_ordered_json.so` from the stub and its tracked arginfo header (`make php-ext-arginfo` writes it), and `make verify-php-extension` and `make test-php-ext` load it.
   Enforced by: `make test-php-ext`
@@ -194,11 +194,11 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
   Enforced by: `make docs-check`
 
 <a id="package-python"></a>
-## Package python (packages/python)
+## Package python (legacy/packages/python)
 
-- Own: The package is checked alone by `make ordered-json-python-check`, which runs `make verify-python`, and linted by `make lint-python` (ruff with `ruff.toml`, and vulture with `packages/python/vulture_whitelist.py`). `make install-packages` installs it editable into `packages/python/.venv`, which its tests use.
+- Own: The package is checked alone by `make ordered-json-python-check`, which runs `make verify-python`, and linted by `make lint-python` (ruff with `ruff.toml`, and vulture with `legacy/packages/python/vulture_whitelist.py`). `make install-packages` installs it editable into `legacy/packages/python/.venv`, which its tests use.
   Enforced by: `make lint-python`
-- Own: Its package tests are the unittest tests of `packages/python/tests` that `make test-python` runs.
+- Own: Its package tests are the unittest tests of `legacy/packages/python/tests` that `make test-python` runs.
   Enforced by: `make test-python`
 - Own: The changes of the package are listed in its section of [CHANGELOG.md](CHANGELOG.md).
   Enforced by: `make docs-check`

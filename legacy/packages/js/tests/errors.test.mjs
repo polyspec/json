@@ -7,7 +7,7 @@ import {ParseError, Value, parse, parseBytes, stringify} from '../index.js';
 
 /** The kinds of the list of the section of `anchor` in the JSON contract, each with the text of its item. */
 function listed(anchor) {
-  const spec = readFileSync(new URL('../../../docs/spec/json-contract.md', import.meta.url), 'utf8');
+  const spec = readFileSync(new URL('../../../../docs/spec/json-contract.md', import.meta.url), 'utf8');
   const section = spec.split(anchor)[1].split('\n<a id=')[0];
   return new Map([...section.matchAll(/^- `([a-z0-9_]+)`(.*)$/gm)].map(([, name, text]) => [name, text]));
 }

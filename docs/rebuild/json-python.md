@@ -7,7 +7,7 @@ Verdict: **none fits.** The Python package keeps its own parser. Measured on 202
 
 ## Covers
 
-- `packages/python/src/polyspec/ordered_json/__init__.py`
+- `legacy/packages/python/src/polyspec/ordered_json/__init__.py`
 
 ## Requirement
 

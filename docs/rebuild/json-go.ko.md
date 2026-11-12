@@ -1,5 +1,5 @@
 <!-- doc-id: rebuild-json-go -->
-<!-- source-sha256: bef4a8d060d703570ba67f6ffa80da1044bea904615417da4c044cb6da4047ba -->
+<!-- source-sha256: 7c07f4ba393a836780e29c0131101a6646617ae673d38c452849306906435899 -->
 # 재구현 기록: Go JSON parser
 
 [English](json-go.md)
@@ -8,7 +8,7 @@
 
 ## 대상
 
-- `packages/go/orderedjson.go`
+- `legacy/packages/go/orderedjson.go`
 
 ## 요구사항
 

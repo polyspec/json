@@ -14,15 +14,15 @@
   },
   "autoload": {
     "psr-4": {
-      "Polyspec\\OrderedJson\\": "packages/php/src/"
+      "Polyspec\\OrderedJson\\": "legacy/packages/php/src/"
     },
     "files": [
-      "packages/php/src/OrderedJson.php"
+      "legacy/packages/php/src/OrderedJson.php"
     ]
   },
   "autoload-dev": {
     "psr-4": {
-      "Polyspec\\OrderedJson\\Tests\\": "packages/php/tests/"
+      "Polyspec\\OrderedJson\\Tests\\": "legacy/packages/php/tests/"
     }
   },
   "config": {

@@ -1,5 +1,5 @@
 <!-- doc-id: development -->
-<!-- source-sha256: efe31da2d4da5018a777dd71bc2cf9ec3afbd1a02d183348309ae644fa55527f -->
+<!-- source-sha256: bb6c793e4e5790ad899369a41ca0e0c8610145645407733243604735eb82f3a6 -->
 # Development procedure
 
 [English](AGENTS.md)
@@ -81,7 +81,7 @@
   Enforced by: `make release-tag`
 - Own: version-bump commit `Release X.Y.Z`는 저장소의 모든 manifest에 version을 설정하며, 각 changelog의 `## Unreleased`를 `## X.Y.Z`로 바꿉니다.
   Enforced by: none; 검토에서 판단합니다.
-- Own: Go tag `packages/go/vX.Y.Z`는 같은 commit에 `vX.Y.Z`와 함께 만들어집니다.
+- Own: Go tag `legacy/packages/go/vX.Y.Z`는 같은 commit에 `vX.Y.Z`와 함께 만들어집니다.
   Enforced by: `make release-tag`
 - Own: `main`에서 `ci` workflow 실행이 성공하면 `.github/workflows/release.yml`이 실행되며, 이 workflow는 그 실행의 commit이 version commit이거나, version에 tag가 없고 `## Unreleased`가 비어 있는 그 뒤의 commit일 때 그 commit에 최상위 `## X.Y.Z`를 릴리스합니다.
   Enforced by: `make release-tag`
@@ -133,7 +133,7 @@
   Enforced by: none, 검토에서 판단합니다.
 
 <a id="package-npm"></a>
-## 패키지 npm (packages/js)
+## 패키지 npm (legacy/packages/js)
 
 - Own: 패키지 `@polyspec/ordered-json`은 `make ordered-json-js-check`로 이 패키지만 검사합니다. 이 target은 `make verify-js`(`scripts/verify.mts --only js`)를 실행해 어댑터를 공통 사례와 비교하며 기록을 쓰지 않습니다. 패키지 테스트는 `make test-js`가 실행하는 native node:test 파일입니다.
   Enforced by: `make test-js`
@@ -157,7 +157,7 @@
   Enforced by: `make docs-check`
 
 <a id="package-go"></a>
-## 패키지 go (packages/go)
+## 패키지 go (legacy/packages/go)
 
 - Own: module은 `make lint-go`(`.golangci.yml`을 쓰는 golangci-lint와 deadcode)가 lint합니다.
   Enforced by: `make lint-go`
@@ -171,7 +171,7 @@
   Enforced by: `make docs-check`
 
 <a id="package-php"></a>
-## 패키지 php (packages/php)
+## 패키지 php (legacy/packages/php)
 
 - Own: Composer 패키지는 `make lint-php`(phpcs와 PHPStan)가 lint합니다.
   Enforced by: `make lint-php`
@@ -179,13 +179,13 @@
   Enforced by: none, 판단 사항입니다. workflow, Git hook, Claude Code hook 어디도 이 target을 실행하지 않습니다.
 - Own: `composer.lock`은 platform `8.4.1`로 잠기고 PHP `>=8.4`를 요구하며, manifest가 바뀌면 `composer update --lock`으로 다시 잠급니다.
   Enforced by: none, 검토에서 판단합니다.
-- Own: 패키지 테스트는 `packages/php/tests`의 PHPUnit 테스트이며, `make install`이 설치하고 `make test-php`가 실행합니다.
+- Own: 패키지 테스트는 `legacy/packages/php/tests`의 PHPUnit 테스트이며, `make install`이 설치하고 `make test-php`가 실행합니다.
   Enforced by: `make test-php`
 - Own: 패키지의 변경은 [CHANGELOG.ko.md](CHANGELOG.ko.md)의 이 패키지 절에 적습니다.
   Enforced by: `make docs-check`
 
 <a id="package-php-ext"></a>
-## 패키지 php-ext (packages/php-ext)
+## 패키지 php-ext (legacy/packages/php-ext)
 
 - Own: extension은 `make ordered-json-php-ext-check`로 이 패키지만 검사하며, 이 target은 `make verify-php-extension`을 실행합니다. kit의 `make build-php-ext`(S10)가 stub과 추적되는 arginfo header(`make php-ext-arginfo`가 씁니다)에서 `var/php-ext/polyspec_ordered_json.so`를 빌드하며, `make verify-php-extension`과 `make test-php-ext`가 이를 불러옵니다.
   Enforced by: `make test-php-ext`
@@ -195,11 +195,11 @@
   Enforced by: `make docs-check`
 
 <a id="package-python"></a>
-## 패키지 python (packages/python)
+## 패키지 python (legacy/packages/python)
 
-- Own: 패키지는 `make ordered-json-python-check`로 이 패키지만 검사하며, 이 target은 `make verify-python`을 실행합니다. `make lint-python`(`ruff.toml`을 쓰는 ruff와 `packages/python/vulture_whitelist.py`를 쓰는 vulture)이 lint합니다. `make install-packages`가 `packages/python/.venv`에 editable로 설치하며, 테스트가 이를 씁니다.
+- Own: 패키지는 `make ordered-json-python-check`로 이 패키지만 검사하며, 이 target은 `make verify-python`을 실행합니다. `make lint-python`(`ruff.toml`을 쓰는 ruff와 `legacy/packages/python/vulture_whitelist.py`를 쓰는 vulture)이 lint합니다. `make install-packages`가 `legacy/packages/python/.venv`에 editable로 설치하며, 테스트가 이를 씁니다.
   Enforced by: `make lint-python`
-- Own: 패키지 테스트는 `packages/python/tests`의 unittest 테스트이며, `make test-python`이 실행합니다.
+- Own: 패키지 테스트는 `legacy/packages/python/tests`의 unittest 테스트이며, `make test-python`이 실행합니다.
   Enforced by: `make test-python`
 - Own: 패키지의 변경은 [CHANGELOG.ko.md](CHANGELOG.ko.md)의 이 패키지 절에 적습니다.
   Enforced by: `make docs-check`

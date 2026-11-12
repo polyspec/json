@@ -1,5 +1,5 @@
 <!-- doc-id: rebuild-json-python -->
-<!-- source-sha256: 8e5d8d4d55fa0ba02f560ea536a9cad322612e426dd83e48597763e69ae15c34 -->
+<!-- source-sha256: c8cd18b101c8a5c7db78519c65a4807e9aa8a9254105d8a53cdec8214065cb2f -->
 # 재구현 기록: Python JSON parser
 
 [English](json-python.md)
@@ -8,7 +8,7 @@
 
 ## 대상
 
-- `packages/python/src/polyspec/ordered_json/__init__.py`
+- `legacy/packages/python/src/polyspec/ordered_json/__init__.py`
 
 ## 요구사항
 

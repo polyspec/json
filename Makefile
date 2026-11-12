@@ -83,7 +83,7 @@ install: ordered-json-install
 deps-node:
 	$(MAKE) --no-print-directory install-packages
 deps-go:
-	$(GO) -C packages/go mod download
+	$(GO) -C legacy/packages/go mod download
 deps-rust: ordered-json-install-rust-packages
 deps-php: ordered-json-install-php
 deps-python: ordered-json-install-python
@@ -92,22 +92,22 @@ ordered-json-install: install-kit ordered-json-install-rust-packages ordered-jso
 ordered-json-install-rust:
 	$(ONLINE) rustup toolchain install --no-self-update
 
-# ordered-json-install-php installs the locked Composer packages of packages/php and packages/php-ext, PHPUnit among them, into their
+# ordered-json-install-php installs the locked Composer packages of legacy/packages/php and legacy/packages/php-ext, PHPUnit among them, into their
 # vendor/, from which make test-php runs their tests, and the root package, the published composer.json,
 # into vendor/, whose autoloader PHPStan of make lint-php reads for the PHP of benchmarks/. The root package requires only
 # the platform, so its install downloads nothing; its composer.lock locks no package.
 ordered-json-install-php:
 	$(ONLINE) $(COMPOSER) install --no-interaction --no-progress
-	$(ONLINE) $(COMPOSER) install --no-interaction --no-progress --working-dir=packages/php
-	$(ONLINE) $(COMPOSER) install --no-interaction --no-progress --working-dir=packages/php-ext
+	$(ONLINE) $(COMPOSER) install --no-interaction --no-progress --working-dir=legacy/packages/php
+	$(ONLINE) $(COMPOSER) install --no-interaction --no-progress --working-dir=legacy/packages/php-ext
 
-# ordered-json-install-python makes packages/python/.venv from the Python of mise.toml (python-venv of kit) and installs the package
+# ordered-json-install-python makes legacy/packages/python/.venv from the Python of mise.toml (python-venv of kit) and installs the package
 # into it, non-editable, with the uv of mise.toml. make install-link then makes the installed package folder a link to
-# packages/python/src/polyspec/ordered_json (kit K765), so the tests import the sources of the checkout; make test-python runs the
+# legacy/packages/python/src/polyspec/ordered_json (kit K765), so the tests import the sources of the checkout; make test-python runs the
 # Python tests with its interpreter.
 ordered-json-install-python:
-	$(MAKE) --no-print-directory python-venv DIR=packages/python/.venv
-	$(ONLINE) $(UV) pip install --python packages/python/.venv/bin/python --link-mode copy --no-deps packages/python
+	$(MAKE) --no-print-directory python-venv DIR=legacy/packages/python/.venv
+	$(ONLINE) $(UV) pip install --python legacy/packages/python/.venv/bin/python --link-mode copy --no-deps legacy/packages/python
 	$(MAKE) --no-print-directory install-link
 
 # Product dependency installs are reused by independent CI jobs after Kit prepares
@@ -237,34 +237,34 @@ python-venv:
 .PHONY: build-go build-js build-php build-python build-rust test-go test-js test-php test-python test-rust build-php-ext lint-php-ext test-php-ext
 # The build of each package of a runtime with the build of its ecosystem; the JavaScript and PHP packages have none (kit K1106).
 build-go:
-	$(NODE) $(KIT)/runtime-targets.mjs build --roots packages/go -- $(CURDIR)/var/tools/mise/shims/go build ./...
+	$(NODE) $(KIT)/runtime-targets.mjs build --roots legacy/packages/go -- $(CURDIR)/var/tools/mise/shims/go build ./...
 build-js build-php:
 build-python:
-	$(NODE) $(KIT)/runtime-targets.mjs build --roots packages/python -- $(UV) build
+	$(NODE) $(KIT)/runtime-targets.mjs build --roots legacy/packages/python -- $(UV) build
 build-rust:
 	$(NODE) $(KIT)/runtime-targets.mjs build --roots packages/rust -- cargo build --locked
 
 # The unit tests of a runtime; CASES=<pattern> is the name filter of its runner. The runner arguments are those that kit 0.0.98
 # passed (kit K1094, K1106): go -count=1 -timeout=0, one test at a time in node and cargo, and the 30 s test timeout of node.
 test-go:
-	$(NODE) $(KIT)/runtime-targets.mjs test --runner go --roots packages/go -- -count=1 -timeout=0
+	$(NODE) $(KIT)/runtime-targets.mjs test --runner go --roots legacy/packages/go -- -count=1 -timeout=0
 test-js:
-	$(NODE) $(KIT)/runtime-targets.mjs test --runner node --roots packages/js -- --test-timeout=30000 --test-concurrency=1
+	$(NODE) $(KIT)/runtime-targets.mjs test --runner node --roots legacy/packages/js -- --test-timeout=30000 --test-concurrency=1
 test-php:
-	$(NODE) $(KIT)/runtime-targets.mjs test --runner php --roots packages/php
+	$(NODE) $(KIT)/runtime-targets.mjs test --runner php --roots legacy/packages/php
 test-python:
-	PYTHONUNBUFFERED=1 NO_COLOR=1 PYTHON_COLORS=0 $(NODE) $(KIT)/runtime-targets.mjs test --runner python --roots packages/python --venv .venv
+	PYTHONUNBUFFERED=1 NO_COLOR=1 PYTHON_COLORS=0 $(NODE) $(KIT)/runtime-targets.mjs test --runner python --roots legacy/packages/python --venv .venv
 test-rust:
 	$(NODE) $(KIT)/runtime-targets.mjs test --runner cargo --roots packages/rust -- -- --test-threads=1
 
-# The PHP extension of packages/php-ext: build-php-ext builds var/php-ext/polyspec_ordered_json.so with phpize after the check
+# The PHP extension of legacy/packages/php-ext: build-php-ext builds var/php-ext/polyspec_ordered_json.so with phpize after the check
 # of its stub and arginfo header; gen_stub.php may fetch its PHP-Parser once.
 build-php-ext:
-	$(ONLINE) $(NODE) $(KIT)/php-extension.mjs build --extension packages/php-ext --build-dir var/php-ext --skip vendor --skip node_modules --library packages/php
+	$(ONLINE) $(NODE) $(KIT)/php-extension.mjs build --extension legacy/packages/php-ext --build-dir var/php-ext --skip vendor --skip node_modules --library legacy/packages/php
 lint-php-ext:
-	$(NODE) $(KIT)/php-extension.mjs check --extension packages/php-ext --build-dir var/php-ext --skip vendor --skip node_modules --library packages/php
+	$(NODE) $(KIT)/php-extension.mjs check --extension legacy/packages/php-ext --build-dir var/php-ext --skip vendor --skip node_modules --library legacy/packages/php
 test-php-ext: build-php-ext
-	$(NODE) $(KIT)/php-extension.mjs test --extension packages/php-ext --build-dir var/php-ext --skip vendor --skip node_modules --library packages/php -- --roots packages/php
+	$(NODE) $(KIT)/php-extension.mjs test --extension legacy/packages/php-ext --build-dir var/php-ext --skip vendor --skip node_modules --library legacy/packages/php -- --roots legacy/packages/php
 
 # ---- Checks ----------------------------------------------------------------------------------------------------------------
 .PHONY: layout-check docs-check rules-check owner-check owner-validate rebuild-check language-check \
@@ -307,7 +307,7 @@ release-coverage:
 
 
 # The lint of each language, with the configuration files of this repository: .oxlintrc.json and knip.json, phpcs.xml.dist and
-# phpstan.dist.neon, ruff.toml and the [tool.vulture] of packages/python/pyproject.toml, .golangci.yml, and the [lints] of
+# phpstan.dist.neon, ruff.toml and the [tool.vulture] of legacy/packages/python/pyproject.toml, .golangci.yml, and the [lints] of
 # packages/rust/Cargo.toml with clippy.toml.
 lint-ts:
 	$(NODE) $(KIT)/lint-ts.mjs

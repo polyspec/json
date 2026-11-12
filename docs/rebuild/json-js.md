@@ -7,7 +7,7 @@ Verdict: **none fits.** The JavaScript package keeps its own parser. Measured on
 
 ## Covers
 
-- `packages/js/index.js`
+- `legacy/packages/js/index.js`
 
 ## Requirement
 

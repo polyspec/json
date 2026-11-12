@@ -26,19 +26,19 @@
       "kind": "policy",
       "reason": "the equal-workload benchmark protocol of benchmarks/workload.json: the same inputs, warm-up, samples and tolerances in every implementation, with the output sha256 of each row compared across them, a rule of this repository; no ecosystem benchmark tool runs one protocol in four languages and compares their outputs; it runs each harness and writes benchmarks/results.json"
     },
-    "packages/go/orderedjson.go": {
+    "legacy/packages/go/orderedjson.go": {
       "kind": "record",
       "record": "docs/rebuild/json-go.md"
     },
-    "packages/js/index.js": {
+    "legacy/packages/js/index.js": {
       "kind": "record",
       "record": "docs/rebuild/json-js.md"
     },
-    "packages/php/src/Value.php": {
+    "legacy/packages/php/src/Value.php": {
       "kind": "record",
       "record": "docs/rebuild/json-php.md"
     },
-    "packages/python/src/polyspec/ordered_json/__init__.py": {
+    "legacy/packages/python/src/polyspec/ordered_json/__init__.py": {
       "kind": "record",
       "record": "docs/rebuild/json-python.md"
     },

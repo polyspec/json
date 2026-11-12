@@ -38,7 +38,7 @@ final class ErrorKindTest extends TestCase
     /** @return array<string, string> The kinds of the list of the section of $anchor in the JSON contract. */
     private static function listed(string $anchor): array
     {
-        $spec = file_get_contents(__DIR__ . '/../../../docs/spec/json-contract.md');
+        $spec = file_get_contents(__DIR__ . '/../../../../docs/spec/json-contract.md');
         $section = explode("\n<a id=", explode($anchor, $spec)[1])[0];
         preg_match_all('/^- `([a-z0-9_]+)`(.*)$/m', $section, $matches);
         return array_combine($matches[1], $matches[2]);

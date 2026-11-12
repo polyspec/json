@@ -1,5 +1,5 @@
 <!-- doc-id: json-contract -->
-<!-- source-sha256: cce46a39e64831f6a8f3216ebfd056d43dcf065669527a9eec26e2edb8102e3b -->
+<!-- source-sha256: 829940c5ba0b8216a50d4f8641f5c2a7f7ca318518122891bf1357d62c34fecf -->
 # JSON 계약
 
 [English](json-contract.md)
@@ -167,4 +167,4 @@ JavaScript의 `compact` 옵션과 PHP의 `compact` 인자는 호환성을 위해
 <a id="transition"></a>
 ### 이행 기간
 
-언어 패키지 `packages/js`, `packages/go`, `packages/php`, `packages/php-ext`, `packages/python`은 생성된 바인딩이 공통 suite와 그 패키지 시험을 통과하고 각 패키지를 그 패키지만의 변경으로 없앨 때까지 지금의 API와 자기 구현을 유지합니다. 그때까지 이 레포는 언어마다 구현 둘을 가지며, 이는 그 제거로 끝나는 PRINCIPLES S6의 예외입니다. 이 패키지들만 따르는 규칙은 해당하는 곳에 적고, 그 API와 인터페이스 계약의 모든 차이는 `packages/rust/interface.json`의 `changes` 항목과 그 규칙입니다.
+이전의 언어 패키지는 `legacy/packages/js`, `legacy/packages/go`, `legacy/packages/php`, `legacy/packages/php-ext`, `legacy/packages/python`에 있고, 생성된 바인딩이 `packages/`를 차지합니다. legacy 패키지는 API와 자기 구현을 유지하고, 배포 대상이 아니며, 시험·lint·공통 사례를 새 경로에서 실행합니다. 각 패키지는 그 언어의 생성된 바인딩이 공통 suite를 실패 0, 건너뜀 0으로 통과하고, legacy 패키지의 패키지 시험이 인터페이스 계약의 `changes` 밖의 수정 없이 바인딩으로 통과하고, 두 구현의 차등 시험에 판정하지 않은 차이가 없을 때 그 패키지만의 변경으로 없앱니다(V-6 (5)). 그때까지 이 레포는 언어마다 구현 둘을 가지며, 이는 그 제거로 끝나는 PRINCIPLES S6의 예외입니다. 이 패키지들만 따르는 규칙은 해당하는 곳에 적고, 그 API와 인터페이스 계약의 모든 차이는 `packages/rust/interface.json`의 `changes` 항목과 그 규칙입니다.

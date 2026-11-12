@@ -151,7 +151,7 @@ func TestArgumentErrorsCarryTheirKind(t *testing.T) {
 
 // listed holds the items of the list of the section of anchor in docs/spec/json-contract.md: each kind with its text.
 func listed(t *testing.T, anchor string) map[string]string {
-	spec, err := os.ReadFile("../../docs/spec/json-contract.md")
+	spec, err := os.ReadFile("../../../docs/spec/json-contract.md")
 	if err != nil {
 		t.Fatal(err)
 	}

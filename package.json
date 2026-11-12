@@ -5,12 +5,12 @@
   "type": "module",
   "exports": {
     ".": {
-      "types": "./packages/js/index.d.ts",
-      "import": "./packages/js/index.js"
+      "types": "./legacy/packages/js/index.d.ts",
+      "import": "./legacy/packages/js/index.js"
     }
   },
   "files": [
-    "packages/js"
+    "legacy/packages/js"
   ],
   "engines": {
     "node": ">=26.12.0"

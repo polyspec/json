@@ -8,7 +8,7 @@ import {readFileSync} from 'node:fs';
 import {test} from 'node:test';
 import {Value, parse, stringify} from '../index.js';
 
-const official = JSON.parse(readFileSync(new URL('../../../examples/official.json', import.meta.url), 'utf8'));
+const official = JSON.parse(readFileSync(new URL('../../../../examples/official.json', import.meta.url), 'utf8'));
 
 function tree(value) {
   switch (value.kind) {

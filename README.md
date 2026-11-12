@@ -22,17 +22,17 @@ Run JavaScript with an official input from the repository root:
 ~~~sh
 node --input-type=module <<'JS'
 import {readFileSync} from 'node:fs';
-import {parse, stringify} from './packages/js/index.js';
+import {parse, stringify} from './legacy/packages/js/index.js';
 const {cases} = JSON.parse(readFileSync('examples/official.json', 'utf8'));
 const example = cases.find(example => example.id === 'document-order');
 console.log(stringify(parse(example.input)));
 JS
 ~~~
 
-Python runs the same example from `packages/python/src` without installation:
+Python runs the same example from `legacy/packages/python/src` without installation:
 
 ~~~sh
-PYTHONPATH=packages/python/src python3 - <<'PY'
+PYTHONPATH=legacy/packages/python/src python3 - <<'PY'
 import json
 from polyspec.ordered_json import parse, stringify
 with open('examples/official.json', encoding='utf8') as f:
@@ -50,12 +50,12 @@ pip install "https://github.com/polyspec/ordered-json/releases/download/vX.Y.Z/p
 
 | Package | Contents | Path |
 | --- | --- | --- |
-| JavaScript | JavaScript and TypeScript declarations | `packages/js/` |
+| JavaScript | JavaScript and TypeScript declarations | `legacy/packages/js/` |
 | Rust | Rust crate | `packages/rust/` |
-| Go | Go package | `packages/go/` |
-| PHP | Pure PHP and the Value API | `packages/php/` |
-| PHP extension | Native PHP extension with PIE metadata | `packages/php-ext/` |
-| Python | Python package `polyspec-ordered-json`, import `polyspec.ordered_json` | `packages/python/` |
+| Go | Go package | `legacy/packages/go/` |
+| PHP | Pure PHP and the Value API | `legacy/packages/php/` |
+| PHP extension | Native PHP extension with PIE metadata | `legacy/packages/php-ext/` |
+| Python | Python package `polyspec-ordered-json`, import `polyspec.ordered_json` | `legacy/packages/python/` |
 
 <a id="verification"></a>
 ## Verification

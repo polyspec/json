@@ -1,5 +1,5 @@
 <!-- doc-id: installation -->
-<!-- source-sha256: e8a9b7e25d2dd2380ec0cd6a11e2e4ebd88909f80ff34ccfd673f8159dd7c973 -->
+<!-- source-sha256: f9c7db5f3283708191e55d605fa4e9216ac5cc9eb092a0a30a6f9b2e1ede5c18 -->
 # 설치와 실행
 
 [English](installation.md)
@@ -17,7 +17,7 @@
 | 네이티브 PHP | 일치하는 PHP 개발 헤더, C 컴파일러, phpize, make | `polyspec_ordered_json` 확장 | [확장 소스](https://github.com/polyspec/ordered-json/blob/main/packages/php-ext/src/ordered_json.c) |
 | 저장소 검사 | 고정된 Python, Node.js, Rust, Go, npm release, Git, make, 위 PHP | `make install`, `make check` | [검증](validation.ko.md) |
 
-저장소 검사는 추적 파일이 고정한 정확한 release로 실행합니다. Rust는 `rust-toolchain.toml`, Node.js, Go와 Python은 `mise.toml`에 `@polyspec/kit`의 pin으로(`packages/go/go.mod`의 `go` 줄도 같은 Go를 정확히 가리킵니다) Composer, uv, lint와 dependency review의 도구와 함께 고정하고 `mise.lock`이 각 digest로 잠그며, PHP는 `.php-version`에 minor release로, npm은 `package.json`의 `devEngines.packageManager` 버전으로 고정하고, 그 tarball의 digest는 `mise.lock`에 둡니다. 새 checkout은 먼저 mise, `mise.toml`의 Node.js와 그 npm을 `var/tools`에 설치하는 `make install-tools TOOLS=npm`과, 그 npm으로 공유 도구의 package `@polyspec/kit`을 포함한 `package-lock.json`을 설치하는 `make install-packages`를 실행합니다. 그다음 `make install`은 그 Rust toolchain을 rustup으로 설치하고, `mise.lock`의 도구를 `mise install --locked`로 Git이 무시하고 Makefile이 그 shim을 `PATH` 앞에 두는 checkout의 `var/tools/mise`에 설치합니다(`@polyspec/kit`의 설치 도구를 실행하는 `make install-tools`). 기계의 도구는 사용하지도 바꾸지도 않습니다. `make install-tools`는 모든 도구를 선언대로 설치하고, 도구를 실행하는 모든 target이 이에 의존하며, 다른 도구마다 기대 버전과 실제 버전을 밝히며 실패합니다. `GOTOOLCHAIN=local`과 `RUSTUP_AUTO_INSTALL=0`은 실행 중에 go와 rustup이 다른 toolchain을 내려받거나 설치하지 못하게 하고, 모든 cargo 명령은 `--locked`를 사용합니다.
+저장소 검사는 추적 파일이 고정한 정확한 release로 실행합니다. Rust는 `rust-toolchain.toml`, Node.js, Go와 Python은 `mise.toml`에 `@polyspec/kit`의 pin으로(`legacy/packages/go/go.mod`의 `go` 줄도 같은 Go를 정확히 가리킵니다) Composer, uv, lint와 dependency review의 도구와 함께 고정하고 `mise.lock`이 각 digest로 잠그며, PHP는 `.php-version`에 minor release로, npm은 `package.json`의 `devEngines.packageManager` 버전으로 고정하고, 그 tarball의 digest는 `mise.lock`에 둡니다. 새 checkout은 먼저 mise, `mise.toml`의 Node.js와 그 npm을 `var/tools`에 설치하는 `make install-tools TOOLS=npm`과, 그 npm으로 공유 도구의 package `@polyspec/kit`을 포함한 `package-lock.json`을 설치하는 `make install-packages`를 실행합니다. 그다음 `make install`은 그 Rust toolchain을 rustup으로 설치하고, `mise.lock`의 도구를 `mise install --locked`로 Git이 무시하고 Makefile이 그 shim을 `PATH` 앞에 두는 checkout의 `var/tools/mise`에 설치합니다(`@polyspec/kit`의 설치 도구를 실행하는 `make install-tools`). 기계의 도구는 사용하지도 바꾸지도 않습니다. `make install-tools`는 모든 도구를 선언대로 설치하고, 도구를 실행하는 모든 target이 이에 의존하며, 다른 도구마다 기대 버전과 실제 버전을 밝히며 실패합니다. `GOTOOLCHAIN=local`과 `RUSTUP_AUTO_INSTALL=0`은 실행 중에 go와 rustup이 다른 toolchain을 내려받거나 설치하지 못하게 하고, 모든 cargo 명령은 `--locked`를 사용합니다.
 
 표는 선언된 최소 버전이며 모든 최소 버전에서 테스트했다는 의미는 아닙니다. 실제 버전은 commit을 검증하는 실행의 [기록](validation.ko.md#records)에 기록합니다. JavaScript, Rust, Go, Python은 외부 런타임 라이브러리에 의존하지 않습니다.
 
@@ -31,11 +31,11 @@ cd ordered-json
 
 복제본에는 모든 구현 패키지가 포함됩니다. 패키지 디렉터리 또는 게시된 패키지가 준비된 경우 게시 패키지를 사용합니다. 레지스트리 설치와 게시는 검증되지 않았습니다. [배포](distribution.ko.md)를 확인합니다.
 
-- JavaScript: `packages/js/index.js`에서 가져옵니다. TypeScript 선언은 `packages/js/index.d.ts`에 있습니다.
+- JavaScript: `legacy/packages/js/index.js`에서 가져옵니다. TypeScript 선언은 `legacy/packages/js/index.d.ts`에 있습니다.
 - Rust: `path`가 `packages/rust/`를 지정하는 로컬 Cargo 의존성을 설정합니다.
-- Go: `github.com/polyspec/ordered-json/packages/go` 모듈의 로컬 `replace`가 `packages/go/`를 지정하도록 설정합니다.
-- PHP: `packages/php/`를 Composer path 저장소로 사용합니다. Composer는 그 class를 PSR-4로, 함수를 `files`로 load합니다.
-- Python: release의 wheel asset을 pip로 설치하거나 `packages/python/src`를 import 경로에 둡니다.
+- Go: `github.com/polyspec/ordered-json/packages/go` 모듈의 로컬 `replace`가 `legacy/packages/go/`를 지정하도록 설정합니다.
+- PHP: `legacy/packages/php/`를 Composer path 저장소로 사용합니다. Composer는 그 class를 PSR-4로, 함수를 `files`로 load합니다.
+- Python: release의 wheel asset을 pip로 설치하거나 `legacy/packages/python/src`를 import 경로에 둡니다.
 
 ~~~sh
 pip install "https://github.com/polyspec/ordered-json/releases/download/vX.Y.Z/polyspec_ordered_json-X.Y.Z-py3-none-any.whl"
@@ -44,7 +44,7 @@ pip install "https://github.com/polyspec/ordered-json/releases/download/vX.Y.Z/p
 <a id="release-assets"></a>
 ## 릴리스 asset
 
-GitHub Release `vX.Y.Z`마다 `polyspec-ordered-json-X.Y.Z.tgz`, `polyspec-ordered-json-php-X.Y.Z.zip`, `polyspec-ordered-json-php-ext-X.Y.Z.zip`과 wheel `polyspec_ordered_json-X.Y.Z-py3-none-any.whl`이 있습니다. 각 archive는 자기 package의 manifest를 바꾸지 않고 담습니다. `packages/js/`의 `package.json`, `packages/php/`와 `packages/php-ext/`의 `composer.json`이며, 모두 `version` X.Y.Z를 선언하고 `repositories`와 `@dev`가 없습니다. Python 패키지는 wheel만 릴리스합니다. pip는 위 설치 절의 wheel asset URL로 설치하며, git tag로는 설치하지 않습니다.
+GitHub Release `vX.Y.Z`마다 `polyspec-ordered-json-X.Y.Z.tgz`, `polyspec-ordered-json-php-X.Y.Z.zip`, `polyspec-ordered-json-php-ext-X.Y.Z.zip`과 wheel `polyspec_ordered_json-X.Y.Z-py3-none-any.whl`이 있습니다. 각 archive는 자기 package의 manifest를 바꾸지 않고 담습니다. `legacy/packages/js/`의 `package.json`, `legacy/packages/php/`와 `legacy/packages/php-ext/`의 `composer.json`이며, 모두 `version` X.Y.Z를 선언하고 `repositories`와 `@dev`가 없습니다. Python 패키지는 wheel만 릴리스합니다. pip는 위 설치 절의 wheel asset URL로 설치하며, git tag로는 설치하지 않습니다.
 
 npm은 tarball을 경로로 설치합니다.
 
@@ -72,7 +72,7 @@ composer install
 
 Composer는 두 zip을 모두 읽습니다. type이 `php-ext`인 package `polyspec/ordered-json-php-ext`은 설치하지 않으며, PIE가 빌드하고 설치합니다([네이티브 PHP](#native-php)).
 
-이 저장소의 package는 다른 package에 의존하지 않으므로 저장소에는 npm workspaces와 비공개 개발 manifest가 없습니다. 루트의 `package.json`과 `composer.json`은 checkout에서 설치하도록 `packages/js/`, `packages/php/`와 같은 package를 같은 `version`으로 선언하며 `repositories`가 없습니다. consumer는 저장소 밖에서 release를 패키지 관리자로 설치합니다. npm은 release tarball `polyspec-ordered-json-X.Y.Z.tgz`를 설치하고, Composer는 PHP 패키지를 release zip의 artifact repository에서 require합니다.
+이 저장소의 package는 다른 package에 의존하지 않으므로 저장소에는 npm workspaces와 비공개 개발 manifest가 없습니다. 루트의 `package.json`과 `composer.json`은 checkout에서 설치하도록 `legacy/packages/js/`, `legacy/packages/php/`와 같은 package를 같은 `version`으로 선언하며 `repositories`가 없습니다. consumer는 저장소 밖에서 release를 패키지 관리자로 설치합니다. npm은 release tarball `polyspec-ordered-json-X.Y.Z.tgz`를 설치하고, Composer는 PHP 패키지를 release zip의 artifact repository에서 require합니다.
 
 <a id="native-php"></a>
 ## 네이티브 PHP
@@ -83,7 +83,7 @@ Composer는 두 zip을 모두 읽습니다. type이 `php-ext`인 package `polysp
 make build-php-ext
 ~~~
 
-kit의 확장 유틸리티를 실행하는 `make build-php-ext`는 stub에서 `make php-ext-arginfo`가 쓴 arginfo header가 그 stub의 것임을 확인한 뒤 `packages/php-ext`의 복사본에서 phpize로 확장을 빌드하고 `var/php-ext/polyspec_ordered_json.so`를 게시합니다. 사용자는 PIE(`polyspec/ordered-json-php-ext`)로 빌드하고 설치합니다. 모듈을 로드하려면 다음과 같이 실행합니다.
+kit의 확장 유틸리티를 실행하는 `make build-php-ext`는 stub에서 `make php-ext-arginfo`가 쓴 arginfo header가 그 stub의 것임을 확인한 뒤 `legacy/packages/php-ext`의 복사본에서 phpize로 확장을 빌드하고 `var/php-ext/polyspec_ordered_json.so`를 게시합니다. 사용자는 PIE(`polyspec/ordered-json-php-ext`)로 빌드하고 설치합니다. 모듈을 로드하려면 다음과 같이 실행합니다.
 
 ~~~sh
 php -n -d extension="$PWD/var/php-ext/polyspec_ordered_json.so" script.php

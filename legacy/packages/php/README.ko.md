@@ -1,5 +1,5 @@
 <!-- doc-id: php-overview -->
-<!-- source-sha256: 19e0b768f34e943e54c45b6877c8e8092ea467e13c20c3e29cecc3894d1035b0 -->
+<!-- source-sha256: ef98aea81415a0bfbea18ea6133a4c11fde191b8ea5e23a23ec79beac813e4a4 -->
 # ordered-json for PHP
 
 [English](README.md)
@@ -37,4 +37,4 @@ make check
 
 루트 검증기를 호출하여 이 패키지를 검사합니다. 루트 통합 검사는 같은 소스 리비전의 모든 패키지를 검사하고 현재 결과를 그 실행의 기록인 `var/records/verification.json`에 기록합니다.
 
-추가 사례는 `make check JSON_TEST_SUITE=/path/to/JSONTestSuite`로 검사합니다. [개발 절차](../../AGENTS.ko.md#package-php)와 [변경 기록](../../CHANGELOG.ko.md)에 필수 검사와 변경 사항이 있습니다.
+추가 사례는 `make check JSON_TEST_SUITE=/path/to/JSONTestSuite`로 검사합니다. [개발 절차](../../../AGENTS.ko.md#package-php)와 [변경 기록](../../../CHANGELOG.ko.md)에 필수 검사와 변경 사항이 있습니다.

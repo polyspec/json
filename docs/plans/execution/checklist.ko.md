@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: 1d629f4e668c2b2968a7167f7711fe0d515cc7c688401cd9ecf538282642e435 -->
+<!-- source-sha256: fe8cee909a5180f7a9dd7b3211aa425725e5a1a204de9e8e22e4dd3baf780e11 -->
 # 실행 체크리스트
 
 ## Wave 1 — 전체 suite를 실행하는 hosted CI
@@ -118,4 +118,4 @@
 
 | ID | Task | Deliverables | Verification | State |
 | --- | --- | --- | --- | --- |
-| T3.1 | Rust crate를 바인딩의 코어로 만든다: 명세의 RQ-026~RQ-035와 무시하는 입력 표, `contracts/core.json`의 사례, crate의 코어 API와 R-1 lint, crate 패키지의 인터페이스 계약 `packages/rust/interface.json`. 언어 패키지는 생성된 바인딩이 공통 suite와 그 패키지 시험을 통과한 뒤 각 패키지만의 변경으로 없앨 때까지 API와 구현을 유지한다. 그 제거가 언어마다 구현 둘이라는 PRINCIPLES S6 예외를 끝낸다. | `docs/spec/json-contract.md`(.ko), `contracts/core.json`, `packages/rust/`, `clippy.toml`, `scripts/verify.mts`, `docs/operations/api.md`(.ko), `CHANGELOG.md`(.ko) | `make test-rust`, `make lint-rust`, bindgen `check` | [~] |
+| T3.1 | Rust crate를 바인딩의 코어로 만든다: 명세의 RQ-026~RQ-035와 무시하는 입력 표, `contracts/core.json`의 사례, crate의 코어 API와 R-1 lint, crate 패키지의 인터페이스 계약 `packages/rust/interface.json`. 이전 언어 패키지는 `legacy/packages/<runtime>`으로 옮기고 배포 대상에서 빼며 시험·lint·공통 사례를 새 경로에서 유지하고, bindgen이 생성한 바인딩이 `packages/`를 차지한다. 각 legacy 패키지는 docs/spec/json-contract.md#transition의 조건 V-6 (5)에 따라 그 패키지만의 변경으로 없앤다. 그 제거가 언어마다 구현 둘이라는 PRINCIPLES S6 예외를 끝낸다. | `docs/spec/json-contract.md`(.ko), `contracts/core.json`, `packages/rust/`, `legacy/packages/`, `packages/{ts,python,php-ext}`, `config/`, `Makefile`, `clippy.toml`, `scripts/verify.mts`, `docs/operations/api.md`(.ko), `CHANGELOG.md`(.ko) | `make test-rust`, `make lint-rust`, bindgen `check` | [~] |

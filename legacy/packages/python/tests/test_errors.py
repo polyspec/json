@@ -20,7 +20,7 @@ from polyspec.ordered_json import (
     stringify,
 )
 
-CONTRACT = Path(__file__).resolve().parents[3] / "docs" / "spec" / "json-contract.md"
+CONTRACT = Path(__file__).resolve().parents[4] / "docs" / "spec" / "json-contract.md"
 
 
 def listed(anchor):

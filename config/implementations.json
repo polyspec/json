@@ -5,7 +5,7 @@
     {
       "name": "js",
       "roots": [
-        "packages/js"
+        "legacy/packages/js"
       ]
     },
     {
@@ -17,27 +17,27 @@
     {
       "name": "go",
       "roots": [
-        "packages/go"
+        "legacy/packages/go"
       ]
     },
     {
       "name": "php",
       "roots": [
-        "packages/php"
+        "legacy/packages/php"
       ]
     },
     {
       "name": "php-extension",
       "roots": [
-        "packages/php-ext"
+        "legacy/packages/php-ext"
       ]
     },
     {
       "name": "python",
       "roots": [
-        "packages/python"
+        "legacy/packages/python"
       ],
-      "command": "packages/python/.venv/bin/python"
+      "command": "legacy/packages/python/.venv/bin/python"
     }
   ]
 }
