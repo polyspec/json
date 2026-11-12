@@ -5,7 +5,7 @@
     reason = "R-1: the probe is a tool, and a request it cannot read stops it by its panic"
 )]
 
-use polyspec_ordered_json::{
+use polyspec_json::{
     parse, stringify, Error, Kind, OrderedMap, ParseOptions, StringifyOptions, Value,
 };
 use std::{

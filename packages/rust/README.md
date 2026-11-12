@@ -1,5 +1,5 @@
 <!-- doc-id: rust-overview -->
-# ordered-json for Rust
+# json for Rust
 
 [한국어](README.ko.md)
 
@@ -8,12 +8,12 @@ Strict JSON with associative objects that preserve document key order recursivel
 <a id="usage"></a>
 ## Usage
 
-Rust 1.99.0, the pinned toolchain of the repository; Cargo package `polyspec-ordered-json`, import `polyspec_ordered_json`. The crate is the Rust core of the [JSON contract](https://github.com/polyspec/ordered-json/blob/main/docs/spec/json-contract.md#core), and the package includes `interface.json`, the interface contract of the bindings that bindgen generates from it.
+Rust 1.99.0, the pinned toolchain of the repository; Cargo package `polyspec-json`, import `polyspec_json`. The crate is the Rust core of the [JSON contract](https://github.com/polyspec/json/blob/main/docs/spec/json-contract.md#core), and the package includes `interface.json`, the interface contract of the bindings that bindgen generates from it.
 
-The usage fragment takes `source` (or `$source`) from an object case in the [common official examples](https://github.com/polyspec/ordered-json/blob/main/examples/official.json). Use the fragment inside a function that can return an error. Every error is a variant of the exhaustive enum `Error`; `kind()` is the name of its kind of the shared lists and `offset()` the byte offset of a parse rejection. Accessors of another kind fail with `wrong_kind`, `string_value()` of a string with an unpaired surrogate fails with `unpaired_surrogate`, and `string_units()` returns the UTF-16 code units of every string.
+The usage fragment takes `source` (or `$source`) from an object case in the [common official examples](https://github.com/polyspec/json/blob/main/examples/official.json). Use the fragment inside a function that can return an error. Every error is a variant of the exhaustive enum `Error`; `kind()` is the name of its kind of the shared lists and `offset()` the byte offset of a parse rejection. Accessors of another kind fail with `wrong_kind`, `string_value()` of a string with an unpaired surrogate fails with `unpaired_surrogate`, and `string_units()` returns the UTF-16 code units of every string.
 
 ~~~rust
-use polyspec_ordered_json::{parse, stringify, ParseOptions, StringifyOptions};
+use polyspec_json::{parse, stringify, ParseOptions, StringifyOptions};
 let value = parse(source.as_bytes(), &ParseOptions::default())?;
 let output = stringify(&value, &StringifyOptions::default());
 let html = stringify(&value, &StringifyOptions { html_safe: Some(true) });
@@ -27,7 +27,7 @@ own; the rest of the structure follows the rules of `serde_json`.
 `Value::from_f64` and `number_text` write a float as ECMAScript `Number::toString` writes it and refuse NaN and the infinities with `non_finite_number`; `Value::string` writes its text as UTF-8 with the escapes that RFC 8259 requires.
 
 
-The [JSON contract](https://github.com/polyspec/ordered-json/blob/main/docs/spec/json-contract.md) and [API contract](https://github.com/polyspec/ordered-json/blob/main/docs/operations/api.md) define behavior. Source is provided by this repository. The Cargo package is not configured for registry publication. Registry publication and versioned releases are not verified; a source version string is not a release record.
+The [JSON contract](https://github.com/polyspec/json/blob/main/docs/spec/json-contract.md) and [API contract](https://github.com/polyspec/json/blob/main/docs/operations/api.md) define behavior. Source is provided by this repository. The Cargo package is not configured for registry publication. Registry publication and versioned releases are not verified; a source version string is not a release record.
 
 <a id="verification"></a>
 ## Verification

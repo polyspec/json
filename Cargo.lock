@@ -1185,7 +1185,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "polyspec-ordered-json"
+name = "polyspec-json"
 version = "0.0.25"
 dependencies = [
  "base64 0.22.1",
@@ -1198,31 +1198,31 @@ dependencies = [
 ]
 
 [[package]]
-name = "polyspec-ordered-json-node"
+name = "polyspec-json-node"
 version = "0.0.25"
 dependencies = [
  "napi",
  "napi-build",
  "napi-derive",
  "polyspec-bindgen-core",
- "polyspec-ordered-json",
+ "polyspec-json",
 ]
 
 [[package]]
-name = "polyspec-ordered-json-php-ext"
+name = "polyspec-json-php-ext"
 version = "0.0.25"
 dependencies = [
  "ext-php-rs",
  "polyspec-bindgen-core",
- "polyspec-ordered-json",
+ "polyspec-json",
 ]
 
 [[package]]
-name = "polyspec-ordered-json-python"
+name = "polyspec-json-python"
 version = "0.0.25"
 dependencies = [
  "polyspec-bindgen-core",
- "polyspec-ordered-json",
+ "polyspec-json",
  "pyo3",
 ]
 

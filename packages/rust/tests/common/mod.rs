@@ -1,7 +1,7 @@
 //! Helpers of the package tests.
 #![allow(dead_code, reason = "R-1: each test file uses a part of the helpers")]
 
-use polyspec_ordered_json::{parse, stringify, Error, ParseOptions, StringifyOptions, Value};
+use polyspec_json::{parse, stringify, Error, ParseOptions, StringifyOptions, Value};
 
 /// The default parse of a text.
 pub fn json(source: &str) -> Result<Value, Error> {

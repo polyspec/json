@@ -162,7 +162,7 @@ JavaScript의 `compact` 옵션과 PHP의 `compact` 인자는 호환성을 위해
 <a id="core"></a>
 ## Rust 코어
 
-`packages/rust`의 crate `polyspec-ordered-json`이 이 계약의 모든 규칙을 한 번 가집니다. PHP, Python, Node.js, Go, 브라우저의 바인딩은 crate 패키지가 담는 인터페이스 계약 `packages/rust/interface.json`에서 bindgen이 생성하며 자기 규칙을 갖지 않습니다. [core.json](../../contracts/core.json)은 RQ-026부터 RQ-035까지의 사례를 담고 각 실패를 종류와 category를 가진 `raises`로 적으며, crate는 `tests/contract.rs`에서 그것을 실행합니다.
+`packages/rust`의 crate `polyspec-json`이 이 계약의 모든 규칙을 한 번 가집니다. PHP, Python, Node.js, Go, 브라우저의 바인딩은 crate 패키지가 담는 인터페이스 계약 `packages/rust/interface.json`에서 bindgen이 생성하며 자기 규칙을 갖지 않습니다. [core.json](../../contracts/core.json)은 RQ-026부터 RQ-035까지의 사례를 담고 각 실패를 종류와 category를 가진 `raises`로 적으며, crate는 `tests/contract.rs`에서 그것을 실행합니다.
 
 <a id="transition"></a>
 ### 이행 기간

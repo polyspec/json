@@ -1,7 +1,7 @@
 {
-  "name": "@polyspec/ordered-json",
+  "name": "@polyspec/json",
   "version": "0.0.25",
-  "description": "The ordered-json library of polyspec for Node",
+  "description": "The json library of polyspec for Node",
   "license": "MIT",
   "main": "./generated/index.cjs",
   "types": "./generated/index.d.ts",

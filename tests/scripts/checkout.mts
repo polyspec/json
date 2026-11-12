@@ -16,7 +16,7 @@ export type Checkout = {
 
 /** A new checkout for the test `context`. */
 export function checkout(context: TestContext): Checkout {
-  const root = mkdtempSync(path.join(tmpdir(), 'ordered-json-test-'));
+  const root = mkdtempSync(path.join(tmpdir(), 'json-test-'));
   context.after(() => rmSync(root, { recursive: true, force: true }));
   execFileSync('git', ['init', '--quiet'], { cwd: root });
   const write = (file: string, text: string | Uint8Array) => {

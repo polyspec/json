@@ -1,11 +1,11 @@
 [package]
-name = "polyspec-ordered-json"
+name = "polyspec-json"
 version = "0.0.25"
 edition = "2021"
 rust-version = "1.99.0"
 description = "Strict JSON with insertion-ordered associative objects and exact number literals"
 readme = "README.md"
-repository = "https://github.com/polyspec/ordered-json.git"
+repository = "https://github.com/polyspec/json.git"
 publish = false
 # The package holds the interface contract of the bindings beside the source, so that a library that takes or gives a
 # json_value reads the value table from the package that Cargo resolved (bindgen design I-1, T-3).
@@ -20,7 +20,7 @@ serde = { version = "=1.0.229", features = ["derive"] }
 serde_json = { version = "=1.0.151", features = ["raw_value", "unbounded_depth"] }
 
 [lib]
-name = "polyspec_ordered_json"
+name = "polyspec_json"
 path = "src/lib.rs"
 
 [dev-dependencies]

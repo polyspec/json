@@ -6,7 +6,7 @@
 
 [JSON 계약](../spec/json-contract.ko.md)은 모든 구현의 공통 동작을 정의합니다. 이 문서는 현재 언어별 API를 정의합니다. 현재 식별자는 [설치 문서](installation.ko.md)에 작성합니다.
 
-프로젝트는 `ordered-json`이고 모든 패키지 이름은 polyspec 관례를 따릅니다. JavaScript는 npm 패키지 `@polyspec/ordered-json`을 사용합니다. Rust는 Cargo 패키지 `polyspec-ordered-json`을 사용하며 `polyspec_ordered_json`으로 가져옵니다. Go는 `github.com/polyspec/ordered-json/packages/go` 모듈과 `orderedjson` 패키지를 사용합니다. PHP는 `polyspec/ordered-json` Composer 패키지, `Polyspec\OrderedJson` 네임스페이스, PIE 패키지 `polyspec/ordered-json-php-ext`의 `polyspec_ordered_json` 확장을 사용하며, 확장은 Composer 패키지의 class, 함수, 상수를 같은 이름으로 등록합니다. Python은 패키지 `polyspec-ordered-json`을 사용하며 `polyspec` 아래 namespace package인 `polyspec.ordered_json`으로 가져옵니다.
+프로젝트는 `json`이고 모든 패키지 이름은 polyspec 관례를 따릅니다. JavaScript는 npm 패키지 `@polyspec/ordered-json`을 사용합니다. Rust는 Cargo 패키지 `polyspec-json`을 사용하며 `polyspec_json`으로 가져옵니다. Go는 `github.com/polyspec/ordered-json/packages/go` 모듈과 `orderedjson` 패키지를 사용합니다. PHP는 `polyspec/ordered-json` Composer 패키지, `Polyspec\OrderedJson` 네임스페이스, PIE 패키지 `polyspec/ordered-json-php-ext`의 `polyspec_ordered_json` 확장을 사용하며, 확장은 Composer 패키지의 class, 함수, 상수를 같은 이름으로 등록합니다. Python은 패키지 `polyspec-ordered-json`을 사용하며 `polyspec` 아래 namespace package인 `polyspec.ordered_json`으로 가져옵니다.
 
 <a id="values"></a>
 ## 값과 파싱

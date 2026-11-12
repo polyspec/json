@@ -68,7 +68,7 @@ export const COMMANDS: Record<string, Commands> = {
     artifacts: ['{php-extension}/src/modules/polyspec_ordered_json.so'],
   },
   python: {
-    // The virtual environment of make ordered-json-install-python, into which the package is installed.
+    // The virtual environment of make json-install-python, into which the package is installed.
     command: ['{python}/.venv/bin/python', '{python}/tests/probe.py'],
     runtime: { python: ['{python}/.venv/bin/python', '-c', 'import platform; print(platform.python_version())'] },
   },
@@ -193,7 +193,7 @@ export type Run = { root: string; paths: Record<string, string>; cache: string; 
  * checkout) and its commands use the copy.
  */
 export async function withRun<T>(selected: string[], body: (run: Run) => Promise<T>, root = ROOT, registry = REGISTRY): Promise<T> {
-  const directory = mkdtempSync(path.join(tmpdir(), 'ordered-json-run-'));
+  const directory = mkdtempSync(path.join(tmpdir(), 'json-run-'));
   console.log(`run directory: ${directory}`);
   try {
     const paths = repositoryPaths(root, registry);

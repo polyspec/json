@@ -9,12 +9,12 @@
 
 | 구성 요소 | 선언된 요구사항 | 현재 식별자 | 메타데이터 |
 | --- | --- | --- | --- |
-| JavaScript | Node.js >= 20, ESM | `@polyspec/ordered-json` | [package.json](https://github.com/polyspec/ordered-json/blob/main/packages/js/package.json) |
-| Rust | Rust >= 1.71, edition 2021 | `polyspec-ordered-json` | [Cargo.toml](https://github.com/polyspec/ordered-json/blob/main/packages/rust/Cargo.toml) |
-| Go | Go >= 1.22 | `github.com/polyspec/ordered-json/packages/go` 모듈, `orderedjson` 패키지 | [go.mod](https://github.com/polyspec/ordered-json/blob/main/packages/go/go.mod) |
-| PHP | PHP >= 8.2, JSON 및 PCRE 확장 | `polyspec/ordered-json`, `Polyspec\OrderedJson` 네임스페이스 | [composer.json](https://github.com/polyspec/ordered-json/blob/main/packages/php/composer.json) |
-| Python | Python >= 3.14 | `polyspec-ordered-json`, `polyspec.ordered_json` import | [pyproject.toml](https://github.com/polyspec/ordered-json/blob/main/packages/python/pyproject.toml) |
-| 네이티브 PHP | 일치하는 PHP 개발 헤더, C 컴파일러, phpize, make | `polyspec_ordered_json` 확장 | [확장 소스](https://github.com/polyspec/ordered-json/blob/main/packages/php-ext/src/ordered_json.c) |
+| JavaScript | Node.js >= 20, ESM | `@polyspec/ordered-json` | [package.json](https://github.com/polyspec/json/blob/main/packages/js/package.json) |
+| Rust | Rust >= 1.71, edition 2021 | `polyspec-json` | [Cargo.toml](https://github.com/polyspec/json/blob/main/packages/rust/Cargo.toml) |
+| Go | Go >= 1.22 | `github.com/polyspec/ordered-json/packages/go` 모듈, `orderedjson` 패키지 | [go.mod](https://github.com/polyspec/json/blob/main/packages/go/go.mod) |
+| PHP | PHP >= 8.2, JSON 및 PCRE 확장 | `polyspec/ordered-json`, `Polyspec\OrderedJson` 네임스페이스 | [composer.json](https://github.com/polyspec/json/blob/main/packages/php/composer.json) |
+| Python | Python >= 3.14 | `polyspec-ordered-json`, `polyspec.ordered_json` import | [pyproject.toml](https://github.com/polyspec/json/blob/main/packages/python/pyproject.toml) |
+| 네이티브 PHP | 일치하는 PHP 개발 헤더, C 컴파일러, phpize, make | `polyspec_ordered_json` 확장 | [확장 소스](https://github.com/polyspec/json/blob/main/packages/php-ext/src/ordered_json.c) |
 | 저장소 검사 | 고정된 Python, Node.js, Rust, Go, npm release, Git, make, 위 PHP | `make install`, `make check` | [검증](validation.ko.md) |
 
 저장소 검사는 추적 파일이 고정한 정확한 release로 실행합니다. Rust는 `rust-toolchain.toml`, Node.js, Go와 Python은 `mise.toml`에 `@polyspec/kit`의 pin으로(`legacy/packages/go/go.mod`의 `go` 줄도 같은 Go를 정확히 가리킵니다) Composer, uv, lint와 dependency review의 도구와 함께 고정하고 `mise.lock`이 각 digest로 잠그며, PHP는 `.php-version`에 minor release로, npm은 `package.json`의 `devEngines.packageManager` 버전으로 고정하고, 그 tarball의 digest는 `mise.lock`에 둡니다. 새 checkout은 먼저 mise, `mise.toml`의 Node.js와 그 npm을 `var/tools`에 설치하는 `make install-tools TOOLS=npm`과, 그 npm으로 공유 도구의 package `@polyspec/kit`을 포함한 `package-lock.json`을 설치하는 `make install-packages`를 실행합니다. 그다음 `make install`은 그 Rust toolchain을 rustup으로 설치하고, `mise.lock`의 도구를 `mise install --locked`로 Git이 무시하고 Makefile이 그 shim을 `PATH` 앞에 두는 checkout의 `var/tools/mise`에 설치합니다(`@polyspec/kit`의 설치 도구를 실행하는 `make install-tools`). 기계의 도구는 사용하지도 바꾸지도 않습니다. `make install-tools`는 모든 도구를 선언대로 설치하고, 도구를 실행하는 모든 target이 이에 의존하며, 다른 도구마다 기대 버전과 실제 버전을 밝히며 실패합니다. `GOTOOLCHAIN=local`과 `RUSTUP_AUTO_INSTALL=0`은 실행 중에 go와 rustup이 다른 toolchain을 내려받거나 설치하지 못하게 하고, 모든 cargo 명령은 `--locked`를 사용합니다.
@@ -25,8 +25,8 @@
 ## 소스 체크아웃
 
 ~~~sh
-git clone https://github.com/polyspec/ordered-json.git
-cd ordered-json
+git clone https://github.com/polyspec/json.git
+cd json
 ~~~
 
 복제본에는 모든 구현 패키지가 포함됩니다. 패키지 디렉터리 또는 게시된 패키지가 준비된 경우 게시 패키지를 사용합니다. 레지스트리 설치와 게시는 검증되지 않았습니다. [배포](distribution.ko.md)를 확인합니다.
@@ -38,7 +38,7 @@ cd ordered-json
 - Python: release의 wheel asset을 pip로 설치하거나 `legacy/packages/python/src`를 import 경로에 둡니다.
 
 ~~~sh
-pip install "https://github.com/polyspec/ordered-json/releases/download/vX.Y.Z/polyspec_ordered_json-X.Y.Z-py3-none-any.whl"
+pip install "https://github.com/polyspec/json/releases/download/vX.Y.Z/polyspec_ordered_json-X.Y.Z-py3-none-any.whl"
 ~~~
 
 <a id="release-assets"></a>

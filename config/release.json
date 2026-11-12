@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "repositoryUrl": "https://github.com/polyspec/ordered-json",
+  "repositoryUrl": "https://github.com/polyspec/json",
   "changelog": "CHANGELOG.md",
   "changelogTranslations": [
     "CHANGELOG.ko.md"

@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "comment": "The checks that own each tracked path, read by owner-check of @polyspec/kit: make owner-check runs the owners of the changed paths, never the full suite; make owner-validate, a gate of kit-gates-static, checks this file. ordered-json-test-scripts runs the verifier unit tests (TESTS selects test files) and verify-<language> verifies one implementation.",
+  "comment": "The checks that own each tracked path, read by owner-check of @polyspec/kit: make owner-check runs the owners of the changed paths, never the full suite; make owner-validate, a gate of kit-gates-static, checks this file. json-test-scripts runs the verifier unit tests (TESTS selects test files) and verify-<language> verifies one implementation.",
   "owners": [
     {
       "paths": [
@@ -19,7 +19,7 @@
         "docs/plans/execution/checklist.ko.md"
       ],
       "targets": [
-        "ordered-json-test-scripts",
+        "json-test-scripts",
         "docs-check",
         "evidence-check"
       ]
@@ -29,7 +29,7 @@
         "tests/scripts/*.test.mts"
       ],
       "targets": [
-        "ordered-json-test-scripts"
+        "json-test-scripts"
       ],
       "variable": "TESTS"
     },
@@ -38,7 +38,7 @@
         "tests/scripts/checkout.mts"
       ],
       "targets": [
-        "ordered-json-test-scripts"
+        "json-test-scripts"
       ]
     },
     {
@@ -51,7 +51,7 @@
         "contracts/fixtures/**"
       ],
       "targets": [
-        "ordered-json-test-scripts",
+        "json-test-scripts",
         "verify-js",
         "verify-rust",
         "verify-go",
@@ -72,7 +72,7 @@
         "tsconfig.json"
       ],
       "targets": [
-        "ordered-json-test-scripts",
+        "json-test-scripts",
         "typecheck"
       ]
     },
@@ -81,7 +81,7 @@
         "benchmarks/run.mts"
       ],
       "targets": [
-        "ordered-json-test-scripts",
+        "json-test-scripts",
         "typecheck",
         "benchmark-check"
       ]
@@ -113,7 +113,7 @@
         "Cargo.lock"
       ],
       "targets": [
-        "ordered-json-test-scripts",
+        "json-test-scripts",
         "release-coverage"
       ]
     },
@@ -123,7 +123,7 @@
         ".github/actions/kit-bootstrap/action.yml"
       ],
       "targets": [
-        "ordered-json-test-scripts"
+        "json-test-scripts"
       ]
     },
     {
@@ -253,7 +253,7 @@
         "external-inputs.json"
       ],
       "targets": [
-        "ordered-json-test-scripts",
+        "json-test-scripts",
         "evidence-check"
       ]
     },
@@ -270,7 +270,7 @@
         "package.json"
       ],
       "targets": [
-        "ordered-json-test-scripts"
+        "json-test-scripts"
       ]
     },
     {

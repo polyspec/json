@@ -32,7 +32,7 @@ UV := $(CURDIR)/var/tools/mise/shims/uv
 COMPOSER := $(CURDIR)/var/tools/mise/shims/composer
 CARGO := $(shell command -v cargo)
 GO := $(shell command -v go)
-# The supplementary suite of mise.toml (http:jsontestsuite), which ordered-json-install-suite installs; empty when it is not installed.
+# The supplementary suite of mise.toml (http:jsontestsuite), which json-install-suite installs; empty when it is not installed.
 JSON_TEST_SUITE ?= $(wildcard var/tools/mise/installs/http-jsontestsuite/latest)
 
 # The tools of every run are the releases that the tracked declaration files name: npm in the devEngines.packageManager of
@@ -57,12 +57,12 @@ unexport CARGO_TARGET_DIR
 # The targets of the full suite that make check runs through ci-targets of @polyspec/kit and that the jobs of
 # .github/workflows/ci-pipeline.yml run as the prerequisites of their kit-gates-* target (a target is in one job). verify-all
 # writes the aggregate record into var/records.
-CHECK_TARGETS := suppression-check link-check rules-check rebuild-check language-check duplication-check layout-check owner-validate release-coverage docs-check evidence-check verify-all lint-rust lint-go lint-php lint-php-ext test-php-ext lint-python pie-check ordered-json-test-scripts typecheck lint-ts test-js test-rust test-go test-php test-python
+CHECK_TARGETS := suppression-check link-check rules-check rebuild-check language-check duplication-check layout-check owner-validate release-coverage docs-check evidence-check verify-all lint-rust lint-go lint-php lint-php-ext test-php-ext lint-python pie-check json-test-scripts typecheck lint-ts test-js test-rust test-go test-php test-python
 
-.PHONY: check ordered-json-test-scripts typecheck ordered-json-install-php ordered-json-install-python verify-all verify-js verify-rust verify-go verify-php verify-php-extension verify-python evidence-check pie-check \
-	benchmark benchmark-check python-parse-budget install ordered-json-install ordered-json-install-rust \
-	ordered-json-js-check ordered-json-js-test ordered-json-go-check ordered-json-go-test ordered-json-php-check ordered-json-php-test \
-	ordered-json-php-ext-check ordered-json-php-ext-test ordered-json-python-check ordered-json-python-test ordered-json-rust-check ordered-json-rust-test
+.PHONY: check json-test-scripts typecheck json-install-php json-install-python verify-all verify-js verify-rust verify-go verify-php verify-php-extension verify-python evidence-check pie-check \
+	benchmark benchmark-check python-parse-budget install json-install json-install-rust \
+	json-js-check json-js-test json-go-check json-go-test json-php-check json-php-test \
+	json-php-ext-check json-php-ext-test json-python-check json-python-test json-rust-check json-rust-test
 
 # check runs the full suite: ci-targets of @polyspec/kit runs every target past failures and writes its report into
 # var/report/full-run.
@@ -74,8 +74,8 @@ check:
 # the virtual environment of the Python package; the PIE PHAR and the supplementary suite are tools of mise.toml (http:pie and
 # http:jsontestsuite), which install-tools installs.
 # It is the only target that downloads.
-# install runs the bootstrap as the prerequisite install-kit of ordered-json-install, then links the packages (install-link).
-install: ordered-json-install
+# install runs the bootstrap as the prerequisite install-kit of json-install, then links the packages (install-link).
+install: json-install
 	$(MAKE) --no-print-directory install-link
 
 # deps-<runtime> (K859): the locked install of each runtime, a thin call that ci-setup runs when the runtime list is empty.
@@ -84,52 +84,52 @@ deps-node:
 	$(MAKE) --no-print-directory install-packages
 deps-go:
 	$(GO) -C legacy/packages/go mod download
-deps-rust: ordered-json-install-rust-packages
-deps-php: ordered-json-install-php
-deps-python: ordered-json-install-python
-ordered-json-install: install-kit ordered-json-install-rust-packages ordered-json-install-php ordered-json-install-python
+deps-rust: json-install-rust-packages
+deps-php: json-install-php
+deps-python: json-install-python
+json-install: install-kit json-install-rust-packages json-install-php json-install-python
 
-ordered-json-install-rust:
+json-install-rust:
 	$(ONLINE) rustup toolchain install --no-self-update
 
-# ordered-json-install-php installs the locked Composer packages of legacy/packages/php and legacy/packages/php-ext, PHPUnit among them, into their
+# json-install-php installs the locked Composer packages of legacy/packages/php and legacy/packages/php-ext, PHPUnit among them, into their
 # vendor/, from which make test-php runs their tests, and the root package, the published composer.json,
 # into vendor/, whose autoloader PHPStan of make lint-php reads for the PHP of benchmarks/. The root package requires only
 # the platform, so its install downloads nothing; its composer.lock locks no package.
-ordered-json-install-php:
+json-install-php:
 	$(ONLINE) $(COMPOSER) install --no-interaction --no-progress
 	$(ONLINE) $(COMPOSER) install --no-interaction --no-progress --working-dir=legacy/packages/php
 	$(ONLINE) $(COMPOSER) install --no-interaction --no-progress --working-dir=legacy/packages/php-ext
 
-# ordered-json-install-python makes legacy/packages/python/.venv from the Python of mise.toml (python-venv of kit) and installs the package
+# json-install-python makes legacy/packages/python/.venv from the Python of mise.toml (python-venv of kit) and installs the package
 # into it, non-editable, with the uv of mise.toml. make install-link then makes the installed package folder a link to
 # legacy/packages/python/src/polyspec/ordered_json (kit K765), so the tests import the sources of the checkout; make test-python runs the
 # Python tests with its interpreter.
-ordered-json-install-python:
+json-install-python:
 	$(MAKE) --no-print-directory python-venv DIR=legacy/packages/python/.venv
 	$(ONLINE) $(UV) pip install --python legacy/packages/python/.venv/bin/python --link-mode copy --no-deps legacy/packages/python
 	$(MAKE) --no-print-directory install-link
 
 # Product dependency installs are reused by independent CI jobs after Kit prepares
 # only the requested toolchains. These targets install no other language's tools.
-.PHONY: ordered-json-install-rust-packages ordered-json-install-verify ordered-json-install-suite ordered-json-install-pie
+.PHONY: json-install-rust-packages json-install-verify json-install-suite json-install-pie
 # Cargo runs offline here (CARGO_NET_OFFLINE), so the install fetches the crates of every tracked Cargo.lock with cargo fetch --locked.
-ordered-json-install-rust-packages: ordered-json-install-rust
+json-install-rust-packages: json-install-rust
 	@set -e; for lock in $$(git ls-files -- '*Cargo.lock'); do $(ONLINE) $(CARGO) fetch --locked --manifest-path "$${lock%.lock}.toml"; done
 
-ordered-json-install-suite:
+json-install-suite:
 	$(ONLINE) $(KIT_TOOLS)/bin/mise install --locked http:jsontestsuite
 
-ordered-json-install-pie: ordered-json-install-suite
+json-install-pie: json-install-suite
 	$(ONLINE) $(KIT_TOOLS)/bin/mise install --locked http:pie
 
-# ordered-json-install-verify installs what verify-all builds and probes: the packages of every implementation and the suite.
-ordered-json-install-verify: ordered-json-install-rust-packages ordered-json-install-php ordered-json-install-python ordered-json-install-suite
+# json-install-verify installs what verify-all builds and probes: the packages of every implementation and the suite.
+json-install-verify: json-install-rust-packages json-install-php json-install-python json-install-suite
 
-# ordered-json-test-scripts runs the node:test tool tests of tests/scripts, or the files of TESTS, through run-tests of @polyspec/kit,
+# json-test-scripts runs the node:test tool tests of tests/scripts, or the files of TESTS, through run-tests of @polyspec/kit,
 # which runs the command and passes its output and exit code through; typecheck checks the TypeScript of scripts/, tests/scripts/
 # and benchmarks/ with the tsc of package.json (tsconfig.json), which Node runs by type stripping and so never checks itself.
-ordered-json-test-scripts:
+json-test-scripts:
 	$(NODE) $(KIT)/run-tests.mjs node -- --test-concurrency=1 $(or $(TESTS),tests/scripts/)
 
 typecheck:
@@ -163,23 +163,23 @@ benchmark-check:
 
 # The packages keep no Makefile (ruling 6 of the fourth pass): each package's check and test are targets of this Makefile,
 # named <repo>-<package>-<task>, where <package> is its folder under packages/ and the task is check or test.
-ordered-json-js-check: verify-js
-ordered-json-js-test: ordered-json-js-check
+json-js-check: verify-js
+json-js-test: json-js-check
 
-ordered-json-go-check: verify-go
-ordered-json-go-test: test-go
+json-go-check: verify-go
+json-go-test: test-go
 
-ordered-json-php-check: verify-php
-ordered-json-php-test: ordered-json-php-check
+json-php-check: verify-php
+json-php-test: json-php-check
 
-ordered-json-php-ext-check: verify-php-extension
-ordered-json-php-ext-test: ordered-json-php-ext-check
+json-php-ext-check: verify-php-extension
+json-php-ext-test: json-php-ext-check
 
-ordered-json-python-check: verify-python
-ordered-json-python-test: ordered-json-python-check
+json-python-check: verify-python
+json-python-test: json-python-check
 
-ordered-json-rust-check: verify-rust
-ordered-json-rust-test: ordered-json-rust-check
+json-rust-check: verify-rust
+json-rust-test: json-rust-check
 
 # python-parse-budget compares the CPU time of the Python parse with the pure PHP parse on one generated document and fails
 # when the Python median exceeds three times the PHP median (benchmarks/python-parse/run.py). A person runs it after a
@@ -242,7 +242,7 @@ build-js build-php:
 build-python:
 	$(NODE) $(KIT)/runtime-targets.mjs build --roots legacy/packages/python -- $(UV) build
 build-rust:
-	$(NODE) $(KIT)/runtime-targets.mjs build --roots packages/rust -- cargo build --locked -p polyspec-ordered-json
+	$(NODE) $(KIT)/runtime-targets.mjs build --roots packages/rust -- cargo build --locked -p polyspec-json
 
 # The unit tests of a runtime; CASES=<pattern> is the name filter of its runner. The runner arguments are those that kit 0.0.98
 # passed (kit K1094, K1106): go -count=1 -timeout=0, one test at a time in node and cargo, and the 30 s test timeout of node.
@@ -255,7 +255,7 @@ test-php:
 test-python:
 	PYTHONUNBUFFERED=1 NO_COLOR=1 PYTHON_COLORS=0 $(NODE) $(KIT)/runtime-targets.mjs test --runner python --roots legacy/packages/python --venv .venv
 test-rust:
-	$(NODE) $(KIT)/runtime-targets.mjs test --runner cargo --roots packages/rust -- -p polyspec-ordered-json -- --test-threads=1
+	$(NODE) $(KIT)/runtime-targets.mjs test --runner cargo --roots packages/rust -- -p polyspec-json -- --test-threads=1
 
 # ---- Bindings: generated from packages/rust/interface.json by bindgen (C-0) ---------------------------------------------
 # bindgen is not yet a package that package-lock.json pins; until it is, BINDGEN names the cli (packages/ts/src/cli.ts) of
@@ -338,7 +338,7 @@ lint-go:
 	$(NODE) $(KIT)/lint-go.mjs
 # lint-rust lints the core crate: kit runs clippy --workspace, and the binding crates, which need make bindings first, are
 # excluded and linted by lint-bindings.
-BINDING_CRATES := polyspec-ordered-json-node polyspec-ordered-json-python polyspec-ordered-json-php-ext
+BINDING_CRATES := polyspec-json-node polyspec-json-python polyspec-json-php-ext
 lint-rust:
 	$(NODE) $(KIT)/lint-rust.mjs --locked $(foreach crate,$(BINDING_CRATES),--exclude $(crate))
 
@@ -362,7 +362,7 @@ link-check:
 ifneq ($(filter kit-gates-static,$(MAKECMDGOALS)),)
 MAKEFLAGS += -k
 endif
-kit-gates-static: layout-check docs-check rules-check owner-validate rebuild-check language-check duplication-check suppression-check link-check release-coverage evidence-check ordered-json-test-scripts typecheck
+kit-gates-static: layout-check docs-check rules-check owner-validate rebuild-check language-check duplication-check suppression-check link-check release-coverage evidence-check json-test-scripts typecheck
 	@echo "[kit-gates-static] every shared gate passed"
 kit-gates-verify: verify-all
 kit-gates-runtime-ts: lint-ts test-js

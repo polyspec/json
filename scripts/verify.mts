@@ -282,7 +282,7 @@ function mismatches(language: string, name: string, expected: Expected, reply: R
  * probe that stops answering ends its own cases only. Failures names every failure after all ran.
  */
 export async function verifyProbes(commands: Record<string, Argv>, suite?: string, root = ROOT): Promise<{ results: Record<string, { status: 'passed'; cases: number }>; counts: Counts }> {
-  const directory = mkdtempSync(path.join(tmpdir(), 'ordered-json-examples-'));
+  const directory = mkdtempSync(path.join(tmpdir(), 'json-examples-'));
   try {
     const { cases, counts: documentCounts } = sharedCases(directory, suite, root);
     const checks = argumentChecks(root);

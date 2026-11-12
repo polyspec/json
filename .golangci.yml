@@ -1,4 +1,4 @@
-# The golangci-lint configuration of ordered-json, taken from the one of kit (kit docs/examples/native-settings). make lint-go runs golangci-lint in each Go module, and
+# The golangci-lint configuration of json, taken from the one of kit (kit docs/examples/native-settings). make lint-go runs golangci-lint in each Go module, and
 # golangci-lint finds this file by its search from the module folder upward.
 version: "2"
 run:

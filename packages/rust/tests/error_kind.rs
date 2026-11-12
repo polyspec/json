@@ -3,7 +3,7 @@
 mod common;
 
 use common::json;
-use polyspec_ordered_json::{parse, Error, OrderedMap, ParseOptions, Value, MAX_DEPTH};
+use polyspec_json::{parse, Error, OrderedMap, ParseOptions, Value, MAX_DEPTH};
 use std::collections::BTreeSet;
 
 type Site = fn() -> Result<(), Error>;

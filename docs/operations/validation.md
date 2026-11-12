@@ -6,14 +6,14 @@
 <a id="repository-check"></a>
 ## Aggregate check
 
-Development runs unit tests only (`make ordered-json-test-scripts`). The aggregate check, the PIE artifact check and the owner checks are end-to-end checks that [hosted CI](#ci) runs after every push; no rule requires a local run before a commit or a push, and the pre-push hook only reads the checklist. To run the aggregate check locally anyway, install the [required tools](installation.md#requirements) and run from the repository root:
+Development runs unit tests only (`make json-test-scripts`). The aggregate check, the PIE artifact check and the owner checks are end-to-end checks that [hosted CI](#ci) runs after every push; no rule requires a local run before a commit or a push, and the pre-push hook only reads the checklist. To run the aggregate check locally anyway, install the [required tools](installation.md#requirements) and run from the repository root:
 
 ~~~sh
 make install
 make check
 ~~~
 
-`make check` runs the targets of `CHECK_TARGETS` through ci-targets of `@polyspec/kit`, past failures, and writes the report into `var/report/full-run`. Its target `verify-all` builds every implementation of `config/implementations.json`, sends the common JSON cases to the probe of each, writes the aggregate record `var/records/verification.json`, and runs the evidence check with the [records](#records) of the checkout (`scripts/verify.mts --record`). An aggregate record includes the source hash of every tracked file. The package tests of each implementation run in `make test-<language>`, with the native runner of its language, and the tool tests in `make ordered-json-test-scripts`.
+`make check` runs the targets of `CHECK_TARGETS` through ci-targets of `@polyspec/kit`, past failures, and writes the report into `var/report/full-run`. Its target `verify-all` builds every implementation of `config/implementations.json`, sends the common JSON cases to the probe of each, writes the aggregate record `var/records/verification.json`, and runs the evidence check with the [records](#records) of the checkout (`scripts/verify.mts --record`). An aggregate record includes the source hash of every tracked file. The package tests of each implementation run in `make test-<language>`, with the native runner of its language, and the tool tests in `make json-test-scripts`.
 
 Each build step prints a start line, its output as it arrives, and its exit status with the elapsed time. A build step or PIE command has no time limit: its exit status and its output decide the result. Each probe receives one shared case at a time and the verifier prints the case with the elapsed time of its reply; a reply has 60 s, and a probe that misses it is killed and the case is named. No limit applies to the whole run. When a build step or a probe ends, the verifier kills its process group, so a process that it started in the background neither outlives it nor holds its output open. A failure ends neither the run nor the other languages: the build of each language and every shared case of every probe run to their end, a failed build skips only the later steps of its own language, and the run then lists every failure and exits with status 1 without writing a record. The expected result of a fixture or a supplementary case comes from an independent reference (`scripts/reference.mts`): the bytes decoded as strict UTF-8 and parsed by momoa, a JSON parser that keeps every member in order with its source range, with the unescaped control characters and the nesting limit checked on its tokens.
 
@@ -53,8 +53,8 @@ make verify-php verify-php-extension
 For an independent clone:
 
 ~~~sh
-git clone https://github.com/polyspec/ordered-json.git
-cd ordered-json
+git clone https://github.com/polyspec/json.git
+cd json
 make check
 ~~~
 
@@ -80,7 +80,7 @@ The PIE record `var/records/pie-verification.json` records the PIE version and P
 
 `.github/workflows/ci.yml` runs on every pull request, push to `main` and manual dispatch. It is one pipeline (PRINCIPLES S12): its one job `kit` calls `.github/workflows/ci-pipeline.yml`, the pipeline of this repository taken from the one of `@polyspec/kit`, which runs a target of the Makefile in each of its jobs: `kit-gates-static` in the shared job, `kit-gates-verify` in the verify job and `kit-gates-runtime-<runtime>` in the job of each runtime that its matrix lists.
 
-[config/ci.json](../../config/ci.json) declares, for those jobs, the setup targets (`setup`) and the tools beyond those of kit (`tools`). The verify job, which the pipeline itself declares, installs the toolchains of every language and the comparison environments with `ordered-json-install-verify`; the php-ext job installs PIE and the supplementary suite with `ordered-json-install-pie`; each runtime job builds its package. Every target of `CHECK_TARGETS` is a prerequisite of exactly one of these job targets; `tests/scripts/workflow-rules.test.mts` fails otherwise.
+[config/ci.json](../../config/ci.json) declares, for those jobs, the setup targets (`setup`) and the tools beyond those of kit (`tools`). The verify job, which the pipeline itself declares, installs the toolchains of every language and the comparison environments with `json-install-verify`; the php-ext job installs PIE and the supplementary suite with `json-install-pie`; each runtime job builds its package. Every target of `CHECK_TARGETS` is a prerequisite of exactly one of these job targets; `tests/scripts/workflow-rules.test.mts` fails otherwise.
 
 Each job checks out this repository at the workspace root and installs the locked kit package before its first make command; no sibling checkout is required. Downloads remain installation steps; no check enables network access. The closing job `kit / required` of the pipeline passes only when every job passed, so a run of `ci` that concludes `success` is the evidence that the release workflow requires ([publishing main](#publish)).
 

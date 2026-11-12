@@ -1,4 +1,4 @@
-# The PHPStan configuration of ordered-json, taken from the one of kit (kit docs/examples/native-settings). make lint-php runs PHPStan on each Composer package with this
+# The PHPStan configuration of json, taken from the one of kit (kit docs/examples/native-settings). make lint-php runs PHPStan on each Composer package with this
 # root file when the package folder holds none, and with the autoloader of the package. It runs the disallowed calls of S2
 # only: customRulesetUsed loads no rule level, so the result depends on no level a package may later choose for itself.
 # phpstan/extension-installer loads spaze/phpstan-disallowed-calls and shipmonk/phpstan-rules (config/php-lint).

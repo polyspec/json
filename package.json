@@ -24,7 +24,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/polyspec/ordered-json.git"
+    "url": "https://github.com/polyspec/json.git"
   },
   "scripts": {
     "test": "make verify-js"

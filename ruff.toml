@@ -1,4 +1,4 @@
-# The ruff configuration of ordered-json, taken from the one of kit (kit docs/examples/native-settings). make lint-python runs ruff from the root, and ruff applies the
+# The ruff configuration of json, taken from the one of kit (kit docs/examples/native-settings). make lint-python runs ruff from the root, and ruff applies the
 # nearest configuration of each file, this one where no folder below holds its own.
 target-version = "py314"
 # ruff's own setting for its cache, which otherwise is .ruff_cache at the root (layout S5 refuses it): var holds what the tools

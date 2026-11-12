@@ -1,7 +1,7 @@
 mod common;
 
 use common::text;
-use polyspec_ordered_json::{parse, Error, ParseOptions};
+use polyspec_json::{parse, Error, ParseOptions};
 
 const STRICT: ParseOptions = ParseOptions {
     max_depth: None,

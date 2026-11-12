@@ -92,7 +92,7 @@ test('the packages follow the polyspec naming convention and each Cargo package 
   assert.deepEqual(['composer.json', `${php}/composer.json`, `${extension}/composer.json`].map(name), ['polyspec/ordered-json', 'polyspec/ordered-json', 'polyspec/ordered-json-php-ext']);
   assert.deepEqual(['package.json', `${js}/package.json`].map(name), ['@polyspec/ordered-json', '@polyspec/ordered-json']);
   const cargo = checkJson<{ package: { name: string }; lib: { name: string } }>(parse(read(`${rust}/Cargo.toml`)), 'cargo-manifest.schema.json', `${rust}/Cargo.toml`);
-  assert.deepEqual([cargo.package.name, cargo.lib.name], ['polyspec-ordered-json', 'polyspec_ordered_json']);
+  assert.deepEqual([cargo.package.name, cargo.lib.name], ['polyspec-json', 'polyspec_json']);
   // The module path of the Go package is the repository path followed by its folder (S5 of kit); the legacy package keeps
   // the path of its releases, its folder before the transition (docs/spec/json-contract.md#transition).
   assert.equal(parseJson<{ Module: { Path: string } }>(execFileSync('go', ['mod', 'edit', '-json'], { cwd: path.join(ROOT, go), encoding: 'utf8' }), 'go-mod-edit.schema.json', 'go mod edit -json').Module.Path, `github.com/polyspec/ordered-json/${go.replace(/^legacy\//, '')}`);

@@ -1,4 +1,4 @@
-# The clippy configuration of ordered-json. clippy reads clippy.toml from the folder of the Cargo workspace and the
+# The clippy configuration of json. clippy reads clippy.toml from the folder of the Cargo workspace and the
 # folders above it. A failure never becomes a plausible value (R-1, P-2, P-3): a Result or an Option is matched, passed
 # on with ?, or turned into an error with a kind. A use that is truly needed says so with
 # #[allow(clippy::disallowed_methods, reason = "<rule id>")].

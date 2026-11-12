@@ -2,7 +2,7 @@
 mod common;
 
 use common::{text, valid};
-use polyspec_ordered_json::Value;
+use polyspec_json::Value;
 use serde::{Deserialize, Serialize};
 
 // Requirements: RQ-020

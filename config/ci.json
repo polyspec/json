@@ -8,19 +8,19 @@
         "build-go"
       ],
       "php": [
-        "ordered-json-install-php",
+        "json-install-php",
         "build-php"
       ],
       "php-ext": [
-        "ordered-json-install-pie",
-        "ordered-json-install-php"
+        "json-install-pie",
+        "json-install-php"
       ],
       "python": [
-        "ordered-json-install-python",
+        "json-install-python",
         "build-python"
       ],
       "rust": [
-        "ordered-json-install-rust-packages",
+        "json-install-rust-packages",
         "build-rust"
       ],
       "ts": [

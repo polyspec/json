@@ -2,7 +2,7 @@
 mod common;
 
 use common::{json, text, units, valid};
-use polyspec_ordered_json::{
+use polyspec_json::{
     parse, stringify, Error, Kind, OrderedMap, ParseOptions, StringifyOptions, Value, MAX_DEPTH,
 };
 
@@ -238,9 +238,9 @@ fn floats_become_tokens() {
         Value::from_f64(f64::NAN).unwrap_err(),
         Error::NonFiniteNumber
     );
-    assert_eq!(polyspec_ordered_json::number_text(0.1).unwrap(), "0.1");
+    assert_eq!(polyspec_json::number_text(0.1).unwrap(), "0.1");
     assert_eq!(
-        polyspec_ordered_json::number_text(f64::NEG_INFINITY).unwrap_err(),
+        polyspec_json::number_text(f64::NEG_INFINITY).unwrap_err(),
         Error::NonFiniteNumber
     );
 }

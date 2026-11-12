@@ -44,14 +44,14 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
 <a id="verification"></a>
 ## Required checks
 
-- Own: Development runs unit tests only: the native test of a changed package, or a tool test with `make ordered-json-test-scripts TESTS=<file>`. `make verify-<language>` builds one implementation and sends the shared cases to its probe, and writes no record.
+- Own: Development runs unit tests only: the native test of a changed package, or a tool test with `make json-test-scripts TESTS=<file>`. `make verify-<language>` builds one implementation and sends the shared cases to its probe, and writes no record.
   Enforced by: none, judged at review.
 - Own: The full suite (`make check`) and the end-to-end checks (`make pie-check`, `make owner-check`, the adapter suites and the supplementary suite) run in hosted CI on every pull request and every push to `main`. No rule requires a local run before a commit or a push, and no rule runs a broader check after each correction.
   Enforced by: `make ci-targets`
 - Own: Every tracked path is owned by a rule of [config/owner-checks.json](config/owner-checks.json). `make owner-validate` fails while a path matches no rule, a glob matches no path or an owner does not exist. A new file is mapped in the same commit.
   Enforced by: `make layout-check`
 - Own: Each target of `CHECK_TARGETS` in the Makefile is a prerequisite of the target of exactly one job of `.github/workflows/ci-pipeline.yml` (`kit-gates-static`, `kit-gates-verify`, `kit-gates-runtime-<runtime>`), which the job runs by name through `make ci-targets`, past failures, and uploads its report.
-  Enforced by: `make ordered-json-test-scripts`
+  Enforced by: `make json-test-scripts`
 - Own: The lint of each language passes: `make lint-rust` (clippy with `-D warnings`), `make lint-go` (golangci-lint with `.golangci.yml`, and deadcode), `make lint-php` (phpcs with `phpcs.xml.dist`, and PHPStan) and `make lint-python` (ruff with `ruff.toml`, and vulture).
   Enforced by: `make ci-targets`
 - Own: The PHP extension is rebuilt when its native code changes. A result from an old binary or a prior run is never taken as verification of changed code.
@@ -63,7 +63,7 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
 ## Implementations and shared cases
 
 - Own: [config/implementations.json](config/implementations.json) declares the implementations, which is the one source of the language set of this repository, with the directory of each. A new language is added in `config/implementations.json`, in the commands of `scripts/registry.mts` and in a package directory, without changing the shared JSON comparison algorithm.
-  Enforced by: `make ordered-json-test-scripts`
+  Enforced by: `make json-test-scripts`
 - Own: Each implementation runs its own package tests with the native runner of its language: `make test-js`, `make test-rust`, `make test-go`, `make test-php`, `make test-php-ext` and `make test-python`.
   Enforced by: `make ci-targets`
 - Own: An API that only one package provides is tested in that package. Shared cases exercise the JSON contract and cannot reach a language-specific API.
@@ -115,11 +115,11 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
 - Own: Only `make install-tools TOOLS=npm`, `make install-packages` and `make install` download. The first installs npm, the second the packages of `package-lock.json`, and `make install` the tools of `mise.lock`, the Rust toolchain, and the crates of the root `Cargo.lock`; the PIE PHAR and the supplementary suite are the tools `http:pie` and `http:jsontestsuite` of `mise.toml`.
   Enforced by: none, judged at review: the crates of a Cargo.lock are the state of cargo, which a make target cannot compare with the lock (K864).
 - Own: A test reads only the outputs it creates and does not depend on untracked state. Records, documentation checks, shared cases and build copies read the files Git tracks, and each run builds in its own run directory with its own `CARGO_TARGET_DIR`.
-  Enforced by: `make ordered-json-test-scripts`
+  Enforced by: `make json-test-scripts`
 - Own: A shared output is published atomically: it is written completely to a file in `var/` and renamed over its path (`write_record`).
-  Enforced by: `make ordered-json-test-scripts`
+  Enforced by: `make json-test-scripts`
 - Own: A check never judges a message in the user's locale. A command whose output text is compared runs with `LC_ALL=C`, as `scripts/registry.mts` runs `git ls-files`.
-  Enforced by: `make ordered-json-test-scripts`
+  Enforced by: `make json-test-scripts`
 
 <a id="completion"></a>
 ## Completion
@@ -134,7 +134,7 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
 <a id="package-npm"></a>
 ## Package npm (legacy/packages/js)
 
-- Own: The package `@polyspec/ordered-json` is checked alone by `make ordered-json-js-check`, which runs `make verify-js` (`scripts/verify.mts --only js`) and compares its adapter with the shared cases and writes no record. Its package tests are native node:test files that `make test-js` runs.
+- Own: The package `@polyspec/ordered-json` is checked alone by `make json-js-check`, which runs `make verify-js` (`scripts/verify.mts --only js`) and compares its adapter with the shared cases and writes no record. Its package tests are native node:test files that `make test-js` runs.
   Enforced by: `make test-js`
 - Own: The package keeps no independent goldens: official cases and expected results belong to the repository root, and a behavior change updates the common specification before the package.
   Enforced by: `make verify-all`
@@ -146,7 +146,7 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
 
 - Own: The crate is linted by `make lint-rust` (clippy with `-D warnings`).
   Enforced by: `make lint-rust`
-- Own: The crate is checked alone by `make ordered-json-rust-check`, which runs `make verify-rust`.
+- Own: The crate is checked alone by `make json-rust-check`, which runs `make verify-rust`.
   Enforced by: none, judged at review: no workflow, Git hook or Claude Code hook runs this target.
 - Own: Its crates are the locked versions of the root `Cargo.lock`, which `make install` downloads; no check downloads them.
   Enforced by: none, judged at review: the crates of a Cargo.lock are the state of cargo, which a make target cannot compare with the lock (K864).
@@ -160,7 +160,7 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
 
 - Own: The module is linted by `make lint-go` (golangci-lint with `.golangci.yml`, and deadcode).
   Enforced by: `make lint-go`
-- Own: The module is checked alone by `make ordered-json-go-check`, which runs `make verify-go`.
+- Own: The module is checked alone by `make json-go-check`, which runs `make verify-go`.
   Enforced by: none, judged at review: no workflow, Git hook or Claude Code hook runs this target.
 - Own: `GOTOOLCHAIN` is `local`, and the module requires the Go release of `mise.toml`.
   Enforced by: none, judged at review: kit 0.0.77 removed toolchain check (K854), and the pins of mise.toml and mise.lock are read by install-tools.
@@ -174,7 +174,7 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
 
 - Own: The Composer package is linted by `make lint-php` (phpcs and PHPStan).
   Enforced by: `make lint-php`
-- Own: The Composer package is checked alone by `make ordered-json-php-check`, which runs `make verify-php`.
+- Own: The Composer package is checked alone by `make json-php-check`, which runs `make verify-php`.
   Enforced by: none, judged at review: no workflow, Git hook or Claude Code hook runs this target.
 - Own: Its `composer.lock` is locked to the platform `8.4.1` and requires PHP `>=8.4`, and is re-locked with `composer update --lock` when its manifest changes.
   Enforced by: none, judged at review.
@@ -186,7 +186,7 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
 <a id="package-php-ext"></a>
 ## Package php-ext (legacy/packages/php-ext)
 
-- Own: The extension is checked alone by `make ordered-json-php-ext-check`, which runs `make verify-php-extension`. `make build-php-ext` of kit (S10) builds `var/php-ext/polyspec_ordered_json.so` from the stub and its tracked arginfo header (`make php-ext-arginfo` writes it), and `make verify-php-extension` and `make test-php-ext` load it.
+- Own: The extension is checked alone by `make json-php-ext-check`, which runs `make verify-php-extension`. `make build-php-ext` of kit (S10) builds `var/php-ext/polyspec_ordered_json.so` from the stub and its tracked arginfo header (`make php-ext-arginfo` writes it), and `make verify-php-extension` and `make test-php-ext` load it.
   Enforced by: `make test-php-ext`
 - Own: Its `composer.lock` is locked to the platform `8.4.1` and requires PHP `>=8.4`, the same as the PHP package, and is re-locked with `composer update --lock` when its manifest changes.
   Enforced by: none, judged at review.
@@ -196,7 +196,7 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
 <a id="package-python"></a>
 ## Package python (legacy/packages/python)
 
-- Own: The package is checked alone by `make ordered-json-python-check`, which runs `make verify-python`, and linted by `make lint-python` (ruff with `ruff.toml`, and vulture with `legacy/packages/python/vulture_whitelist.py`). `make install-packages` installs it editable into `legacy/packages/python/.venv`, which its tests use.
+- Own: The package is checked alone by `make json-python-check`, which runs `make verify-python`, and linted by `make lint-python` (ruff with `ruff.toml`, and vulture with `legacy/packages/python/vulture_whitelist.py`). `make install-packages` installs it editable into `legacy/packages/python/.venv`, which its tests use.
   Enforced by: `make lint-python`
 - Own: Its package tests are the unittest tests of `legacy/packages/python/tests` that `make test-python` runs.
   Enforced by: `make test-python`

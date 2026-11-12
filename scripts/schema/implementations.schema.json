@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "description": "config/implementations.json: the implementations of ordered-json and their roots, which the verifier of scripts/registry.mts, its tests and the benchmarks read.",
+  "description": "config/implementations.json: the implementations of json and their roots, which the verifier of scripts/registry.mts, its tests and the benchmarks read.",
   "type": "object",
   "required": ["implementations"],
   "properties": {

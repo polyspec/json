@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
-  The phpcs rules of ordered-json, taken from the ones of kit (kit docs/examples/native-settings). make lint-php runs phpcs from the root, where phpcs reads this file, on
+  The phpcs rules of json, taken from the ones of kit (kit docs/examples/native-settings). make lint-php runs phpcs from the root, where phpcs reads this file, on
   the PHP files of the checkout. PSR-12 includes PSR-1, whose MultipleClasses sniff enforces one class per
   file (S2): composer dump-autoload strict-psr does not, since it accepts a file whose first class matches its name and
   drops the others in silence.

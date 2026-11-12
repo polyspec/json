@@ -1,8 +1,8 @@
 {
   "schema": "polyspec/interface@1",
-  "library": "ordered-json",
+  "library": "json",
   "core": {
-    "crate": "polyspec-ordered-json",
+    "crate": "polyspec-json",
     "path": "packages/rust"
   },
   "targets": [
@@ -14,15 +14,15 @@
   ],
   "packages": {
     "php": {
-      "package": "polyspec/ordered-json",
-      "namespace": "Polyspec\\OrderedJson"
+      "package": "polyspec/json",
+      "namespace": "Polyspec\\Json"
     },
     "python": {
-      "package": "polyspec-ordered-json",
-      "module": "polyspec.ordered_json"
+      "package": "polyspec-json",
+      "module": "polyspec.json"
     },
     "node": {
-      "package": "@polyspec/ordered-json",
+      "package": "@polyspec/json",
       "entries": {
         ".": {
           "conditions": {
@@ -36,7 +36,7 @@
       }
     },
     "go": {
-      "module": "github.com/polyspec/ordered-json/packages/go"
+      "module": "github.com/polyspec/json/packages/go"
     }
   },
   "naming": {
@@ -44,47 +44,47 @@
   },
   "types": {
     "json_value": {
-      "library": "ordered-json",
+      "library": "json",
       "unit": "value"
     }
   },
   "errors": {
     "classes": {
       "value": {
-        "php": "Polyspec\\OrderedJson\\OrderedJsonValueError",
-        "python": "OrderedJsonValueError",
-        "node": "OrderedJsonValueError",
-        "wasm": "OrderedJsonValueError"
+        "php": "Polyspec\\Json\\JsonValueError",
+        "python": "JsonValueError",
+        "node": "JsonValueError",
+        "wasm": "JsonValueError"
       },
       "type": {
-        "php": "Polyspec\\OrderedJson\\OrderedJsonTypeError",
-        "python": "OrderedJsonTypeError",
-        "node": "OrderedJsonTypeError",
-        "wasm": "OrderedJsonTypeError"
+        "php": "Polyspec\\Json\\JsonTypeError",
+        "python": "JsonTypeError",
+        "node": "JsonTypeError",
+        "wasm": "JsonTypeError"
       },
       "io": {
-        "php": "Polyspec\\OrderedJson\\OrderedJsonIoError",
-        "python": "OrderedJsonIoError",
-        "node": "OrderedJsonIoError",
-        "wasm": "OrderedJsonIoError"
+        "php": "Polyspec\\Json\\JsonIoError",
+        "python": "JsonIoError",
+        "node": "JsonIoError",
+        "wasm": "JsonIoError"
       },
       "store": {
-        "php": "Polyspec\\OrderedJson\\OrderedJsonStoreError",
-        "python": "OrderedJsonStoreError",
-        "node": "OrderedJsonStoreError",
-        "wasm": "OrderedJsonStoreError"
+        "php": "Polyspec\\Json\\JsonStoreError",
+        "python": "JsonStoreError",
+        "node": "JsonStoreError",
+        "wasm": "JsonStoreError"
       },
       "busy": {
-        "php": "Polyspec\\OrderedJson\\OrderedJsonBusyError",
-        "python": "OrderedJsonBusyError",
-        "node": "OrderedJsonBusyError",
-        "wasm": "OrderedJsonBusyError"
+        "php": "Polyspec\\Json\\JsonBusyError",
+        "python": "JsonBusyError",
+        "node": "JsonBusyError",
+        "wasm": "JsonBusyError"
       },
       "internal": {
-        "php": "Polyspec\\OrderedJson\\OrderedJsonInternalError",
-        "python": "OrderedJsonInternalError",
-        "node": "OrderedJsonInternalError",
-        "wasm": "OrderedJsonInternalError"
+        "php": "Polyspec\\Json\\JsonInternalError",
+        "python": "JsonInternalError",
+        "node": "JsonInternalError",
+        "wasm": "JsonInternalError"
       }
     },
     "fixed": [
@@ -111,109 +111,109 @@
     ],
     "kinds": [
       {
-        "variant": "polyspec_ordered_json::Error::ExpectedValue",
+        "variant": "polyspec_json::Error::ExpectedValue",
         "category": "value",
         "class": "parse_error"
       },
       {
-        "variant": "polyspec_ordered_json::Error::ExpectedDigit",
+        "variant": "polyspec_json::Error::ExpectedDigit",
         "category": "value",
         "class": "parse_error"
       },
       {
-        "variant": "polyspec_ordered_json::Error::ExpectedColon",
+        "variant": "polyspec_json::Error::ExpectedColon",
         "category": "value",
         "class": "parse_error"
       },
       {
-        "variant": "polyspec_ordered_json::Error::ExpectedDelimiter",
+        "variant": "polyspec_json::Error::ExpectedDelimiter",
         "category": "value",
         "class": "parse_error"
       },
       {
-        "variant": "polyspec_ordered_json::Error::ExpectedObjectKey",
+        "variant": "polyspec_json::Error::ExpectedObjectKey",
         "category": "value",
         "class": "parse_error"
       },
       {
-        "variant": "polyspec_ordered_json::Error::InvalidEscape",
+        "variant": "polyspec_json::Error::InvalidEscape",
         "category": "value",
         "class": "parse_error"
       },
       {
-        "variant": "polyspec_ordered_json::Error::InvalidUnicodeEscape",
+        "variant": "polyspec_json::Error::InvalidUnicodeEscape",
         "category": "value",
         "class": "parse_error"
       },
       {
-        "variant": "polyspec_ordered_json::Error::UnfinishedEscape",
+        "variant": "polyspec_json::Error::UnfinishedEscape",
         "category": "value",
         "class": "parse_error"
       },
       {
-        "variant": "polyspec_ordered_json::Error::UnterminatedString",
+        "variant": "polyspec_json::Error::UnterminatedString",
         "category": "value",
         "class": "parse_error"
       },
       {
-        "variant": "polyspec_ordered_json::Error::UnescapedControlCharacter",
+        "variant": "polyspec_json::Error::UnescapedControlCharacter",
         "category": "value",
         "class": "parse_error"
       },
       {
-        "variant": "polyspec_ordered_json::Error::InvalidUtf8",
+        "variant": "polyspec_json::Error::InvalidUtf8",
         "category": "value",
         "class": "parse_error"
       },
       {
-        "variant": "polyspec_ordered_json::Error::MaximumDepthExceeded",
+        "variant": "polyspec_json::Error::MaximumDepthExceeded",
         "category": "value",
         "class": "parse_error"
       },
       {
-        "variant": "polyspec_ordered_json::Error::TrailingInput",
+        "variant": "polyspec_json::Error::TrailingInput",
         "category": "value",
         "class": "parse_error"
       },
       {
-        "variant": "polyspec_ordered_json::Error::DuplicateObjectKey",
+        "variant": "polyspec_json::Error::DuplicateObjectKey",
         "category": "value",
         "class": "parse_error"
       },
       {
-        "variant": "polyspec_ordered_json::Error::NonStringKey",
+        "variant": "polyspec_json::Error::NonStringKey",
         "category": "type"
       },
       {
-        "variant": "polyspec_ordered_json::Error::WrongKind",
+        "variant": "polyspec_json::Error::WrongKind",
         "category": "type"
       },
       {
-        "variant": "polyspec_ordered_json::Error::HostSerializationRefused",
+        "variant": "polyspec_json::Error::HostSerializationRefused",
         "category": "type"
       },
       {
-        "variant": "polyspec_ordered_json::Error::InvalidNumberLiteral",
+        "variant": "polyspec_json::Error::InvalidNumberLiteral",
         "category": "value"
       },
       {
-        "variant": "polyspec_ordered_json::Error::DepthLimitOutOfRange",
+        "variant": "polyspec_json::Error::DepthLimitOutOfRange",
         "category": "value"
       },
       {
-        "variant": "polyspec_ordered_json::Error::InvalidCodeUnit",
+        "variant": "polyspec_json::Error::InvalidCodeUnit",
         "category": "value"
       },
       {
-        "variant": "polyspec_ordered_json::Error::UnpairedSurrogate",
+        "variant": "polyspec_json::Error::UnpairedSurrogate",
         "category": "value"
       },
       {
-        "variant": "polyspec_ordered_json::Error::NonFiniteNumber",
+        "variant": "polyspec_json::Error::NonFiniteNumber",
         "category": "value"
       },
       {
-        "variant": "polyspec_ordered_json::Error::Internal",
+        "variant": "polyspec_json::Error::Internal",
         "category": "internal"
       }
     ],
@@ -261,26 +261,26 @@
           ],
           "returns": "json_value",
           "raises": [
-            "polyspec_ordered_json::Error::ExpectedValue",
-            "polyspec_ordered_json::Error::ExpectedDigit",
-            "polyspec_ordered_json::Error::ExpectedColon",
-            "polyspec_ordered_json::Error::ExpectedDelimiter",
-            "polyspec_ordered_json::Error::ExpectedObjectKey",
-            "polyspec_ordered_json::Error::InvalidEscape",
-            "polyspec_ordered_json::Error::InvalidUnicodeEscape",
-            "polyspec_ordered_json::Error::UnfinishedEscape",
-            "polyspec_ordered_json::Error::UnterminatedString",
-            "polyspec_ordered_json::Error::UnescapedControlCharacter",
-            "polyspec_ordered_json::Error::InvalidUtf8",
-            "polyspec_ordered_json::Error::MaximumDepthExceeded",
-            "polyspec_ordered_json::Error::TrailingInput",
-            "polyspec_ordered_json::Error::DuplicateObjectKey",
-            "polyspec_ordered_json::Error::DepthLimitOutOfRange",
-            "polyspec_ordered_json::Error::Internal"
+            "polyspec_json::Error::ExpectedValue",
+            "polyspec_json::Error::ExpectedDigit",
+            "polyspec_json::Error::ExpectedColon",
+            "polyspec_json::Error::ExpectedDelimiter",
+            "polyspec_json::Error::ExpectedObjectKey",
+            "polyspec_json::Error::InvalidEscape",
+            "polyspec_json::Error::InvalidUnicodeEscape",
+            "polyspec_json::Error::UnfinishedEscape",
+            "polyspec_json::Error::UnterminatedString",
+            "polyspec_json::Error::UnescapedControlCharacter",
+            "polyspec_json::Error::InvalidUtf8",
+            "polyspec_json::Error::MaximumDepthExceeded",
+            "polyspec_json::Error::TrailingInput",
+            "polyspec_json::Error::DuplicateObjectKey",
+            "polyspec_json::Error::DepthLimitOutOfRange",
+            "polyspec_json::Error::Internal"
           ],
           "wait": "none",
           "core": {
-            "path": "polyspec_ordered_json::parse"
+            "path": "polyspec_json::parse"
           }
         },
         {
@@ -314,7 +314,7 @@
           "raises": [],
           "wait": "none",
           "core": {
-            "path": "polyspec_ordered_json::stringify"
+            "path": "polyspec_json::stringify"
           }
         },
         {
@@ -327,7 +327,7 @@
           "visibility": "public",
           "type": "uint",
           "value": 256,
-          "core": "polyspec_ordered_json::MAX_DEPTH"
+          "core": "polyspec_json::MAX_DEPTH"
         }
       ]
     },
@@ -340,7 +340,7 @@
       "kind": "class",
       "visibility": "public",
       "origin": "value",
-      "core_type": "polyspec_ordered_json::Value",
+      "core_type": "polyspec_json::Value",
       "constructible": false,
       "final": true,
       "members": [
@@ -358,7 +358,7 @@
           "raises": [],
           "wait": "none",
           "core": {
-            "path": "polyspec_ordered_json::Value::kind",
+            "path": "polyspec_json::Value::kind",
             "receiver": "&self"
           }
         },
@@ -374,7 +374,7 @@
           "raises": [],
           "wait": "none",
           "core": {
-            "path": "polyspec_ordered_json::Value::raw",
+            "path": "polyspec_json::Value::raw",
             "receiver": "&self"
           }
         },
@@ -390,11 +390,11 @@
             "unit": "ordered_map"
           },
           "raises": [
-            "polyspec_ordered_json::Error::WrongKind"
+            "polyspec_json::Error::WrongKind"
           ],
           "wait": "none",
           "core": {
-            "path": "polyspec_ordered_json::Value::members",
+            "path": "polyspec_json::Value::members",
             "receiver": "&self"
           }
         },
@@ -410,11 +410,11 @@
             "list": "json_value"
           },
           "raises": [
-            "polyspec_ordered_json::Error::WrongKind"
+            "polyspec_json::Error::WrongKind"
           ],
           "wait": "none",
           "core": {
-            "path": "polyspec_ordered_json::Value::items",
+            "path": "polyspec_json::Value::items",
             "receiver": "&self"
           }
         },
@@ -429,13 +429,13 @@
           "parameters": [],
           "returns": "text",
           "raises": [
-            "polyspec_ordered_json::Error::WrongKind",
-            "polyspec_ordered_json::Error::UnpairedSurrogate",
-            "polyspec_ordered_json::Error::Internal"
+            "polyspec_json::Error::WrongKind",
+            "polyspec_json::Error::UnpairedSurrogate",
+            "polyspec_json::Error::Internal"
           ],
           "wait": "none",
           "core": {
-            "path": "polyspec_ordered_json::Value::string_value",
+            "path": "polyspec_json::Value::string_value",
             "receiver": "&self"
           }
         },
@@ -452,12 +452,12 @@
             "list": "uint"
           },
           "raises": [
-            "polyspec_ordered_json::Error::WrongKind",
-            "polyspec_ordered_json::Error::Internal"
+            "polyspec_json::Error::WrongKind",
+            "polyspec_json::Error::Internal"
           ],
           "wait": "none",
           "core": {
-            "path": "polyspec_ordered_json::Value::string_units",
+            "path": "polyspec_json::Value::string_units",
             "receiver": "&self"
           }
         },
@@ -472,11 +472,11 @@
           "parameters": [],
           "returns": "text",
           "raises": [
-            "polyspec_ordered_json::Error::WrongKind"
+            "polyspec_json::Error::WrongKind"
           ],
           "wait": "none",
           "core": {
-            "path": "polyspec_ordered_json::Value::number_literal",
+            "path": "polyspec_json::Value::number_literal",
             "receiver": "&self"
           }
         },
@@ -491,11 +491,11 @@
           "parameters": [],
           "returns": "bool",
           "raises": [
-            "polyspec_ordered_json::Error::WrongKind"
+            "polyspec_json::Error::WrongKind"
           ],
           "wait": "none",
           "core": {
-            "path": "polyspec_ordered_json::Value::boolean_value",
+            "path": "polyspec_json::Value::boolean_value",
             "receiver": "&self"
           }
         },
@@ -519,12 +519,12 @@
             "optional": "json_value"
           },
           "raises": [
-            "polyspec_ordered_json::Error::WrongKind",
-            "polyspec_ordered_json::Error::Internal"
+            "polyspec_json::Error::WrongKind",
+            "polyspec_json::Error::Internal"
           ],
           "wait": "none",
           "core": {
-            "path": "polyspec_ordered_json::Value::get",
+            "path": "polyspec_json::Value::get",
             "receiver": "&self"
           },
           "optional_reason": "RQ-032"
@@ -552,13 +552,13 @@
             "optional": "json_value"
           },
           "raises": [
-            "polyspec_ordered_json::Error::WrongKind",
-            "polyspec_ordered_json::Error::InvalidCodeUnit",
-            "polyspec_ordered_json::Error::Internal"
+            "polyspec_json::Error::WrongKind",
+            "polyspec_json::Error::InvalidCodeUnit",
+            "polyspec_json::Error::Internal"
           ],
           "wait": "none",
           "core": {
-            "path": "polyspec_ordered_json::Value::get_units",
+            "path": "polyspec_json::Value::get_units",
             "receiver": "&self"
           },
           "optional_reason": "RQ-032"
@@ -583,7 +583,7 @@
           "raises": [],
           "wait": "none",
           "core": {
-            "path": "polyspec_ordered_json::Value::string"
+            "path": "polyspec_json::Value::string"
           }
         },
         {
@@ -607,11 +607,11 @@
           ],
           "returns": "json_value",
           "raises": [
-            "polyspec_ordered_json::Error::InvalidCodeUnit"
+            "polyspec_json::Error::InvalidCodeUnit"
           ],
           "wait": "none",
           "core": {
-            "path": "polyspec_ordered_json::Value::from_units"
+            "path": "polyspec_json::Value::from_units"
           }
         },
         {
@@ -632,24 +632,24 @@
           ],
           "returns": "json_value",
           "raises": [
-            "polyspec_ordered_json::Error::ExpectedValue",
-            "polyspec_ordered_json::Error::ExpectedDigit",
-            "polyspec_ordered_json::Error::ExpectedColon",
-            "polyspec_ordered_json::Error::ExpectedDelimiter",
-            "polyspec_ordered_json::Error::ExpectedObjectKey",
-            "polyspec_ordered_json::Error::InvalidEscape",
-            "polyspec_ordered_json::Error::InvalidUnicodeEscape",
-            "polyspec_ordered_json::Error::UnfinishedEscape",
-            "polyspec_ordered_json::Error::UnterminatedString",
-            "polyspec_ordered_json::Error::UnescapedControlCharacter",
-            "polyspec_ordered_json::Error::MaximumDepthExceeded",
-            "polyspec_ordered_json::Error::TrailingInput",
-            "polyspec_ordered_json::Error::InvalidNumberLiteral",
-            "polyspec_ordered_json::Error::Internal"
+            "polyspec_json::Error::ExpectedValue",
+            "polyspec_json::Error::ExpectedDigit",
+            "polyspec_json::Error::ExpectedColon",
+            "polyspec_json::Error::ExpectedDelimiter",
+            "polyspec_json::Error::ExpectedObjectKey",
+            "polyspec_json::Error::InvalidEscape",
+            "polyspec_json::Error::InvalidUnicodeEscape",
+            "polyspec_json::Error::UnfinishedEscape",
+            "polyspec_json::Error::UnterminatedString",
+            "polyspec_json::Error::UnescapedControlCharacter",
+            "polyspec_json::Error::MaximumDepthExceeded",
+            "polyspec_json::Error::TrailingInput",
+            "polyspec_json::Error::InvalidNumberLiteral",
+            "polyspec_json::Error::Internal"
           ],
           "wait": "none",
           "core": {
-            "path": "polyspec_ordered_json::Value::number"
+            "path": "polyspec_json::Value::number"
           }
         },
         {
@@ -671,11 +671,11 @@
           ],
           "returns": "json_value",
           "raises": [
-            "polyspec_ordered_json::Error::NonFiniteNumber"
+            "polyspec_json::Error::NonFiniteNumber"
           ],
           "wait": "none",
           "core": {
-            "path": "polyspec_ordered_json::Value::from_f64"
+            "path": "polyspec_json::Value::from_f64"
           }
         },
         {
@@ -698,7 +698,7 @@
           "raises": [],
           "wait": "none",
           "core": {
-            "path": "polyspec_ordered_json::Value::boolean"
+            "path": "polyspec_json::Value::boolean"
           }
         },
         {
@@ -713,7 +713,7 @@
           "raises": [],
           "wait": "none",
           "core": {
-            "path": "polyspec_ordered_json::Value::null"
+            "path": "polyspec_json::Value::null"
           }
         },
         {
@@ -736,12 +736,12 @@
           ],
           "returns": "json_value",
           "raises": [
-            "polyspec_ordered_json::Error::MaximumDepthExceeded",
-            "polyspec_ordered_json::Error::Internal"
+            "polyspec_json::Error::MaximumDepthExceeded",
+            "polyspec_json::Error::Internal"
           ],
           "wait": "none",
           "core": {
-            "path": "polyspec_ordered_json::Value::array"
+            "path": "polyspec_json::Value::array"
           }
         },
         {
@@ -764,12 +764,12 @@
           ],
           "returns": "json_value",
           "raises": [
-            "polyspec_ordered_json::Error::MaximumDepthExceeded",
-            "polyspec_ordered_json::Error::Internal"
+            "polyspec_json::Error::MaximumDepthExceeded",
+            "polyspec_json::Error::Internal"
           ],
           "wait": "none",
           "core": {
-            "path": "polyspec_ordered_json::Value::object"
+            "path": "polyspec_json::Value::object"
           }
         },
         {
@@ -800,11 +800,11 @@
           "parameters": [],
           "returns": "never",
           "raises": [
-            "polyspec_ordered_json::Error::HostSerializationRefused"
+            "polyspec_json::Error::HostSerializationRefused"
           ],
           "wait": "none",
           "core": {
-            "path": "polyspec_ordered_json::Value::host_json",
+            "path": "polyspec_json::Value::host_json",
             "receiver": "&self"
           },
           "only": {
@@ -1068,7 +1068,7 @@
       "kind": "class",
       "visibility": "public",
       "origin": "generated",
-      "core_type": "polyspec_ordered_json::OrderedMap",
+      "core_type": "polyspec_json::OrderedMap",
       "final": true,
       "members": [
         {
@@ -1082,7 +1082,7 @@
           "raises": [],
           "wait": "none",
           "core": {
-            "path": "polyspec_ordered_json::OrderedMap::new"
+            "path": "polyspec_json::OrderedMap::new"
           }
         },
         {
@@ -1112,12 +1112,12 @@
             "optional": "json_value"
           },
           "raises": [
-            "polyspec_ordered_json::Error::NonStringKey",
-            "polyspec_ordered_json::Error::Internal"
+            "polyspec_json::Error::NonStringKey",
+            "polyspec_json::Error::Internal"
           ],
           "wait": "none",
           "core": {
-            "path": "polyspec_ordered_json::OrderedMap::insert",
+            "path": "polyspec_json::OrderedMap::insert",
             "receiver": "&mut self"
           },
           "optional_reason": "RQ-001"
@@ -1142,11 +1142,11 @@
             "optional": "json_value"
           },
           "raises": [
-            "polyspec_ordered_json::Error::Internal"
+            "polyspec_json::Error::Internal"
           ],
           "wait": "none",
           "core": {
-            "path": "polyspec_ordered_json::OrderedMap::get",
+            "path": "polyspec_json::OrderedMap::get",
             "receiver": "&self"
           },
           "optional_reason": "RQ-019"
@@ -1174,12 +1174,12 @@
             "optional": "json_value"
           },
           "raises": [
-            "polyspec_ordered_json::Error::InvalidCodeUnit",
-            "polyspec_ordered_json::Error::Internal"
+            "polyspec_json::Error::InvalidCodeUnit",
+            "polyspec_json::Error::Internal"
           ],
           "wait": "none",
           "core": {
-            "path": "polyspec_ordered_json::OrderedMap::get_units",
+            "path": "polyspec_json::OrderedMap::get_units",
             "receiver": "&self"
           },
           "optional_reason": "RQ-019"
@@ -1196,7 +1196,7 @@
           "raises": [],
           "wait": "none",
           "core": {
-            "path": "polyspec_ordered_json::OrderedMap::len",
+            "path": "polyspec_json::OrderedMap::len",
             "receiver": "&self"
           }
         },
@@ -1210,7 +1210,7 @@
           "raises": [],
           "wait": "none",
           "core": {
-            "path": "polyspec_ordered_json::OrderedMap::iter",
+            "path": "polyspec_json::OrderedMap::iter",
             "receiver": "&self"
           },
           "yields": {
@@ -1229,7 +1229,7 @@
       "kind": "enum",
       "visibility": "public",
       "origin": "generated",
-      "core_type": "polyspec_ordered_json::Kind",
+      "core_type": "polyspec_json::Kind",
       "variants": [
         {
           "name": [
@@ -1279,7 +1279,7 @@
       "kind": "record",
       "visibility": "public",
       "origin": "generated",
-      "core_type": "polyspec_ordered_json::ParseOptions",
+      "core_type": "polyspec_json::ParseOptions",
       "fields": [
         {
           "name": [
@@ -1290,7 +1290,7 @@
           "default": {
             "const": "max_depth"
           },
-          "default_core": "polyspec_ordered_json::MAX_DEPTH"
+          "default_core": "polyspec_json::MAX_DEPTH"
         },
         {
           "name": [
@@ -1301,7 +1301,7 @@
           "default": {
             "literal": false
           },
-          "default_core": "polyspec_ordered_json::DEFAULT_REJECT_DUPLICATES"
+          "default_core": "polyspec_json::DEFAULT_REJECT_DUPLICATES"
         }
       ]
     },
@@ -1315,7 +1315,7 @@
       "kind": "record",
       "visibility": "public",
       "origin": "generated",
-      "core_type": "polyspec_ordered_json::StringifyOptions",
+      "core_type": "polyspec_json::StringifyOptions",
       "fields": [
         {
           "name": [
@@ -1326,7 +1326,7 @@
           "default": {
             "literal": false
           },
-          "default_core": "polyspec_ordered_json::DEFAULT_HTML_SAFE"
+          "default_core": "polyspec_json::DEFAULT_HTML_SAFE"
         }
       ]
     },
@@ -1357,7 +1357,7 @@
           "raises": [],
           "wait": "none",
           "core": {
-            "path": "polyspec_ordered_json::Error::offset",
+            "path": "polyspec_json::Error::offset",
             "receiver": "&self"
           },
           "optional_reason": "RQ-033"
@@ -1541,8 +1541,8 @@
     {
       "id": "change-php-package",
       "rule": "P-1",
-      "reason": "design P-1: the PHP package of the extension is polyspec/<repository> of type php-ext, and the classes are those of the contract",
-      "symbol": "Polyspec\\OrderedJson",
+      "reason": "design P-1: the PHP package of the extension is polyspec/<repository> (polyspec/json) of type php-ext, and the classes are those of the contract",
+      "symbol": "Polyspec\\Json",
       "from": {
         "php": "Composer polyspec/ordered-json (PHP) and PIE polyspec/ordered-json-php-ext (C)"
       },
@@ -1557,6 +1557,20 @@
         "node": "none: the package was JavaScript and needed no initialization"
       },
       "to": null
+    },
+    {
+      "id": "change-names",
+      "rule": "N-3",
+      "reason": "plan N-3, N-1: a library of a data format is named after the format, so the repository is json; design P-1 and E-2 give its package, module and error class names: Composer polyspec/json, PHP Polyspec\\Json, PyPI polyspec-json, Python polyspec.json, npm @polyspec/json, Go module github.com/polyspec/json/packages/go, PHP extension polyspec_json, Json<Category>Error",
+      "symbol": "polyspec/ordered-json, Polyspec\\OrderedJson, polyspec-ordered-json, polyspec.ordered_json, @polyspec/ordered-json",
+      "from": {
+        "php": "Composer polyspec/ordered-json, namespace Polyspec\\OrderedJson, extension polyspec_ordered_json, OrderedJson<Category>Error",
+        "python": "PyPI polyspec-ordered-json, module polyspec.ordered_json, OrderedJson<Category>Error",
+        "node": "npm @polyspec/ordered-json, OrderedJson<Category>Error",
+        "go": "module github.com/polyspec/ordered-json/packages/go",
+        "wasm": "npm @polyspec/ordered-json, OrderedJson<Category>Error"
+      },
+      "to": "functions"
     }
   ],
   "cases": [

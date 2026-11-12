@@ -1,4 +1,4 @@
-// The CI of ordered-json is one pipeline (PRINCIPLES S12): ci.yml calls ci-pipeline.yml of this repository as its job kit,
+// The CI of json is one pipeline (PRINCIPLES S12): ci.yml calls ci-pipeline.yml of this repository as its job kit,
 // whose steps run the target of each job by name: kit-gates-static, kit-gates-verify and kit-gates-runtime-<runtime> for each
 // runtime of its matrix. This test keeps the full suite whole: every target of CHECK_TARGETS, the full suite of make check, is
 // a prerequisite of exactly one target that a step of the pipeline runs, and those targets hold no other target.

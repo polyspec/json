@@ -3,9 +3,7 @@
 use std::fmt::Display;
 
 use libtest_mimic::{Arguments, Failed, Trial};
-use polyspec_ordered_json::{
-    parse, stringify, Error, OrderedMap, ParseOptions, StringifyOptions, Value,
-};
+use polyspec_json::{parse, stringify, Error, OrderedMap, ParseOptions, StringifyOptions, Value};
 use serde_json::Value as Json;
 
 const CONTRACT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../contracts/core.json");

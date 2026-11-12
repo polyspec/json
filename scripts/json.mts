@@ -1,4 +1,4 @@
-// The JSON boundary of the tools of ordered-json: JSON text is parsed and validated against its JSON Schema (draft 2020-12, the
+// The JSON boundary of the tools of json: JSON text is parsed and validated against its JSON Schema (draft 2020-12, the
 // files of scripts/schema) by ajv in strict mode with every error, and the value is typed by the type guard of the compiled
 // schema, never by a type assertion. The shape and the names follow the JSON helper of polyspec/kit (K158), which the
 // package does not export.

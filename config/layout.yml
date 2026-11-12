@@ -1,4 +1,4 @@
-# The folder layout of ordered-json (S5, S7, S9), checked by make layout-check: the common rules of config/layout.kit.yml,
+# The folder layout of json (S5, S7, S9), checked by make layout-check: the common rules of config/layout.kit.yml,
 # taken from @polyspec/kit, and the map of this repository. A rule named here replaces the field of the common rule, so a
 # list repeats the common entries and adds the entries of this repository, each with its reason right above it.
 version: 1
@@ -8,19 +8,19 @@ extends:
 rules:
   - extends_template: no-repository-prefix
     id: layout-no-repository-prefix
-    vars: { repo: ordered-json }
+    vars: { repo: json }
 
   - extends_template: go-module-path
     id: layout-go-module-path
-    vars: { repo: ordered-json }
+    vars: { repo: json }
 
   - id: layout-root-tests
     paths:
       - "tests/*"
-      # The node:test tests of the tools of scripts/ and benchmarks/run.mts (make ordered-json-test-scripts).
+      # The node:test tests of the tools of scripts/ and benchmarks/run.mts (make json-test-scripts).
       - "!tests/scripts"
 
-  # S5: the root files of ordered-json beyond the list of kit (K145).
+  # S5: the root files of json beyond the list of kit (K145).
   # external-inputs.json: the facts of the archive of the supplementary suite, which mise.toml declares.
   # .npmrc: the allow-remote of npm for the URL of the kit release that package.json names.
   - id: layout-root-files

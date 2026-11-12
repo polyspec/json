@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "comment": "The implementations of ordered-json, the one source of its language set and of the folder of each, which the shared verifier (scripts/registry.mts) and the benchmarks read; python names the interpreter of its venv.",
+  "comment": "The implementations of json, the one source of its language set and of the folder of each, which the shared verifier (scripts/registry.mts) and the benchmarks read; python names the interpreter of its venv.",
   "implementations": [
     {
       "name": "js",

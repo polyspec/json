@@ -5,7 +5,7 @@
     reason = "R-1: the benchmark is a tool, and a fixture it cannot read stops it by its panic"
 )]
 
-use polyspec_ordered_json::{parse, stringify, ParseOptions, StringifyOptions};
+use polyspec_json::{parse, stringify, ParseOptions, StringifyOptions};
 use serde_json::Value as NativeValue;
 use sha2::{Digest, Sha256};
 use std::{env, fs, hint::black_box, time::Instant};

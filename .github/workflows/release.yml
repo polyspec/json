@@ -1,4 +1,4 @@
-# The release workflow of ordered-json, a file of this repository taken from the release workflow of kit (kit writes no copy,
+# The release workflow of json, a file of this repository taken from the release workflow of kit (kit writes no copy,
 # kit docs/spec/utilities-and-recipes.md).
 #
 # The workflow starts by itself when a push run of the CI workflow ci succeeds on main (K987): it checks out the head_sha of that
@@ -17,7 +17,7 @@
 #                    tag vX.Y.Z and the tag of every Go module at that commit, or passes for a tag there already (K269), and
 #                    appends TAG and VERSION to GITHUB_ENV; a tag pushed with the token of the run starts no run
 #   checkout of the tag, then the bootstrap, npm and the packages of the tagged commit again
-#   release-prepare  the preparation that the release of the repository needs (none for ordered-json)
+#   release-prepare  the preparation that the release of the repository needs (none for json)
 #   release-tools    installs the tools that config/release.json needs for the packages of this repository
 #   release-tools-path puts var/tools/bin on the PATH of the steps that follow, through GITHUB_PATH
 #   release-assets  builds the archive of every package, and packages.json of the Composer packages, into var/release/assets

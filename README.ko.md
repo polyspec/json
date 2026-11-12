@@ -1,12 +1,12 @@
 <!-- doc-id: overview -->
 <!-- source-sha256: bac9d3880498ab3866601c7f742fdd692ed2c4a06a9ae3c8aa8a529ef699d698 -->
-# ordered-json
+# json
 
 [English](README.md)
 
 JavaScript, Rust, Go, PHP, Python용 JSON 라이브러리입니다. 객체는 모든 깊이에서 문서 키 순서를 유지하는 연관배열을 사용합니다. 중복 키는 최초 위치와 마지막 값을 유지합니다.
 
-표준 JSON API는 객체 순서, 중복 키, 숫자 토큰 표기, 객체·배열 표현에 대해 언어를 넘나드는 하나의 동작을 제공하지 않습니다. 따라서 JSON이 JavaScript, Rust, Go, PHP, PHP 확장, Python 사이를 이동할 때 데이터가 달라질 수 있습니다. ordered-json은 손실 없는 하나의 값 모델을 정의하고, 여섯 구현체 모두에 동일한 파서, 직렬화기, 순서 규칙, 반복 라운드트립 동작을 적용합니다. 특히 빈 객체(`{}`)와 빈 배열(`[]`)을 서로 다른 타입으로 유지합니다.
+표준 JSON API는 객체 순서, 중복 키, 숫자 토큰 표기, 객체·배열 표현에 대해 언어를 넘나드는 하나의 동작을 제공하지 않습니다. 따라서 JSON이 JavaScript, Rust, Go, PHP, PHP 확장, Python 사이를 이동할 때 데이터가 달라질 수 있습니다. json은 손실 없는 하나의 값 모델을 정의하고, 여섯 구현체 모두에 동일한 파서, 직렬화기, 순서 규칙, 반복 라운드트립 동작을 적용합니다. 특히 빈 객체(`{}`)와 빈 배열(`[]`)을 서로 다른 타입으로 유지합니다.
 
 이 저장소는 공통 명세, 공식 예제, 기대 결과, 검증기와 여섯 구현 패키지를 모두 관리하는 단일 소스 저장소입니다. 언어별 디렉터리는 이 저장소 안에서 독립 패키지와 빌드 대상으로 동작하며, 언어별 API를 섞지 않고 하나의 리비전을 공유합니다.
 
@@ -14,8 +14,8 @@ JavaScript, Rust, Go, PHP, Python용 JSON 라이브러리입니다. 객체는 �
 ## 시작
 
 ~~~sh
-git clone https://github.com/polyspec/ordered-json.git
-cd ordered-json
+git clone https://github.com/polyspec/json.git
+cd json
 ~~~
 
 저장소 루트에서 공식 입력으로 JavaScript를 실행합니다.
@@ -46,7 +46,7 @@ PY
 release의 wheel asset으로 Python 패키지를 `pip`로 설치합니다([설치](docs/operations/installation.ko.md)). release는 저장소의 Releases 페이지에 나열되며, `X.Y.Z`는 그 release의 버전을 뜻합니다.
 
 ~~~sh
-pip install "https://github.com/polyspec/ordered-json/releases/download/vX.Y.Z/polyspec_ordered_json-X.Y.Z-py3-none-any.whl"
+pip install "https://github.com/polyspec/json/releases/download/vX.Y.Z/polyspec_ordered_json-X.Y.Z-py3-none-any.whl"
 ~~~
 
 | 패키지 | 내용 | 경로 |

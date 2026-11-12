@@ -1,11 +1,11 @@
 <!-- doc-id: overview -->
-# ordered-json
+# json
 
 [한국어](README.ko.md)
 
 JSON libraries for JavaScript, Rust, Go, PHP, and Python. Objects use associative maps that preserve document key order at every depth. Repeated keys retain the first position and the last value.
 
-Standard JSON APIs do not provide one portable behavior for object ordering, duplicate keys, number token spelling, or object/array representation. These differences can change data when JSON moves between JavaScript, Rust, Go, PHP, the PHP extension, and Python. ordered-json defines one lossless value model and applies the same parser, serializer, ordering rules, and repeated-round-trip behavior to all six implementations. In particular, empty objects (`{}`) and empty arrays (`[]`) remain distinct.
+Standard JSON APIs do not provide one portable behavior for object ordering, duplicate keys, number token spelling, or object/array representation. These differences can change data when JSON moves between JavaScript, Rust, Go, PHP, the PHP extension, and Python. json defines one lossless value model and applies the same parser, serializer, ordering rules, and repeated-round-trip behavior to all six implementations. In particular, empty objects (`{}`) and empty arrays (`[]`) remain distinct.
 
 This repository is the single source repository for the common specification, official examples, expected results, verifier, and all six implementation packages. The language directories are independent packages and build targets inside this repository; they share one revision without sharing language-specific APIs.
 
@@ -13,8 +13,8 @@ This repository is the single source repository for the common specification, of
 ## Start
 
 ~~~sh
-git clone https://github.com/polyspec/ordered-json.git
-cd ordered-json
+git clone https://github.com/polyspec/json.git
+cd json
 ~~~
 
 Run JavaScript with an official input from the repository root:
@@ -45,7 +45,7 @@ PY
 Install the Python package from the wheel asset of a release, with pip ([installation](docs/operations/installation.md)). The releases are listed on the Releases page of the repository, and `X.Y.Z` stands for the version of the release:
 
 ~~~sh
-pip install "https://github.com/polyspec/ordered-json/releases/download/vX.Y.Z/polyspec_ordered_json-X.Y.Z-py3-none-any.whl"
+pip install "https://github.com/polyspec/json/releases/download/vX.Y.Z/polyspec_ordered_json-X.Y.Z-py3-none-any.whl"
 ~~~
 
 | Package | Contents | Path |

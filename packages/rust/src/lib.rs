@@ -1,4 +1,4 @@
-//! Ordered, immutable JSON values: the Rust core of ordered-json (docs/spec/json-contract.md). See [`parse`],
+//! Ordered, immutable JSON values: the Rust core of json (docs/spec/json-contract.md). See [`parse`],
 //! [`stringify`] and [`Value`].
 
 mod error;

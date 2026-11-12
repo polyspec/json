@@ -5,7 +5,7 @@
 
 The [JSON contract](../spec/json-contract.md) defines behavior shared by all implementations. This document defines the current language bindings. The current identifiers are listed in [installation](installation.md).
 
-The project is `ordered-json`, and every package name follows the polyspec convention. JavaScript uses npm package `@polyspec/ordered-json`. Rust uses Cargo package `polyspec-ordered-json` and imports `polyspec_ordered_json`. Go uses module `github.com/polyspec/ordered-json/packages/go` and package `orderedjson`. PHP uses Composer package `polyspec/ordered-json`, namespace `Polyspec\OrderedJson`, and extension `polyspec_ordered_json` from the PIE package `polyspec/ordered-json-php-ext`, which registers the classes, functions and constant of the Composer package under the same names. Python uses package `polyspec-ordered-json` and imports `polyspec.ordered_json`, a namespace package under `polyspec`.
+The project is `json`, and every package name follows the polyspec convention. JavaScript uses npm package `@polyspec/ordered-json`. Rust uses Cargo package `polyspec-json` and imports `polyspec_json`. Go uses module `github.com/polyspec/ordered-json/packages/go` and package `orderedjson`. PHP uses Composer package `polyspec/ordered-json`, namespace `Polyspec\OrderedJson`, and extension `polyspec_ordered_json` from the PIE package `polyspec/ordered-json-php-ext`, which registers the classes, functions and constant of the Composer package under the same names. Python uses package `polyspec-ordered-json` and imports `polyspec.ordered_json`, a namespace package under `polyspec`.
 
 <a id="values"></a>
 ## Values and parsing

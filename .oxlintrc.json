@@ -1,4 +1,4 @@
-// The oxlint configuration of ordered-json, taken from the one of kit (kit docs/examples/native-settings). make lint-ts runs oxlint,
+// The oxlint configuration of json, taken from the one of kit (kit docs/examples/native-settings). make lint-ts runs oxlint,
 // which reads this file from the root; options.typeAware turns on oxlint-tsgolint, which reads the TypeScript 7 project. The
 // correctness rules fail, and so does a promise that is neither awaited nor handled: it lets a test end before its work does.
 // allowForKnownSafeCalls is the option of typescript-eslint for node:test (K138): test, describe, it and suite, with skip,

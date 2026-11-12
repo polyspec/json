@@ -9,7 +9,7 @@
 )]
 
 use libtest_mimic::{Arguments, Failed, Trial};
-use polyspec_ordered_json::{
+use polyspec_json::{
     parse as parse_bytes, stringify, Error, Kind, OrderedMap, ParseOptions, StringifyOptions, Value,
 };
 
