@@ -1,5 +1,5 @@
 {
- "comment": "The cases of the Rust core and of the bindings generated from it (docs/spec/json-contract.md#core, RQ-026 to RQ-035), one group per member of packages/rust/interface.json in the case convention of binding G-5: the keys are the parameter names of the member, and a method takes its receiver from the keys of a factory of the value (text, units, literal or value; no key is null). bytes are {\"hex\": ...}, a float that JSON cannot write is {\"float\": ...}, and a json_value is {\"kind\", \"value\"}. A failure is raises: its kind, its category (F-3) and, where the rule fixes them, properties. A result of a case that does not raise is result, raw (the token of the made value), number_literal, size, text or ok. bits is the big-endian hex of the binary64 float of value. A case whose receiver no factory of a scalar makes, and a case that does not raise and reads the tokens of a parsed text (stringify, string_value, string_units), give the JSON text json, which only the Rust test reads.",
+ "comment": "The cases of the Rust core and of the bindings generated from it (docs/spec/json-contract.md#core, RQ-026 to RQ-035), one group per member of packages/rust/interface.json in the case convention of binding G-5: the keys are the parameter names of the member, and a method takes its receiver from the keys of a factory of the value (text, units, literal or value; no key is null). bytes are {\"hex\": ...}, a float that JSON cannot write is {\"float\": ...}, and a json_value is {\"kind\", \"value\"}. A failure is raises: its kind, its category (F-3) and, where the rule fixes them, properties. A result of a case that does not raise is result, raw (the token of the made value), number_literal, size, text or ok. bits is the big-endian hex of the binary64 float of value. A group whose name ends in .parsed takes its value from the JSON text json, which the default parse reads: it is a rule corpus of the Rust test of the core (a parsed token, an object that no factory of a scalar makes), not linked in the cases of the interface contract.",
  "parse": [
   {
    "id": "nest_256",
@@ -371,68 +371,37 @@
   {
    "id": "default_keeps_html_characters",
    "rule": "RQ-031",
-   "json": "{\"<a>\":\"&\\u2028\"}",
+   "value": {
+    "kind": "text",
+    "value": "<a>&"
+   },
    "options": {
     "html_safe": false
    },
-   "text": "{\"<a>\":\"&\\u2028\"}"
+   "text": "\"<a>&\""
   },
   {
-   "id": "html_safe_values_and_keys",
+   "id": "html_safe_escapes_html_characters",
    "rule": "RQ-031",
-   "json": "{\"<a>\":\"x&y\"}",
+   "value": {
+    "kind": "map",
+    "value": [
+     [
+      "<a>",
+      {
+       "kind": "text",
+       "value": "x&y"
+      }
+     ]
+    ]
+   },
    "options": {
     "html_safe": true
    },
    "text": "{\"\\u003ca\\u003e\":\"x\\u0026y\"}"
-  },
-  {
-   "id": "html_safe_line_separators",
-   "rule": "RQ-031",
-   "json": "[\"  \"]",
-   "options": {
-    "html_safe": true
-   },
-   "text": "[\"\\u2028\\u2029\"]"
-  },
-  {
-   "id": "html_safe_keeps_other_tokens",
-   "rule": "RQ-031",
-   "json": "[1e5, \"\\/\\u00e9\", true]",
-   "options": {
-    "html_safe": true
-   },
-   "text": "[1e5,\"\\/\\u00e9\",true]"
-  },
-  {
-   "id": "html_safe_off",
-   "rule": "RQ-031",
-   "json": "\"<\"",
-   "options": {
-    "html_safe": false
-   },
-   "text": "\"<\""
   }
  ],
  "value.string_value": [
-  {
-   "id": "plain",
-   "rule": "RQ-027",
-   "json": "\"a\"",
-   "result": "a"
-  },
-  {
-   "id": "escaped",
-   "rule": "RQ-027",
-   "json": "\"\\u00e9\\n\"",
-   "result": "é\n"
-  },
-  {
-   "id": "pair",
-   "rule": "RQ-027",
-   "json": "\"\\ud83c\\udf0d\"",
-   "result": "🌍"
-  },
   {
    "id": "lone_high",
    "rule": "RQ-027",
@@ -486,30 +455,6 @@
   }
  ],
  "value.string_units": [
-  {
-   "id": "lone_high",
-   "rule": "RQ-027",
-   "json": "\"\\ud800x\"",
-   "result": [
-    55296,
-    120
-   ]
-  },
-  {
-   "id": "pair",
-   "rule": "RQ-027",
-   "json": "\"🌍\"",
-   "result": [
-    55356,
-    57101
-   ]
-  },
-  {
-   "id": "empty",
-   "rule": "RQ-027",
-   "json": "\"\"",
-   "result": []
-  },
   {
    "id": "string_units_of_number",
    "rule": "RQ-032",
@@ -871,20 +816,6 @@
     "category": "type",
     "message": null
    }
-  },
-  {
-   "id": "get_absent",
-   "rule": "RQ-032",
-   "json": "{\"a\":1}",
-   "key": "b",
-   "result": null
-  },
-  {
-   "id": "get_present",
-   "rule": "RQ-032",
-   "json": "{\"a\":1}",
-   "key": "a",
-   "result": "1"
   }
  ],
  "value.get_units": [
@@ -899,29 +830,6 @@
     "kind": "wrong_kind",
     "status": null,
     "category": "type",
-    "message": null
-   }
-  },
-  {
-   "id": "get_units_lone",
-   "rule": "RQ-032",
-   "json": "{\"\\ud800\":true}",
-   "units": [
-    55296
-   ],
-   "result": "true"
-  },
-  {
-   "id": "get_units_above_largest",
-   "rule": "RQ-029",
-   "json": "{}",
-   "units": [
-    70000
-   ],
-   "raises": {
-    "kind": "invalid_code_unit",
-    "status": null,
-    "category": "value",
     "message": null
    }
   }
@@ -5851,6 +5759,140 @@
    "id": "entries_of_empty",
    "rule": "RQ-016",
    "result": []
+  }
+ ],
+ "stringify.parsed": [
+  {
+   "id": "default_keeps_html_characters",
+   "rule": "RQ-031",
+   "json": "{\"<a>\":\"&\\u2028\"}",
+   "options": {
+    "html_safe": false
+   },
+   "text": "{\"<a>\":\"&\\u2028\"}"
+  },
+  {
+   "id": "html_safe_values_and_keys",
+   "rule": "RQ-031",
+   "json": "{\"<a>\":\"x&y\"}",
+   "options": {
+    "html_safe": true
+   },
+   "text": "{\"\\u003ca\\u003e\":\"x\\u0026y\"}"
+  },
+  {
+   "id": "html_safe_line_separators",
+   "rule": "RQ-031",
+   "json": "[\"  \"]",
+   "options": {
+    "html_safe": true
+   },
+   "text": "[\"\\u2028\\u2029\"]"
+  },
+  {
+   "id": "html_safe_keeps_other_tokens",
+   "rule": "RQ-031",
+   "json": "[1e5, \"\\/\\u00e9\", true]",
+   "options": {
+    "html_safe": true
+   },
+   "text": "[1e5,\"\\/\\u00e9\",true]"
+  },
+  {
+   "id": "html_safe_off",
+   "rule": "RQ-031",
+   "json": "\"<\"",
+   "options": {
+    "html_safe": false
+   },
+   "text": "\"<\""
+  }
+ ],
+ "value.string_value.parsed": [
+  {
+   "id": "plain",
+   "rule": "RQ-027",
+   "json": "\"a\"",
+   "result": "a"
+  },
+  {
+   "id": "escaped",
+   "rule": "RQ-027",
+   "json": "\"\\u00e9\\n\"",
+   "result": "é\n"
+  },
+  {
+   "id": "pair",
+   "rule": "RQ-027",
+   "json": "\"\\ud83c\\udf0d\"",
+   "result": "🌍"
+  }
+ ],
+ "value.string_units.parsed": [
+  {
+   "id": "lone_high",
+   "rule": "RQ-027",
+   "json": "\"\\ud800x\"",
+   "result": [
+    55296,
+    120
+   ]
+  },
+  {
+   "id": "pair",
+   "rule": "RQ-027",
+   "json": "\"🌍\"",
+   "result": [
+    55356,
+    57101
+   ]
+  },
+  {
+   "id": "empty",
+   "rule": "RQ-027",
+   "json": "\"\"",
+   "result": []
+  }
+ ],
+ "value.get.parsed": [
+  {
+   "id": "get_absent",
+   "rule": "RQ-032",
+   "json": "{\"a\":1}",
+   "key": "b",
+   "result": null
+  },
+  {
+   "id": "get_present",
+   "rule": "RQ-032",
+   "json": "{\"a\":1}",
+   "key": "a",
+   "result": "1"
+  }
+ ],
+ "value.get_units.parsed": [
+  {
+   "id": "get_units_lone",
+   "rule": "RQ-032",
+   "json": "{\"\\ud800\":true}",
+   "units": [
+    55296
+   ],
+   "result": "true"
+  },
+  {
+   "id": "get_units_above_largest",
+   "rule": "RQ-029",
+   "json": "{}",
+   "units": [
+    70000
+   ],
+   "raises": {
+    "kind": "invalid_code_unit",
+    "status": null,
+    "category": "value",
+    "message": null
+   }
   }
  ]
 }

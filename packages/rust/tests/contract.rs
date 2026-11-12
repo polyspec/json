@@ -200,6 +200,11 @@ fn found(case: &Json, result: Result<Option<&Value>, Error>) -> Result<(), Faile
 }
 
 fn run(group: &str, case: &Json) -> Result<(), Failed> {
+    // A group of the rule corpus, `<member>.parsed`, runs as the member's group with the value of its JSON text.
+    let group = match group.strip_suffix(".parsed") {
+        Some(member) => member,
+        None => group,
+    };
     match group {
         "parse" => outcome(
             case,
@@ -211,10 +216,11 @@ fn run(group: &str, case: &Json) -> Result<(), Failed> {
             let options = StringifyOptions {
                 html_safe: Some(html_safe),
             };
-            same(
-                stringify(&receiver(case)?, &options),
-                text(case, "text")?.to_owned(),
-            )
+            let value = match case.get("json") {
+                Some(_) => receiver(case)?,
+                None => json_value(field(case, "value")?)?,
+            };
+            same(stringify(&value, &options), text(case, "text")?.to_owned())
         }
         "value.string_value" => outcome(case, receiver(case)?.string_value(), |value| {
             same(value.as_str(), text(case, "result")?)
