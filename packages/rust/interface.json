@@ -1579,89 +1579,139 @@
       "group": "parse"
     },
     {
-      "member": "value.string_value",
-      "file": "contracts/core.json",
-      "group": "string_value"
-    },
-    {
-      "member": "value.string_units",
-      "file": "contracts/core.json",
-      "group": "string_units"
-    },
-    {
-      "member": "value.string",
-      "file": "contracts/core.json",
-      "group": "string"
-    },
-    {
-      "member": "value.from_units",
-      "file": "contracts/core.json",
-      "group": "from_units"
-    },
-    {
-      "member": "value.from_float",
-      "file": "contracts/core.json",
-      "group": "from_float"
-    },
-    {
       "member": "stringify",
       "file": "contracts/core.json",
       "group": "stringify"
     },
     {
+      "member": "value.string_value",
+      "file": "contracts/core.json",
+      "group": "value.string_value"
+    },
+    {
+      "member": "value.string_units",
+      "file": "contracts/core.json",
+      "group": "value.string_units"
+    },
+    {
+      "member": "value.string",
+      "file": "contracts/core.json",
+      "group": "value.string"
+    },
+    {
+      "member": "value.from_units",
+      "file": "contracts/core.json",
+      "group": "value.from_units"
+    },
+    {
+      "member": "value.from_float",
+      "file": "contracts/core.json",
+      "group": "value.from_float"
+    },
+    {
       "member": "value.members",
       "file": "contracts/core.json",
-      "group": "accessors"
+      "group": "value.members"
     },
     {
       "member": "value.items",
       "file": "contracts/core.json",
-      "group": "accessors"
+      "group": "value.items"
     },
     {
       "member": "value.number_literal",
       "file": "contracts/core.json",
-      "group": "accessors"
+      "group": "value.number_literal"
     },
     {
       "member": "value.boolean_value",
       "file": "contracts/core.json",
-      "group": "accessors"
+      "group": "value.boolean_value"
     },
     {
       "member": "value.get",
       "file": "contracts/core.json",
-      "group": "accessors"
+      "group": "value.get"
     },
     {
       "member": "value.get_units",
       "file": "contracts/core.json",
-      "group": "accessors"
+      "group": "value.get_units"
     },
     {
       "member": "value.array",
       "file": "contracts/core.json",
-      "group": "constructors"
+      "group": "value.array"
     },
     {
       "member": "value.object",
       "file": "contracts/core.json",
-      "group": "constructors"
+      "group": "value.object"
     },
     {
       "member": "ordered_map.insert",
       "file": "contracts/core.json",
-      "group": "constructors"
+      "group": "ordered_map.insert"
     },
     {
       "member": "value.number",
       "file": "contracts/core.json",
-      "group": "constructors"
+      "group": "value.number"
     },
     {
       "member": "value.to_json",
       "file": "contracts/core.json",
-      "group": "hooks"
+      "group": "value.to_json"
+    },
+    {
+      "member": "value.kind",
+      "file": "contracts/core.json",
+      "group": "value.kind"
+    },
+    {
+      "member": "value.raw",
+      "file": "contracts/core.json",
+      "group": "value.raw"
+    },
+    {
+      "member": "value.boolean",
+      "file": "contracts/core.json",
+      "group": "value.boolean"
+    },
+    {
+      "member": "value.null",
+      "file": "contracts/core.json",
+      "group": "value.null"
+    },
+    {
+      "member": "value.to_string",
+      "file": "contracts/core.json",
+      "group": "value.to_string"
+    },
+    {
+      "member": "ordered_map.constructor",
+      "file": "contracts/core.json",
+      "group": "ordered_map.constructor"
+    },
+    {
+      "member": "ordered_map.get",
+      "file": "contracts/core.json",
+      "group": "ordered_map.get"
+    },
+    {
+      "member": "ordered_map.get_units",
+      "file": "contracts/core.json",
+      "group": "ordered_map.get_units"
+    },
+    {
+      "member": "ordered_map.size",
+      "file": "contracts/core.json",
+      "group": "ordered_map.size"
+    },
+    {
+      "member": "ordered_map.entries",
+      "file": "contracts/core.json",
+      "group": "ordered_map.entries"
     },
     {
       "member": "parse",
