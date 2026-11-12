@@ -338,7 +338,7 @@ lint-go:
 	$(NODE) $(KIT)/lint-go.mjs
 # lint-rust lints the core crate: kit runs clippy --workspace, and the binding crates, which need make bindings first, are
 # excluded and linted by lint-bindings.
-BINDING_CRATES := polyspec-json-node polyspec-json-python polyspec-json-php-ext
+BINDING_CRATES := polyspec-json-node polyspec-json-wasm polyspec-json-python polyspec-json-php-ext polyspec-json-go
 lint-rust:
 	$(NODE) $(KIT)/lint-rust.mjs --locked $(foreach crate,$(BINDING_CRATES),--exclude $(crate))
 

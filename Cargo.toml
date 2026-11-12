@@ -2,7 +2,7 @@
 # Cargo.lock at the root pins every dependency of all of them, the commit of polyspec-binding-core included.
 [workspace]
 resolver = "2"
-members = ["packages/rust", "packages/ts", "packages/python", "packages/php-ext"]
+members = ["packages/rust", "packages/ts", "packages/ts/wasm", "packages/python", "packages/php-ext", "packages/go/internal/ffi"]
 
 # The lints of the core crate (R-1): every warning fails, no unsafe code, no unwrap or expect, no discarded result, no
 # cast that can lose or change a value (B-2), and every allow attribute names its rule id; clippy.toml disallows the
