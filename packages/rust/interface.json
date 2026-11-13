@@ -814,7 +814,8 @@
               "type": {
                 "unit": "ordered_map"
               },
-              "required": true
+              "required": true,
+              "core": "&"
             }
           ],
           "returns": {
