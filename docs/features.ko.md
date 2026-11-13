@@ -1,5 +1,5 @@
 <!-- doc-id: features -->
-<!-- source-sha256: 6cefc1cf26e5f41c1dea2fb04a5e19450a204bfcae0303c3fe6ef26025d35eff -->
+<!-- source-sha256: 5837db1e5282f6fe77be8c172e80c4b10a49e61bd926515074e5971e235ba155 -->
 # 기능 상태
 
 [English](features.md)
@@ -22,6 +22,7 @@
 | F-PHP-NATIVE | 공통 PHP API와 ParseError 메시지 검증을 제공하는 PHP 확장 파서와 직렬화 | implemented | shared-suite | [결과](operations/validation.ko.md#records) | source-only | [PHP](operations/api.ko.md#php) |
 | F-DOCS | 영한 문서, 링크·상태 검사, 검증 최신 여부 | implemented | docs-tests | [결과](operations/validation.ko.md#records) | source-only | [절차](operations/documentation-plan.ko.md#checks) |
 | F-REPOS | 독립적으로 빌드할 수 있는 구현 패키지와 공통 적합성을 갖춘 단일 저장소 | implemented | shared-suite | [결과](operations/validation.ko.md#records) | source-only | [저장소](operations/repositories.ko.md) |
+| F-BINDINGS | binding이 Rust 코어에서 생성하는 PHP, Python, Node, Go, WASM 바인딩. 코어와 그 case는 통과하고, binding은 아직 어떤 target도 생성하지 않는다 | partial | not-verified | [T3.2](plans/execution/checklist.ko.md) | source-only | [코어](spec/json-contract.ko.md#core) |
 | F-BENCHMARK | 저장소 내부의 재현 가능한 벤치마크 프로토콜과 커밋된 결과 | implemented | not-verified | [재측정 조건](plans/kit-standard/plan.ko.md#prerelease-reconsideration) | source-only | [벤치마크](../benchmarks/README.ko.md) |
 
 <a id="limits"></a>

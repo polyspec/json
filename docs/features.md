@@ -21,6 +21,7 @@
 | F-PHP-NATIVE | PHP extension parser and serializer with the shared PHP API and validated ParseError messages | implemented | shared-suite | [result](operations/validation.md#records) | source-only | [PHP](operations/api.md#php) |
 | F-DOCS | Bilingual documents, link/status checks, verification freshness | implemented | docs-tests | [result](operations/validation.md#records) | source-only | [procedure](operations/documentation-plan.md#checks) |
 | F-REPOS | Single repository with independently buildable implementation packages and shared conformance | implemented | shared-suite | [result](operations/validation.md#records) | source-only | [repositories](operations/repositories.md) |
+| F-BINDINGS | Bindings of PHP, Python, Node, Go and WASM that binding generates from the Rust core; the core and its cases pass, and binding generates no target yet | partial | not-verified | [T3.2](plans/execution/checklist.md) | source-only | [core](spec/json-contract.md#core) |
 | F-BENCHMARK | Repository-contained reproducible benchmark protocol and committed results | implemented | not-verified | [remeasurement conditions](plans/kit-standard/plan.md#prerelease-reconsideration) | source-only | [benchmarks](../benchmarks/README.md) |
 
 <a id="limits"></a>

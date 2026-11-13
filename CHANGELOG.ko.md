@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 09b9c1737c020419a61d147e86c399cce717a7f2c18c4ef28db57a7cb447f039 -->
+<!-- source-sha256: 1fea6b9ba4efdb03e9ed9acdceed52487da8a99d86fce295ceba31057a5f6785 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -24,6 +24,7 @@
 - L-2: `Cargo.lock`은 binding 8faad21을 고정하고(CK-20), 바인딩 package는 그 scaffold가 쓰는 것입니다. macOS에서 PHP의 symbol을 정의하지 않은 채 두는 `packages/php-ext/build.rs`(binding BD-9)가 더해지고, PHP crate의 library는 시험 대상이 아닙니다.
 - CK-22, X-1: `make bindings-check`가 통과합니다. `value.get_units`의 case `get_units_above_largest`는 `Value.object`의 빈 object(`members`)에서 `invalid_code_unit`을 내고, `ordered_map.get`의 case `a_broken_position_is_internal`은 새 실패 주입점 `json.internal`을 `broken`으로 장전해 `internal`을 냅니다(RQ-033). crate는 feature `fault-test`와 module `fault`를 가지고, 계약은 그 지점을 `faults`에 적으며, `tests/contract.rs`는 생성된 시험처럼 case의 fault를 장전합니다. Python, Node, PHP의 바인딩 crate는 binding scaffold가 쓰는 대로 `fault-test`를 켭니다. `serde_json`은 `fault-test`를 켠 `polyspec-binding-core`의 정확한 고정인 1.0.154를 받습니다.
 - T-5, GN-6i: `value`의 정적 factory(`string`, `from_units`, `number`, `from_float`, `boolean`, `null`, `array`, `object`)는 alias `json_value` 대신 class unit `{"unit": "value"}`를 돌려줍니다. binding의 생성기와 end-to-end 검사는 자기 class를 돌려주는 정적 member만 factory로 받으므로, 이제 method의 case는 자기가 주는 parameter의 factory로 receiver를 만듭니다. `parse`와 `stringify`의 parameter `options`는 binding이 거부하는 기본값 `{"empty": "object"}`(GN-6i) 대신 필수입니다. `parse_options`와 `stringify_options`의 각 field는 기본값을 유지하므로 호출은 여전히 모든 옵션을 생략할 수 있습니다(RQ-035).
+- T3.1, T3.2: T3.1이 끝났습니다. 그 검증인 `make test-rust`, `make lint-rust`, `make bindings-check`가 commit된 tree에서 통과합니다. 행 T3.2는 다섯 target의 생성 바인딩, 그 case runner, 언어 package와 live 시험의 바인딩 이전을 담으며, binding 8faad21이 계약의 어떤 target도 생성하지 않으므로 우회 상태입니다. php, python, node는 `Error: no case value of the type {"unit":"value"}`로 멈추고 go와 wasm은 계약의 항목을 이름으로 거부합니다. 기능 행 F-BINDINGS는 바인딩을 partial, not-verified로 적습니다. 언어 package와 `make test-js`, `make test-python`, `make test-php`, `make test-go`는 바인딩이 생성될 때까지 legacy package를 유지합니다.
 
 ## 0.0.25
 
