@@ -55,3 +55,18 @@ test('verify-all writes the PIE record that it reads before it reads it', () => 
   assert.ok(prerequisites(text, 'verify-all').includes('pie-check'), 'verify-all names pie-check as its prerequisite');
   assert.ok(!variable(text, 'CHECK_TARGETS').includes('pie-check'), 'pie-check runs inside verify-all, not as a target of its own');
 });
+
+/** The recipe lines of the make target `target` in the make database `text`, as make prints them, variables unexpanded. */
+function recipe(text: string, target: string): string[] {
+  const block = new RegExp(`^${target}:(?!=).*\\n((?:#.*\\n)*)((?:\\t.*\\n)*)`, 'm').exec(text);
+  assert.ok(block, `the make database of ${ROOT} declares ${target}`);
+  return (block[2] ?? '').split('\n').map(line => line.trim()).filter(Boolean);
+}
+
+// The Rust sources are in the form of rustfmt, which a review cannot judge by reading: fmt-check checks every crate of the
+// workspace, the binding packages included, with cargo fmt --all --check, and the full suite runs it.
+test('the full suite checks the form of every crate with cargo fmt', () => {
+  const text = database();
+  assert.ok(variable(text, 'CHECK_TARGETS').includes('fmt-check'), 'CHECK_TARGETS names fmt-check');
+  assert.deepEqual(recipe(text, 'fmt-check'), ['$(CARGO) fmt --all --check']);
+});
