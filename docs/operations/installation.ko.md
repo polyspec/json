@@ -1,5 +1,5 @@
 <!-- doc-id: installation -->
-<!-- source-sha256: f9c7db5f3283708191e55d605fa4e9216ac5cc9eb092a0a30a6f9b2e1ede5c18 -->
+<!-- source-sha256: b5bd0dde797c41e62c1c863a8f3cb635ed271765f9b97c39ae5a041ea2081461 -->
 # 설치와 실행
 
 [English](installation.md)
@@ -29,7 +29,7 @@ git clone https://github.com/polyspec/json.git
 cd json
 ~~~
 
-복제본에는 모든 구현 패키지가 포함됩니다. 패키지 디렉터리 또는 게시된 패키지가 준비된 경우 게시 패키지를 사용합니다. 레지스트리 설치와 게시는 검증되지 않았습니다. [배포](distribution.ko.md)를 확인합니다.
+복제본에는 모든 구현 패키지가 포함됩니다. 패키지 디렉터리를 사용하거나, 게시된 패키지가 있으면 그 패키지를 사용합니다. 레지스트리 설치와 게시는 검증되지 않았습니다. [배포](distribution.ko.md)를 확인합니다.
 
 - JavaScript: `legacy/packages/js/index.js`에서 가져옵니다. TypeScript 선언은 `legacy/packages/js/index.d.ts`에 있습니다.
 - Rust: `path`가 `packages/rust/`를 지정하는 로컬 Cargo 의존성을 설정합니다.
@@ -93,4 +93,4 @@ php -n -d extension="$PWD/var/php-ext/polyspec_ordered_json.so" script.php
 
 macOS의 configure는 명시된 `MACOSX_DEPLOYMENT_TARGET`을 유지하며 값이 없으면 `CFLAGS`의 대상 플래그를 포함한 현재 C 컴파일러에서 구합니다. 로드 가능한 번들은 최신 대상에서 동적 심볼 조회를 사용하고 사용하지 않는 동적 라이브러리 단일 모듈 플래그 검사를 제외합니다.
 
-공통 PHP API와 파서 선택 규칙은 [API 계약](api.ko.md#php)에 정의합니다. 네이티브 소스나 PHP 빌드 설정을 변경하면 모듈을 다시 빌드합니다.
+공통 PHP API와 backend 선택 규칙은 [API 계약](api.ko.md#php)에 정의합니다. 네이티브 소스나 PHP 빌드 설정을 변경하면 모듈을 다시 빌드합니다.

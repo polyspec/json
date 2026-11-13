@@ -1,5 +1,5 @@
 <!-- doc-id: validation -->
-<!-- source-sha256: efaf1942ec511808ff4dace3216ff165fc3f0e0b32a34f9d345f1bc855fad59b -->
+<!-- source-sha256: dc60859e776e0c369e1610e2b7fddf7d750ad4a3730e7e8631bd98e32d785c2b -->
 # 검증
 
 [English](validation.md)
@@ -88,7 +88,7 @@ PIE 기록 `var/records/pie-verification.json`은 PIE 버전과 PHAR 해시, 실
 <a id="publish"></a>
 ## main 게시
 
-0.x 버전 동안 체크리스트 작업의 변경은 로컬에 commit하고, 체크리스트의 모든 행이 `[o]`일 때 `main`에 한 번 push합니다([AGENTS](../../AGENTS.ko.md)):
+0.x 버전 동안 체크리스트 작업의 변경은 로컬에 commit하고, 체크리스트의 모든 행이 `[o]`일 때 `main`에 한 번 push합니다(AGENTS.ko.md):
 
 ~~~sh
 git push origin HEAD:main
@@ -106,7 +106,7 @@ make evidence-check
 
 `make docs-check`는 [config/documents.json](../../config/documents.json)이 선택한 문서(공통 문서와 패키지 문서 모두)에 `@polyspec/kit`의 check-documents를 실행합니다. 번역 쌍과 개정 해시, 저장소에서 자기 주제를 한 번만 가리키는 문서별 `doc-id` 표지, 절과 코드 블록 일치, 링크와 앵커, 로컬 홈 디렉터리 경로, 체크리스트 `docs/plans/execution-checklist.md`와 그 번역, `docs/features.md`의 기능 표 값, `CHANGELOG.md`의 section을 검사합니다. `make evidence-check`는 [scripts/check-evidence.mts](../../scripts/check-evidence.mts)를 실행합니다. 기능 행을 그것이 가리키는 근거와 대조하고, 배포 관측, 벤치마크 결과, `docs/`의 JSON 보고서를 검사합니다. `make verify-all`이 통합 기록을 쓴 뒤 붙이는 `--records`가 있으면 체크아웃의 [기록](#records)이 현재 소스와 일치하는지도 검사합니다. `make evidence-check`는 그 비교를 생략합니다. `make commits-check`는 commit의 메시지를 `@polyspec/kit`의 commit 규칙(check-commits의 `COMMIT_RULES`)에 대해 검사합니다.
 
-한국어 `source-sha256`을 갱신하기 전에 코드·테스트와 영어·한국어 내용을 비교합니다. 해시 일치는 번역 정확성을 증명하지 않습니다. 외부 링크는 문법만 검사하며 접속하지 않습니다. [hosted CI](#ci)가 모든 pull request와 모든 merge group에서 이 검사들을 실행합니다.
+한국어 `source-sha256`을 갱신하기 전에 코드·테스트와 영어·한국어 내용을 비교합니다. 해시 일치는 번역 정확성을 증명하지 않습니다. 외부 링크는 문법만 검사하며 접속하지 않습니다. [hosted CI](#ci)가 모든 pull request와 `main`으로의 모든 push에서 이 검사들을 실행합니다.
 
 <a id="limits"></a>
 ## 한계

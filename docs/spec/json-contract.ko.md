@@ -1,5 +1,5 @@
 <!-- doc-id: json-contract -->
-<!-- source-sha256: 829940c5ba0b8216a50d4f8641f5c2a7f7ca318518122891bf1357d62c34fecf -->
+<!-- source-sha256: 12b07abbcc54c7f3ed06d46ed5aaf1eb46b422ad113e98fd5625d2b1cad42ca1 -->
 # JSON 계약
 
 [English](json-contract.md)
@@ -87,9 +87,9 @@ PHP는 일반 객체 키를 UTF-8 배열 키로 저장합니다. 키에 포함�
 
 기본 직렬화와 compact 직렬화는 연관배열과 배열을 순회하여 의미 없는 공백이 없는 JSON을 반환합니다. 각 객체 키를 처음 등장한 위치에서 한 번만 출력하며 마지막 값을 사용합니다. 파싱된 스칼라 토큰과 유지되는 각 키의 첫 토큰 표기를 보존합니다.
 
-모든 허용된 값에서 직렬화는 멱등적입니다. 직렬화 결과를 다시 파싱하고 직렬화하면 같은 출력, 타입 트리, 키 순서, 스칼라 토큰 값이 나옵니다. 빈 객체는 파싱, 생성, 직렬화, 반복 round-trip 동안 객체로 유지하며 빈 배열은 배열로 유지합니다. 핵심 구현은 이 동작에 자체 JSON parser와 serializer를 사용하며 host JSON API에 의존하지 않습니다.
+모든 허용된 값에서 직렬화는 멱등적입니다. 직렬화 결과를 다시 파싱하고 직렬화하면 같은 출력, 타입 트리, 키 순서, 스칼라 토큰 값이 나옵니다. 빈 객체는 파싱, 생성, 직렬화, 반복 round-trip 동안 객체로 유지하며 빈 배열은 배열로 유지합니다. 핵심 구현은 이 동작에 자체 JSON parser와 serializer를 사용하며 host JSON API는 구현 계약에 포함되지 않습니다.
 
-`raw`는 조회용 입력 원문 범위를 반환합니다. 루트 범위에는 앞뒤 공백이 포함됩니다. 교체된 키가 포함될 수 있으므로 연관배열의 직렬화 결과와 다를 수 있습니다.
+`raw`는 조회용 입력 원문 범위를 반환합니다. 루트 범위에는 앞뒤 공백이 포함됩니다. 교체된 키가 포함될 수 있으며 연관배열의 직렬화 결과가 아닙니다.
 
 JavaScript의 `compact` 옵션과 PHP의 `compact` 인자는 호환성을 위해 허용하며 어느 값이든 같은 compact 출력을 선택합니다. JavaScript의 `JSON.stringify(Value)`와 PHP의 `json_encode(Value)`는 실패하고 라이브러리 직렬화를 사용하도록 안내합니다. Go는 `MarshalJSON`을 구현하며 표준 인코더가 HTML 이스케이프나 공백을 변경할 수 있습니다.
 
@@ -143,7 +143,7 @@ JavaScript의 `compact` 옵션과 PHP의 `compact` 인자는 호환성을 위해
 - **RQ-028** 문자열 생성자는 텍스트를 UTF-8로 쓰고 [RFC 8259](https://www.rfc-editor.org/rfc/rfc8259) 7절이 요구하는 것만 이스케이프합니다: `"`와 `\`는 `\"`와 `\\`, U+0008, U+0009, U+000A, U+000C, U+000D는 `\b`, `\t`, `\n`, `\f`, `\r`, 그 밖의 U+0000~U+001F는 `\u00`과 소문자 16진수 두 자리. 코드 단위 생성자는 같게 쓰고 짝 없는 surrogate를 `\u`와 소문자 16진수 네 자리로 씁니다. U+2028과 U+2029를 포함한 그 밖의 모든 문자는 그대로 쓰며, ECMAScript `JSON.stringify`가 쓰는 것과 같습니다(ECMA-262 QuoteJSONString).
 - **RQ-029** 코드 단위 생성자와 코드 단위 조회는 0부터 65535까지의 정수를 받고 그 밖의 값은 `invalid_code_unit`으로 거부합니다.
 - **RQ-030** binary64 실수의 숫자 생성자는 ECMAScript `Number::toString`(ECMA-262, 기수 10)이 쓰는 토큰을 씁니다: 같은 실수로 읽히는 가장 짧은 숫자열, `-0`은 `0`, 지수 -7부터 20까지는 자리 표기, 그 밖은 `e+`/`e-` 표기. NaN, 양의 무한대, 음의 무한대는 `non_finite_number`로 거부합니다. `number_text`는 같은 텍스트를 돌려주며, 다른 polyspec 라이브러리가 쓰는 유일한 실수→텍스트 함수입니다.
-- **RQ-031** 직렬화 옵션 `html_safe`(기본값 false)는 키를 포함한 모든 문자열 토큰의 `<`, `>`, `&`, U+2028, U+2029를 `<`, `>`, `&`, ` `, ` `로 써서 텍스트가 HTML `script` 요소 안에 있을 수 있게 합니다. 출력의 다른 부분은 바뀌지 않습니다. 이 문자들은 JSON 텍스트에서 문자열 안에만 있으므로 옵션은 문자열 토큰만 바꿉니다.
+- **RQ-031** 직렬화 옵션 `html_safe`(기본값 false)는 키를 포함한 모든 문자열 토큰의 `<`, `>`, `&`, U+2028, U+2029를 `\u003c`, `\u003e`, `\u0026`, `\u2028`, `\u2029`로 써서 텍스트가 HTML `script` 요소 안에 있을 수 있게 합니다. 출력의 다른 부분은 바뀌지 않습니다. 이 문자들은 JSON 텍스트에서 문자열 안에만 있으므로 옵션은 문자열 토큰만 바꿉니다.
 - **RQ-032** 종류별 접근자(`members`, `items`, `string_units`, `string_value`, `number_literal`, `boolean_value`)와 member 조회(`get`, `get_units`)는 다른 종류의 값에서 `wrong_kind`로 실패합니다. 객체의 조회는 객체에 없는 이름에서만 부재를 돌려줍니다.
 - **RQ-033** 코어의 모든 실패는 공통 목록의 종류를 가진 오류입니다. 파싱 거부는 바이트 위치를 가지며, 생성자의 `maximum_depth_exceeded`와 인자 오류는 위치를 갖지 않습니다. 그 실패를 일으킨 입력 위치가 없기 때문입니다. 코어의 불변식 위반은 `internal`입니다.
 - **RQ-034** 바인딩의 표준 JSON 직렬화 hook(JavaScript `toJSON`, PHP `jsonSerialize`, Go `MarshalJSON`)은 `host_serialization_refused`로 실패합니다([RQ-020](#requirements)). Python에는 그런 hook이 없습니다. 라이브러리 직렬화기는 함수 `stringify` 하나이며, 각 언어의 문자열 hook(`toString`, `__toString`, `__str__`)은 기본 옵션으로 같은 텍스트를 씁니다.

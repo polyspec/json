@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: fc267f7993c17e1da1aed59d80d6d20b403d14f3e55e2bfd8be1bb0677c17818 -->
+<!-- source-sha256: 8073e41fa1b4461e43f43413f211f140509c6d87f8c586d453d77e2b3a778ecb -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -19,6 +19,7 @@
 - T3.1: legacy PHP 패키지의 `OfficialTest`가 `tests/`에서 네 단계 위인 저장소 root의 `examples/official.json`을 읽습니다. `legacy/packages/php`로 옮긴 뒤에는 없는 파일 `legacy/examples/official.json`을 읽어 공식 사례 17개가 실행되지 않았고 PHPUnit이 data provider 오류를 보고했습니다.
 - T3.1: Makefile이 `mise.toml`의 다른 도구처럼 Go를 `var/tools`에 있는 shim의 절대 경로로 가리킵니다. `$(shell command -v go)`는 export한 변수를 `$(shell)`에 넘기지 않는 GNU make 4.4 이전 판에서 환경의 `PATH`를 읽었고, 그래서 `make deps-go`가 그 판에서는 머신의 Go를, 새 판에서는 checkout의 Go를 실행했습니다.
 - T3.1: `make lint-go`가 `make bindings` 뒤에 실행됩니다. kit의 lint는 checkout의 모든 `go.mod`를 대상으로 하고 바인딩 모듈 `packages/go`의 Go 파일은 `make bindings`가 쓰므로, 그 파일이 없으면 golangci-lint와 deadcode가 읽을 Go 파일이 없어 실패했습니다. `make bindings`가 실패하는 동안 `make lint-go`는 그 메시지로 실패합니다.
+- T3.1: 한국어 문서가 영어 문서와 같은 내용을 말합니다. `docs/operations/api.ko.md`는 배열과 스칼라 표의 열한 행에 Python 열을 적고 PHP backend 절의 이름을 적으며, `docs/spec/json-contract.ko.md`는 RQ-031에서 문자 자체를 적던 자리에 이스케이프 `\u003c`, `\u003e`, `\u0026`, `\u2028`, `\u2029`를 적고, `docs/operations/validation.ko.md`는 merge group을 적던 자리에 `main`으로의 모든 push를 적습니다. `contracts/README.ko.md`는 `source-sha256` marker를 가지며, 다른 hash를 가졌던 한국어 문서 열 개의 marker는 각각 그 영어 문서의 hash입니다.
 
 ## 0.0.25
 
@@ -132,7 +133,7 @@
 - T2.100: ordered-json 0.0.13 릴리스: config/release.json의 모든 manifest와 lock의 버전이 0.0.13이며 changelog가 이를 기록한다 (T2.100)
 - T2.99: @polyspec/kit을 0.0.74 asset으로 고정하고 lock을 갱신한다 (kit K873 포함 릴리스) (T2.99)
 - T2.98: 사용자 측 parse, stringify 함수와 MAX_DEPTH를 가드하여, extension이 로드되면 extension이 우선하고 패키지와 extension을 함께 올려도 PHP가 시작한다 (T2.98)
-- T2.97: release-config-check를 제거한다. kit 0.0.73이 삭제한 release versions를 불렀고, kit의 tag workflow가 version을 검사한다 (T2.97)
+- T2.97: release-config-check를 제거한다. kit 0.0.73이 삭제한(K812) release versions를 불렀고, kit의 tag workflow가 version을 검사한다 (T2.97)
 - T2.95: @polyspec/kit을 0.0.73 asset으로 고정하고 lock을 갱신한다 (kit K826, K827, K830) (T2.95)
 - T2.94: @polyspec/kit을 0.0.72 asset으로 고정하고 lock을 갱신하며, CI는 make link와 link-state-check를 실행하지 않는다 (T2.94)
 - T2.93: @polyspec/kit을 0.0.70 asset으로 고정하고 lock을 갱신하며, make kit-sync로 kit 사본을 갱신한다 (T2.93)
@@ -143,7 +144,7 @@
 - T2.90: kit K801이 삭제한 main 쓰기 훅을 제거한다 (T2.90)
 - T2.88: kit K789가 삭제한 wheel polyspec 소비자를 config/release.json에서 제거한다 (T2.88)
 - T2.87: kit K784이 삭제한 dependency-policy-check 참조와 그 게이트만 읽던 설정 파일을 제거한다 (T2.87)
-- T2.86: 공유 워크플로는 kit-sync 사본이며 kit-check가 통과한다 (T2.86)
+- T2.86: 공유 워크플로는 kit-sync 사본이며(K671-2) kit-check가 통과한다 (T2.86)
 
 <a id="v0012"></a>
 
@@ -230,7 +231,7 @@
 - Rust에는 `Value`의 Serde trait 구현만 있습니다 (T2.42): 자체 serializer, `to_string`, `from_str`, `from_slice`, `Error`를 가진 `serde` 모듈(`serde_json`의 사본, S1)을 test, fixture 2개, 의존성 `serde_ignored`와 함께 없앱니다. `serde_json`이 값을 담은 모든 구조를 contract bytes로 인코딩하고 디코딩하며 `Deserialize`는 Go `UnmarshalJSON`처럼 일반 문법으로 파싱합니다. Red: 명세(T2.40)와 Go 쪽에는 typed codec이 없는데 Rust는 여전히 내보냄(`serde` 아래 공개 symbol 13개, 456줄); green: cargo test 24 + 2 + 17 + 3 passed, `scripts/verify.mts --only rust`, `make lint-rust`, `make parity-declarations-check`, `make dependency-policy-check` exit 0.
 - Go `Value`는 `json.Marshaler`와 함께 `json.Unmarshaler`를 구현하고 (T2.41), `encoding/json`의 사본인 package의 typed `Marshal`(S1)은 test 13개, fuzz test, interface `Marshaler`와 함께 없앱니다. `encoding/json`이 값을 담은 모든 구조를 contract bytes로 인코딩하고 디코딩합니다. API unit `api-host-typed-*`와 `api-host-error`는 `api-host-deserialization`으로 대체하고 `api-host-serialization`은 Rust에 `Value::compact`를 선언합니다. Red: `make test-go CASES=HostDeserialization` 실패(`UnmarshalJSON` 없음); green: `Host`, `Parse`, `Stringify` go test 7개 passed, `scripts/verify.mts --only go` passed, `make lint-go` passed, `make parity-declarations-check` exit 0.
 - 명세는 native JSON 통합만 말합니다 (T2.40): Go `Value`는 `json.Marshaler`와 `json.Unmarshaler`를, Rust `Value`는 Serde `Serialize`와 `Deserialize`를 구현하며, `encoding/json`과 `serde_json`을 중복하던 Go의 typed `Marshal`과 Rust의 `serde` 모듈은 명세에서 뺍니다(S1). 코드는 T2.41과 T2.42에서 따릅니다. Red: 명세가 두 typed 인코더를 설명했음; green: `make docs-check` passed.
-- Rust의 `string_value()`는 문자열의 WTF-8 바이트(`Vec<u8>`)를 반환하므로 (T2.39) 이스케이프된 짝 없는 surrogate는 거부되지 않고 Go, PHP, JavaScript, Python처럼 유지됩니다. Red: `b"a\xed\xa0\x80"`를 기대하는 test가 `String`에 대해 compile되지 않음; green: cargo test api 24개와 official 17개 passed, `scripts/verify.mts --only rust` passed, `make lint-rust` passed.
+- Rust의 `string_value()`는 문자열의 WTF-8 바이트를 반환하므로 (T2.39) 이스케이프된 짝 없는 surrogate는 거부되지 않고 Go, PHP, JavaScript, Python처럼 유지됩니다. Red: `b"a\xed\xa0\x80"`를 기대하는 test가 `String`에 대해 compile되지 않음; green: cargo test api 24개와 official 17개 passed, `scripts/verify.mts --only rust` passed, `make lint-rust` passed.
 - 명세는 RQ-009를 모든 구현에서 성립시킵니다 (T2.38): `docs/operations/api.md`(.ko)는 더 이상 Rust가 짝 없는 surrogate의 `string_value()`를 거부하게 두지 않으며 Go, PHP, Rust는 그 WTF-8 바이트를 반환합니다(Rust는 `Vec<u8>`). Red: 명세가 Rust의 예외를 적었음; green: `make docs-check` passed; 코드는 T2.39에서 따릅니다.
 - `config/parity.json`의 모든 unit은 모든 구현에서 성립하고 test가 이름으로 적은 requirement를 인용합니다 (T2.4): profile, `nativeOnly`, `exclusions`는 없어졌고(S6), 하위 항목 T2.4-1부터 T2.4-4가 R1, R2, R13, R15 결과를 닫았으며, 여섯 구현의 extractor는 어느 unit도 선언하지 않은 공개 symbol을 나열하지 않습니다. Red: `make parity-declarations-check` exit 2, schema 결과 98건에 이어 R1, R2, R13, R15 결과 432건; green: exit 0, `every declaration holds`.
 - 모든 unit의 모든 feature는 모든 구현에 binding이 있습니다 (T2.4-2): R2 결과(missing binding 172건: php 35, python 31, js 31, rust 29, php-extension 25, go 21)는 기존 동작의 binding(T2.26, T2.27, T2.28), 라이브러리를 따르는 PHP와 확장 test(T2.15-3, T2.22), 중립 host 직렬화 unit(T2.37), 없앤 unit만 인용하던 requirement(RQ-003, RQ-010, RQ-011)의 unit으로 닫았습니다. Red: `make parity-declarations-check` R2 172건; green: `every declaration holds`.
@@ -238,7 +239,7 @@
 - 모든 언어의 host JSON 인터페이스를 중립 unit으로 binding합니다 (T2.37): `host_serialization_boundary`(host 인코더를 거친 값: Rust `serde_json::to_string`, Go `json.Marshal`, JavaScript, PHP, Python의 거부)와 새 `host_serialization_embeds_values`(값을 담은 native 구조). typed 형태의 unit 20개(`serde_*`, `marshal_*`)는 이들로 대체하고 그 test는 package test로 남깁니다(`packages/go/marshal_test.go`와 fuzz test는 `api_test.go`로 들어감). Python에 `ordered_json.JSONEncoder`를 두어 `default`가 `Value`를 거부하고 `stringify`를 가리키게 하며, Go는 자체 `Marshaler` 대신 표준 라이브러리의 `json.Marshaler`를 쓰고, Rust `serde::Error`는 variant를 숨깁니다. API unit 11개가 typed 형태와 남은 accessor를 각 언어의 symbol과 짝짓고, unit `arrays_and_objects_stay_distinct`(RQ-003), `number_tokens_are_kept_exactly`(RQ-010), `serialization_is_idempotent`(RQ-011)는 없앤 unit만 인용하던 requirement를 test합니다. Red: `make parity-declarations-check` R2 99건(5개 언어에서 host unit 20개 없음)과 extractor가 읽은 선언 없는 공개 symbol 38개; green: `every declaration holds`, 여섯 구현 모두 R1과 R11 없음; 모든 test passed, 여섯 구현의 `scripts/verify.mts` passed, lint passed.
 - 명세는 RQ-020을 하나의 규칙으로 말합니다 (T2.36): 모든 언어는 값을 표준 JSON 직렬화 인터페이스와 통합하며, 그 인터페이스는 contract bytes를 쓰거나(Go `encoding/json`, Rust serde, native 구조 안에서도) 거부하며 라이브러리 직렬화기를 가리킵니다(JavaScript, PHP, Python). `docs/operations/api.md`(.ko)는 각 언어의 인터페이스를 이름 붙이고 Go의 typed `Marshal`과 Rust의 `serde::to_string`을 그 규칙을 native 구조 전체로 넓힌 확장으로 제시합니다. Red: RQ-020은 호스트 인코더가 거부하고 typed Go 인코더가 표준과 일치한다고 말해 Rust와 다른 언어가 binding할 수 없었음; green: `make docs-check` 문서 쌍 30개 passed.
 - 종류 이름은 모든 구현의 열거형 `Kind`입니다 (T2.35): `packages/js/index.d.ts`의 TypeScript enum과 `index.js`의 frozen 객체 `Kind`, Python의 `StrEnum` `Kind`(`Value.kind`는 문자열과 같은 그 멤버를 반환), PHP의 backed enum `Polyspec\\OrderedJson\\Kind`(확장도 stub에서 등록하며 Reflection이 userland enum을 final로 보고하므로 final로 표시); `docs/operations/api.md`(.ko)가 열거형을 명세하고 `api-kind-*` unit 7개가 각 구현의 symbol을 선언합니다. Red: `make parity-declarations-check` R1 28건(js, php, php-extension, python의 kind unit); green: R1 0건. 확장 유무의 PHPUnit test 41개 assertion 188개 passed, unittest passed, `scripts/verify.mts` probe 4개 passed, `make lint-ts`, `lint-php`, `lint-python`, `lint-php-ext`, `typecheck` passed.
-- object entry, byte 입력, 오류 message는 중립 API unit입니다 (T2.34): `api-ordered-map*`는 Rust와 Go의 `OrderedMap`과 함께 JavaScript, PHP, Python, php-extension의 `Value` members, get, object를 선언하고, `api-parse-bytes`는 PHP의 byte 입력으로 `parse`를, `api-parse-error-message`는 표준 예외 message를 가진 `ParseError` class를 선언하며, `ordered_map_rejects_non_string_key`는 PHP와 확장에 `testOrderedMapRejectsNonStringKey`를 binding합니다(PHP 배열 키는 문자열 또는 정수이므로 다른 키는 객체에 닿지 않음). `docs/operations/api.md`(.ko)의 Go 문장은 더 이상 `ParseBytesBorrowed`를 말하지 않습니다. Red: `make parity-declarations-check` R1 58건, R2 101건; green: R1 28건(Kind unit), R2 99건. PHPUnit `NonStringKey`는 확장 유무와 관계없이 통과합니다.
+- object entry, byte 입력, 오류 message는 중립 API unit입니다 (T2.34): `api-ordered-map*`는 Rust와 Go의 `OrderedMap`과 함께 JavaScript, PHP, Python, php-extension의 `Value` members, get, object를 선언하고, `api-parse-bytes`는 PHP의 byte 입력으로 `parse`를, `api-parse-error-message`는 표준 예외 message를 가진 `ParseError` class를 선언하며, `ordered_map_rejects_non_string_key`는 PHP와 확장에 `testOrderedMapRejectsNonStringKey`를 binding합니다(PHP 배열 키는 문자열 또는 정수이므로 다른 키는 객체에 닿지 않음). `docs/operations/api.md`(.ko)의 Go 문장은 더 이상 `ParseBytesBorrowed`를 말하지 않습니다. Red: `make parity-declarations-check` R1 58건, R2 101건, key unit의 R2 2건; green: R1 28건(Kind unit), R2 99건. PHPUnit `NonStringKey`는 확장 유무와 관계없이 통과합니다.
 - Go에는 zero-copy 파싱이 없습니다 (T2.33): `ParseBytesBorrowed`, 그 `flagBorrowed` 처리, test, unit `borrowed_input_is_copied_on_access`는 contract 밖이므로(S6은 native 전용 symbol을 허용하지 않음) 없애며 Go benchmark는 `ParseBytes`로 파싱합니다. benchmark README와 API 표도 더 이상 이를 적지 않습니다. Red: `make parity-declarations-check` R2 missing-binding이 `borrowed_input_is_copied_on_access`에서 5개 구현; green: 그 5건이 없어짐; go test 6 passed, `scripts/verify.mts --only go` passed, `make lint-go` passed. commit된 Go benchmark 결과는 이 변경보다 앞서므로 다른 것과 함께 다시 측정합니다.
 - `CHECK_TARGETS`와 CI job은 kit-gates의 모든 gate를 실행합니다 (T2.21): parity 선언이 profile을 잃은 뒤(T2.4) schema 결과 98건이 없어졌습니다. Green: `make kit-check` exit 0, `tests/scripts/workflow-rules.test.mts` 17 passed.
 - `CHECK_TARGETS`와 `ci.yml`의 첫 job이 `link-state-check`를 실행합니다 (T2.32). 설치된 0.0.x polyspec package가 link 사이의 사본이면 실패하는 kit K305의 gate입니다. Red: `make kit-check` exit 2, `CHECK_TARGETS runs no link-state-check`; green: exit 0, workflow-rules test passed.
@@ -261,7 +262,7 @@
 - PRINCIPLES 사본은 K282부터 K297의 반영 뒤 `make kit-sync`가 다시 쓴 설치된 kit의 것과 같습니다 (T2.24). Red: `make kit-check` exit 2, 2건(PRINCIPLES.md와 PRINCIPLES.ko.md가 다름); green: exit 0.
 - `config/rebuild.json`은 `paths`를 두지 않고, kit이 layout으로 찾은 모든 tool이 class를 가집니다 (T2.18): benchmark tool 6개는 이유와 함께 `policy`이고, kit(K294)은 vendor된 사본을 더 이상 보고하지 않습니다. Red: `make rebuild-check` exit 2(`paths`, 이어서 미분류 사본 9건); green: exit 0, `every tool that config/rebuild.json selects has its class`.
 - 언어마다 손으로 쓴 parser는 남기고, 그 생태계 reader가 실패하는 contract case를 적은 rebuild 기록을 둡니다 (T2.23): `docs/rebuild/json-js.md`(JSON.parse: 115개 중 106, RQ-001 정수 모양 key 순서), `json-go.md`(encoding/json Token: 102, RQ-009와 RQ-007), `json-python.md`(json.loads: 114, RQ-004와 RQ-006), `json-php.md`(json_decode: 99, RQ-010과 RQ-009), `json-rust.md`(serde_json: 105, RQ-010과 RQ-009)이며 각각 `config/rebuild.json`에서 `record`로 분류합니다. Red: case를 적은 기록이 없었음; green: `make rebuild-check` exit 0, `make docs-check` 문서 쌍 30개 passed.
-- RQ-023과 RQ-024처럼 어느 unit도 인용하지 않던 requirement를 두 feature unit이 test합니다 (T2.4-3): `public_api_exports_the_entry_points`(RQ-023: parse, serialization, factory, accessor 함수)와 `parse_error_exposes_kind_offset_and_message`(RQ-024)이며, js, rust, go, php, python과 php-extension binding(상속한 PHP test case 실행)에 각각 test가 있습니다. Red: `make parity-declarations-check` R13 untraced-requirement 2건(RQ-023, RQ-024); green: R13 0건. Test: node:test 2 passed, cargo test 2 passed, go test 2 passed, PHPUnit 2 passed, unittest 2 passed; 확장 실행은 T2.8을 기다립니다.
+- 어느 unit도 인용하지 않던 requirement를 두 feature unit이 test합니다 (T2.4-3): `public_api_exports_the_entry_points`(RQ-023: parse, serialization, factory, accessor 함수)와 `parse_error_exposes_kind_offset_and_message`(RQ-024)이며, js, rust, go, php, python과 php-extension binding(상속한 PHP test case 실행)에 각각 test가 있습니다. Red: `make parity-declarations-check` R13 untraced-requirement 2건(RQ-023, RQ-024); green: R13 0건. Test: node:test 2 passed, cargo test 2 passed, go test 2 passed, PHPUnit 2 passed, unittest 2 passed; 확장 실행은 T2.8을 기다립니다.
 - PRINCIPLES 사본은 설치된 kit 0.0.54의 것과 같습니다 (T2.17). `make kit-sync`가 씁니다. Red: `make kit-check` exit 2, 101건 중 `PRINCIPLES.md`와 `PRINCIPLES.ko.md`가 다르다는 2건; green: 99건, PRINCIPLES에 관한 것은 없음(남은 것은 parity와 rebuild 설정이며 T2.4와 T2.18 항목).
 - `config/duplication.json`은 `packages/*/tests/**`를 제외합니다 (T2.14). 이유는 kit이 자신의 test에 쓴 것과 같습니다: test는 case를 온전히 적습니다. Red: `make duplication-check` exit 2, package test에만 3건; green: exit 0, `no piece of code exists twice`.
 - `config/dependency-policy.json`의 Composer platform은 PHP 8.4.1입니다 (T2.13). 세 manifest와 lock의 값이며 PHPUnit 13.4.2가 필요로 합니다(kit K259). Red: `make dependency-policy-check` exit 2, 10건 중 규칙 `platform` 6건; green: 4건, `platform`은 없음; 남은 4건은 2026-10-15 review 뒤에 바뀐 lock이며 kit K283 뒤에 `make dependency-review RECORD=1`로 기록합니다.
@@ -358,7 +359,7 @@
 
 - T1.32-3: kit의 vendored 도구는 v0.0.20입니다(`make kit-sync KIT_TAG=v0.0.20`). `make kit-test`가 vendored test를 모두 통과합니다.
 
-- T1.32-2: Python 패키지는 `requires-python = ">=3.14"`를 선언합니다. 이는 CI가 고정 interpreter로 실행하는 `.python-version`의 minor release입니다. `ci.yml`의 job `python`에는 3.11 matrix 항목과 `PYTHON` 재정의가 없으며, `scripts/tests/test_python_requires.py`가 선언된 범위를 `.python-version`과 비교합니다.
+- T1.32-2: Python 패키지는 `requires-python = ">=3.14"`를 선언합니다. 이는 CI가 고정 interpreter로 실행하는 `.python-version`의 minor release입니다. `ci.yml`의 job python에는 3.11 matrix 항목과 `PYTHON` 재정의가 없으며, `scripts/tests/test_python_requires.py`가 선언된 범위를 `.python-version`과 비교합니다.
 
 ## 0.0.8
 

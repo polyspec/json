@@ -1,5 +1,5 @@
 <!-- doc-id: api -->
-<!-- source-sha256: 7e058d7168a34f3ab131a907bd5379531a3d2d39628de9b73f5c20eebe2775f2 -->
+<!-- source-sha256: a24caff1632750dcbe4031aef7980617364a7b9c0a5f0660d11fcee6542e0a5b -->
 # API 계약
 
 [English](api.md)
@@ -11,7 +11,7 @@
 <a id="values"></a>
 ## 값과 파싱
 
-파싱된 `Value` 객체는 라이브러리 API로 변경할 수 없습니다. 생성자는 문자열, 숫자 토큰, 불리언, null, 배열, 객체를 생성합니다. 생성자는 라이브러리 parser를 통해 값을 검사합니다. 종류가 맞지 않는 접근은 접근자에 따라 값 없음 또는 오류를 반환하며 거부된 인자는 그 언어의 host 오류 class를 발생시키며 공유 [argument kind](../spec/json-contract.md#argument-kinds) 중 하나를 가지므로 빈 kind를 가진 오류는 없습니다. 핵심 parser와 serializer는 JSON 동작을 host JSON API에 위임하지 않습니다.
+파싱된 `Value` 객체는 라이브러리 API로 변경할 수 없습니다. 생성자는 문자열, 숫자 토큰, 불리언, null, 배열, 객체를 생성합니다. 생성자는 생성한 JSON을 라이브러리 parser로 검사합니다. 종류가 맞지 않는 접근은 접근자에 따라 값 없음 또는 오류를 반환하며 거부된 인자는 그 언어의 host 오류 class를 발생시키며 공유 [argument kind](../spec/json-contract.ko.md#argument-kinds) 중 하나를 가지므로 빈 kind를 가진 오류는 없습니다. 핵심 parser와 serializer는 JSON 동작을 host JSON API에 위임하지 않습니다.
 
 | 동작 | JavaScript | Rust | Go | PHP | Python |
 | --- | --- | --- | --- | --- | --- |
@@ -77,29 +77,29 @@ PHP는 `Value` 객체의 연관배열을 반환합니다. 객체 생성자는 �
 
 | 동작 | JavaScript | Rust | Go | PHP | Python |
 | --- | --- | --- | --- | --- | --- |
-| 배열 생성 | `Value.array(items)` | `Value::array(items)` | `Array(items)` | `Value::array($items)` |
-| 배열 원소 | `value.items` | `value.items()` | `value.Items()` | `$value->items()` |
-| 문자열 생성 | `Value.string(text)` | `Value::string(text)` | `String(text)` | `Value::string($text)` |
-| 문자열 조회 | `stringValue()` | `string_value()` | `StringValue()` | `stringValue()` |
-| UTF-16 조회 | `stringUnits()` | `string_units()` | `StringUnits()` | `stringUnits()` |
-| UTF-16 생성 | `Value.string(text)` | `Value::from_units(&units)` | `StringFromUnits(units)` | `Value::fromUnits($units)` |
-| 숫자 생성 | `Value.number(token)` | `Value::number(token)` | `Number(token)` | `Value::number($token)` |
-| 숫자 조회 | `numberLiteral()` | `number_literal()` | `NumberLiteral()` | `numberLiteral()` |
-| 불리언 생성 | `Value.boolean(flag)` | `Value::boolean(flag)` | `Boolean(flag)` | `Value::boolean($flag)` |
-| 불리언 조회 | `booleanValue()` | `boolean_value()` | `BooleanValue()` | `booleanValue()` |
-| null 생성 | `Value.null()` | `Value::null()` | `Null()` | `Value::null()` |
+| 배열 생성 | `Value.array(items)` | `Value::array(items)` | `Array(items)` | `Value::array($items)` | `Value.array(items)` |
+| 배열 원소 | `value.items` | `value.items()` | `value.Items()` | `$value->items()` | `value.items()` |
+| 문자열 생성 | `Value.string(text)` | `Value::string(text)` | `String(text)` | `Value::string($text)` | `Value.string(text)` |
+| 문자열 조회 | `stringValue()` | `string_value()` | `StringValue()` | `stringValue()` | `string_value()` |
+| UTF-16 조회 | `stringUnits()` | `string_units()` | `StringUnits()` | `stringUnits()` | `string_units()` |
+| UTF-16 생성 | `Value.string(text)` | `Value::from_units(&units)` | `StringFromUnits(units)` | `Value::fromUnits($units)` | `Value.from_units(units)` |
+| 숫자 생성 | `Value.number(token)` | `Value::number(token)` | `Number(token)` | `Value::number($token)` | `Value.number(token)` |
+| 숫자 조회 | `numberLiteral()` | `number_literal()` | `NumberLiteral()` | `numberLiteral()` | `number_literal()` |
+| 불리언 생성 | `Value.boolean(flag)` | `Value::boolean(flag)` | `Boolean(flag)` | `Value::boolean($flag)` | `Value.boolean(flag)` |
+| 불리언 조회 | `booleanValue()` | `boolean_value()` | `BooleanValue()` | `booleanValue()` | `boolean_value()` |
+| null 생성 | `Value.null()` | `Value::null()` | `Null()` | `Value::null()` | `Value.null()` |
 
 종류 이름은 모든 구현의 열거형 `Kind`입니다: `Object`, `Array`, `String`, `Number`, `Boolean`, `Null`이며 값은 `object`, `array`, `string`, `number`, `boolean`, `null`입니다. Rust는 enum `Kind`, Go는 `Kind`의 상수 `ObjectKind`부터 `NullKind`, JavaScript는 enum `Kind`, Python은 `StrEnum` `Kind`, PHP는 backed enum `Kind`를 가집니다. `value.kind`는 Rust와 Go에서 `Kind`, JavaScript에서 그 문자열 값, Python에서 `Kind`의 멤버(곧 문자열)이며, `$value->kind()`는 문자열이고 `Kind::from()`이 이를 enum으로 바꿉니다.
 
 JavaScript는 기존 UTF-16 텍스트로 문자열을 생성할 수 있습니다. Go는 UTF-16 단위를 슬라이스로, Rust는 코어가 65535와 비교하는 `Vec<u64>`로 제공하며 PHP와 Python은 정수 코드 단위의 iterable을 받고 Python은 단위를 list로 돌려줍니다. 배열 조회는 불변 데이터 또는 독립적인 복사본을 반환합니다.
 
 <a id="php"></a>
-## PHP 파서
+## PHP backend
 
 PHP 라이브러리는 `polyspec/ordered-json`입니다. 공개 symbol은 class `Polyspec\OrderedJson\Value`, 예외 `Polyspec\OrderedJson\ParseError`, `Polyspec\OrderedJson\ArgumentError`, `Polyspec\OrderedJson\UsageError`, 함수 `Polyspec\OrderedJson\parse`와 `Polyspec\OrderedJson\stringify`, 상수 `Polyspec\OrderedJson\MAX_DEPTH`이며 라이브러리의 나머지는 이들에 대해 비공개입니다.
 
 PIE package `polyspec/ordered-json-php-ext`인 확장 `polyspec_ordered_json`은 라이브러리를 C로 구현하고 그 class, 함수, 상수를 같은 이름과 signature로 등록합니다. 프로세스는 라이브러리나 확장 중 하나만 로드하며(라이브러리는 source를 무조건 올리므로 함수를 다시 선언하게 됩니다), 하나의 test suite가 순수 PHP 구현과 라이브러리 source 없이 확장에 대해 실행되며 결과, 오류, offset은 같습니다. 확장은 자기 package의 version, 곧 `legacy/packages/php-ext`의 `composer.json` version을 보고합니다.
 
-ParseError 생성자는 공통 rejection kind에 대응하는 parser 메시지만 받습니다. 알 수 없는 메시지는 두 PHP backend 모두 kind `direct_construction`의 `UsageError`로 거부하며 알려진 메시지 뒤에 NUL byte를 붙인 경우도 포함합니다.
+ParseError 생성자는 공통 rejection kind에 대응하는 parser 메시지만 받습니다. 알 수 없는 메시지는 두 PHP backend 모두 kind `direct_construction`의 `UsageError`로 거부하며 알려진 prefix 뒤에 NUL byte가 오는 메시지도 포함합니다.
 
 네이티브 빌드는 PHP 버전, 플랫폼, 스레드 안전 설정과 일치해야 합니다. [네이티브 설치](installation.ko.md#native-php)를 확인합니다.

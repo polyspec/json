@@ -1,5 +1,5 @@
 <!-- doc-id: rust-overview -->
-<!-- source-sha256: 29d41f6411951bd1a090419638f71530a8957ab016c98a2231c9f62fe1769481 -->
+<!-- source-sha256: c06823019503cbc511b86e09685c27a84958d87d1952ae817b0dd8e0da751025 -->
 # json for Rust
 
 [English](README.md)
@@ -25,7 +25,7 @@ let html = stringify(&value, &StringifyOptions { html_safe: Some(true) });
 구조를 객체 순서와 숫자 토큰을 유지한 채 encode하고 decode합니다. crate에는 자체 typed encoder가 없으며, 구조의 나머지는
 `serde_json`의 규칙을 따릅니다.
 
-`Value::from_f64`와 `number_text`는 실수를 ECMAScript `Number::toString`이 쓰는 대로 쓰고 NaN과 무한대를 `non_finite_number`로 거부합니다. `Value::string`은 텍스트를 UTF-8로 쓰고 RFC 8259가 요구하는 이스케이프만 씁니다.
+`Value::from_f64`와 `number_text`는 실수를 ECMAScript `Number::toString`이 쓰는 대로 쓰고 NaN과 무한대를 `non_finite_number`로 거부합니다. `Value::string`은 텍스트를 RFC 8259가 요구하는 이스케이프와 함께 UTF-8로 씁니다.
 
 
 동작은 [JSON 계약](https://github.com/polyspec/json/blob/main/docs/spec/json-contract.ko.md)과 [API 계약](https://github.com/polyspec/json/blob/main/docs/operations/api.ko.md)에 정의합니다. 소스는 이 저장소에서 제공합니다. Cargo 패키지는 레지스트리 게시가 설정되지 않았습니다. 레지스트리 게시와 버전 릴리스는 검증되지 않았으며 소스 버전 문자열은 릴리스 기록이 아닙니다.

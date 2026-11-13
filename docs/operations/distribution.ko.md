@@ -1,5 +1,5 @@
 <!-- doc-id: distribution -->
-<!-- source-sha256: 8878793162fa2a0ec9dc084ede7082adb32854c9e247e54f72c5f498204ed913 -->
+<!-- source-sha256: 2e73cc186d2f323423164083377d0a3a264ea115bfe8c8cd3e412bbbeee02c7c -->
 # 배포
 
 [English](distribution.md)
@@ -9,27 +9,27 @@
 
 저장소는 다섯 [구현 패키지](repositories.ko.md#ownership)를 하나의 리비전에 담습니다. GitHub 릴리스와 버전 태그는 `gh release list -R polyspec/json`과 저장소의 Releases 페이지에 나열되며, 추적 파일은 이를 다시 적지 않습니다. `vX.Y.Z` 릴리스는 [릴리스 asset](installation.ko.md#release-assets)에 나열된 asset을 첨부하고, Go 모듈 릴리스 `legacy/packages/go/vX.Y.Z`는 asset을 첨부하지 않습니다. `published`로 표시한 기능 행은 릴리스 tag와 asset 이름을 적으며([기능](../features.ko.md)), 그 형식은 `make evidence-check`가 오프라인으로 검사합니다.
 
-이 저장소는 세 채널로 배포합니다. `vX.Y.Z` release의 GitHub release asset(npm tarball, PHP 라이브러리와 PHP 확장의 Composer zip, Python wheel), `packages/rust/`의 Rust 크레이트 `polyspec-ordered-json`을 git tag로, Go 모듈 `github.com/polyspec/ordered-json/packages/go`를 tag `legacy/packages/go/vX.Y.Z`로 배포합니다. 어떤 release도 레지스트리에 게시하지 않습니다. npm, crates.io, Packagist, PyPI는 release를 받지 않으며, 어떤 workflow도 레지스트리에 게시하지 않습니다. 확인된 로컬 배포는 소스 체크아웃입니다. PIE 메타데이터와 성공한 PIE 빌드는 로컬 빌드 호환성을 확인하며 Packagist 게시 근거는 아닙니다. 확장 패키지는 `polyspec/ordered-json-php-ext`, PHP 라이브러리는 `polyspec/ordered-json`입니다.
+이 저장소는 세 채널로 배포합니다. `vX.Y.Z` release의 GitHub release asset(npm tarball, PHP 라이브러리와 PHP 확장의 Composer zip, Python wheel), `packages/rust/`의 Rust 크레이트 `polyspec-ordered-json`을 git tag로, Go 모듈 `github.com/polyspec/ordered-json/packages/go`를 tag `legacy/packages/go/vX.Y.Z`로 배포합니다. 어떤 release도 레지스트리에 게시하지 않습니다. npm, crates.io, Packagist, PyPI는 release를 받지 않으며, 어떤 workflow도 레지스트리에 게시하지 않습니다. 로컬 배포는 소스 체크아웃입니다. PIE 메타데이터와 성공한 PIE 빌드는 로컬 빌드 호환성을 확인하며 Packagist 게시 근거는 아닙니다. 확장 패키지는 `polyspec/ordered-json-php-ext`, PHP 라이브러리는 `polyspec/ordered-json`입니다.
 
 소스 버전 문자열은 릴리스된 산출물의 근거가 아닙니다. 어떤 workflow도 레지스트리에 게시하지 않고, 호스팅 CI는 전체 suite와 push gate를 실행하며([호스팅 CI](validation.ko.md#ci)), tag의 push는 그 tag의 GitHub Release를 만듭니다([tag 릴리스](#tag-release)). LICENSE 파일은 없습니다.
 
 <a id="source-publication"></a>
 ## 소스 게시
 
-변경한 패키지의 필수 검사를 실행하고 공통 계약과 함께 커밋합니다. 모든 변경은 체크리스트가 모두 `[o]`일 때의 push로 `main`에 들어갑니다([main 게시](validation.ko.md#publish)).
+변경한 패키지의 필수 검사를 실행하고 공통 계약과 함께 커밋합니다. 모든 변경은 체크리스트의 push로 `main`에 들어갑니다([main 게시](validation.ko.md#publish)).
 
 ~~~sh
 git push origin HEAD:main
 ~~~
 
-호스팅 CI가 pull request와 모든 push to `main`에서 kit의 gate, 공통 검증기, 모든 runtime의 test, lint, PIE 검사를 실행하고, `main`에서 성공한 `ci` 실행이 release workflow를 시작합니다. 깨끗한 복제가 게시된 리비전에서 모든 패키지를 빌드하는지 확인합니다. 공통 계약 변경은 검증기, fixture와 관련 패키지를 같은 리비전으로 게시합니다.
+호스팅 CI가 pull request와 `main`으로의 모든 push에서 kit의 gate, 공통 검증기, 모든 runtime의 test, lint, PIE 검사를 실행하고, `main`에서 성공한 `ci` 실행이 release workflow를 시작합니다. 깨끗한 복제가 게시된 리비전에서 모든 패키지를 빌드하는지 확인합니다. 공통 계약 변경은 검증기, fixture와 관련 패키지를 같은 리비전으로 게시합니다.
 
 인증 정보는 시스템 인증 저장소에서 관리합니다. 게시 관측과 테스트 결과를 구분합니다.
 
 <a id="tag-release"></a>
 ## Tag 릴리스
 
-릴리스는 `main`의 commit에 붙인 tag입니다([릴리스 절차](../../AGENTS.ko.md#release)). `vX.Y.Z`는 `legacy/packages/js/`의 npm 패키지와 `legacy/packages/php/`, `legacy/packages/php-ext/`의 Composer 패키지를 버전 X.Y.Z로 릴리스하고, `legacy/packages/python/`의 Python wheel을 버전 X.Y.Z로 릴리스하고, `legacy/packages/go/vX.Y.Z`는 Go 모듈 `github.com/polyspec/ordered-json/packages/go`를 릴리스합니다. Python 패키지는 wheel asset `polyspec_ordered_json-X.Y.Z-py3-none-any.whl`로 릴리스하며(`config/release.json`, kind `wheel`), git tag로 사용하지 않습니다. `packages/rust/`의 Cargo 패키지는 archive로 릴리스하지 않고 git tag로 사용합니다(`config/release.json`, mode `git-tag`). `cargo package`는 git 의존성을 해석되지 않는 crates.io 요구로 바꾸기 때문입니다. tag `vX.Y.Z`와 `legacy/packages/go/vX.Y.Z`는 같은 commit을 가리키며, `make release-tag`가 둘 다 만듭니다. 패키지, tag가 각 manifest를 릴리스하는 방식, 어떤 tag도 릴리스하지 않는 manifest, Go 모듈은 [config/release.json](../../config/release.json)에 선언합니다. `make release-coverage`는 checkout의 모든 package 파일이 그곳에 분류되도록 요구합니다. `main`에서 성공한 `ci`의 push 실행이 `.github/workflows/release.yml`(`on: workflow_run`, 권한 `contents: write`)을 시작하며, 그 step은 다음 순서로 `@polyspec/kit`의 release target을 실행하고 첫 실패에서 멈춥니다.
+릴리스는 `main`의 commit에 붙인 tag입니다([릴리스 절차](../../AGENTS.ko.md#release)). `vX.Y.Z`는 `legacy/packages/js/`의 npm 패키지와 `legacy/packages/php/`, `legacy/packages/php-ext/`의 Composer 패키지를 버전 X.Y.Z로 릴리스하고, `legacy/packages/python/`의 Python wheel을 버전 X.Y.Z로 릴리스하고, `legacy/packages/go/vX.Y.Z`는 Go 모듈 `github.com/polyspec/ordered-json/packages/go`를 릴리스합니다. Python 패키지는 wheel asset `polyspec_ordered_json-X.Y.Z-py3-none-any.whl`로 릴리스하며(`config/release.json`, kind `wheel`), git tag로 릴리스하지 않습니다. `packages/rust/`의 Cargo 패키지는 archive로 릴리스하지 않고 git tag로 사용합니다(`config/release.json`, mode `git-tag`). `cargo package`는 git 의존성을 해석되지 않는 crates.io 요구로 바꾸기 때문입니다. tag `vX.Y.Z`와 `legacy/packages/go/vX.Y.Z`는 같은 commit을 가리키며, `make release-tag`가 둘 다 만듭니다. 패키지, tag가 각 manifest를 릴리스하는 방식, 어떤 tag도 릴리스하지 않는 manifest, Go 모듈은 [config/release.json](../../config/release.json)에 선언합니다. `make release-coverage`는 checkout의 모든 package 파일이 그곳에 분류되도록 요구합니다. `main`에서 성공한 `ci`의 push 실행이 `.github/workflows/release.yml`(`on: workflow_run`, 권한 `contents: write`)을 시작하며, 그 step은 다음 순서로 `@polyspec/kit`의 release target을 실행하고 첫 실패에서 멈춥니다.
 
 ~~~sh
 make install-tools TOOLS=npm

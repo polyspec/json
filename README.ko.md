@@ -1,5 +1,5 @@
 <!-- doc-id: overview -->
-<!-- source-sha256: bac9d3880498ab3866601c7f742fdd692ed2c4a06a9ae3c8aa8a529ef699d698 -->
+<!-- source-sha256: f21dca933241b1725177321edbd543cd62952e506e9ebc54a900cb28e7fbdd16 -->
 # json
 
 [English](README.md)
@@ -43,7 +43,7 @@ print(stringify(parse(example['input'])))
 PY
 ~~~
 
-release의 wheel asset으로 Python 패키지를 `pip`로 설치합니다([설치](docs/operations/installation.ko.md)). release는 저장소의 Releases 페이지에 나열되며, `X.Y.Z`는 그 release의 버전을 뜻합니다.
+release의 wheel asset으로 Python 패키지를 pip로 설치합니다([설치](docs/operations/installation.ko.md)). release는 저장소의 Releases 페이지에 나열되며, `X.Y.Z`는 그 release의 버전을 뜻합니다.
 
 ~~~sh
 pip install "https://github.com/polyspec/json/releases/download/vX.Y.Z/polyspec_ordered_json-X.Y.Z-py3-none-any.whl"
@@ -67,7 +67,7 @@ pip install "https://github.com/polyspec/json/releases/download/vX.Y.Z/polyspec_
 make check
 ~~~
 
-통합 기록은 공통 계약과 모든 패키지가 포함된 하나의 리비전에 적용됩니다. 도구와 식별자는 [설치](docs/operations/installation.ko.md), 추가 사례·PIE 검사는 [검증](docs/operations/validation.ko.md)을 참조합니다. 테스트와 패키지 게시는 별도로 기록합니다.
+통합 기록은 공통 리비전과 그 체크아웃의 모든 패키지 소스에 적용됩니다. 도구와 식별자는 [설치](docs/operations/installation.ko.md), 추가 사례·PIE 검사는 [검증](docs/operations/validation.ko.md)을 참조합니다. 테스트와 패키지 게시는 별도로 기록합니다.
 
 <a id="documents"></a>
 ## 문서

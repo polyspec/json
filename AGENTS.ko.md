@@ -1,5 +1,5 @@
 <!-- doc-id: development -->
-<!-- source-sha256: 942e1ce339d324ce2d461a1834039afe764e6dad530dc30c5ec4a528a8f121a8 -->
+<!-- source-sha256: cd98989ffeb6b815d913c660af4adcab7c4ef73ad250c5436c6bddafda17aeb0 -->
 # Development procedure
 
 [English](AGENTS.md)
@@ -12,7 +12,7 @@
 - Own: 수정 전에 [documentation management](docs/operations/documentation-plan.ko.md), 관련 [specification](docs/spec/json-contract.ko.md), [feature state](docs/features.ko.md)를 읽습니다. 동작을 변경하기 전에 명세를 갱신합니다. 코드 변경에는 관련 문서, 기능 상태, 변경 기록을 함께 포함합니다.
   Enforced by: `make docs-check`
 - Own: 개인 선호, 대화 맥락, credential, backup 위치는 Git 밖에 둡니다.
-  Enforced by: none, 추적 파일이 개인 선호를 담는지는 판단 사항이며 어떤 도구도 판단하지 않습니다.
+  Enforced by: none, 추적 파일이 개인 선호를 담는지는 판단 사항입니다.
 
 <a id="feature-state"></a>
 ## Feature state
@@ -109,12 +109,12 @@
 
 - Own: 같은 tree는 언제, 어느 기계에서든 같은 결과를 냅니다. 이 목록의 각 규칙은 이 저장소가 그 규칙을 어떻게 지키는지를 적습니다.
   Enforced by: none, 결과가 기계에 따라 달라지는지는 어떤 도구도 판단할 수 없는 판단 사항입니다.
-- Own: 검사는 시간에 따라 결과가 달라지는 registry 질의를 하지 않습니다. latest 조회, `@latest`, 범위 해석, 오래된 패키지 질의가 없습니다. lock이 정확한 version과 integrity hash로 고정한 것을 설치하는 것은 허용되며, `npm ci`와 `composer install`이 그렇듯 허용됩니다.
+- Own: 검사는 시간에 따라 결과가 달라지는 registry 질의를 하지 않습니다. latest 조회, `@latest`, version 범위 해석, 오래된 패키지 질의가 없습니다. lock이 정확한 version과 integrity hash로 고정한 것을 설치하는 것은 허용되며, `npm ci`와 `composer install`이 그렇듯 허용됩니다.
   Enforced by: none, 검토에서 판단합니다.
 - Own: 어떤 명령도 도구를 필요할 때 설치하지 않습니다. Node.js, Rust, Go, Python, PHP, npm은 추적 파일이 고정합니다. Go, Python, Composer와 mise가 설치하는 다른 도구는 `mise.toml`의 정확한 release이며 `mise.lock`의 digest로 잠깁니다. PHP는 `.php-version`의 minor release로 고정합니다. install target을 제외한 모든 명령은 cargo, go, npm, Composer를 offline으로 실행하므로, 누락된 다운로드는 `make install`을 실행하라는 메시지와 함께 실패합니다.
-  Enforced by: none, 판단 사항입니다. kit 0.0.77이 toolchain check를 제거했고(K854), mise.toml과 mise.lock의 고정은 install-tools가 읽습니다.
+  Enforced by: none, 검토에서 판단합니다: kit 0.0.77이 toolchain check를 제거했고(K854), mise.toml과 mise.lock의 고정은 install-tools가 읽습니다.
 - Own: 다운로드하는 것은 `make install-tools TOOLS=npm`, `make install-packages`, `make install`뿐입니다. 첫 번째는 npm을, 두 번째는 `package-lock.json`의 패키지를 설치하며, `make install`은 `mise.lock`의 도구, Rust toolchain, root `Cargo.lock`의 crate를 설치하며, PIE PHAR와 보충 suite는 `mise.toml`의 tool `http:pie`와 `http:jsontestsuite`입니다.
-  Enforced by: none, 판단 사항입니다. crate의 존재는 cargo의 상태이므로 make target이 Cargo.lock과 비교할 수 없습니다(K864).
+  Enforced by: none, 검토에서 판단합니다: Cargo.lock의 crate는 cargo의 상태이며, make target은 그것을 lock과 비교할 수 없습니다(K864).
 - Own: 테스트는 자기가 만든 출력만 읽고 추적되지 않은 상태에 의존하지 않습니다. record, 문서 검사, 공통 사례, build copy는 Git이 추적하는 파일을 읽으며, 각 실행은 자기 run directory와 자기 `CARGO_TARGET_DIR`로 빌드합니다.
   Enforced by: `make json-test-scripts`
 - Own: 공유 출력은 원자적으로 게시합니다. 파일을 `var/` 아래에 완전히 쓴 뒤 그 경로로 rename합니다(`write_record`).
@@ -148,9 +148,9 @@
 - Own: crate는 `make lint-rust`(`-D warnings`를 붙인 clippy)가 lint합니다.
   Enforced by: `make lint-rust`
 - Own: crate는 `make json-rust-check`로 이 패키지만 검사하며, 이 target은 `make verify-rust`를 실행합니다.
-  Enforced by: none, 판단 사항입니다. workflow, Git hook, Claude Code hook 어디도 이 target을 실행하지 않습니다.
+  Enforced by: none, 검토에서 판단합니다: workflow, Git hook, Claude Code hook 어디도 이 target을 실행하지 않습니다.
 - Own: crate는 root `Cargo.lock`에 고정된 버전이며, `make install`이 내려받고 검사는 내려받지 않습니다.
-  Enforced by: none, 판단 사항입니다. crate의 존재는 cargo의 상태이므로 make target이 Cargo.lock과 비교할 수 없습니다(K864).
+  Enforced by: none, 검토에서 판단합니다: Cargo.lock의 crate는 cargo의 상태이며, make target은 그것을 lock과 비교할 수 없습니다(K864).
 - Own: 패키지 테스트는 `make test-rust`가 실행하는 crate의 native 테스트입니다.
   Enforced by: `make test-rust`
 - Own: crate의 변경은 [CHANGELOG.ko.md](CHANGELOG.ko.md)의 이 패키지 절에 적습니다.
@@ -162,9 +162,9 @@
 - Own: module은 `make lint-go`(`.golangci.yml`을 쓰는 golangci-lint와 deadcode)가 lint합니다.
   Enforced by: `make lint-go`
 - Own: module은 `make json-go-check`로 이 패키지만 검사하며, 이 target은 `make verify-go`를 실행합니다.
-  Enforced by: none, 판단 사항입니다. workflow, Git hook, Claude Code hook 어디도 이 target을 실행하지 않습니다.
+  Enforced by: none, 검토에서 판단합니다: workflow, Git hook, Claude Code hook 어디도 이 target을 실행하지 않습니다.
 - Own: `GOTOOLCHAIN`은 `local`이며, module은 `mise.toml`의 Go release를 요구합니다.
-  Enforced by: none, 판단 사항입니다. kit 0.0.77이 toolchain check를 제거했고(K854), mise.toml과 mise.lock의 고정은 install-tools가 읽습니다.
+  Enforced by: none, 검토에서 판단합니다: kit 0.0.77이 toolchain check를 제거했고(K854), mise.toml과 mise.lock의 고정은 install-tools가 읽습니다.
 - Own: 패키지 테스트는 `make test-go`가 실행하는 코드 옆의 Go 테스트입니다.
   Enforced by: `make test-go`
 - Own: module의 변경은 [CHANGELOG.ko.md](CHANGELOG.ko.md)의 이 패키지 절에 적습니다.
@@ -176,7 +176,7 @@
 - Own: Composer 패키지는 `make lint-php`(phpcs와 PHPStan)가 lint합니다.
   Enforced by: `make lint-php`
 - Own: Composer 패키지는 `make json-php-check`로 이 패키지만 검사하며, 이 target은 `make verify-php`를 실행합니다.
-  Enforced by: none, 판단 사항입니다. workflow, Git hook, Claude Code hook 어디도 이 target을 실행하지 않습니다.
+  Enforced by: none, 검토에서 판단합니다: workflow, Git hook, Claude Code hook 어디도 이 target을 실행하지 않습니다.
 - Own: `composer.lock`은 platform `8.4.1`로 잠기고 PHP `>=8.4`를 요구하며, manifest가 바뀌면 `composer update --lock`으로 다시 잠급니다.
   Enforced by: none, 검토에서 판단합니다.
 - Own: 패키지 테스트는 `legacy/packages/php/tests`의 PHPUnit 테스트이며, `make install`이 설치하고 `make test-php`가 실행합니다.

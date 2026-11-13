@@ -1,4 +1,5 @@
 <!-- doc-id: contracts-readme -->
+<!-- source-sha256: 9735e61293e2e29ee9f5984d9d57f5708f2feeaeff8be043b0ee7ebc7e1959e1 -->
 # 계약
 
 [English](README.md)
