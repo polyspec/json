@@ -866,7 +866,12 @@
   {
    "id": "get_units_above_largest",
    "rule": "RQ-029",
-   "members": [],
+   "receiver": {
+    "new": "value.object",
+    "args": {
+     "members": []
+    }
+   },
    "units": [
     70000
    ],

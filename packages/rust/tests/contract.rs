@@ -141,6 +141,17 @@ fn receiver(case: &Json) -> Result<Value, Failed> {
     Ok(Value::null())
 }
 
+/// The value of an instance value of binding GN-13f, `{"new": <member id>, "args": {...}}`: the cases name the factory
+/// `value.object` with its members, since a case that gives the receiver by its keys takes the first factory of the
+/// class whose parameters it gives, and the key `units` of `value.get_units` is the parameter of `value.from_units`.
+fn instance(given: &Json) -> Result<Value, Failed> {
+    let args = field(given, "args")?;
+    match text(given, "new")? {
+        "value.object" => Value::object(&ordered_map(field(args, "members")?)?).map_err(failed),
+        other => Err(failed(format!("no instance value of the factory {other}"))),
+    }
+}
+
 /// Compares an outcome with the case: `raises`, or the result that `check` compares.
 fn outcome<T>(
     case: &Json,
@@ -263,13 +274,13 @@ fn run(group: &str, case: &Json) -> Result<(), Failed> {
         }
         "value.get" => found(case, receiver(case)?.get(text(case, "key")?)),
         "value.get_units" => {
-            // The units are the key here; the receiver is the value of text, json or literal.
+            // The units are the key here; the receiver is the value of text, json, an instance value or literal.
             let target = if let Some(given) = case.get("text") {
                 Value::string(given.as_str().ok_or("text is no text")?)
             } else if case.get("json").is_some() {
                 receiver(case)?
-            } else if let Some(members) = case.get("members") {
-                Value::object(&ordered_map(members)?).map_err(failed)?
+            } else if let Some(given) = case.get("receiver") {
+                instance(given)?
             } else {
                 Value::number(text(case, "literal")?).map_err(failed)?
             };

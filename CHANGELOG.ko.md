@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: f06f338d16de47d00adf66a61aff21005b60b05ebf7fcaf93f828f8871ce7418 -->
+<!-- source-sha256: 2d7da0bb7e6456f3e87e2bca2ef57b9312a1926603d903dbcad9300725de98db -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- `value.get_units`의 case `get_units_above_largest`는 receiver를 instance value `{"new": "value.object", "args": {"members": []}}`로 준다(T3.15, RQ-029, binding GN-13f). 이 case는 key `members`와 `units`를 주었고, receiver를 key로 주는 case는 그 매개변수를 case가 주는 클래스의 첫 factory를 쓰는데, 그것은 호출의 units를 받는 `value.from_units`이다. 그래서 생성된 모든 test가 receiver를 `Value.from_units([70000])`로 만들었고, 이 호출이 스스로 `invalid_code_unit`을 던졌다. Python, Node, PHP, WASM의 test는 `get_units`의 오류가 아니라 receiver의 오류로 통과했고, Go의 test는 receiver를 만들 수 없는 test를 실패시키므로 실패했다. 이제 receiver는 빈 object이고, 생성된 test는 `get_units`의 오류를 요구한다. `packages/rust/tests/contract.rs`는 factory `value.object`의 instance value를 읽는다. 검증: 계약 검사는 아무것도 보고하지 않고, `make test-rust`는 185개 중 185개가 통과하며, `-D warnings`의 clippy와 `make fmt-check`는 아무것도 보고하지 않는다.
 - `Cargo.lock`은 `polyspec-binding-core`를 binding의 branch `v1/rust-core`의 commit 369fcec에 고정하고, 추적되는 바인딩 패키지는 그 commit의 `binding scaffold`가 쓰는 것과 같다(T3.14, binding L-2, CK-19, CK-20). lock은 931645f를 고정하고 있었고, 계약 검사는 lock에 CK-20을, 바인딩 패키지의 파일 아홉 개에 CK-19를 보고했다. 각 바인딩 crate는 코어의 license인 `license = "MIT"`를 적는다. `packages/python`은 `build.rs`를 가지며, 이 파일은 생성된 코드가 거부하는 cfg `pyo3_disable_reference_pool`을 선언한다(binding GN-6u). `pyproject.toml`은 license를 적는다. `packages/ts/package.json`은 ES module이고 napi target을 적으며, 플랫폼 패키지를 optional dependency로 적지 않는다. `packages/php-ext/composer.json`은 내려받기 방식 `pre-packaged-binary`를 적는다. 코어는 바뀌지 않았다. 새 `binding_core`로 그대로 컴파일된다. lock으로 검증했다: 계약 검사는 아무것도 보고하지 않고, `make test-rust`는 185개 중 185개가 통과하며, 바인딩 crate를 뺀 `cargo clippy --workspace --all-targets --locked`와 `make fmt-check`는 아무것도 보고하지 않는다.
 - 코어의 manifest가 license를 적는다(`license = "MIT"`, 이 저장소의 npm 패키지가 적는 license와 같다). 바인딩 패키지는 코어의 license를 가지며, binding의 계약 검사는 license가 없는 코어를 거부한다(CK-71).
 
