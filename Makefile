@@ -338,7 +338,9 @@ lint-php:
 	$(NODE) $(KIT)/lint-php.mjs --memory-limit=-1
 lint-python:
 	$(NODE) $(KIT)/lint-python.mjs
-lint-go:
+# lint-go lints every Go module of the checkout, a go.mod: legacy/packages/go and the binding module packages/go, whose Go
+# files make bindings writes (binding design L-1), so it runs after bindings and fails with it.
+lint-go: bindings
 	$(NODE) $(KIT)/lint-go.mjs
 # lint-rust lints the core crate: kit runs clippy --workspace, and the binding crates, which need make bindings first, are
 # excluded and linted by lint-bindings.

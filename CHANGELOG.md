@@ -17,6 +17,7 @@
 - L-2: `Cargo.lock` pins binding at 9de9d03, the commit that every repository of the library family pins (CK-20); its scaffold writes the same binding packages.
 - T3.1: `OfficialTest` of the legacy PHP package reads `examples/official.json` from the repository root, four folders above its `tests/`; after the move to `legacy/packages/php` it read `legacy/examples/official.json`, which does not exist, so the 17 official cases did not run and PHPUnit reported an invalid data provider.
 - T3.1: the Makefile names Go by the absolute path of its shim in `var/tools`, as it names the other tools of `mise.toml`; `$(shell command -v go)` read the `PATH` of the environment under GNU make before 4.4, which does not pass an exported variable to `$(shell)`, so `make deps-go` ran the Go of the machine there and the Go of the checkout under a newer make.
+- T3.1: `make lint-go` runs after `make bindings`: the lint of kit takes every `go.mod` of the checkout, and the Go files of the binding module `packages/go` are written by `make bindings`, so without them golangci-lint and deadcode failed with no Go file to read. While `make bindings` fails, `make lint-go` fails with its message.
 
 ## 0.0.25
 
