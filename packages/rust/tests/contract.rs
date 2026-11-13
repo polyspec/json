@@ -347,7 +347,10 @@ fn faulted(group: &str, case: &Json, faults: &Json) -> Result<(), Failed> {
     let outcome = binding_core::fault::take(group).run(|| run(group, case));
     let left = binding_core::fault::left(id).map_err(failed)?;
     if !left.is_empty() {
-        return Err(failed(format!("the faults of {} did not fire", left.join(", "))));
+        return Err(failed(format!(
+            "the faults of {} did not fire",
+            left.join(", ")
+        )));
     }
     outcome
 }
