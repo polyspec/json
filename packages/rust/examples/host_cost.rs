@@ -1,8 +1,9 @@
-//! The cost of the conversion of RQ-036 (binding B2.81): value_out, which gives a string as its text and checks first
-//! that it holds no unpaired surrogate, and value_in, which takes every string as the UTF-16 code units that
-//! `value.string_units` gives, against the same walk that gives and takes a string as a Rust `String`, on a document of
-//! one large string and a document of many small strings. A measurement is reported
-//! and never fails: a ratio above the limit prints a `WARNING` line with the value and the limit (make benchmark-host).
+//! The cost of the conversion of RQ-036 (binding B2.81, B2.89): value_out, which gives a string as its text and checks
+//! first that it holds no unpaired surrogate, and value_in, which takes a string as the text that `value.string_text`
+//! gives, as UTF-8 bytes (PHP, Go, Node, WASM) or as UTF-16 units (a built-in string of Node), against the same walk
+//! that gives and takes a string as a Rust `String`, on a document of one large string and a document of many small
+//! strings. A measurement is reported and never fails: a ratio above the limit prints a `WARNING` line with the value
+//! and the limit (make benchmark-host).
 #![allow(
     clippy::unwrap_used,
     clippy::expect_used,
@@ -14,10 +15,11 @@ use polyspec_json::{parse, value_in, value_out, Error, ParseOptions, Value};
 use std::{hint::black_box, time::Instant};
 
 /// The ratio of the code-unit path to the text path above which the measurement prints a warning.
-const LIMIT: f64 = 2.0;
+const LIMIT: f64 = 1.5;
 const SAMPLES: usize = 21;
 
 /// A string as the generated binding holds it after the out rows made it.
+#[derive(Clone)]
 enum Made {
     Text(String),
     Units(Vec<u16>),
@@ -40,7 +42,7 @@ fn made(out: OutValue, source: &mut dyn OutValues) -> Made {
     }
 }
 
-/// The units that the in case of a string reads (`value.string_units`), as the binding gives them to value_in.
+/// A text as the UTF-16 units of a language, as Node gives a built-in string to value_in.
 fn as_units(value: Made) -> Made {
     match value {
         Made::Text(text) => Made::Units(text.encode_utf16().collect()),
@@ -129,9 +131,9 @@ fn measure(mut run: impl FnMut()) -> f64 {
 
 fn report(document: &str, direction: &str, units: f64, text: f64) {
     let ratio = units / text;
-    println!("{document}\t{direction}\ttext16 {units:.3} ms\ttext {text:.3} ms\tratio {ratio:.2}");
+    println!("{document}\t{direction}\tvalue_in/value_out {units:.3} ms\ttext {text:.3} ms\tratio {ratio:.2}");
     if ratio > LIMIT {
-        println!("WARNING: {document} {direction}: text16 takes {ratio:.2} times the time of text, above the limit {LIMIT:.2}");
+        println!("WARNING: {document} {direction}: value_in/value_out takes {ratio:.2} times the time of text, above the limit {LIMIT:.2}");
     }
 }
 
@@ -148,9 +150,9 @@ fn main() -> Result<(), Error> {
             black_box(made_as_text(&value));
         });
         report(document, "out", out_units, out_text);
-        let in_units = measure(|| {
+        let in_bytes = measure(|| {
             let (root, mut source) = value_out(&value);
-            let tree = as_units(made(root, &mut source));
+            let tree = made(root, &mut source);
             let mut host = Host { lists: Vec::new() };
             let described = host.describe(tree);
             black_box(value_in(&mut host, described).unwrap());
@@ -158,7 +160,22 @@ fn main() -> Result<(), Error> {
         let in_text = measure(|| {
             black_box(built_from_text(made_as_text(&value)));
         });
-        report(document, "out and in", in_units, in_text);
+        report(document, "out and in, UTF-8", in_bytes, in_text);
+        // The in direction alone: each run copies the texts that the language holds, as a binding copies them out of
+        // its language, and builds the value from them.
+        let texts = made_as_text(&value);
+        let units = as_units(texts.clone());
+        let only_text = measure(|| {
+            black_box(built_from_text(texts.clone()));
+        });
+        for (direction, tree) in [("in, UTF-8", &texts), ("in, UTF-16", &units)] {
+            let only_in = measure(|| {
+                let mut host = Host { lists: Vec::new() };
+                let described = host.describe(tree.clone());
+                black_box(value_in(&mut host, described).unwrap());
+            });
+            report(document, direction, only_in, only_text);
+        }
     }
     Ok(())
 }

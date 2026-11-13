@@ -161,16 +161,7 @@ fn resolve(host: &mut dyn HostValues, value: HostValue) -> Result<Resolved, Fail
     match content {
         HostValue::Null => Ok(Resolved::Done(Value::null())),
         HostValue::Bool(value) => Ok(Resolved::Done(Value::boolean(value))),
-        HostValue::Text(text) => {
-            let units: Vec<u64> = units(text)
-                .map_err(Failure::Kind)?
-                .into_iter()
-                .map(u64::from)
-                .collect();
-            Value::from_units(&units)
-                .map(Resolved::Done)
-                .map_err(Failure::Kind)
-        }
+        HostValue::Text(text) => string(text).map(Resolved::Done).map_err(Failure::Kind),
         HostValue::List { handle, len } => Ok(Resolved::List { handle, len }),
         HostValue::Map { handle, len } => Ok(Resolved::Map { handle, len }),
         _ => Err(Failure::Kind(not_described())),
@@ -210,6 +201,45 @@ fn units(text: HostText) -> Result<Vec<u16>, Error> {
             }),
         },
     }
+}
+
+/// A string from a text of a language: a Unicode text by [`Value::string`], and only a text with an unpaired surrogate
+/// by its UTF-16 code units, so that a common text is not taken apart into units and built again (binding B2.89).
+fn string(text: HostText) -> Result<Value, Error> {
+    let units = match text {
+        HostText::Bytes(bytes) => {
+            return match String::from_utf8(bytes) {
+                Ok(text) => Ok(Value::string(&text)),
+                Err(error) => Err(Error::InvalidUtf8 {
+                    offset: count(error.utf8_error().valid_up_to()),
+                }),
+            }
+        }
+        HostText::Utf16(units) => match Value::string_of_utf16(&units) {
+            Ok(value) => return Ok(value),
+            // An unpaired surrogate: the string is built from its code units below.
+            Err(_unpaired) => units,
+        },
+        HostText::CodePoints(points) => {
+            let mut text = String::with_capacity(points.len());
+            let mut whole = true;
+            for &point in &points {
+                match char::from_u32(point) {
+                    Some(ch) => text.push(ch),
+                    None => {
+                        whole = false;
+                        break;
+                    }
+                }
+            }
+            if whole {
+                return Ok(Value::string(&text));
+            }
+            units(HostText::CodePoints(points))?
+        }
+    };
+    let units: Vec<u64> = units.into_iter().map(u64::from).collect();
+    Value::from_units(&units)
 }
 
 /// A description that no `in` row of the class `value` gives: the generated binding describes only its instances.

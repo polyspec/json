@@ -1,6 +1,7 @@
 //! The immutable value and its constructors and accessors (RQ-012 to RQ-015, RQ-027 to RQ-033).
 
 use std::{
+    char::DecodeUtf16Error,
     convert::Infallible,
     sync::{Arc, OnceLock},
 };
@@ -225,20 +226,33 @@ impl Value {
     /// [`Error::UnpairedSurrogate`] for a string that holds an escaped unpaired surrogate, and [`Error::WrongKind`]
     /// for a value of another kind (RQ-032).
     pub fn string_value(&self) -> Result<String, Error> {
+        match self.string_text()? {
+            Some(text) => Ok(text),
+            None => Err(Error::UnpairedSurrogate),
+        }
+    }
+
+    /// The Unicode text of a string, or `None` for a string that holds an escaped unpaired surrogate, whose code units
+    /// [`Value::string_units`] gives (RQ-027): one call tells a text from a string that only its code units hold.
+    ///
+    /// # Errors
+    ///
+    /// [`Error::WrongKind`] for a value of another kind (RQ-032).
+    pub fn string_text(&self) -> Result<Option<String>, Error> {
         if !matches!(self.node, Node::String(_)) {
             return Err(Error::WrongKind);
         }
         if self.flags & ESCAPED == 0 {
-            return Ok(self.content().to_owned());
+            return Ok(Some(self.content().to_owned()));
         }
         let mut text = String::with_capacity(self.content().len());
         for unit in char::decode_utf16(self.units()?.iter().copied()) {
             match unit {
                 Ok(ch) => text.push(ch),
-                Err(_) => return Err(Error::UnpairedSurrogate),
+                Err(_) => return Ok(None),
             }
         }
-        Ok(text)
+        Ok(Some(text))
     }
 
     /// The token of a number, exactly as written (RQ-010).
@@ -295,18 +309,34 @@ impl Value {
     /// A string of Unicode text, written as UTF-8 with the escapes of RQ-028.
     #[must_use]
     pub fn string(text: &str) -> Self {
-        let mut token = String::with_capacity(text.len() + 2);
+        match Self::quoted(text.chars().map(Ok::<char, Infallible>), text.len()) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    /// A string of the Unicode text that UTF-16 code units hold, written in one pass, so that a text of a language
+    /// that gives UTF-16 is not decoded into a `String` first (RQ-036, binding B2.89); the error names the first
+    /// unpaired surrogate.
+    pub(crate) fn string_of_utf16(units: &[u16]) -> Result<Self, DecodeUtf16Error> {
+        Self::quoted(char::decode_utf16(units.iter().copied()), units.len())
+    }
+
+    /// A string of the characters, written as UTF-8 with the escapes of RQ-028; the first character that is an error
+    /// stops it with that error.
+    fn quoted<E>(chars: impl Iterator<Item = Result<char, E>>, len: usize) -> Result<Self, E> {
+        let mut token = String::with_capacity(len + 2);
         let mut escaped = false;
         token.push('"');
-        for ch in text.chars() {
-            escaped |= quote_char(&mut token, ch);
+        for ch in chars {
+            escaped |= quote_char(&mut token, ch?);
         }
         token.push('"');
-        Self::of_token(
+        Ok(Self::of_token(
             token,
             if escaped { ESCAPED } else { 0 },
             Node::String(OnceLock::new()),
-        )
+        ))
     }
 
     /// A string of UTF-16 code units, which may hold unpaired surrogates (RQ-028, RQ-029).

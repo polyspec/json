@@ -255,6 +255,25 @@ fn a_text_of_any_units_of_a_language_enters_by_its_code_units() {
 }
 
 #[test]
+fn a_unicode_text_of_any_units_enters_as_the_string_of_its_text() {
+    // T3.11: a Unicode text is built by Value::string in every units, and only a text with an unpaired surrogate by its
+    // code units.
+    let text = "a\"\u{e9}\n\u{1f600}<";
+    let mut host = Host::new();
+    for (units, described) in [
+        ("bytes", HostText::Bytes(text.as_bytes().to_vec())),
+        ("utf16", HostText::Utf16(text.encode_utf16().collect())),
+        (
+            "points",
+            HostText::CodePoints(text.chars().map(u32::from).collect()),
+        ),
+    ] {
+        let value = ok(value_in(&mut host, HostValue::Text(described)), units);
+        assert_eq!(value.raw(), Value::string(text).raw(), "{units}");
+    }
+}
+
+#[test]
 fn a_container_deeper_than_the_limit_is_refused() {
     let mut deep = Tree::Null;
     for _ in 0..=MAX_DEPTH {
