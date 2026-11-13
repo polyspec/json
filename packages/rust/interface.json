@@ -480,6 +480,29 @@
           }
         },
         {
+          "id": "value.string_text",
+          "name": [
+            "string",
+            "text"
+          ],
+          "kind": "method",
+          "visibility": "public",
+          "parameters": [],
+          "returns": {
+            "optional": "text"
+          },
+          "raises": [
+            "polyspec_json::Error::WrongKind",
+            "polyspec_json::Error::Internal"
+          ],
+          "wait": "none",
+          "core": {
+            "path": "polyspec_json::Value::string_text",
+            "receiver": "&self"
+          },
+          "optional_reason": "RQ-027"
+        },
+        {
           "id": "value.number_literal",
           "name": [
             "number",
@@ -941,8 +964,9 @@
             },
             {
               "is": "string",
-              "kind": "text16",
-              "read": "value.string_units"
+              "kind": "text",
+              "read": "value.string_text",
+              "units": "value.string_units"
             },
             {
               "is": "number",
@@ -976,8 +1000,9 @@
             },
             {
               "is": "string",
-              "kind": "text16",
-              "read": "value.string_units"
+              "kind": "text",
+              "read": "value.string_text",
+              "units": "value.string_units"
             },
             {
               "is": "number",
@@ -1011,8 +1036,9 @@
             },
             {
               "is": "string",
-              "kind": "text16",
-              "read": "value.string_units"
+              "kind": "text",
+              "read": "value.string_text",
+              "units": "value.string_units"
             },
             {
               "is": "number",
@@ -1046,8 +1072,9 @@
             },
             {
               "is": "string",
-              "kind": "text16",
-              "read": "value.string_units"
+              "kind": "text",
+              "read": "value.string_text",
+              "units": "value.string_units"
             },
             {
               "is": "number",
@@ -1081,8 +1108,9 @@
             },
             {
               "is": "string",
-              "kind": "text16",
-              "read": "value.string_units"
+              "kind": "text",
+              "read": "value.string_text",
+              "units": "value.string_units"
             },
             {
               "is": "number",
@@ -1636,6 +1664,11 @@
       "member": "value.string_units",
       "file": "contracts/core.json",
       "group": "value.string_units"
+    },
+    {
+      "member": "value.string_text",
+      "file": "contracts/core.json",
+      "group": "value.string_text"
     },
     {
       "member": "value.string",

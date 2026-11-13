@@ -467,6 +467,36 @@
    }
   }
  ],
+ "value.string_text": [
+  {
+   "id": "lone_high",
+   "rule": "RQ-027",
+   "units": [
+    55296
+   ],
+   "result": null
+  },
+  {
+   "id": "lone_low",
+   "rule": "RQ-027",
+   "units": [
+    120,
+    56320
+   ],
+   "result": null
+  },
+  {
+   "id": "string_text_of_number",
+   "rule": "RQ-032",
+   "literal": "1",
+   "raises": {
+    "kind": "wrong_kind",
+    "status": null,
+    "category": "type",
+    "message": null
+   }
+  }
+ ],
  "value.string": [
   {
    "id": "ascii",
@@ -5943,6 +5973,32 @@
    "rule": "RQ-027",
    "json": "\"\"",
    "result": []
+  }
+ ],
+ "value.string_text.parsed": [
+  {
+   "id": "plain",
+   "rule": "RQ-027",
+   "json": "\"a\"",
+   "result": "a"
+  },
+  {
+   "id": "escaped",
+   "rule": "RQ-027",
+   "json": "\"\\u00e9\\n\"",
+   "result": "é\n"
+  },
+  {
+   "id": "pair",
+   "rule": "RQ-027",
+   "json": "\"\\ud83c\\udf0d\"",
+   "result": "🌍"
+  },
+  {
+   "id": "lone_high",
+   "rule": "RQ-027",
+   "json": "\"\\ud800x\"",
+   "result": null
   }
  ],
  "value.get.parsed": [

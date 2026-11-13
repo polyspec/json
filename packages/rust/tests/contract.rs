@@ -228,6 +228,10 @@ fn run(group: &str, case: &Json) -> Result<(), Failed> {
         "value.string_units" => outcome(case, receiver(case)?.string_units(), |units| {
             same(units, integers(case, "result")?)
         }),
+        // RQ-027: the text of a string, or null for a string that holds an unpaired surrogate.
+        "value.string_text" => outcome(case, receiver(case)?.string_text(), |value| {
+            same(value.as_deref(), field(case, "result")?.as_str())
+        }),
         "value.string" => same(
             Value::string(text(case, "text")?).raw().to_owned(),
             text(case, "raw")?.to_owned(),
