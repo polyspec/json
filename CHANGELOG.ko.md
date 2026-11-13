@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: b979ab802d333950d97500e39f1f191209b88f0c819f0dcb9d4a24b57dac95b3 -->
+<!-- source-sha256: a79bbf600453164f18f36017326aabeaeba9ce2e2bc1847684977be69d0e4adc -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -26,6 +26,7 @@
 - GN-13: `value`의 정적 factory(`string`, `from_units`, `number`, `from_float`, `boolean`, `null`, `array`, `object`)는 alias `json_value` 대신 class unit `{"unit": "value"}`를 돌려줍니다. binding의 GN-13(8faad21의 docs/spec/generator.md 471-472행)은 method를 "a factory of the class (a static member or the constructor that returns it)"가 그 factory parameter의 case key로 만든 instance에서 부르고, GN-14d(663-665행)는 "the arguments of a factory of its class"가 없는 raising case를 뺍니다. alias를 돌려주면 class를 돌려주는 정적 member가 없어서 end-to-end 검사가 `value` method의 raising case를 모두 뺐습니다. `parse`와 `stringify`의 parameter `options`는 기본값 `{"empty": "object"}`를 유지합니다. binding 8faad21은 모든 target에서 그것을 `parse.options: a default of a record parameter is not generated yet (U-2 {empty: "object"})`와 `stringify.options: a default of a record parameter is not generated yet (U-2 {empty: "object"})`로 거부하며(GN-6i, docs/spec/generator.md 270-271행), 이는 T3.2가 기록하는 생성기 결함입니다. 실패 주입점 `json.internal`은 `OrderedMap::value_at`에 entry 밖의 위치를 주므로, 장전된 조회는 `position`이 결코 이르지 않는 그 결함의 분기를 지납니다.
 - T3.1, T3.2: T3.1이 끝났습니다. 그 검증인 `make test-rust`, `make lint-rust`, `make bindings-check`가 commit된 tree에서 통과합니다. 행 T3.2는 다섯 target의 생성 바인딩, 그 case runner, 언어 package와 live 시험의 바인딩 이전을 담으며, binding 8faad21이 계약의 어떤 target도 생성하지 않으므로 우회 상태입니다. php, python, node는 `Error: no case value of the type {"unit":"value"}`로 멈추고 go와 wasm은 계약의 항목을 이름으로 거부합니다. 기능 행 F-BINDINGS는 바인딩을 partial, not-verified로 적습니다. 언어 package와 `make test-js`, `make test-python`, `make test-php`, `make test-go`는 바인딩이 생성될 때까지 legacy package를 유지합니다.
 - T3.3: `make verify-all`은 `make pie-check`를 prerequisite로 가집니다. `make check`는 `pie-check`보다 `verify-all`을 먼저 실행했으므로, `verify-all`의 근거 검사는 모든 commit이 낡게 만드는 이전 tree의 PIE 기록을 읽고 `the PIE record is stale: the checked sources differ`로 실패했습니다. `pie-check`는 `CHECK_TARGETS`와 `kit-gates-runtime-php-ext`에서 빠져 `verify-all` 안에서만 실행되고, `make json-install-verify`는 verify job을 위해 PIE PHAR를 설치합니다. `tests/scripts/workflow-rules.test.mts`가 둘을 요구합니다.
+- T3.4: 바인딩 package `packages/python`, `packages/ts`, `packages/ts/wasm`, `packages/php-ext`, `packages/go/internal/ffi`는 binding 1bf0025의 `binding scaffold`가 쓰는 그대로입니다. 각 manifest는 `make layout-check`의 규칙 `lint-cargo-lints`가 요구하는 대로 `lints.workspace = true`로 workspace의 lint를 받고, WASM crate는 `polyspec-binding-core`의 feature `lock`과 코어의 `fault-test`를 켜며, 각 `src/lib.rs`의 attribute는 인자마다 한 줄로 적힙니다. `make layout-check`는 자기 lint를 적은 8faad21 scaffold의 manifest에서 실패했습니다. `Cargo.lock`은 `polyspec-binding-core`를 GitHub에 있는 binding commit인 8faad21에 두므로, binding의 더 뒤 commit이 GitHub에 올라갈 때까지 1bf0025의 binding check는 CK-20을 보고합니다.
 
 ## 0.0.25
 
