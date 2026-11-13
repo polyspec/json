@@ -268,7 +268,9 @@
               "type": {
                 "unit": "parse_options"
               },
-              "required": true
+              "default": {
+                "empty": "object"
+              }
             }
           ],
           "returns": "json_value",
@@ -317,7 +319,9 @@
               "type": {
                 "unit": "stringify_options"
               },
-              "required": true
+              "default": {
+                "empty": "object"
+              }
             }
           ],
           "returns": "text",
