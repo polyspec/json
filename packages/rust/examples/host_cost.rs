@@ -1,0 +1,164 @@
+//! The cost of the conversion of RQ-036 (binding B2.81): value_out, which gives a string as its text and checks first
+//! that it holds no unpaired surrogate, and value_in, which takes every string as the UTF-16 code units that
+//! `value.string_units` gives, against the same walk that gives and takes a string as a Rust `String`, on a document of
+//! one large string and a document of many small strings. A measurement is reported
+//! and never fails: a ratio above the limit prints a `WARNING` line with the value and the limit (make benchmark-host).
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    reason = "R-1: the measurement is a tool, and a value it cannot build stops it by its panic"
+)]
+
+use binding_core::{Handle, HostText, HostValue, HostValues, OutValue, OutValues, Raised};
+use polyspec_json::{parse, value_in, value_out, Error, ParseOptions, Value};
+use std::{hint::black_box, time::Instant};
+
+/// The ratio of the code-unit path to the text path above which the measurement prints a warning.
+const LIMIT: f64 = 2.0;
+const SAMPLES: usize = 21;
+
+/// A string as the generated binding holds it after the out rows made it.
+enum Made {
+    Text(String),
+    Units(Vec<u16>),
+    List(Vec<Made>),
+}
+
+fn made(out: OutValue, source: &mut dyn OutValues) -> Made {
+    match out {
+        OutValue::Text16(units) => Made::Units(units),
+        OutValue::Text(text) => Made::Text(text),
+        OutValue::List { handle, len } => Made::List(
+            (0..len)
+                .map(|index| {
+                    let item = source.item(handle, index);
+                    made(item, source)
+                })
+                .collect(),
+        ),
+        other => panic!("the documents hold strings and arrays, not {other:?}"),
+    }
+}
+
+/// The units that the in case of a string reads (`value.string_units`), as the binding gives them to value_in.
+fn as_units(value: Made) -> Made {
+    match value {
+        Made::Text(text) => Made::Units(text.encode_utf16().collect()),
+        Made::List(items) => Made::List(items.into_iter().map(as_units).collect()),
+        units @ Made::Units(_) => units,
+    }
+}
+
+/// The text path: the same walk, which gives a string as `String`.
+fn made_as_text(value: &Value) -> Made {
+    match value.items() {
+        Ok(items) => Made::List(items.iter().map(made_as_text).collect()),
+        Err(_) => Made::Text(value.string_value().unwrap()),
+    }
+}
+
+/// The description of a made value, as the in row gives it.
+struct Host {
+    lists: Vec<Vec<Made>>,
+}
+
+impl Host {
+    fn describe(&mut self, value: Made) -> HostValue {
+        match value {
+            Made::Units(units) => HostValue::Text(HostText::Utf16(units)),
+            Made::Text(text) => HostValue::Text(HostText::Bytes(text.into_bytes())),
+            Made::List(items) => {
+                let len = u64::try_from(items.len()).unwrap();
+                self.lists.push(items);
+                HostValue::List {
+                    handle: Handle::new(u64::try_from(self.lists.len() - 1).unwrap()),
+                    len,
+                }
+            }
+        }
+    }
+}
+
+impl HostValues for Host {
+    fn item(&mut self, list: Handle, index: u64) -> Result<HostValue, Raised> {
+        let items = &mut self.lists[usize::try_from(list.raw()).unwrap()];
+        let item = std::mem::replace(
+            &mut items[usize::try_from(index).unwrap()],
+            Made::Units(Vec::new()),
+        );
+        Ok(self.describe(item))
+    }
+
+    fn entry(&mut self, _map: Handle, _index: u64) -> Result<(HostValue, HostValue), Raised> {
+        panic!("the documents hold no object")
+    }
+
+    fn read(&mut self, _value: Handle) -> Result<HostValue, Raised> {
+        panic!("the measurement describes the content directly")
+    }
+}
+
+/// The text path in: a value built from each `String` with `Value::string`.
+fn built_from_text(value: Made) -> Value {
+    match value {
+        Made::Text(text) => Value::string(&text),
+        Made::List(items) => {
+            Value::array(&items.into_iter().map(built_from_text).collect::<Vec<_>>()).unwrap()
+        }
+        Made::Units(_) => panic!("the text path holds no units"),
+    }
+}
+
+fn median(mut samples: Vec<f64>) -> f64 {
+    samples.sort_by(f64::total_cmp);
+    samples[samples.len() / 2]
+}
+
+fn measure(mut run: impl FnMut()) -> f64 {
+    run();
+    median(
+        (0..SAMPLES)
+            .map(|_| {
+                let start = Instant::now();
+                run();
+                start.elapsed().as_secs_f64() * 1000.0
+            })
+            .collect(),
+    )
+}
+
+fn report(document: &str, direction: &str, units: f64, text: f64) {
+    let ratio = units / text;
+    println!("{document}\t{direction}\ttext16 {units:.3} ms\ttext {text:.3} ms\tratio {ratio:.2}");
+    if ratio > LIMIT {
+        println!("WARNING: {document} {direction}: text16 takes {ratio:.2} times the time of text, above the limit {LIMIT:.2}");
+    }
+}
+
+fn main() -> Result<(), Error> {
+    let large = format!("\"{}\"", "abcdefghij\u{e9}\u{4e2d}".repeat(100_000));
+    let many = format!("[{}]", vec!["\"name\\u00e9\""; 100_000].join(","));
+    for (document, source) in [("one large string", large), ("many small strings", many)] {
+        let value = parse(source.as_bytes(), &ParseOptions::default())?;
+        let out_units = measure(|| {
+            let (root, mut source) = value_out(&value);
+            black_box(made(root, &mut source));
+        });
+        let out_text = measure(|| {
+            black_box(made_as_text(&value));
+        });
+        report(document, "out", out_units, out_text);
+        let in_units = measure(|| {
+            let (root, mut source) = value_out(&value);
+            let tree = as_units(made(root, &mut source));
+            let mut host = Host { lists: Vec::new() };
+            let described = host.describe(tree);
+            black_box(value_in(&mut host, described).unwrap());
+        });
+        let in_text = measure(|| {
+            black_box(built_from_text(made_as_text(&value)));
+        });
+        report(document, "out and in", in_units, in_text);
+    }
+    Ok(())
+}

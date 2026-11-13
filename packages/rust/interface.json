@@ -355,6 +355,10 @@
       "visibility": "public",
       "origin": "value",
       "core_type": "polyspec_json::Value",
+      "core": {
+        "in": "polyspec_json::value_in",
+        "out": "polyspec_json::value_out"
+      },
       "constructible": false,
       "final": true,
       "members": [
@@ -890,6 +894,16 @@
           }
         },
         {
+          "kind": "text16",
+          "make": {
+            "php": "value.from_units",
+            "python": "value.from_units",
+            "node": "value.from_units",
+            "go": "value.from_units",
+            "wasm": "value.from_units"
+          }
+        },
+        {
           "kind": "list",
           "make": {
             "php": "value.array",
@@ -927,8 +941,8 @@
             },
             {
               "is": "string",
-              "kind": "text",
-              "read": "value.string_value"
+              "kind": "text16",
+              "read": "value.string_units"
             },
             {
               "is": "number",
@@ -962,8 +976,8 @@
             },
             {
               "is": "string",
-              "kind": "text",
-              "read": "value.string_value"
+              "kind": "text16",
+              "read": "value.string_units"
             },
             {
               "is": "number",
@@ -997,8 +1011,8 @@
             },
             {
               "is": "string",
-              "kind": "text",
-              "read": "value.string_value"
+              "kind": "text16",
+              "read": "value.string_units"
             },
             {
               "is": "number",
@@ -1032,8 +1046,8 @@
             },
             {
               "is": "string",
-              "kind": "text",
-              "read": "value.string_value"
+              "kind": "text16",
+              "read": "value.string_units"
             },
             {
               "is": "number",
@@ -1067,8 +1081,8 @@
             },
             {
               "is": "string",
-              "kind": "text",
-              "read": "value.string_value"
+              "kind": "text16",
+              "read": "value.string_units"
             },
             {
               "is": "number",

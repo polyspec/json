@@ -64,7 +64,7 @@ unexport CARGO_TARGET_DIR
 CHECK_TARGETS := suppression-check link-check rules-check rebuild-check language-check duplication-check layout-check owner-validate release-coverage docs-check evidence-check verify-all lint-rust lint-go lint-php lint-php-ext test-php-ext lint-python json-test-scripts typecheck lint-ts test-js fmt-check test-rust test-go test-php test-python
 
 .PHONY: check fmt-check json-test-scripts typecheck json-install-php json-install-python verify-all verify-js verify-rust verify-go verify-php verify-php-extension verify-python evidence-check pie-check \
-	benchmark benchmark-check python-parse-budget install json-install json-install-rust \
+	benchmark benchmark-check benchmark-host python-parse-budget install json-install json-install-rust \
 	json-js-check json-js-test json-go-check json-go-test json-php-check json-php-test \
 	json-php-ext-check json-php-ext-test json-python-check json-python-test json-rust-check json-rust-test
 
@@ -164,6 +164,12 @@ pie-check:
 
 benchmark:
 	$(NODE) benchmarks/run.mts
+
+# benchmark-host measures the conversion of RQ-036, which reads every string in as its UTF-16 code units, against the
+# same walk with Rust strings, on a document of one large string and one of many small strings; a ratio above its limit prints WARNING
+# and the target passes.
+benchmark-host:
+	$(CARGO) run --locked --release --quiet --manifest-path packages/rust/Cargo.toml --example host_cost
 
 # benchmark-check measures the benchmark without replacing the committed result.
 benchmark-check:

@@ -2,6 +2,7 @@
 //! [`stringify`] and [`Value`].
 
 mod error;
+mod host;
 mod map;
 mod number;
 mod parse;
@@ -10,6 +11,7 @@ mod value;
 mod write;
 
 pub use error::Error;
+pub use host::{value_in, value_out, ValueOut};
 pub use map::OrderedMap;
 pub use number::number_text;
 pub use parse::{parse, ParseOptions};

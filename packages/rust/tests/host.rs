@@ -4,7 +4,9 @@
 //! `value_in` from the description that the `in` row of the class `value` gives, as the same value.
 mod common;
 
-use binding_core::{Failure, Handle, HostText, HostValue, HostValues, OutValue, OutValues, Raised, ValueKind};
+use binding_core::{
+    Failure, Handle, HostText, HostValue, HostValues, OutValue, OutValues, Raised, ValueKind,
+};
 use common::json;
 use polyspec_json::{stringify, value_in, value_out, Error, StringifyOptions, Value, MAX_DEPTH};
 
@@ -45,7 +47,14 @@ fn made(out: OutValue, source: &mut dyn OutValues) -> Tree {
         OutValue::Number(token) => Tree::Number(token),
         OutValue::Text(text) => Tree::Text(text.encode_utf16().collect()),
         OutValue::Text16(units) => Tree::Text(units),
-        OutValue::List { handle, len } => Tree::List((0..len).map(|index| { let item = source.item(handle, index); made(item, source) }).collect()),
+        OutValue::List { handle, len } => Tree::List(
+            (0..len)
+                .map(|index| {
+                    let item = source.item(handle, index);
+                    made(item, source)
+                })
+                .collect(),
+        ),
         OutValue::Map(map) => Tree::Map(
             (0..map.len())
                 .map(|index| {
@@ -67,7 +76,10 @@ struct Host {
 
 impl Host {
     fn new() -> Self {
-        Self { held: Vec::new(), containers: Vec::new() }
+        Self {
+            held: Vec::new(),
+            containers: Vec::new(),
+        }
     }
 
     fn describe(&mut self, tree: Tree) -> HostValue {
@@ -80,7 +92,10 @@ impl Host {
             Tree::Map(_) => ValueKind::Map,
         };
         self.held.push(tree);
-        HostValue::Value { kind, handle: Handle::new(count(self.held.len()) - 1) }
+        HostValue::Value {
+            kind,
+            handle: Handle::new(count(self.held.len()) - 1),
+        }
     }
 
     fn container(&mut self, tree: Tree) -> Handle {
@@ -91,19 +106,29 @@ impl Host {
 
 impl HostValues for Host {
     fn item(&mut self, list: Handle, index: u64) -> Result<HostValue, Raised> {
-        let Some(Tree::List(items)) = self.containers.get(position(list.raw())).cloned() else { panic!("no list {list:?}") };
-        let Some(item) = items.get(position(index)).cloned() else { panic!("no item {index}") };
+        let Some(Tree::List(items)) = self.containers.get(position(list.raw())).cloned() else {
+            panic!("no list {list:?}")
+        };
+        let Some(item) = items.get(position(index)).cloned() else {
+            panic!("no item {index}")
+        };
         Ok(self.describe(item))
     }
 
     fn entry(&mut self, map: Handle, index: u64) -> Result<(HostValue, HostValue), Raised> {
-        let Some(Tree::Map(entries)) = self.containers.get(position(map.raw())).cloned() else { panic!("no map {map:?}") };
-        let Some((key, item)) = entries.get(position(index)).cloned() else { panic!("no entry {index}") };
+        let Some(Tree::Map(entries)) = self.containers.get(position(map.raw())).cloned() else {
+            panic!("no map {map:?}")
+        };
+        let Some((key, item)) = entries.get(position(index)).cloned() else {
+            panic!("no entry {index}")
+        };
         Ok((self.describe(key), self.describe(item)))
     }
 
     fn read(&mut self, value: Handle) -> Result<HostValue, Raised> {
-        let Some(tree) = self.held.get(position(value.raw())).cloned() else { panic!("no value {value:?}") };
+        let Some(tree) = self.held.get(position(value.raw())).cloned() else {
+            panic!("no value {value:?}")
+        };
         Ok(match tree {
             Tree::Null => panic!("the case null has no read"),
             Tree::Bool(value) => HostValue::Bool(value),
@@ -113,11 +138,17 @@ impl HostValues for Host {
             Tree::Text(units) => HostValue::Text(HostText::Utf16(units)),
             Tree::List(ref items) => {
                 let len = count(items.len());
-                HostValue::List { handle: self.container(tree), len }
+                HostValue::List {
+                    handle: self.container(tree),
+                    len,
+                }
             }
             Tree::Map(ref entries) => {
                 let len = count(entries.len());
-                HostValue::Map { handle: self.container(tree), len }
+                HostValue::Map {
+                    handle: self.container(tree),
+                    len,
+                }
             }
         })
     }
@@ -144,7 +175,10 @@ const STRINGS: [(&str, &[u16]); 4] = [
     (r#""\ud800""#, &[0xd800]),
     (r#""\udc00""#, &[0xdc00]),
     (r#""😀""#, &[0xd83d, 0xde00]),
-    (r#""a\udc00😀\ud800""#, &[0x61, 0xdc00, 0xd83d, 0xde00, 0xd800]),
+    (
+        r#""a\udc00😀\ud800""#,
+        &[0x61, 0xdc00, 0xd83d, 0xde00, 0xd800],
+    ),
 ];
 
 #[test]
@@ -175,12 +209,16 @@ fn a_string_with_unpaired_surrogates_comes_back_with_its_units() {
 
 #[test]
 fn a_document_comes_back_with_its_keys_tokens_and_order() {
-    let source = r#"{"\ud800":["\udc00",1.50,-0,1e400,true,false,null,{"k":"😀","a\udc00":[]}],"b":{}}"#;
+    let source =
+        r#"{"\ud800":["\udc00",1.50,-0,1e400,true,false,null,{"k":"😀","a\udc00":[]}],"b":{}}"#;
     let value = ok(json(source), source);
     let back = ok(round_trip(&value), source);
     let options = StringifyOptions::default();
     assert_eq!(stringify(&back, &options), stringify(&value, &options));
-    let members: Vec<Vec<u64>> = ok(back.members(), "object").iter().map(|(key, _)| ok(key.string_units(), "key")).collect();
+    let members: Vec<Vec<u64>> = ok(back.members(), "object")
+        .iter()
+        .map(|(key, _)| ok(key.string_units(), "key"))
+        .collect();
     assert_eq!(members, vec![vec![0xd800], vec![0x62]]);
 }
 
@@ -188,11 +226,32 @@ fn a_document_comes_back_with_its_keys_tokens_and_order() {
 fn a_text_of_any_units_of_a_language_enters_by_its_code_units() {
     let mut host = Host::new();
     // Python gives code points, a paired surrogate included as one point; PHP and Go give UTF-8 bytes.
-    let points = ok(value_in(&mut host, HostValue::Text(HostText::CodePoints(vec![0x61, 0x1f600, 0xdc00]))), "points");
-    assert_eq!(ok(points.string_units(), "string"), vec![0x61, 0xd83d, 0xde00, 0xdc00]);
-    let bytes = ok(value_in(&mut host, HostValue::Text(HostText::Bytes("é".as_bytes().to_vec()))), "bytes");
+    let points = ok(
+        value_in(
+            &mut host,
+            HostValue::Text(HostText::CodePoints(vec![0x61, 0x1f600, 0xdc00])),
+        ),
+        "points",
+    );
+    assert_eq!(
+        ok(points.string_units(), "string"),
+        vec![0x61, 0xd83d, 0xde00, 0xdc00]
+    );
+    let bytes = ok(
+        value_in(
+            &mut host,
+            HostValue::Text(HostText::Bytes("é".as_bytes().to_vec())),
+        ),
+        "bytes",
+    );
     assert_eq!(ok(bytes.string_units(), "string"), vec![0xe9]);
-    assert_eq!(kind_of(value_in(&mut host, HostValue::Text(HostText::Bytes(vec![0x61, 0xff])))), "invalid_utf8");
+    assert_eq!(
+        kind_of(value_in(
+            &mut host,
+            HostValue::Text(HostText::Bytes(vec![0x61, 0xff]))
+        )),
+        "invalid_utf8"
+    );
 }
 
 #[test]
@@ -203,7 +262,10 @@ fn a_container_deeper_than_the_limit_is_refused() {
     }
     let mut host = Host::new();
     let described = host.describe(deep);
-    assert_eq!(kind_of(value_in(&mut host, described)), "maximum_depth_exceeded");
+    assert_eq!(
+        kind_of(value_in(&mut host, described)),
+        "maximum_depth_exceeded"
+    );
     let mut limit = Tree::Null;
     for _ in 0..MAX_DEPTH {
         limit = Tree::List(vec![limit]);
@@ -216,5 +278,14 @@ fn a_container_deeper_than_the_limit_is_refused() {
 fn a_description_that_no_in_row_gives_is_internal() {
     let mut host = Host::new();
     assert_eq!(kind_of(value_in(&mut host, HostValue::Int(1))), "internal");
-    assert_eq!(kind_of(value_in(&mut host, HostValue::Value { kind: ValueKind::Bytes, handle: Handle::new(0) })), "internal");
+    assert_eq!(
+        kind_of(value_in(
+            &mut host,
+            HostValue::Value {
+                kind: ValueKind::Bytes,
+                handle: Handle::new(0)
+            }
+        )),
+        "internal"
+    );
 }
