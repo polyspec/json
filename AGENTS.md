@@ -148,6 +148,8 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
 
 - Own: The crate is linted by `make lint-rust` (clippy with `-D warnings`).
   Enforced by: `make lint-rust`
+- Own: Every crate of the workspace, the binding packages included, is in the form of rustfmt, because a review cannot judge that form by reading.
+  Enforced by: `make fmt-check`
 - Own: The crate is checked alone by `make json-rust-check`, which runs `make verify-rust`.
   Enforced by: none, judged at review: no workflow, Git hook or Claude Code hook runs this target.
 - Own: Its crates are the locked versions of the root `Cargo.lock`, which `make install` downloads; no check downloads them.

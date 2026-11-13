@@ -1,5 +1,5 @@
 <!-- doc-id: development -->
-<!-- source-sha256: ae99d312ea209f2cfffbbe73c7cb7e1a587c8354ced3eebc27a8e9cf8c9b2a69 -->
+<!-- source-sha256: 604bc772f431326720c21cf1df8306f2b5dc23f58479bb24c089752513d99408 -->
 # Development procedure
 
 [English](AGENTS.md)
@@ -149,6 +149,8 @@
 
 - Own: crate는 `make lint-rust`(`-D warnings`를 붙인 clippy)가 lint합니다.
   Enforced by: `make lint-rust`
+- Own: binding package를 포함한 workspace의 모든 crate는 rustfmt의 꼴을 따릅니다. 그 꼴은 리뷰가 읽어서 판정할 수 없기 때문입니다.
+  Enforced by: `make fmt-check`
 - Own: crate는 `make json-rust-check`로 이 패키지만 검사하며, 이 target은 `make verify-rust`를 실행합니다.
   Enforced by: none, 검토에서 판단합니다: workflow, Git hook, Claude Code hook 어디도 이 target을 실행하지 않습니다.
 - Own: crate는 root `Cargo.lock`에 고정된 버전이며, `make install`이 내려받고 검사는 내려받지 않습니다.

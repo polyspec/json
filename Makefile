@@ -61,9 +61,9 @@ unexport CARGO_TARGET_DIR
 # The targets of the full suite that make check runs through ci-targets of @polyspec/kit and that the jobs of
 # .github/workflows/ci-pipeline.yml run as the prerequisites of their kit-gates-* target (a target is in one job). verify-all
 # writes the aggregate record into var/records.
-CHECK_TARGETS := suppression-check link-check rules-check rebuild-check language-check duplication-check layout-check owner-validate release-coverage docs-check evidence-check verify-all lint-rust lint-go lint-php lint-php-ext test-php-ext lint-python json-test-scripts typecheck lint-ts test-js test-rust test-go test-php test-python
+CHECK_TARGETS := suppression-check link-check rules-check rebuild-check language-check duplication-check layout-check owner-validate release-coverage docs-check evidence-check verify-all lint-rust lint-go lint-php lint-php-ext test-php-ext lint-python json-test-scripts typecheck lint-ts test-js fmt-check test-rust test-go test-php test-python
 
-.PHONY: check json-test-scripts typecheck json-install-php json-install-python verify-all verify-js verify-rust verify-go verify-php verify-php-extension verify-python evidence-check pie-check \
+.PHONY: check fmt-check json-test-scripts typecheck json-install-php json-install-python verify-all verify-js verify-rust verify-go verify-php verify-php-extension verify-python evidence-check pie-check \
 	benchmark benchmark-check python-parse-budget install json-install json-install-rust \
 	json-js-check json-js-test json-go-check json-go-test json-php-check json-php-test \
 	json-php-ext-check json-php-ext-test json-python-check json-python-test json-rust-check json-rust-test
@@ -352,6 +352,10 @@ BINDING_CRATES := polyspec-json-node polyspec-json-wasm polyspec-json-python pol
 lint-rust:
 	$(NODE) $(KIT)/lint-rust.mjs --locked $(foreach crate,$(BINDING_CRATES),--exclude $(crate))
 
+# fmt-check checks that every crate of the workspace, the binding packages included, is in the form of rustfmt.
+fmt-check:
+	$(CARGO) fmt --all --check
+
 # ---- Development links (the git-ignored .links of the main checkout) -------------------------------------------------------
 .PHONY: link unlink link-check
 link:
@@ -379,7 +383,7 @@ kit-gates-runtime-ts: lint-ts test-js
 kit-gates-runtime-php: lint-php test-php
 kit-gates-runtime-python: lint-python test-python
 kit-gates-runtime-go: lint-go test-go
-kit-gates-runtime-rust: lint-rust test-rust
+kit-gates-runtime-rust: lint-rust fmt-check test-rust
 kit-gates-runtime-php-ext: lint-php-ext test-php-ext
 
 # kit-ci-plan writes the jobs, runners and tools of config/ci.json to GITHUB_OUTPUT; kit-ci-setup runs the setup targets that
