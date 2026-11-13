@@ -1,5 +1,6 @@
 //! Package tests of the conversion of a json value for a binding of another repository (RQ-036, binding GN-6x): a value
-//! leaves by `value_out` as the `OutValue` of binding_core, every string as its UTF-16 code units, and enters by
+//! leaves by `value_out` as the `OutValue` of binding_core, a string as its text and a string with an unpaired surrogate
+//! as its UTF-16 code units, and enters by
 //! `value_in` from the description that the `in` row of the class `value` gives, as the same value.
 mod common;
 
@@ -42,6 +43,7 @@ fn made(out: OutValue, source: &mut dyn OutValues) -> Tree {
         OutValue::Null => Tree::Null,
         OutValue::Bool(value) => Tree::Bool(value),
         OutValue::Number(token) => Tree::Number(token),
+        OutValue::Text(text) => Tree::Text(text.encode_utf16().collect()),
         OutValue::Text16(units) => Tree::Text(units),
         OutValue::List { handle, len } => Tree::List((0..len).map(|index| { let item = source.item(handle, index); made(item, source) }).collect()),
         OutValue::Map(map) => Tree::Map(
@@ -146,12 +148,18 @@ const STRINGS: [(&str, &[u16]); 4] = [
 ];
 
 #[test]
-fn a_string_leaves_as_its_code_units() {
+fn a_string_with_an_unpaired_surrogate_leaves_as_its_code_units_and_another_as_its_text() {
     for (source, units) in STRINGS {
         let value = ok(json(source), source);
         let (root, _source) = value_out(&value);
-        assert_eq!(root, OutValue::Text16(units.to_vec()), "{source}");
+        let expected = match String::from_utf16(units) {
+            Ok(text) => OutValue::Text(text),
+            Err(_) => OutValue::Text16(units.to_vec()),
+        };
+        assert_eq!(root, expected, "{source}");
     }
+    let (root, _source) = value_out(&ok(json(r#""\ud83d\ude00""#), "pair"));
+    assert_eq!(root, OutValue::Text(String::from("\u{1f600}")));
 }
 
 #[test]
