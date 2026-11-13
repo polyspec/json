@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 6ef0764bec2db93a1db21f7a1959bddfe471c0b729246b2ffbc7a838e9bcf53d -->
+<!-- source-sha256: 9eeac8fa06c1e83b139019360573634dd05c5764397d52cf1a6952be6fe045b7 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- 코어의 manifest가 license를 적는다(`license = "MIT"`, 이 저장소의 npm 패키지가 적는 license와 같다). 바인딩 패키지는 코어의 license를 가지며, binding의 계약 검사는 license가 없는 코어를 거부한다(CK-71).
 
 - `value.object`의 매개변수 `members`는 코어가 그것을 빌리는 방식 `core: "&"`를 명시한다(T3.13, binding CK-67, GN-6h). `polyspec_json::Value::object`는 `&OrderedMap`을 받는데 계약이 이를 명시하지 않아, 계약 검사가 `value.object.members`에 CK-67을 보고했다. 검사는 이 계약에 CK-67을 보고하지 않는다.
 - `make benchmark-host`는 측정의 기록을 쓴다(T3.12). 이전에는 RQ-036의 변환이 text 경로에 대해 가지는 비율을 출력만 하고 아무것도 남기지 않았다. `packages/rust/examples/host_cost.rs`는 측정마다 JSON 한 줄을 출력하고, `benchmarks/host-cost.mts`는 그것을 실행해 각 줄을 그 순간 기계의 load average와 함께 읽고 Git이 무시하는 `var/report/bench/host-cost-rust.json`을 rename 한 번으로 쓴다. 기록은 측정마다 항목 하나를 가진 list이고, 항목은 `language`, `document`, `direction`, `runs`(21), `host_ms`와 `text_ms`(중앙값), `ratio`, `load_average`를 가진다. 한도 1.5를 넘는 비율은 값과 한도를 담은 `WARNING` 줄을 출력하고 target은 통과한다. script는 사용법 오류, 실패한 명령, 측정이 아닌 줄, 측정이 없는 실행에서만 실패한다(`benchmarks/README.md#host-cost`).

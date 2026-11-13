@@ -1,6 +1,7 @@
 [package]
 name = "polyspec-json"
 version = "0.0.25"
+license = "MIT"
 edition = "2021"
 rust-version = "1.99.0"
 description = "Strict JSON with insertion-ordered associative objects and exact number literals"
