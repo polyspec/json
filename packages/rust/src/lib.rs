@@ -16,6 +16,15 @@ pub use parse::{parse, ParseOptions};
 pub use value::{Kind, Value};
 pub use write::{stringify, StringifyOptions};
 
+/// The fault injection points of the crate (binding design G-5, X-1; RQ-033), which the interface contract names in
+/// `faults`. A point does nothing unless the feature `fault-test` is on.
+pub mod fault {
+    /// The position of a member of an ordered map, treated as outside its entries: the kind `internal`, which no input
+    /// reaches.
+    #[doc(hidden)]
+    pub const INTERNAL: &str = "json.internal";
+}
+
 // Byte positions and lengths become u64 offsets with `as`, which is exact while usize has at most 64 bits.
 const _: () = assert!(usize::BITS <= u64::BITS);
 

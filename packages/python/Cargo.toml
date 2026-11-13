@@ -13,6 +13,7 @@ crate-type = ["cdylib"]
 
 [features]
 panic-test = []
+fault-test = ["polyspec-json/fault-test"]
 
 [dependencies]
 polyspec-json = { path = "../rust" }

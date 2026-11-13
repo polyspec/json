@@ -125,6 +125,12 @@ impl OrderedMap {
     }
 
     fn value_at(&self, position: Option<usize>) -> Result<Option<&Value>, Error> {
+        // RQ-033: the fault injection point imitates a position outside the entries.
+        if binding_core::fault::point(crate::fault::INTERNAL).is_some() {
+            return Err(Error::Internal {
+                what: "a position outside the entries",
+            });
+        }
         match position {
             None => Ok(None),
             Some(position) => match self.entries.get(position) {

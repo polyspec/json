@@ -17,13 +17,21 @@ ryu-js = "=1.0.3"
 # binding repository; Cargo.lock pins its commit, the same source as the generated binding crates.
 polyspec-binding-core = { git = "https://github.com/polyspec/binding.git", branch = "v1/rust-core" }
 serde = { version = "=1.0.229", features = ["derive"] }
-serde_json = { version = "=1.0.151", features = ["raw_value", "unbounded_depth"] }
+# 1.0.154 is the exact pin of polyspec-binding-core with its feature fault-test, which the tests and the binding crates turn on.
+serde_json = { version = "=1.0.154", features = ["raw_value", "unbounded_depth"] }
 
 [lib]
 name = "polyspec_json"
 path = "src/lib.rs"
 
+[features]
+# G-5, X-1: compiles the arming of the fault injection points of `fault`; a generated binding crate turns it on for its
+# tests only, and a release build never does (binding design 3.6).
+fault-test = ["polyspec-binding-core/fault-test"]
+
 [dev-dependencies]
+# tests/contract.rs arms the fault injection points of the cases that name them, as a generated binding test does.
+polyspec-binding-core = { git = "https://github.com/polyspec/binding.git", branch = "v1/rust-core", features = ["fault-test"] }
 base64 = "=0.22.1"
 libtest-mimic = "=0.8.2"
 sha2 = "0.10"

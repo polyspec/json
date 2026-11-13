@@ -220,6 +220,20 @@
     "binding": [],
     "wrapped": []
   },
+  "faults": [
+    {
+      "id": "internal",
+      "core": "polyspec_json::fault::INTERNAL",
+      "inject": [
+        "broken"
+      ],
+      "fills": [
+        "internal"
+      ],
+      "reason": "RQ-033",
+      "place": "polyspec_json::OrderedMap::get"
+    }
+  ],
   "units": [
     {
       "id": "functions",

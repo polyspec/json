@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 311839a402913c2a2fcc589e8ad60c87f23907f060d41be473bb67d41f6cc5a8 -->
+<!-- source-sha256: b2382390f2467394d52e021d808a3a119d1851741d07d98a10d37fa486bbe62c -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -21,6 +21,8 @@
 - T3.1: `make lint-go`가 `make bindings` 뒤에 실행됩니다. kit의 lint는 checkout의 모든 `go.mod`를 대상으로 하고 바인딩 모듈 `packages/go`의 Go 파일은 `make bindings`가 쓰므로, 그 파일이 없으면 golangci-lint와 deadcode가 읽을 Go 파일이 없어 실패했습니다. `make bindings`가 실패하는 동안 `make lint-go`는 그 메시지로 실패합니다.
 - T3.1: 한국어 문서가 영어 문서와 같은 내용을 말합니다. `docs/operations/api.ko.md`는 배열과 스칼라 표의 열한 행에 Python 열을 적고 PHP backend 절의 이름을 적으며, `docs/spec/json-contract.ko.md`는 RQ-031에서 문자 자체를 적던 자리에 이스케이프 `\u003c`, `\u003e`, `\u0026`, `\u2028`, `\u2029`를 적고, `docs/operations/validation.ko.md`는 merge group을 적던 자리에 `main`으로의 모든 push를 적습니다. `contracts/README.ko.md`는 `source-sha256` marker를 가지며, 다른 hash를 가졌던 한국어 문서 열 개의 marker는 각각 그 영어 문서의 hash입니다.
 - L-2: `Cargo.lock`은 값 alias, 실패 주입, 오류 unit의 생성기를 한 개발 줄기에 가진 binding을 고정하고(CK-20), 바인딩 package는 그 scaffold가 쓰는 것입니다. Python, Node, PHP의 바인딩 crate는 `polyspec-binding-core`를 feature `construct`와 `lock`과 함께 받고, Go와 WASM의 crate는 그대로이며, lock에는 `polyspec-binding-core`의 의존으로 `tokio`가 더해집니다. `make bindings-check`는 여전히 실패하며, 12건이던 CK-22 지적이 2건이 되었고, 그 때문에 `make bindings`는 아무것도 쓰지 않습니다. `value.get_units`에서 kind `invalid_code_unit`을 내는 case가 없고, 1건은 실패 주입점 `json.internal`을 `broken`으로 장전하는 case를 요구합니다. 계약은 실패 주입점을 선언하지 않고 crate에도 없습니다.
+- L-2: `Cargo.lock`은 binding 8faad21을 고정하고(CK-20), 바인딩 package는 그 scaffold가 쓰는 것입니다. macOS에서 PHP의 symbol을 정의하지 않은 채 두는 `packages/php-ext/build.rs`(binding BD-9)가 더해지고, PHP crate의 library는 시험 대상이 아닙니다.
+- CK-22, X-1: `make bindings-check`가 통과합니다. `value.get_units`의 case `get_units_above_largest`는 `Value.object`의 빈 object(`members`)에서 `invalid_code_unit`을 내고, `ordered_map.get`의 case `a_broken_position_is_internal`은 새 실패 주입점 `json.internal`을 `broken`으로 장전해 `internal`을 냅니다(RQ-033). crate는 feature `fault-test`와 module `fault`를 가지고, 계약은 그 지점을 `faults`에 적으며, `tests/contract.rs`는 생성된 시험처럼 case의 fault를 장전합니다. Python, Node, PHP의 바인딩 crate는 binding scaffold가 쓰는 대로 `fault-test`를 켭니다. `serde_json`은 `fault-test`를 켠 `polyspec-binding-core`의 정확한 고정인 1.0.154를 받습니다.
 
 ## 0.0.25
 

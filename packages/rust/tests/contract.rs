@@ -264,6 +264,8 @@ fn run(group: &str, case: &Json) -> Result<(), Failed> {
                 Value::string(given.as_str().ok_or("text is no text")?)
             } else if case.get("json").is_some() {
                 receiver(case)?
+            } else if let Some(members) = case.get("members") {
+                Value::object(&ordered_map(members)?).map_err(failed)?
             } else {
                 Value::number(text(case, "literal")?).map_err(failed)?
             };
@@ -338,6 +340,25 @@ fn run(group: &str, case: &Json) -> Result<(), Failed> {
     }
 }
 
+/// A case that arms fault injection points (RQ-033): it arms them for the member of its group as a generated binding
+/// test does (G-5), runs the case under the arming, and fails a fault that did not fire.
+fn faulted(group: &str, case: &Json, faults: &Json) -> Result<(), Failed> {
+    let id = binding_core::fault::arm(group, &faults.to_string()).map_err(failed)?;
+    let outcome = binding_core::fault::take(group).run(|| run(group, case));
+    let left = binding_core::fault::left(id).map_err(failed)?;
+    if !left.is_empty() {
+        return Err(failed(format!("the faults of {} did not fire", left.join(", "))));
+    }
+    outcome
+}
+
+fn trial(group: &str, case: &Json) -> Result<(), Failed> {
+    match case.get("faults") {
+        Some(faults) => faulted(group, case, faults),
+        None => run(group, case),
+    }
+}
+
 fn main() -> Result<(), Failed> {
     // A case of RQ-033 nests a value 257 levels deep, past the default recursion limit of serde_json.
     let document = std::fs::read_to_string(CONTRACT).map_err(failed)?;
@@ -354,7 +375,7 @@ fn main() -> Result<(), Failed> {
             let id = text(case, "id")?.to_owned();
             let (group, case) = (group.clone(), case.clone());
             trials.push(Trial::test(format!("{group}::{id}"), move || {
-                run(&group, &case)
+                trial(&group, &case)
             }));
         }
     }

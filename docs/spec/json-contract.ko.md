@@ -1,5 +1,5 @@
 <!-- doc-id: json-contract -->
-<!-- source-sha256: 12b07abbcc54c7f3ed06d46ed5aaf1eb46b422ad113e98fd5625d2b1cad42ca1 -->
+<!-- source-sha256: 934d0931eb5d6b590437ca77c330920f962d2368abb471aa032beac6bc1f90c2 -->
 # JSON 계약
 
 [English](json-contract.md)
@@ -145,7 +145,7 @@ JavaScript의 `compact` 옵션과 PHP의 `compact` 인자는 호환성을 위해
 - **RQ-030** binary64 실수의 숫자 생성자는 ECMAScript `Number::toString`(ECMA-262, 기수 10)이 쓰는 토큰을 씁니다: 같은 실수로 읽히는 가장 짧은 숫자열, `-0`은 `0`, 지수 -7부터 20까지는 자리 표기, 그 밖은 `e+`/`e-` 표기. NaN, 양의 무한대, 음의 무한대는 `non_finite_number`로 거부합니다. `number_text`는 같은 텍스트를 돌려주며, 다른 polyspec 라이브러리가 쓰는 유일한 실수→텍스트 함수입니다.
 - **RQ-031** 직렬화 옵션 `html_safe`(기본값 false)는 키를 포함한 모든 문자열 토큰의 `<`, `>`, `&`, U+2028, U+2029를 `\u003c`, `\u003e`, `\u0026`, `\u2028`, `\u2029`로 써서 텍스트가 HTML `script` 요소 안에 있을 수 있게 합니다. 출력의 다른 부분은 바뀌지 않습니다. 이 문자들은 JSON 텍스트에서 문자열 안에만 있으므로 옵션은 문자열 토큰만 바꿉니다.
 - **RQ-032** 종류별 접근자(`members`, `items`, `string_units`, `string_value`, `number_literal`, `boolean_value`)와 member 조회(`get`, `get_units`)는 다른 종류의 값에서 `wrong_kind`로 실패합니다. 객체의 조회는 객체에 없는 이름에서만 부재를 돌려줍니다.
-- **RQ-033** 코어의 모든 실패는 공통 목록의 종류를 가진 오류입니다. 파싱 거부는 바이트 위치를 가지며, 생성자의 `maximum_depth_exceeded`와 인자 오류는 위치를 갖지 않습니다. 그 실패를 일으킨 입력 위치가 없기 때문입니다. 코어의 불변식 위반은 `internal`입니다.
+- **RQ-033** 코어의 모든 실패는 공통 목록의 종류를 가진 오류입니다. 파싱 거부는 바이트 위치를 가지며, 생성자의 `maximum_depth_exceeded`와 인자 오류는 위치를 갖지 않습니다. 그 실패를 일으킨 입력 위치가 없기 때문입니다. 코어의 불변식 위반은 `internal`입니다. 어떤 입력도 그 종류에 이르지 않으므로 코어는 fault injection 지점 `json.internal`(binding G-5, X-1)을 가지며, 기능 `fault-test`만 그것을 컴파일합니다. `broken`으로 장전하면 그 지점은 순서 있는 map의 member 위치를 entry 밖으로 취급하고, 조회는 `internal`로 실패합니다. `ordered_map.get`의 case `a_broken_position_is_internal`이 그것을 장전합니다.
 - **RQ-034** 바인딩의 표준 JSON 직렬화 hook(JavaScript `toJSON`, PHP `jsonSerialize`, Go `MarshalJSON`)은 `host_serialization_refused`로 실패합니다([RQ-020](#requirements)). Python에는 그런 hook이 없습니다. 라이브러리 직렬화기는 함수 `stringify` 하나이며, 각 언어의 문자열 hook(`toString`, `__toString`, `__str__`)은 기본 옵션으로 같은 텍스트를 씁니다.
 - **RQ-035** 파싱 옵션은 0부터 256까지의 정수인 `max_depth`([RQ-006](#requirements))와 기본값 false인 `reject_duplicates`([RQ-017](#requirements))이고, 직렬화 옵션은 `html_safe`([RQ-031](#requirements))입니다.
 

@@ -1,5 +1,5 @@
 {
- "comment": "The cases of the Rust core and of the bindings generated from it (docs/spec/json-contract.md#core, RQ-026 to RQ-035), one group per member of packages/rust/interface.json in the case convention of binding G-5: the keys are the parameter names of the member, and a method takes its receiver from the keys of a factory of the value (text, units, literal or value; no key is null). bytes are {\"hex\": ...}, a float that JSON cannot write is {\"float\": ...}, and a json_value is {\"kind\", \"value\"}. A failure is raises: its kind, its category (F-3) and, where the rule fixes them, properties. A result of a case that does not raise is result, raw (the token of the made value), number_literal, size, text or ok. bits is the big-endian hex of the binary64 float of value. A group whose name ends in .parsed takes its value from the JSON text json, which the default parse reads: it is a rule corpus of the Rust test of the core (a parsed token, an object that no factory of a scalar makes), not linked in the cases of the interface contract.",
+ "comment": "The cases of the Rust core and of the bindings generated from it (docs/spec/json-contract.md#core, RQ-026 to RQ-035), one group per member of packages/rust/interface.json in the case convention of binding G-5: the keys are the parameter names of the member, and a method takes its receiver from the keys of a factory of the value (text, units, literal, value or members; no key is null). bytes are {\"hex\": ...}, a float that JSON cannot write is {\"float\": ...}, and a json_value is {\"kind\", \"value\"}. A failure is raises: its kind, its category (F-3) and, where the rule fixes them, properties. A result of a case that does not raise is result, raw (the token of the made value), number_literal, size, text or ok. bits is the big-endian hex of the binary64 float of value. faults names the fault injection points that a case arms before its call (G-5, X-1). A group whose name ends in .parsed takes its value from the JSON text json, which the default parse reads: it is a rule corpus of the Rust test of the core (a parsed token, an object that no factory of a scalar makes), not linked in the cases of the interface contract.",
  "parse": [
   {
    "id": "nest_256",
@@ -830,6 +830,20 @@
     "kind": "wrong_kind",
     "status": null,
     "category": "type",
+    "message": null
+   }
+  },
+  {
+   "id": "get_units_above_largest",
+   "rule": "RQ-029",
+   "members": [],
+   "units": [
+    70000
+   ],
+   "raises": {
+    "kind": "invalid_code_unit",
+    "status": null,
+    "category": "value",
     "message": null
    }
   }
@@ -5730,6 +5744,23 @@
    "rule": "RQ-016",
    "key": "a",
    "result": null
+  },
+  {
+   "id": "a_broken_position_is_internal",
+   "rule": "RQ-033",
+   "key": "a",
+   "faults": [
+    {
+     "point": "json.internal",
+     "kind": "broken"
+    }
+   ],
+   "raises": {
+    "kind": "internal",
+    "status": null,
+    "category": "internal",
+    "message": null
+   }
   }
  ],
  "ordered_map.get_units": [
