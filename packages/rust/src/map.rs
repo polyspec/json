@@ -127,7 +127,7 @@ impl OrderedMap {
     fn value_at(&self, position: Option<usize>) -> Result<Option<&Value>, Error> {
         // RQ-033: the fault injection point gives a position outside the entries, which position never finds, so the
         // armed lookup takes the branch of that defect below.
-        let position = match binding_core::fault::point(crate::fault::INTERNAL) {
+        let position = match binding_core::fault::point!(crate::fault::INTERNAL) {
             Some(_) => Some(self.entries.len()),
             None => position,
         };
