@@ -30,8 +30,10 @@ path = "src/lib.rs"
 fault-test = ["polyspec-binding-core/fault-test"]
 
 [dev-dependencies]
-# tests/contract.rs arms the fault injection points of the cases that name them, as a generated binding test does.
-polyspec-binding-core = { git = "https://github.com/polyspec/binding.git", branch = "v1/rust-core", features = ["fault-test"] }
+# tests/contract.rs arms the fault injection points of the cases that name them, as a generated binding test does. The
+# core is its own dev-dependency with fault-test, so every test build of the core, a plain cargo test included, has the
+# points (binding GN-5).
+polyspec-json = { path = ".", features = ["fault-test"] }
 base64 = "=0.22.1"
 libtest-mimic = "=0.8.2"
 sha2 = "0.10"

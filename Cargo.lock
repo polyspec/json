@@ -1194,6 +1194,7 @@ dependencies = [
  "base64 0.22.1",
  "libtest-mimic",
  "polyspec-binding-core",
+ "polyspec-json",
  "ryu-js",
  "serde",
  "serde_json",

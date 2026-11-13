@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: a8bed93a34367806c827ead1634ff3c364a2aa3a1084d50e081a904c72073705 -->
+<!-- source-sha256: 21eb90db20c760a32898554522f115a686d1f9ba7a6dfb36acd68e8564f1f2dd -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -28,6 +28,7 @@
 - T3.3: `make verify-all`은 `make pie-check`를 prerequisite로 가집니다. `make check`는 `pie-check`보다 `verify-all`을 먼저 실행했으므로, `verify-all`의 근거 검사는 모든 commit이 낡게 만드는 이전 tree의 PIE 기록을 읽고 `the PIE record is stale: the checked sources differ`로 실패했습니다. `pie-check`는 `CHECK_TARGETS`와 `kit-gates-runtime-php-ext`에서 빠져 `verify-all` 안에서만 실행되고, `make json-install-verify`는 verify job을 위해 PIE PHAR를 설치합니다. `tests/scripts/workflow-rules.test.mts`가 둘을 요구합니다.
 - T3.4: 바인딩 package `packages/python`, `packages/ts`, `packages/ts/wasm`, `packages/php-ext`, `packages/go/internal/ffi`는 binding 1bf0025의 `binding scaffold`가 쓰는 그대로입니다. 각 manifest는 `make layout-check`의 규칙 `lint-cargo-lints`가 요구하는 대로 `lints.workspace = true`로 workspace의 lint를 받고, WASM crate는 `polyspec-binding-core`의 feature `lock`과 코어의 `fault-test`를 켜며, 각 `src/lib.rs`의 attribute는 인자마다 한 줄로 적힙니다. `make layout-check`는 자기 lint를 적은 8faad21 scaffold의 manifest에서 실패했습니다. `Cargo.lock`은 `polyspec-binding-core`를 GitHub에 있는 binding commit인 8faad21에 두므로, binding의 더 뒤 commit이 GitHub에 올라갈 때까지 1bf0025의 binding check는 CK-20을 보고합니다.
 - T3.5: `Cargo.lock`은 `polyspec-binding-core`를 binding 49a4e97에 고정하고(CK-20), 그 scaffold는 같은 바인딩 package를 씁니다(CK-19). `OrderedMap.get`의 실패 주입점 `json.internal`(`packages/rust/src/map.rs`)은 macro `binding_core::fault::point!`입니다. Cargo는 한 build 안에서 binding_core의 feature를 합치므로, binding 642e70f는 지점을 쓰는 crate의 feature `fault-test`로 지점을 판단합니다(GN-5). 코어는 `fault-test = ["polyspec-binding-core/fault-test"]`를 선언하고 `make test-rust`는 그 feature로 코어를 빌드하므로, `tests/contract.rs`의 case `a_broken_position_is_internal`이 지점을 장전합니다.
+- T3.6: flag 없는 `cargo test -p polyspec-json`이 코어의 실패 주입점을 장전합니다. `packages/rust/Cargo.toml`은 코어 자신을 feature `fault-test`와 함께 dev-dependency로 적으므로 코어의 모든 시험 build가 그 feature를 가지고, `make test-rust`는 `--features`를 넘기지 않습니다. binding 642e70f는 지점을 쓰는 crate의 feature `fault-test`로 지점을 판단하므로, binding의 end-to-end 검사처럼 flag 없이 빌드한 시험에서 `tests/contract.rs`의 case `a_broken_position_is_internal`이 `the faults of json.internal did not fire`로 실패했습니다.
 
 ## 0.0.25
 

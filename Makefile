@@ -263,7 +263,7 @@ test-php:
 test-python:
 	PYTHONUNBUFFERED=1 NO_COLOR=1 PYTHON_COLORS=0 $(NODE) $(KIT)/runtime-targets.mjs test --runner python --roots legacy/packages/python --venv .venv
 test-rust:
-	$(NODE) $(KIT)/runtime-targets.mjs test --runner cargo --roots packages/rust -- -p polyspec-json --features fault-test -- --test-threads=1
+	$(NODE) $(KIT)/runtime-targets.mjs test --runner cargo --roots packages/rust -- -p polyspec-json -- --test-threads=1
 
 # ---- Bindings: generated from packages/rust/interface.json by binding (C-0) ---------------------------------------------
 # binding is not yet a package that package-lock.json pins; until it is, BINDING names the cli (packages/ts/src/cli.ts) of
