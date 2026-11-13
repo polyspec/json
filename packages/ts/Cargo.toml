@@ -20,7 +20,7 @@ napi-build = "=2.6.0"
 
 [dependencies]
 polyspec-json = { path = "../rust" }
-polyspec-binding-core = { git = "https://github.com/polyspec/binding.git", branch = "v1/rust-core", features = ["construct"] }
+polyspec-binding-core = { git = "https://github.com/polyspec/binding.git", branch = "v1/rust-core", features = ["construct", "lock"] }
 napi = { version = "=3.16.2", default-features = false, features = ["napi8"] }
 napi-derive = "=3.7.1"
 

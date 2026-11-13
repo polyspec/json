@@ -16,7 +16,7 @@ panic-test = []
 
 [dependencies]
 polyspec-json = { path = "../rust" }
-polyspec-binding-core = { git = "https://github.com/polyspec/binding.git", branch = "v1/rust-core", features = ["construct"] }
+polyspec-binding-core = { git = "https://github.com/polyspec/binding.git", branch = "v1/rust-core", features = ["construct", "lock"] }
 ext-php-rs = "=0.16.4"
 
 [lints.rust]
