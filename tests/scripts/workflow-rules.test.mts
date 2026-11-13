@@ -46,3 +46,12 @@ test('every target of the full suite runs in exactly one job of the pipeline', (
   assert.deepEqual(run.filter((target, index) => run.indexOf(target) !== index), [], 'no target runs in two jobs');
   assert.deepEqual([...run].sort(), [...suite].sort());
 });
+
+// verify-all reads the PIE record of make pie-check, which holds the sources of the tree that it checked; a record of an earlier
+// tree is stale. So verify-all names pie-check as its prerequisite and reads only the record of its own tree, and pie-check is
+// no target of its own in the full suite.
+test('verify-all writes the PIE record that it reads before it reads it', () => {
+  const text = database();
+  assert.ok(prerequisites(text, 'verify-all').includes('pie-check'), 'verify-all names pie-check as its prerequisite');
+  assert.ok(!variable(text, 'CHECK_TARGETS').includes('pie-check'), 'pie-check runs inside verify-all, not as a target of its own');
+});
