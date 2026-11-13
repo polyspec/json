@@ -16,6 +16,7 @@
 - K-1, G-5: `contracts/core.json`은 인터페이스 계약의 member마다 group 하나를 가지며 모든 공개 member가 자기 group을 가리키고, case는 binding의 case 규약을 따른다: 키는 parameter 이름이고 method는 값의 factory 키에서 receiver를 받으며, bytes는 `{"hex"}`, JSON이 쓸 수 없는 float는 `{"float"}`, `json_value`는 `{"kind", "value"}`다. 새 case는 `parse`와 `Value.number`가 입력으로 닿는 모든 kind, `string_units`의 `wrong_kind`, `OrderedMap.get_units`의 `invalid_code_unit`을 내며, case가 없던 member(`kind`, `raw`, `boolean`, `null`, `toString`, `OrderedMap`의 member)도 case를 가진다. kind `internal`은 binding이 실패 주입 지점을 줄 때까지 case가 없다.
 - K-1: `contracts/core.json`에서 JSON 텍스트로 값을 받는 case는 `<member>.parsed` group이다. 코어의 Rust 시험만 읽고 인터페이스 계약이 연결하지 않는 규칙 corpus다(`contracts/README.md`). `stringify`는 G-5 형식 값의 case를 가진다. `Value.getUnits`의 `invalid_code_unit`은 연결된 case가 없다: 스칼라의 factory로는 만들 수 없는 객체가 필요하다.
 - L-2: `Cargo.lock`은 같은 라이브러리 묶음의 모든 레포가 고정하는 binding 9de9d03을 고정한다(CK-20). 그 scaffold는 같은 바인딩 package를 쓴다.
+- T3.1: legacy PHP 패키지의 `OfficialTest`가 `tests/`에서 네 단계 위인 저장소 root의 `examples/official.json`을 읽습니다. `legacy/packages/php`로 옮긴 뒤에는 없는 파일 `legacy/examples/official.json`을 읽어 공식 사례 17개가 실행되지 않았고 PHPUnit이 data provider 오류를 보고했습니다.
 
 ## 0.0.25
 

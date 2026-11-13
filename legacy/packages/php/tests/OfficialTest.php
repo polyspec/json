@@ -25,7 +25,7 @@ final class OfficialTest extends TestCase
     /** @return array<string, array{string, string, array<mixed>}> */
     public static function cases(): array
     {
-        $official = Value::parse((string)file_get_contents(dirname(__DIR__, 3) . '/examples/official.json'));
+        $official = Value::parse((string)file_get_contents(dirname(__DIR__, 4) . '/examples/official.json'));
         $cases = [];
         foreach ($official->get('cases')->items() as $example) {
             $cases[$example->get('id')->stringValue()] = [
