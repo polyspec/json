@@ -166,10 +166,11 @@ benchmark:
 	$(NODE) benchmarks/run.mts
 
 # benchmark-host measures the conversion of RQ-036, which reads every string in as its UTF-16 code units, against the
-# same walk with Rust strings, on a document of one large string and one of many small strings; a ratio above its limit prints WARNING
-# and the target passes.
+# same walk with Rust strings, on a document of one large string and one of many small strings, and writes each median with
+# its run count and the load average of the machine into var/report/bench/host-cost-rust.json (benchmarks/host-cost.mts); a
+# ratio above its limit prints WARNING and the target passes.
 benchmark-host:
-	$(CARGO) run --locked --release --quiet --manifest-path packages/rust/Cargo.toml --example host_cost
+	$(NODE) benchmarks/host-cost.mts --report var/report/bench/host-cost-rust.json -- $(CARGO) run --locked --release --quiet --manifest-path packages/rust/Cargo.toml --example host_cost
 
 # benchmark-check measures the benchmark without replacing the committed result.
 benchmark-check:

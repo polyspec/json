@@ -2,8 +2,8 @@
 //! first that it holds no unpaired surrogate, and value_in, which takes a string as the text that `value.string_text`
 //! gives, as UTF-8 bytes (PHP, Go, Node, WASM) or as UTF-16 units (a built-in string of Node), against the same walk
 //! that gives and takes a string as a Rust `String`, on a document of one large string and a document of many small
-//! strings. A measurement is reported and never fails: a ratio above the limit prints a `WARNING` line with the value
-//! and the limit (make benchmark-host).
+//! strings. Each measurement is the median of a fixed number of runs and is printed as one JSON line, which
+//! benchmarks/host-cost.mts reads, judges against its limit and records (make benchmark-host).
 #![allow(
     clippy::unwrap_used,
     clippy::expect_used,
@@ -14,8 +14,6 @@ use binding_core::{Handle, HostText, HostValue, HostValues, OutValue, OutValues,
 use polyspec_json::{parse, value_in, value_out, Error, ParseOptions, Value};
 use std::{hint::black_box, time::Instant};
 
-/// The ratio of the code-unit path to the text path above which the measurement prints a warning.
-const LIMIT: f64 = 1.5;
 const SAMPLES: usize = 21;
 
 /// A string as the generated binding holds it after the out rows made it.
@@ -129,12 +127,12 @@ fn measure(mut run: impl FnMut()) -> f64 {
     )
 }
 
-fn report(document: &str, direction: &str, units: f64, text: f64) {
-    let ratio = units / text;
-    println!("{document}\t{direction}\tvalue_in/value_out {units:.3} ms\ttext {text:.3} ms\tratio {ratio:.2}");
-    if ratio > LIMIT {
-        println!("WARNING: {document} {direction}: value_in/value_out takes {ratio:.2} times the time of text, above the limit {LIMIT:.2}");
-    }
+/// One measurement as a JSON line: the names of the documents and the directions hold only characters that JSON writes
+/// as they are.
+fn report(document: &str, direction: &str, host: f64, text: f64) {
+    println!(
+        "{{\"document\":\"{document}\",\"direction\":\"{direction}\",\"runs\":{SAMPLES},\"host_ms\":{host},\"text_ms\":{text}}}"
+    );
 }
 
 fn main() -> Result<(), Error> {

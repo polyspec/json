@@ -2,6 +2,10 @@
   "schema": 1,
   "comment": "The class of each tool of json that make rebuild-check checks (S1). The copies of kit under scripts/kit are not listed: kit classifies them.",
   "tools": {
+    "benchmarks/host-cost.mts": {
+      "kind": "policy",
+      "reason": "the record of the measurement of the conversion of RQ-036 (make benchmark-host): it runs the harness packages/rust/examples/host_cost.rs, reads each median with the load average of the machine and warns above the limit without failing, a performance rule of this repository; no ecosystem benchmark tool records the load average with a ratio of two paths"
+    },
     "benchmarks/js.mjs": {
       "kind": "policy",
       "reason": "the JavaScript harness of the benchmark protocol of benchmarks/run.mts, which times with node:perf_hooks and prints the row that the protocol compares across implementations; the protocol has no ecosystem equivalent"

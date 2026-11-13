@@ -32,9 +32,11 @@ test('the record holds each median, the fixed run count, the ratio and the load 
   assert.equal(run.status, 0, run.stderr);
   const record: unknown = JSON.parse(readFileSync(run.report, 'utf8'));
   assert.ok(Array.isArray(record));
-  assert.equal(record.length, 2);
-  for (const [index, entry] of record.entries()) {
-    const { load_average: load, ...rest } = entry as Record<string, unknown>;
+  const entries: unknown[] = record;
+  assert.equal(entries.length, 2);
+  for (const [index, entry] of entries.entries()) {
+    assert.ok(entry !== null && typeof entry === 'object');
+    const { load_average: load, ...rest }: Record<string, unknown> = { ...entry };
     const line = LINES[index];
     assert.ok(line !== undefined);
     assert.deepEqual(rest, { language: 'rust', ...line, ratio: line.host_ms / line.text_ms });

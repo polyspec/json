@@ -88,6 +88,15 @@
     },
     {
       "paths": [
+        "benchmarks/host-cost.mts"
+      ],
+      "targets": [
+        "json-test-scripts",
+        "typecheck"
+      ]
+    },
+    {
+      "paths": [
         "benchmarks/*.{mjs,php,json}",
         "benchmarks/fixtures/*.json",
         "packages/rust/examples/benchmark.rs",
