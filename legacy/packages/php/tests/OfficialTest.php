@@ -29,7 +29,7 @@ final class OfficialTest extends TestCase
         $cases = [];
         foreach ($official->get('cases')->items() as $example) {
             $cases[$example->get('id')->stringValue()] = [
-                $example->get('input')->stringValue(),
+                $example->get('source')->stringValue(),
                 $example->get('compact')->stringValue(),
                 self::expectedTree($example->get('tree')),
             ];

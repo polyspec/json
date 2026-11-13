@@ -22,8 +22,8 @@ OFFICIAL = json.loads(
 
 class Official(unittest.TestCase):
     def check(self, example):
-        value = parse(example["input"])
-        self.assertEqual(value.raw, example["input"])
+        value = parse(example["source"])
+        self.assertEqual(value.raw, example["source"])
         self.assertEqual(stringify(value), example["compact"])
         self.assertEqual(tree(value), example["tree"])
         self.assertEqual(tree(parse(stringify(value))), example["tree"])

@@ -145,7 +145,7 @@ fn main() {
         .unwrap()
         .iter()
         .map(|example| {
-            let input = text(example.get("input").unwrap().unwrap());
+            let input = text(example.get("source").unwrap().unwrap());
             let compact = text(example.get("compact").unwrap().unwrap());
             let expected = expected_tree(example.get("tree").unwrap().unwrap());
             Trial::test(

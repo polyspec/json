@@ -76,7 +76,7 @@ export const COMMANDS: Record<string, Commands> = {
 
 export type Registry = { roots: Record<string, string>; commands: Record<string, Commands> };
 /** An official example of examples/official.json. */
-export type OfficialCase = { id: string; input: string; tree: Tree; compact: string };
+export type OfficialCase = { id: string; source: string; tree: Tree; compact: string };
 
 /** The commands of the implementation `name`; an implementation without commands is an error. */
 export function commandsOf(name: string, registry = REGISTRY): Commands {

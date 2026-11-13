@@ -131,7 +131,7 @@ test('only a complete run of the current sources makes a record', (context) => {
   const { root, write, json } = checkout(context);
   const source = `${REGISTRY.roots.js}/index.js`;
   write(source, 'export const fixture = true;\n');
-  json(OFFICIAL, { cases: [{ id: 'fixture', input: '{}', tree: ['object', []], compact: '{}' }] });
+  json(OFFICIAL, { cases: [{ id: 'fixture', source: '{}', tree: ['object', []], compact: '{}' }] });
   write(`${FIXTURES}/valid/object.json`, '{}');
   const counts = { official: 1, fixtures: 1, arguments: 1, supplementary: 0 };
   const results = Object.fromEntries(IMPLEMENTATIONS.map(name => [name, { status: 'passed', cases: 3 }]));

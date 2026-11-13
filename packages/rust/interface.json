@@ -1747,11 +1747,6 @@
       "member": "parse",
       "file": "examples/official.json",
       "group": "cases"
-    },
-    {
-      "member": "value.number",
-      "file": "contracts/fixtures/arguments.json",
-      "group": "cases"
     }
   ]
 }

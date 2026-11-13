@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: cba4ee24835cefbdb6d21146aa3e8b6ca11f14c41b233e2b4af3c0a0faf127ec -->
+<!-- source-sha256: 393ffc4232fdce582dee40af92ad66ca3ad648844738ae60cc5cb8b4033a5ec6 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -30,6 +30,7 @@
 - T3.5: `Cargo.lock`은 `polyspec-binding-core`를 binding 49a4e97에 고정하고(CK-20), 그 scaffold는 같은 바인딩 package를 씁니다(CK-19). `OrderedMap.get`의 실패 주입점 `json.internal`(`packages/rust/src/map.rs`)은 macro `binding_core::fault::point!`입니다. Cargo는 한 build 안에서 binding_core의 feature를 합치므로, binding 642e70f는 지점을 쓰는 crate의 feature `fault-test`로 지점을 판단합니다(GN-5). 코어는 `fault-test = ["polyspec-binding-core/fault-test"]`를 선언하고 `make test-rust`는 그 feature로 코어를 빌드하므로, `tests/contract.rs`의 case `a_broken_position_is_internal`이 지점을 장전합니다.
 - T3.6: flag 없는 `cargo test -p polyspec-json`이 코어의 실패 주입점을 장전합니다. `packages/rust/Cargo.toml`은 코어 자신을 feature `fault-test`와 함께 dev-dependency로 적으므로 코어의 모든 시험 build가 그 feature를 가지고, `make test-rust`는 `--features`를 넘기지 않습니다. binding 642e70f는 지점을 쓰는 crate의 feature `fault-test`로 지점을 판단하므로, binding의 end-to-end 검사처럼 flag 없이 빌드한 시험에서 `tests/contract.rs`의 case `a_broken_position_is_internal`이 `the faults of json.internal did not fire`로 실패했습니다.
 - T3.7: `Cargo.lock`은 `polyspec-binding-core`를 binding 931645f에 고정하고(CK-20), 바인딩 package는 931645f의 `binding scaffold`가 쓰는 그대로입니다(CK-19). 각 `src/lib.rs`는 rustfmt 꼴이고, `packages/go/internal/ffi`의 manifest는 scaffold를 따릅니다. binding check, `cargo fmt --all --check`, `make layout-check`는 아무것도 보고하지 않습니다.
+- T3.8: `packages/rust/interface.json`의 `cases` 행이 member에 잇는 모든 case는 id와, 기본값 없는 member parameter마다 key를 가집니다(binding K-1, G-5). `tests/scripts/case-links.test.mts`가 이를 검사합니다. `examples/official.json`의 case 17건은 text를 `input` 대신 `parse`의 parameter인 `source`로 주고 기대 결과는 그대로입니다. `scripts/verify.mts`, `scripts/schema/official-examples.schema.json`, `packages/rust/tests/official.rs`, legacy package의 official 시험은 `source`를 읽습니다. `contracts/fixtures/arguments.json`을 `value.number`에 잇던 행은 계약에서 빠집니다. 그 파일은 공통 verifier가 계속 돌리는, id 없는 네 call의 인자 case를 담습니다. 그 `number` 인자 아홉 중 `contracts/core.json`에 없던 여섯(`-0.5e3`, `1\n`, `[]`, `true`, `null`, `x`)은 같은 결과로 거기 `value.number`의 case입니다.
 
 ## 0.0.25
 

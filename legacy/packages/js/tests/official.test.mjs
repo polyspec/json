@@ -33,8 +33,8 @@ function rebuild(value) {
 
 for (const example of official.cases) {
   test(example.id, () => {
-    const value = parse(example.input);
-    assert.equal(value.raw, example.input);
+    const value = parse(example.source);
+    assert.equal(value.raw, example.source);
     assert.equal(stringify(value), example.compact);
     assert.deepEqual(tree(value), example.tree);
     assert.deepEqual(tree(parse(stringify(value))), example.tree);

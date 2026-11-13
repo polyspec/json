@@ -28,7 +28,7 @@ function evidence(context: TestContext, { before = '', after = '' } = {}) {
   };
   pair(`# Features\n\n<a id="state"></a>\n## State\n\n${before}${HEADER}${ROW}${after}`);
   write(SOURCE, 'export const fixture = true;\n');
-  json(OFFICIAL, { cases: [{ id: 'fixture', input: '{}', tree: ['object', []], compact: '{}' }] });
+  json(OFFICIAL, { cases: [{ id: 'fixture', source: '{}', tree: ['object', []], compact: '{}' }] });
   write(`${FIXTURES}/valid/object.json`, '{}');
   json(ARGUMENTS, { schema: 1, comment: 'synthetic', absent: {}, cases: [{ name: 'number', call: 'number', argument: '1', kind: null }] });
   write('mise.toml', `[tools]\n"http:pie" = { version = "synthetic", url = "https://example.invalid/pie", checksum = "sha256:${sha256('pie tool')}" }\n"http:jsontestsuite" = { version = "${SUPPLEMENTARY.revision}", url = "https://example.invalid/suite", checksum = "sha256:${sha256('suite archive')}" }\n`);

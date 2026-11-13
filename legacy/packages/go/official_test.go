@@ -32,7 +32,7 @@ func TestOfficial(t *testing.T) {
 			t.Fatal(err)
 		}
 		t.Run(id, func(t *testing.T) {
-			input := mustString(t, example.Get("input"))
+			input := mustString(t, example.Get("source"))
 			compact := mustString(t, example.Get("compact"))
 			expected := expectedTree(t, example.Get("tree"))
 			value, err := Parse(input)

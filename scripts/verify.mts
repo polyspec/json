@@ -77,8 +77,8 @@ export function sharedCases(directory: string, suite?: string, root = ROOT): { c
   const official = officialCases(root);
   for (const example of official) {
     const file = path.join(directory, `${example.id}.json`);
-    writeFileSync(file, example.input);
-    cases.push({ name: `official/${example.id}`, file, expected: { ok: true, raw: example.input, serialized: example.compact, compact: example.compact, tree: example.tree, rebuilt: example.tree } });
+    writeFileSync(file, example.source);
+    cases.push({ name: `official/${example.id}`, file, expected: { ok: true, raw: example.source, serialized: example.compact, compact: example.compact, tree: example.tree, rebuilt: example.tree } });
   }
   for (const category of ['valid', 'invalid'] as const) {
     for (const file of fixturePaths(root, category)) {

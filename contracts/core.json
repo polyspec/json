@@ -5677,6 +5677,66 @@
     "category": "value",
     "message": null
    }
+  },
+  {
+   "id": "a_number_literal",
+   "rule": "RQ-015",
+   "literal": "-0.5e3"
+  },
+  {
+   "id": "a_trailing_line_feed_is_no_number",
+   "rule": "RQ-015",
+   "literal": "1\n",
+   "raises": {
+    "kind": "invalid_number_literal",
+    "status": null,
+    "category": "value",
+    "message": null
+   }
+  },
+  {
+   "id": "an_array_is_no_number",
+   "rule": "RQ-015",
+   "literal": "[]",
+   "raises": {
+    "kind": "invalid_number_literal",
+    "status": null,
+    "category": "value",
+    "message": null
+   }
+  },
+  {
+   "id": "a_boolean_is_no_number",
+   "rule": "RQ-015",
+   "literal": "true",
+   "raises": {
+    "kind": "invalid_number_literal",
+    "status": null,
+    "category": "value",
+    "message": null
+   }
+  },
+  {
+   "id": "null_is_no_number",
+   "rule": "RQ-015",
+   "literal": "null",
+   "raises": {
+    "kind": "invalid_number_literal",
+    "status": null,
+    "category": "value",
+    "message": null
+   }
+  },
+  {
+   "id": "a_text_that_is_no_json",
+   "rule": "RQ-015",
+   "literal": "x",
+   "raises": {
+    "kind": "expected_value",
+    "status": null,
+    "category": "value",
+    "message": null
+   }
   }
  ],
  "value.to_json": [

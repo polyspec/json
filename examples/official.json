@@ -3,7 +3,7 @@
   "cases": [
     {
       "id": "document-order",
-      "input": "{\"10\":\"first\",\"2\":\"second\"}",
+      "source": "{\"10\":\"first\",\"2\":\"second\"}",
       "tree": [
         "object",
         [
@@ -27,7 +27,7 @@
     },
     {
       "id": "nested-objects",
-      "input": "{\"10\":{\"9\":1,\"1\":{\"z\":2,\"a\":3}},\"2\":4}",
+      "source": "{\"10\":{\"9\":1,\"1\":{\"z\":2,\"a\":3}},\"2\":4}",
       "tree": [
         "object",
         [
@@ -81,7 +81,7 @@
     },
     {
       "id": "objects-in-arrays",
-      "input": "{\"rows\":[{\"10\":1,\"2\":2},[{\"b\":3,\"a\":4}]],\"tail\":0}",
+      "source": "{\"rows\":[{\"10\":1,\"2\":2},[{\"b\":3,\"a\":4}]],\"tail\":0}",
       "tree": [
         "object",
         [
@@ -149,7 +149,7 @@
     },
     {
       "id": "duplicate-keys",
-      "input": "{\"b\":1,\"a\":2,\"b\":3}",
+      "source": "{\"b\":1,\"a\":2,\"b\":3}",
       "tree": [
         "object",
         [
@@ -173,7 +173,7 @@
     },
     {
       "id": "escaped-key-equivalence",
-      "input": "{\"b\":1,\"\\u0062\":2,\"a\":3}",
+      "source": "{\"b\":1,\"\\u0062\":2,\"a\":3}",
       "tree": [
         "object",
         [
@@ -197,7 +197,7 @@
     },
     {
       "id": "all-json-types",
-      "input": "{\"n\":null,\"b\":true,\"f\":false,\"s\":\"text\",\"a\":[3,2,1],\"o\":{},\"e\":[]}",
+      "source": "{\"n\":null,\"b\":true,\"f\":false,\"s\":\"text\",\"a\":[3,2,1],\"o\":{},\"e\":[]}",
       "tree": [
         "object",
         [
@@ -268,7 +268,7 @@
     },
     {
       "id": "exact-number-tokens",
-      "input": "[9007199254740993,-0,1.2300E+04,1e9999]",
+      "source": "[9007199254740993,-0,1.2300E+04,1e9999]",
       "tree": [
         "array",
         [
@@ -294,7 +294,7 @@
     },
     {
       "id": "unicode-and-escapes",
-      "input": "{\"\ud55c\uae00\":\"\uc548\ub155 \ud83c\udf0d\",\"escaped\":\"\\uD834\\uDD1E\",\"line\":\"a\\nb\"}",
+      "source": "{\"\ud55c\uae00\":\"\uc548\ub155 \ud83c\udf0d\",\"escaped\":\"\\uD834\\uDD1E\",\"line\":\"a\\nb\"}",
       "tree": [
         "object",
         [
@@ -325,7 +325,7 @@
     },
     {
       "id": "escaped-surrogates",
-      "input": "{\"\\ud800\":\"\\udead\",\"pair\":\"\\ud83c\\udf0d\"}",
+      "source": "{\"\\ud800\":\"\\udead\",\"pair\":\"\\ud83c\\udf0d\"}",
       "tree": [
         "object",
         [
@@ -349,7 +349,7 @@
     },
     {
       "id": "whitespace",
-      "input": " \n{ \"10\" : 1, \"2\" : { \"b\" : 2, \"a\" : 3 } }\t",
+      "source": " \n{ \"10\" : 1, \"2\" : { \"b\" : 2, \"a\" : 3 } }\t",
       "tree": [
         "object",
         [
@@ -388,7 +388,7 @@
     },
     {
       "id": "special-property-names",
-      "input": "{\"__proto__\":{\"b\":1,\"a\":2},\"constructor\":3,\"prototype\":4}",
+      "source": "{\"__proto__\":{\"b\":1,\"a\":2},\"constructor\":3,\"prototype\":4}",
       "tree": [
         "object",
         [
@@ -434,7 +434,7 @@
     },
     {
       "id": "root-scalar",
-      "input": "true",
+      "source": "true",
       "tree": [
         "boolean",
         true
@@ -443,7 +443,7 @@
     },
     {
       "id": "nested-duplicate-keys",
-      "input": "{\"10\":{\"b\":1,\"a\":2,\"b\":3},\"2\":[{\"z\":0,\"a\":1,\"z\":{\"x\":1,\"y\":2,\"x\":4}}]}",
+      "source": "{\"10\":{\"b\":1,\"a\":2,\"b\":3},\"2\":[{\"z\":0,\"a\":1,\"z\":{\"x\":1,\"y\":2,\"x\":4}}]}",
       "tree": [
         "object",
         [
@@ -517,7 +517,7 @@
     },
     {
       "id": "numeric-key-overwrite",
-      "input": "{\"10\":1,\"2\":2,\"\\u0031\\u0030\":3,\"01\":4,\"0\":5,\"-0\":6}",
+      "source": "{\"10\":1,\"2\":2,\"\\u0031\\u0030\":3,\"01\":4,\"0\":5,\"-0\":6}",
       "tree": [
         "object",
         [
@@ -562,7 +562,7 @@
     },
     {
       "id": "empty-and-null-key-overwrite",
-      "input": "{\"\":0,\"\\u0000\":1,\"\":2,\"\\u0000\":3}",
+      "source": "{\"\":0,\"\\u0000\":1,\"\":2,\"\\u0000\":3}",
       "tree": [
         "object",
         [
@@ -586,7 +586,7 @@
     },
     {
       "id": "unicode-key-overwrite",
-      "input": "{\"\\ud800\":0,\"x\":1,\"\\uD800\":2,\"\ud83c\udf0d\":3,\"\\ud83c\\udf0d\":4}",
+      "source": "{\"\\ud800\":0,\"x\":1,\"\\uD800\":2,\"\ud83c\udf0d\":3,\"\\ud83c\\udf0d\":4}",
       "tree": [
         "object",
         [
@@ -617,7 +617,7 @@
     },
     {
       "id": "replace-object-value",
-      "input": "{\"b\":{\"old\":1},\"a\":2,\"b\":{\"z\":3,\"y\":4}}",
+      "source": "{\"b\":{\"old\":1},\"a\":2,\"b\":{\"z\":3,\"y\":4}}",
       "tree": [
         "object",
         [
