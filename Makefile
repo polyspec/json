@@ -30,8 +30,12 @@ PYTHON := $(CURDIR)/var/tools/mise/shims/python3
 # uv and Composer of mise.toml, by the absolute paths of their shims for the same reason.
 UV := $(CURDIR)/var/tools/mise/shims/uv
 COMPOSER := $(CURDIR)/var/tools/mise/shims/composer
+# Go of mise.toml, by the absolute path of its shim: a $(shell) of GNU make before 4.4 does not read the PATH that this
+# file exports, so a lookup there finds the Go of the machine in one make and the Go of the checkout in another.
+GO := $(CURDIR)/var/tools/mise/shims/go
+# cargo is the proxy of rustup, a tool of the machine that reads rust-toolchain.toml; var/tools holds no cargo, so the
+# lookup gives the same path under every make.
 CARGO := $(shell command -v cargo)
-GO := $(shell command -v go)
 # The supplementary suite of mise.toml (http:jsontestsuite), which json-install-suite installs; empty when it is not installed.
 JSON_TEST_SUITE ?= $(wildcard var/tools/mise/installs/http-jsontestsuite/latest)
 
@@ -237,7 +241,7 @@ python-venv:
 .PHONY: build-go build-js build-php build-python build-rust test-go test-js test-php test-python test-rust build-php-ext lint-php-ext test-php-ext
 # The build of each package of a runtime with the build of its ecosystem; the JavaScript and PHP packages have none (kit K1106).
 build-go:
-	$(NODE) $(KIT)/runtime-targets.mjs build --roots legacy/packages/go -- $(CURDIR)/var/tools/mise/shims/go build ./...
+	$(NODE) $(KIT)/runtime-targets.mjs build --roots legacy/packages/go -- $(GO) build ./...
 build-js build-php:
 build-python:
 	$(NODE) $(KIT)/runtime-targets.mjs build --roots legacy/packages/python -- $(UV) build

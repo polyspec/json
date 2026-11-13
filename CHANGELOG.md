@@ -16,6 +16,7 @@
 - K-1: the cases of `contracts/core.json` that take their value from a JSON text are the groups `<member>.parsed`, a rule corpus that only the Rust test of the core reads and that the interface contract does not link (`contracts/README.md`); `stringify` has cases of values in the form of G-5. `invalid_code_unit` of `Value.getUnits` has no linked case: it needs an object, which no factory of a scalar makes.
 - L-2: `Cargo.lock` pins binding at 9de9d03, the commit that every repository of the library family pins (CK-20); its scaffold writes the same binding packages.
 - T3.1: `OfficialTest` of the legacy PHP package reads `examples/official.json` from the repository root, four folders above its `tests/`; after the move to `legacy/packages/php` it read `legacy/examples/official.json`, which does not exist, so the 17 official cases did not run and PHPUnit reported an invalid data provider.
+- T3.1: the Makefile names Go by the absolute path of its shim in `var/tools`, as it names the other tools of `mise.toml`; `$(shell command -v go)` read the `PATH` of the environment under GNU make before 4.4, which does not pass an exported variable to `$(shell)`, so `make deps-go` ran the Go of the machine there and the Go of the checkout under a newer make.
 
 ## 0.0.25
 

@@ -17,6 +17,7 @@
 - K-1: `contracts/core.json`에서 JSON 텍스트로 값을 받는 case는 `<member>.parsed` group이다. 코어의 Rust 시험만 읽고 인터페이스 계약이 연결하지 않는 규칙 corpus다(`contracts/README.md`). `stringify`는 G-5 형식 값의 case를 가진다. `Value.getUnits`의 `invalid_code_unit`은 연결된 case가 없다: 스칼라의 factory로는 만들 수 없는 객체가 필요하다.
 - L-2: `Cargo.lock`은 같은 라이브러리 묶음의 모든 레포가 고정하는 binding 9de9d03을 고정한다(CK-20). 그 scaffold는 같은 바인딩 package를 쓴다.
 - T3.1: legacy PHP 패키지의 `OfficialTest`가 `tests/`에서 네 단계 위인 저장소 root의 `examples/official.json`을 읽습니다. `legacy/packages/php`로 옮긴 뒤에는 없는 파일 `legacy/examples/official.json`을 읽어 공식 사례 17개가 실행되지 않았고 PHPUnit이 data provider 오류를 보고했습니다.
+- T3.1: Makefile이 `mise.toml`의 다른 도구처럼 Go를 `var/tools`에 있는 shim의 절대 경로로 가리킵니다. `$(shell command -v go)`는 export한 변수를 `$(shell)`에 넘기지 않는 GNU make 4.4 이전 판에서 환경의 `PATH`를 읽었고, 그래서 `make deps-go`가 그 판에서는 머신의 Go를, 새 판에서는 checkout의 Go를 실행했습니다.
 
 ## 0.0.25
 
