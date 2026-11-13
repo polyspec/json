@@ -1,5 +1,5 @@
 <!-- doc-id: json-contract -->
-<!-- source-sha256: 934d0931eb5d6b590437ca77c330920f962d2368abb471aa032beac6bc1f90c2 -->
+<!-- source-sha256: 26508d0fb0fb7a0602f89c99bfab924aadd742c6f0ae778f3bfeb5bba7797da9 -->
 # JSON 계약
 
 [English](json-contract.md)
@@ -147,7 +147,7 @@ JavaScript의 `compact` 옵션과 PHP의 `compact` 인자는 호환성을 위해
 - **RQ-032** 종류별 접근자(`members`, `items`, `string_units`, `string_value`, `number_literal`, `boolean_value`)와 member 조회(`get`, `get_units`)는 다른 종류의 값에서 `wrong_kind`로 실패합니다. 객체의 조회는 객체에 없는 이름에서만 부재를 돌려줍니다.
 - **RQ-033** 코어의 모든 실패는 공통 목록의 종류를 가진 오류입니다. 파싱 거부는 바이트 위치를 가지며, 생성자의 `maximum_depth_exceeded`와 인자 오류는 위치를 갖지 않습니다. 그 실패를 일으킨 입력 위치가 없기 때문입니다. 코어의 불변식 위반은 `internal`입니다. 어떤 입력도 그 종류에 이르지 않으므로 코어는 fault injection 지점 `json.internal`(binding G-5, X-1)을 가지며, 기능 `fault-test`만 그것을 컴파일합니다. `broken`으로 장전하면 그 지점은 순서 있는 map의 member 위치를 entry 밖으로 취급하고, 조회는 `internal`로 실패합니다. `ordered_map.get`의 case `a_broken_position_is_internal`이 그것을 장전합니다.
 - **RQ-034** 바인딩의 표준 JSON 직렬화 hook(JavaScript `toJSON`, PHP `jsonSerialize`, Go `MarshalJSON`)은 `host_serialization_refused`로 실패합니다([RQ-020](#requirements)). Python에는 그런 hook이 없습니다. 라이브러리 직렬화기는 함수 `stringify` 하나이며, 각 언어의 문자열 hook(`toString`, `__toString`, `__str__`)은 기본 옵션으로 같은 텍스트를 씁니다.
-- **RQ-035** 파싱 옵션은 0부터 256까지의 정수인 `max_depth`([RQ-006](#requirements))와 기본값 false인 `reject_duplicates`([RQ-017](#requirements))이고, 직렬화 옵션은 `html_safe`([RQ-031](#requirements))입니다.
+- **RQ-035** 파싱 옵션은 0부터 256까지의 정수인 `max_depth`([RQ-006](#requirements))와 기본값 false인 `reject_duplicates`([RQ-017](#requirements))이고, 직렬화 옵션은 `html_safe`([RQ-031](#requirements))입니다. 모든 옵션은 기본값을 가지므로 호출은 각 옵션을 생략할 수 있습니다. 옵션 자체는 코어가 항상 받는 record 하나(`&ParseOptions`, `&StringifyOptions`)이며, 그 기본값은 field의 기본값이므로 인터페이스 계약은 그 record parameter를 필수로 선언합니다.
 
 <a id="ignored-input"></a>
 ## 무시하는 입력

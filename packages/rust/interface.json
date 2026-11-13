@@ -268,9 +268,7 @@
               "type": {
                 "unit": "parse_options"
               },
-              "default": {
-                "empty": "object"
-              }
+              "required": true
             }
           ],
           "returns": "json_value",
@@ -319,9 +317,7 @@
               "type": {
                 "unit": "stringify_options"
               },
-              "default": {
-                "empty": "object"
-              }
+              "required": true
             }
           ],
           "returns": "text",
@@ -593,7 +589,9 @@
               "required": true
             }
           ],
-          "returns": "json_value",
+          "returns": {
+            "unit": "value"
+          },
           "raises": [],
           "wait": "none",
           "core": {
@@ -619,7 +617,9 @@
               "required": true
             }
           ],
-          "returns": "json_value",
+          "returns": {
+            "unit": "value"
+          },
           "raises": [
             "polyspec_json::Error::InvalidCodeUnit"
           ],
@@ -644,7 +644,9 @@
               "required": true
             }
           ],
-          "returns": "json_value",
+          "returns": {
+            "unit": "value"
+          },
           "raises": [
             "polyspec_json::Error::ExpectedValue",
             "polyspec_json::Error::ExpectedDigit",
@@ -683,7 +685,9 @@
               "required": true
             }
           ],
-          "returns": "json_value",
+          "returns": {
+            "unit": "value"
+          },
           "raises": [
             "polyspec_json::Error::NonFiniteNumber"
           ],
@@ -708,7 +712,9 @@
               "required": true
             }
           ],
-          "returns": "json_value",
+          "returns": {
+            "unit": "value"
+          },
           "raises": [],
           "wait": "none",
           "core": {
@@ -723,7 +729,9 @@
           "kind": "static",
           "visibility": "public",
           "parameters": [],
-          "returns": "json_value",
+          "returns": {
+            "unit": "value"
+          },
           "raises": [],
           "wait": "none",
           "core": {
@@ -748,7 +756,9 @@
               "required": true
             }
           ],
-          "returns": "json_value",
+          "returns": {
+            "unit": "value"
+          },
           "raises": [
             "polyspec_json::Error::MaximumDepthExceeded",
             "polyspec_json::Error::Internal"
@@ -776,7 +786,9 @@
               "required": true
             }
           ],
-          "returns": "json_value",
+          "returns": {
+            "unit": "value"
+          },
           "raises": [
             "polyspec_json::Error::MaximumDepthExceeded",
             "polyspec_json::Error::Internal"
