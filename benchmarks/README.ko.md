@@ -1,5 +1,5 @@
 <!-- doc-id: performance-benchmarks -->
-<!-- source-sha256: 1a3367d0e08dc6c6290f73b90e9365e7015bf0eca30803eae396ef9bf34a39ba -->
+<!-- source-sha256: 6fdc2f715f43cfa53918823da36b4be4273215d67aa4639dd6add5ac51700fab -->
 # 성능 벤치마크
 
 `run.mts`는 모든 런타임에서 같은 입력 문서, 워밍업 횟수, 반복 횟수,
@@ -65,3 +65,18 @@ Python 패키지와 순수 PHP 패키지로 각자의 process에서 번갈아 �
 보고하므로 기계의 부하는 양쪽을 똑같이 느리게 하며, wall-clock 예산은 없습니다. 검사는 모든 실행, 두 중앙값과 그 비율을
 출력하고, Python 중앙값이 PHP 중앙값의 세 배를 넘으면 실패합니다. `make check`의 target이 아니며, Python parser를 바꾼 뒤
 사람이 실행합니다.
+
+<a id="host-cost"></a>
+## 바인딩을 위한 변환의 비용
+
+`make benchmark-host`(`host-cost.mts`, Rust 패키지의 `examples/host_cost.rs`를 release profile로 실행합니다)는 RQ-036의
+변환인 `value_out`과 `value_in`을, 문자열을 Rust `String`으로 주고받는 같은 순회와 견주어 측정합니다. 문서는 큰 문자열
+하나짜리와 작은 문자열 100,000개짜리이고, 방향은 out, UTF-8의 out과 in, UTF-8의 in, UTF-16의 in 네 가지입니다. 각 시간은
+세지 않는 실행 한 번 뒤 21번 실행의 중앙값입니다. example은 측정마다 JSON 한 줄을 출력하고, script는 각 줄을 그 순간
+기계의 load average와 함께 읽어 Git이 무시하는 `var/report/bench/host-cost-rust.json`을 rename 한 번으로 씁니다. 기록은
+측정마다 항목 하나를 가진 list입니다. 항목은 `language`, `document`, `direction`, `runs`, `host_ms`, `text_ms`,
+`ratio`(`host_ms`를 `text_ms`로 나눈 값), `load_average`(1분, 5분, 15분 평균)를 가집니다.
+
+비율은 측정을 실패시키지 않습니다. 한도 1.5를 넘는 비율은 값과 한도를 담은 `WARNING` 줄을 출력하고 target은 통과합니다.
+script는 사용법 오류, 실패한 명령, 측정이 아닌 줄, 측정이 없는 실행에서만 실패합니다. 기계에 부하가 있을 때의 측정은 최종
+결과가 아니므로 비율마다 load average를 함께 읽습니다. `make check`의 target이 아닙니다.

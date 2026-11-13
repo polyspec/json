@@ -69,3 +69,20 @@ each (6.15 MB) with the Python package and with the pure PHP package, each in it
 Each process reports the CPU time of its own parse, so the load of the machine slows both sides alike; no wall-clock budget
 exists. The check prints every run, both medians and their ratio, and fails when the Python median exceeds three times the
 PHP median. It is no target of `make check`: a person runs it after a change of the Python parser.
+
+<a id="host-cost"></a>
+## Cost of the conversion for a binding
+
+`make benchmark-host` (`host-cost.mts`, which runs `examples/host_cost.rs` of the Rust package in the release profile)
+measures the conversion of RQ-036, `value_out` and `value_in`, against the same walk that gives and takes each string as a
+Rust `String`, on a document of one large string and a document of 100,000 small strings, in four directions: out, out and
+in as UTF-8, in as UTF-8 and in as UTF-16. Each time is the median of 21 runs after one run that is not counted. The
+example prints one JSON line per measurement, and the script reads each line with the load average of the machine at that
+moment and writes `var/report/bench/host-cost-rust.json`, which Git ignores, by one rename. The record is a list with one
+entry per measurement: `language`, `document`, `direction`, `runs`, `host_ms`, `text_ms`, `ratio` (`host_ms` divided by
+`text_ms`) and `load_average` (the averages of 1, 5 and 15 minutes).
+
+A ratio never fails the measurement: a ratio above the limit 1.5 prints a `WARNING` line with the value and the limit, and
+the target passes. The script fails only for a usage error, a command that fails, a line that is no measurement and a run
+without a measurement. A measurement taken while the machine is loaded is no final result, so the load average is read
+with each ratio. It is no target of `make check`.
