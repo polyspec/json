@@ -7,6 +7,7 @@ build-backend = "maturin"
 name = "polyspec-json"
 version = "0.0.25"
 requires-python = ">=3.14"
+license = "MIT"
 
 [tool.maturin]
 module-name = "polyspec.json._native"

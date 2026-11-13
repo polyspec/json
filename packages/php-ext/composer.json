@@ -7,6 +7,9 @@
     "php": ">=8.4"
   },
   "php-ext": {
-    "extension-name": "polyspec_json"
+    "extension-name": "polyspec_json",
+    "download-url-method": [
+      "pre-packaged-binary"
+    ]
   }
 }

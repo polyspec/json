@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 9eeac8fa06c1e83b139019360573634dd05c5764397d52cf1a6952be6fe045b7 -->
+<!-- source-sha256: f06f338d16de47d00adf66a61aff21005b60b05ebf7fcaf93f828f8871ce7418 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- `Cargo.lock`은 `polyspec-binding-core`를 binding의 branch `v1/rust-core`의 commit 369fcec에 고정하고, 추적되는 바인딩 패키지는 그 commit의 `binding scaffold`가 쓰는 것과 같다(T3.14, binding L-2, CK-19, CK-20). lock은 931645f를 고정하고 있었고, 계약 검사는 lock에 CK-20을, 바인딩 패키지의 파일 아홉 개에 CK-19를 보고했다. 각 바인딩 crate는 코어의 license인 `license = "MIT"`를 적는다. `packages/python`은 `build.rs`를 가지며, 이 파일은 생성된 코드가 거부하는 cfg `pyo3_disable_reference_pool`을 선언한다(binding GN-6u). `pyproject.toml`은 license를 적는다. `packages/ts/package.json`은 ES module이고 napi target을 적으며, 플랫폼 패키지를 optional dependency로 적지 않는다. `packages/php-ext/composer.json`은 내려받기 방식 `pre-packaged-binary`를 적는다. 코어는 바뀌지 않았다. 새 `binding_core`로 그대로 컴파일된다. lock으로 검증했다: 계약 검사는 아무것도 보고하지 않고, `make test-rust`는 185개 중 185개가 통과하며, 바인딩 crate를 뺀 `cargo clippy --workspace --all-targets --locked`와 `make fmt-check`는 아무것도 보고하지 않는다.
 - 코어의 manifest가 license를 적는다(`license = "MIT"`, 이 저장소의 npm 패키지가 적는 license와 같다). 바인딩 패키지는 코어의 license를 가지며, binding의 계약 검사는 license가 없는 코어를 거부한다(CK-71).
 
 - `value.object`의 매개변수 `members`는 코어가 그것을 빌리는 방식 `core: "&"`를 명시한다(T3.13, binding CK-67, GN-6h). `polyspec_json::Value::object`는 `&OrderedMap`을 받는데 계약이 이를 명시하지 않아, 계약 검사가 `value.object.members`에 CK-67을 보고했다. 검사는 이 계약에 CK-67을 보고하지 않는다.
