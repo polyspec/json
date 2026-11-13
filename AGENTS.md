@@ -50,6 +50,8 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
   Enforced by: `make ci-targets`
 - Own: Every tracked path is owned by a rule of [config/owner-checks.json](config/owner-checks.json). `make owner-validate` fails while a path matches no rule, a glob matches no path or an owner does not exist. A new file is mapped in the same commit.
   Enforced by: `make layout-check`
+- Own: A target that reads a record of another target names that target as its prerequisite, so it reads only the record of its own tree: `make verify-all` checks the PIE record of `make pie-check` and runs it first, and `pie-check` is no target of `CHECK_TARGETS` of its own.
+  Enforced by: `make json-test-scripts`
 - Own: Each target of `CHECK_TARGETS` in the Makefile is a prerequisite of the target of exactly one job of `.github/workflows/ci-pipeline.yml` (`kit-gates-static`, `kit-gates-verify`, `kit-gates-runtime-<runtime>`), which the job runs by name through `make ci-targets`, past failures, and uploads its report.
   Enforced by: `make json-test-scripts`
 - Own: The lint of each language passes: `make lint-rust` (clippy with `-D warnings`), `make lint-go` (golangci-lint with `.golangci.yml`, and deadcode), `make lint-php` (phpcs with `phpcs.xml.dist`, and PHPStan) and `make lint-python` (ruff with `ruff.toml`, and vulture).

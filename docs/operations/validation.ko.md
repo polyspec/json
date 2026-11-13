@@ -1,5 +1,5 @@
 <!-- doc-id: validation -->
-<!-- source-sha256: dc60859e776e0c369e1610e2b7fddf7d750ad4a3730e7e8631bd98e32d785c2b -->
+<!-- source-sha256: 9fc5cb7be68144897631ac90c8937f76f7245c2a6903009f43e999535ddc2aa4 -->
 # 검증
 
 [English](validation.md)
@@ -21,7 +21,7 @@ make check
 <a id="records"></a>
 ## 기록
 
-commit의 근거는 그것을 검증하는 실행입니다. `make pie-check`는 PIE 기록 `var/records/pie-verification.json`을, `make verify-all`은 통합 기록 `var/records/verification.json`을 씁니다. Git은 `var/`를 무시하므로 어떤 기록도 커밋하지 않습니다. 기록은 `benchmarks/results.json`을 뺀 모든 추적 파일을 해시하므로, 커밋된 기록은 다음 commit에서 오래된 기록이 되고 변경마다 로컬 기계에서 전체 실행을 강요합니다. `--records`가 있으면 `make verify-all` 마지막의 근거 검사는 같은 체크아웃의 통합 기록과, 있으면 PIE 기록을 현재 소스와 대조하므로, 두 기록을 모두 쓰는 실행은 두 기록을 모두 검사합니다.
+commit의 근거는 그것을 검증하는 실행입니다. `make pie-check`는 PIE 기록 `var/records/pie-verification.json`을, `make verify-all`은 통합 기록 `var/records/verification.json`을 씁니다. Git은 `var/`를 무시하므로 어떤 기록도 커밋하지 않습니다. 기록은 `benchmarks/results.json`을 뺀 모든 추적 파일을 해시하므로, 커밋된 기록은 다음 commit에서 오래된 기록이 되고 변경마다 로컬 기계에서 전체 실행을 강요합니다. `--records`가 있으면 `make verify-all` 마지막의 근거 검사는 같은 체크아웃의 통합 기록과, 있으면 PIE 기록을 현재 소스와 대조하므로, 두 기록을 모두 쓰는 실행은 두 기록을 모두 검사합니다. `make verify-all`은 `make pie-check`를 prerequisite로 가지므로, 검사하는 PIE 기록은 언제나 같은 tree의 기록입니다. `make check`와 CI의 verify job은 `make pie-check`를 그것을 통해서만 실행합니다.
 
 통합 기록에는 소스 해시, 패키지 파일 기록, 실제 런타임 버전, 실행 중인 Node.js release, 사례 수, 결과, 빌드 경고, 추가 입력 개정본이 포함됩니다. PHP 버전과 확장 버전은 별도 필드입니다. 입력이 변경되면 현재 검증 근거로 유효하지 않습니다. 실행 중 변경과 불완전한 구현 결과는 거부합니다. 이 기록은 게시 근거가 아닙니다. 모든 기록과 보고서(`var/records/verification.json`, `var/records/pie-verification.json`, `benchmarks/results.json`, 실패한 benchmark의 검토용 사본)는 Git이 무시하고 어떤 manifest도 읽지 않는 `var/`의 파일에 끝까지 쓴 뒤 그 경로 위로 이름을 바꾸므로, 읽는 쪽은 이전 파일이나 새 파일을 보며 파일의 일부를 보지 않습니다.
 

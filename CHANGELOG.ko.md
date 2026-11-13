@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: c17473dc7a1294d3b28cb20bc1870bf8f7ae531efc55b4477d8e951373db321a -->
+<!-- source-sha256: b979ab802d333950d97500e39f1f191209b88f0c819f0dcb9d4a24b57dac95b3 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -25,6 +25,7 @@
 - CK-22, X-1: `make bindings-check`가 통과합니다. `value.get_units`의 case `get_units_above_largest`는 `Value.object`의 빈 object(`members`)에서 `invalid_code_unit`을 내고, `ordered_map.get`의 case `a_broken_position_is_internal`은 새 실패 주입점 `json.internal`을 `broken`으로 장전해 `internal`을 냅니다(RQ-033). crate는 feature `fault-test`와 module `fault`를 가지고, 계약은 그 지점을 `faults`에 적으며, `tests/contract.rs`는 생성된 시험처럼 case의 fault를 장전합니다. Python, Node, PHP의 바인딩 crate는 binding scaffold가 쓰는 대로 `fault-test`를 켭니다. `serde_json`은 `fault-test`를 켠 `polyspec-binding-core`의 정확한 고정인 1.0.154를 받습니다.
 - GN-13: `value`의 정적 factory(`string`, `from_units`, `number`, `from_float`, `boolean`, `null`, `array`, `object`)는 alias `json_value` 대신 class unit `{"unit": "value"}`를 돌려줍니다. binding의 GN-13(8faad21의 docs/spec/generator.md 471-472행)은 method를 "a factory of the class (a static member or the constructor that returns it)"가 그 factory parameter의 case key로 만든 instance에서 부르고, GN-14d(663-665행)는 "the arguments of a factory of its class"가 없는 raising case를 뺍니다. alias를 돌려주면 class를 돌려주는 정적 member가 없어서 end-to-end 검사가 `value` method의 raising case를 모두 뺐습니다. `parse`와 `stringify`의 parameter `options`는 기본값 `{"empty": "object"}`를 유지합니다. binding 8faad21은 모든 target에서 그것을 `parse.options: a default of a record parameter is not generated yet (U-2 {empty: "object"})`와 `stringify.options: a default of a record parameter is not generated yet (U-2 {empty: "object"})`로 거부하며(GN-6i, docs/spec/generator.md 270-271행), 이는 T3.2가 기록하는 생성기 결함입니다. 실패 주입점 `json.internal`은 `OrderedMap::value_at`에 entry 밖의 위치를 주므로, 장전된 조회는 `position`이 결코 이르지 않는 그 결함의 분기를 지납니다.
 - T3.1, T3.2: T3.1이 끝났습니다. 그 검증인 `make test-rust`, `make lint-rust`, `make bindings-check`가 commit된 tree에서 통과합니다. 행 T3.2는 다섯 target의 생성 바인딩, 그 case runner, 언어 package와 live 시험의 바인딩 이전을 담으며, binding 8faad21이 계약의 어떤 target도 생성하지 않으므로 우회 상태입니다. php, python, node는 `Error: no case value of the type {"unit":"value"}`로 멈추고 go와 wasm은 계약의 항목을 이름으로 거부합니다. 기능 행 F-BINDINGS는 바인딩을 partial, not-verified로 적습니다. 언어 package와 `make test-js`, `make test-python`, `make test-php`, `make test-go`는 바인딩이 생성될 때까지 legacy package를 유지합니다.
+- T3.3: `make verify-all`은 `make pie-check`를 prerequisite로 가집니다. `make check`는 `pie-check`보다 `verify-all`을 먼저 실행했으므로, `verify-all`의 근거 검사는 모든 commit이 낡게 만드는 이전 tree의 PIE 기록을 읽고 `the PIE record is stale: the checked sources differ`로 실패했습니다. `pie-check`는 `CHECK_TARGETS`와 `kit-gates-runtime-php-ext`에서 빠져 `verify-all` 안에서만 실행되고, `make json-install-verify`는 verify job을 위해 PIE PHAR를 설치합니다. `tests/scripts/workflow-rules.test.mts`가 둘을 요구합니다.
 
 ## 0.0.25
 

@@ -61,7 +61,7 @@ unexport CARGO_TARGET_DIR
 # The targets of the full suite that make check runs through ci-targets of @polyspec/kit and that the jobs of
 # .github/workflows/ci-pipeline.yml run as the prerequisites of their kit-gates-* target (a target is in one job). verify-all
 # writes the aggregate record into var/records.
-CHECK_TARGETS := suppression-check link-check rules-check rebuild-check language-check duplication-check layout-check owner-validate release-coverage docs-check evidence-check verify-all lint-rust lint-go lint-php lint-php-ext test-php-ext lint-python pie-check json-test-scripts typecheck lint-ts test-js test-rust test-go test-php test-python
+CHECK_TARGETS := suppression-check link-check rules-check rebuild-check language-check duplication-check layout-check owner-validate release-coverage docs-check evidence-check verify-all lint-rust lint-go lint-php lint-php-ext test-php-ext lint-python json-test-scripts typecheck lint-ts test-js test-rust test-go test-php test-python
 
 .PHONY: check json-test-scripts typecheck json-install-php json-install-python verify-all verify-js verify-rust verify-go verify-php verify-php-extension verify-python evidence-check pie-check \
 	benchmark benchmark-check python-parse-budget install json-install json-install-rust \
@@ -127,8 +127,9 @@ json-install-suite:
 json-install-pie: json-install-suite
 	$(ONLINE) $(KIT_TOOLS)/bin/mise install --locked http:pie
 
-# json-install-verify installs what verify-all builds and probes: the packages of every implementation and the suite.
-json-install-verify: json-install-rust-packages json-install-php json-install-python json-install-suite
+# json-install-verify installs what verify-all builds and probes: the packages of every implementation, the suite and the PIE
+# PHAR of its prerequisite pie-check.
+json-install-verify: json-install-rust-packages json-install-php json-install-python json-install-suite json-install-pie
 
 # json-test-scripts runs the node:test tool tests of tests/scripts, or the files of TESTS, through run-tests of @polyspec/kit,
 # which runs the command and passes its output and exit code through; typecheck checks the TypeScript of scripts/, tests/scripts/
@@ -142,7 +143,10 @@ typecheck:
 # verify-all builds and verifies every implementation with the shared cases, writes var/records/verification.json and checks
 # it with the evidence check (scripts/verify.mts --record); verify-<implementation> verifies one implementation and writes no
 # record. The package tests of each implementation run in test-<language>, with the native runner of its language.
-verify-all:
+# verify-all checks the PIE record of make pie-check, which names the sources of the tree that it checked, so pie-check is its
+# prerequisite: it reads the record of its own tree and never one that an earlier tree left (pie-check is no target of
+# CHECK_TARGETS of its own).
+verify-all: pie-check
 	$(NODE) scripts/verify.mts --record$(if $(JSON_TEST_SUITE), --suite "$(JSON_TEST_SUITE)")
 
 verify-js verify-rust verify-go verify-php verify-php-extension verify-python:
@@ -376,7 +380,7 @@ kit-gates-runtime-php: lint-php test-php
 kit-gates-runtime-python: lint-python test-python
 kit-gates-runtime-go: lint-go test-go
 kit-gates-runtime-rust: lint-rust test-rust
-kit-gates-runtime-php-ext: lint-php-ext test-php-ext pie-check
+kit-gates-runtime-php-ext: lint-php-ext test-php-ext
 
 # kit-ci-plan writes the jobs, runners and tools of config/ci.json to GITHUB_OUTPUT; kit-ci-setup runs the setup targets that
 # config/ci.json declares for GROUP=shared|runtime and RUNTIME.
