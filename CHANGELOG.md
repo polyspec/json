@@ -6,7 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
-- The distribution procedure names the successful `ci` run on `main` as the release trigger and separates the repository version tag from the binding Go module tag (T3.26-1). It no longer says that a tag push starts the release or that `release-tag` creates a legacy Go tag. The release sequence includes the binding recipe, Go module and platform asset steps. Verification: both stale-text checks and `make docs-check` pass.
+- The distribution procedure names the successful `ci` run on `main` as the release trigger and separates the repository version tag from the binding Go module tag (T3.26-1). It no longer says that a tag push starts the release or that `release-tag` creates a legacy Go tag. The release sequence includes the binding recipe, Go module and platform asset steps. Verification: `make item-test ID=T3.26-1` passes both stale-text checks and `make docs-check` on the committed tree.
 
 ## 0.0.29
 
