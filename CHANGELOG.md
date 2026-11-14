@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- The distribution procedure names the successful `ci` run on `main` as the release trigger and separates the repository version tag from the binding Go module tag (T3.26-1). It no longer says that a tag push starts the release or that `release-tag` creates a legacy Go tag. The release sequence includes the binding recipe, Go module and platform asset steps. Verification: both stale-text checks and `make docs-check` pass.
+
 ## 0.0.29
 
 - A release carries the PHP extension of `packages/php-ext` as the Composer package `polyspec/json` that PIE installs (T3.26): `config/release.json` declares it, product `json`, runtime `php-ext`, with `packages/php-ext/composer.json` in the mode `archive`, so `make release-assets` writes `polyspec-json-php-ext-X.Y.Z.zip` and `packages.json`, the Composer repository of the release, and `make release-candidate-assets VERSION=X.Y.Z` builds them from the committed `HEAD` without a tag. The release 0.0.28 carried no Composer package and no `packages.json`, so `pie install polyspec/json` found no package. Red: `tests/scripts/registry.test.mts` failed, because `config/release.json` declared no package. Green: the test passes, and `make release-candidate-assets VERSION=0.0.29` writes the zip and `packages.json`.

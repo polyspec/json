@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: e101cc54fe5eec960dc76a9b8c3d2c42d03b9c5ce0f09213df3f5168ee454160 -->
+<!-- source-sha256: e5a3cf7c5f45be6590b7233b7c3a30061bf5f661e918fd204561d87b7596d5da -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- 배포 절차는 `main`에서 성공한 `ci` 실행을 release 시작 조건으로 적고 저장소 version tag와 binding Go 모듈 tag를 구분한다(T3.26-1). Tag push가 release를 시작하거나 `release-tag`가 legacy Go tag를 만든다고 적지 않는다. Release 순서에는 binding recipe, Go 모듈, 플랫폼 asset 단계를 포함한다. 검증: 두 stale-text 검사와 `make docs-check`가 통과한다.
 
 ## 0.0.29
 
