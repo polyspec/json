@@ -61,7 +61,8 @@ unexport CARGO_TARGET_DIR
 # The targets of the full suite that make check runs through ci-targets of @polyspec/kit and that the jobs of
 # .github/workflows/ci-pipeline.yml run as the prerequisites of their kit-gates-* target (a target is in one job). verify-all
 # writes the aggregate record into var/records.
-CHECK_TARGETS := suppression-check link-check rules-check rebuild-check language-check duplication-check layout-check owner-validate release-coverage docs-check evidence-check verify-all lint-rust lint-go lint-php lint-php-ext test-php-ext lint-python json-test-scripts typecheck lint-ts test-js fmt-check test-rust test-go test-php test-python
+CHECK_TARGETS := suppression-check link-check rules-check rebuild-check language-check duplication-check layout-check owner-validate release-coverage docs-check evidence-check verify-all lint-rust lint-go lint-php lint-php-ext test-php-ext lint-python json-test-scripts typecheck lint-ts test-js fmt-check test-rust test-go test-php test-python \
+	lint-bindings check-declarations test-binding-crates test-binding-python test-binding-node test-binding-wasm test-binding-php test-binding-go
 
 .PHONY: check fmt-check json-test-scripts typecheck json-install-php json-install-python verify-all verify-js verify-rust verify-go verify-php verify-php-extension verify-python evidence-check pie-check \
 	benchmark benchmark-check benchmark-host python-parse-budget install json-install json-install-rust \
@@ -292,12 +293,102 @@ test-rust:
 # zz_generated_*.go, which Git ignores; bindings-check runs the contract check, which also compares the tracked binding
 # packages with what binding scaffold writes (binding L-2, CK-19).
 BINDING := $(CURDIR)/node_modules/.bin/binding
-.PHONY: bindings bindings-check lint-bindings test-bindings
+.PHONY: bindings bindings-check lint-bindings test-bindings check-declarations binding-node-package test-binding-crates \
+	test-binding-python test-binding-node test-binding-wasm test-binding-php test-binding-go json-install-bindings
+# The binding packages are the released packages of the core (docs/spec/json-contract.md#transition), so the full suite runs
+# the generated tests of each target of the contract, which hold the cases of contracts/core.json (binding G-5), on the
+# standard runner of its language, each in its own target test-binding-<target>, against a build with the test features of
+# its crate (binding GN-5): unittest against the installed wheel, node --test against the installed npm package and through
+# its subpath ./wasm, PHPUnit with the extension loaded and go test with the static library. The job bindings of
+# .github/workflows/ci-pipeline.yml runs them through kit-gates-bindings.
+test-bindings: lint-bindings check-declarations test-binding-crates $(foreach target,$(BINDING_TARGETS),test-binding-$(target))
+# The build script of ext-php-rs runs bindgen, which reads the libclang and the clang of the LLVM of config/toolchain.json:
+# LLVM_ROOT of packages/release.mk, which make install-llvm installs; without that file bindgen finds them itself.
+BINDING_LLVM = $(if $(LLVM_ROOT),LIBCLANG_PATH=$(LLVM_ROOT)/lib CLANG_PATH=$(LLVM_ROOT)/bin/clang)
 # The lint and the tests of the binding crates, after make bindings writes their generated folders.
 lint-bindings: bindings
-	$(CARGO) clippy --locked $(foreach crate,$(BINDING_CRATES),-p $(crate)) --all-targets -- -D warnings
-test-bindings: bindings
-	$(CARGO) test --locked $(foreach crate,$(BINDING_CRATES),-p $(crate))
+	$(BINDING_LLVM) $(CARGO) clippy --locked $(foreach crate,$(BINDING_CRATES),-p $(crate)) --all-targets -- -D warnings
+test-binding-crates: bindings
+	$(BINDING_LLVM) $(CARGO) test --locked $(foreach crate,$(BINDING_CRATES),-p $(crate))
+# The TypeScript compiler of package-lock.json checks the generated declarations of the Node binding and of its WASM binding.
+check-declarations: bindings
+	$(NODE) node_modules/typescript/bin/tsc --ignoreConfig --noEmit --strict packages/ts/generated/index.d.ts
+	$(NODE) node_modules/typescript/bin/tsc --ignoreConfig --noEmit --strict packages/ts/wasm/generated/index.d.ts
+
+# The tools of the job bindings beyond those of make install-tools: maturin and the wasm-bindgen CLI of mise.toml at the
+# digests of mise.lock, the crates of Cargo.lock, and PHPUnit of legacy/packages/php/composer.lock (json-install-php), which
+# runs the generated tests of the PHP extension until the legacy PHP package is removed.
+json-install-bindings: json-install-rust-packages json-install-php
+	$(ONLINE) $(KIT_TOOLS)/bin/mise install --locked github:PyO3/maturin github:wasm-bindgen/wasm-bindgen
+MATURIN := $(KIT_TOOLS)/mise/shims/maturin
+WASM_BINDGEN := $(KIT_TOOLS)/mise/shims/wasm-bindgen
+GOFMT := $(KIT_TOOLS)/mise/shims/gofmt
+# The PHP of PATH, whose php-config the build script of ext-php-rs reads: the PHP of .php-version that setup-php provides.
+PHP ?= php
+PHPUNIT := $(CURDIR)/legacy/packages/php/vendor/bin/phpunit
+BINDING_VAR := $(CURDIR)/var/bindings
+BINDING_DYLIB := $(if $(filter Darwin,$(shell uname -s)),dylib,so)
+# The test features of a binding crate: every feature of its manifest (binding GN-5), joined by commas.
+binding_features = $(shell sed -n '/^\[features\]/,/^\[/s/^\([a-z][a-z0-9-]*\) = .*/\1/p' $(1) | paste -sd, -)
+
+# The wheel that maturin builds for the Python of mise.toml, installed into a virtual environment without an index, and
+# the generated tests on unittest, which fails a run that ran no test.
+test-binding-python: bindings
+	$(PYTHON) -m venv --clear $(BINDING_VAR)/venv
+	rm -rf $(BINDING_VAR)/wheels
+	cd packages/python && $(MATURIN) build --locked --interpreter $(BINDING_VAR)/venv/bin/python --features $(call binding_features,packages/python/Cargo.toml) --out $(BINDING_VAR)/wheels
+	$(BINDING_VAR)/venv/bin/python -m pip install -q --no-index --force-reinstall $(BINDING_VAR)/wheels/*.whl
+	cd $(BINDING_VAR) && venv/bin/python -m unittest discover -s $(CURDIR)/packages/python/generated/tests -t $(CURDIR)/packages/python/generated/tests
+
+# The npm package with the addon of this platform and the WASM module, packed and installed into var/bindings/node as a
+# release packs them (binding GN-3c, GN-18, P-5): the addon is the platform package that a release names in
+# optionalDependencies, and the module and its glue are what the wasm-bindgen of mise.toml writes into
+# packages/ts/wasm/generated.
+BINDING_PLATFORM := $(shell $(NODE) -p 'process.platform + "-" + process.arch + (process.platform === "linux" ? "-gnu" : "")' 2>/dev/null)
+BINDING_ADDON := json.$(BINDING_PLATFORM).node
+WASM_BINDGEN_RELEASE := $(shell sed -n 's/^wasm-bindgen = "=\(.*\)"$$/\1/p' packages/ts/wasm/Cargo.toml)
+binding-node-package: bindings
+	test "$$($(WASM_BINDGEN) --version)" = "wasm-bindgen $(WASM_BINDGEN_RELEASE)"
+	$(CARGO) build --locked -p polyspec-json-wasm --target wasm32-unknown-unknown --features $(call binding_features,packages/ts/wasm/Cargo.toml)
+	$(WASM_BINDGEN) --target web --out-dir packages/ts/wasm/generated --out-name json_wasm target/wasm32-unknown-unknown/debug/polyspec_json_wasm.wasm
+	$(CARGO) build --locked -p polyspec-json-node --features $(call binding_features,packages/ts/Cargo.toml)
+	rm -rf $(BINDING_VAR)/node $(BINDING_VAR)/node-platform
+	mkdir -p $(BINDING_VAR)/node $(BINDING_VAR)/node-platform
+	cp target/debug/libpolyspec_json_node.$(BINDING_DYLIB) $(BINDING_VAR)/node-platform/$(BINDING_ADDON)
+	$(NODE) -e 'const p = require("./packages/ts/package.json"); require("fs").writeFileSync("$(BINDING_VAR)/node-platform/package.json", JSON.stringify({ name: p.name + "-$(BINDING_PLATFORM)", version: p.version, os: [process.platform], cpu: [process.arch], main: "$(BINDING_ADDON)", files: ["$(BINDING_ADDON)"] }, null, 2) + "\n")'
+	cd $(BINDING_VAR)/node-platform && $(NPM) pack --pack-destination $(BINDING_VAR)/node
+	cd packages/ts && $(NPM) pack --pack-destination $(BINDING_VAR)/node
+	echo '{ "private": true }' > $(BINDING_VAR)/node/package.json
+	cd $(BINDING_VAR)/node && $(NPM) install --offline --no-audit --no-fund --omit=optional ./*.tgz
+
+# The generated tests of the Node binding on node --test, against the installed package.
+test-binding-node: binding-node-package
+	cp packages/ts/generated/tests/generated.test.mjs $(BINDING_VAR)/node/generated.test.mjs
+	cd $(BINDING_VAR)/node && $(NODE) --test generated.test.mjs
+
+# The generated tests of the WASM binding through the subpath ./wasm of the installed package (binding P-5); --expose-gc
+# serves the generated tests that collect instances (binding GN-18a).
+test-binding-wasm: binding-node-package
+	cp packages/ts/wasm/generated/tests/generated.test.mjs $(BINDING_VAR)/node/generated.wasm.test.mjs
+	cd $(BINDING_VAR)/node && $(NODE) --expose-gc --test generated.wasm.test.mjs
+
+# The extension built with the test features against the PHP of PATH, its stub linted, and the generated tests on PHPUnit
+# with the extension loaded; a run without a test or with a skipped test fails.
+test-binding-php: bindings
+	$(BINDING_LLVM) $(CARGO) build --locked -p polyspec-json-php-ext --features $(call binding_features,packages/php-ext/Cargo.toml)
+	$(PHP) -l packages/php-ext/generated/polyspec_json.stub.php
+	$(PHP) -d extension=$(CURDIR)/target/debug/libpolyspec_json.$(BINDING_DYLIB) $(PHPUNIT) --fail-on-empty-test-suite --fail-on-skipped packages/php-ext/generated/tests
+
+# The static library with the test features, which Go links through CGO_LDFLAGS, then gofmt, go vet and the generated tests
+# on go test with the build tags of those features, polyspec_<feature> with _ for - (binding GN-5). The module has no go.work,
+# and GOTOOLCHAIN=local is exported above.
+BINDING_GO_FEATURES = $(call binding_features,packages/go/internal/ffi/Cargo.toml)
+BINDING_GO_ENV = CGO_LDFLAGS=-L$(CURDIR)/target/debug GOWORK=off GOFLAGS=-tags=$(subst -,_,$(shell echo '$(BINDING_GO_FEATURES)' | sed 's/\([^,]*\)/polyspec_\1/g'))
+test-binding-go: bindings
+	$(CARGO) build --locked -p polyspec-json-go --features $(BINDING_GO_FEATURES)
+	test -z "$$(cd packages/go && $(GOFMT) -l .)"
+	cd packages/go && $(BINDING_GO_ENV) $(GO) vet ./...
+	cd packages/go && $(BINDING_GO_ENV) $(GO) test -count=1 ./...
 # bindings generates the five targets, each in its own target bindings-<target>, so that a target that binding does not
 # generate fails with its name (binding GN-1c) and the other targets still run.
 BINDING_TARGETS := php python node wasm go
@@ -404,7 +495,7 @@ link-check:
 
 # ---- CI: the gates, the plan and the setup of the jobs of .github/workflows/ci-pipeline.yml ----------------------------------
 .PHONY: kit-gates-static kit-gates-verify kit-gates-runtime-ts kit-gates-runtime-php kit-gates-runtime-python \
-	kit-gates-runtime-go kit-gates-runtime-rust kit-gates-runtime-php-ext kit-ci-plan kit-ci-setup kit-ci-context-prepare \
+	kit-gates-runtime-go kit-gates-runtime-rust kit-gates-runtime-php-ext kit-gates-bindings kit-ci-plan kit-ci-setup kit-ci-context-prepare \
 	kit-ci-context-cleanup ci-targets
 # The targets of the jobs of the pipeline, which its steps run by name: kit-gates-static in the shared job, kit-gates-verify in
 # the verify job and kit-gates-runtime-<runtime> in the runtime job of each runtime. Together they hold every target of
@@ -422,6 +513,8 @@ kit-gates-runtime-python: lint-python test-python
 kit-gates-runtime-go: lint-go test-go
 kit-gates-runtime-rust: lint-rust fmt-check test-rust
 kit-gates-runtime-php-ext: lint-php-ext test-php-ext
+# kit-gates-bindings runs in the job bindings, which installs the tools of every target of the contract.
+kit-gates-bindings: lint-bindings check-declarations test-binding-crates test-binding-python test-binding-node test-binding-wasm test-binding-php test-binding-go
 
 # kit-ci-plan writes the jobs, runners and tools of config/ci.json to GITHUB_OUTPUT; kit-ci-setup runs the setup targets that
 # config/ci.json declares for GROUP=shared|runtime and RUNTIME.

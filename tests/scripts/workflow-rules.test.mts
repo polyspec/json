@@ -133,3 +133,19 @@ test('assets.yml builds the PHP extension for every PHP minor that the extension
   }
   assert.deepEqual(built, minors, 'the job platform sets up each PHP minor of phpExtension.minors and builds the extension for it');
 });
+
+// docs/spec/json-contract.md#transition: the binding packages of packages/ are the released packages, so the CI runs the
+// generated tests of every target of the contract, which hold the cases of contracts/core.json (binding G-5), on the standard
+// runner of its language, before a release publishes them. Each target of BINDING_TARGETS has its target test-binding-<target>,
+// which a job of the pipeline runs, and the full suite holds it.
+test('the pipeline runs the generated tests of every binding target', () => {
+  const text = database();
+  const targets = variable(text, 'BINDING_TARGETS');
+  assert.deepEqual([...targets].sort(), ['go', 'node', 'php', 'python', 'wasm'], 'BINDING_TARGETS names the five targets of the contract');
+  const run = jobTargets().flatMap(target => prerequisites(text, target));
+  const suite = variable(text, 'CHECK_TARGETS');
+  for (const target of ['lint-bindings', 'check-declarations', ...targets.map(name => `test-binding-${name}`)]) {
+    assert.ok(run.includes(target), `a job of the pipeline runs ${target}`);
+    assert.ok(suite.includes(target), `CHECK_TARGETS names ${target}`);
+  }
+});

@@ -1,9 +1,9 @@
 # The CI pipeline of json, a file of this repository taken from the pipeline of kit (kit writes no copy, kit
 # docs/spec/utilities-and-recipes.md). .github/workflows/ci.yml holds the triggers and the concurrency and calls it as its job
-# kit, so one push runs one workflow: shared first, then the verify and runtime jobs in parallel, then required. Each job runs
-# only make targets of the Makefile of this repository: it installs its own locked prerequisites, declared in config/ci.json
-# or the deps-<runtime> targets, and runs the target of its job, kit-gates-static, kit-gates-verify or
-# kit-gates-runtime-<runtime>, through make ci-targets. The steps name these targets, so rules-check reaches their
+# kit, so one push runs one workflow: shared first, then the verify, runtime and bindings jobs in parallel, then required. Each
+# job runs only make targets of the Makefile of this repository: it installs its own locked prerequisites, declared in
+# config/ci.json, the deps-<runtime> targets or json-install-bindings, and runs the target of its job, kit-gates-static,
+# kit-gates-verify, kit-gates-runtime-<runtime> or kit-gates-bindings, through make ci-targets. The steps name these targets, so rules-check reaches their
 # prerequisites (kit K1057); the runtime matrix lists the runtimes of the repository, and the plan adds the tools of each.
 name: ci-pipeline
 
@@ -129,20 +129,58 @@ jobs:
           path: var/report/ci-targets/
           if-no-files-found: ignore
 
+  # The generated bindings of the five targets of the contract, which a release publishes (docs/spec/json-contract.md#transition):
+  # the lint of the binding crates, the declarations of the Node binding and the generated tests of each target, which hold the
+  # cases of contracts/core.json, on the standard runner of its language (kit-gates-bindings). It runs on ubuntu-26.04-arm,
+  # whose packages hold the LLVM of config/toolchain.json that the build of the PHP extension reads (make install-llvm of
+  # packages/release.mk, which make release-recipes writes).
+  bindings:
+    needs: shared
+    runs-on: ubuntu-26.04-arm
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
+        with:
+          php-version-file: .php-version
+          tools: none
+          coverage: none
+      # The bootstrap of kit (K992): the Node.js of mise.toml, the locked kit package, the npm of var/tools and the packages.
+      - uses: ./.github/actions/kit-bootstrap
+      - name: install binding toolchains
+        run: make install-tools TOOLS="go php composer python uv"
+      - name: install binding prerequisites
+        run: make json-install-bindings
+      - name: write the release recipes
+        run: make release-recipes
+      - name: install the LLVM of config/toolchain.json
+        run: make install-llvm
+      - name: bindings gate
+        run: make ci-targets TARGETS=kit-gates-bindings
+      # actions/upload-artifact v7.0.1: the report of make ci-targets, var/report/ci-targets.
+      - name: report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: kit-report-bindings
+          path: var/report/ci-targets/
+          if-no-files-found: ignore
+
   # The closing common part: it fails when a job that the plan selected does not succeed. The plan selects shared and verify,
-  # and runtime when the repository has one (K950). A job
+  # and runtime when the repository has one (K950); bindings always runs. A job
   # the plan did not select is skipped and is not a result; a selected job that is skipped fails the pipeline. It runs on the
   # default runner, since the runner output of shared is empty when shared fails before the plan.
   required:
     if: ${{ always() }}
-    needs: [shared, verify, runtime]
+    needs: [shared, verify, runtime, bindings]
     runs-on: ubuntu-24.04
     env:
       SHARED_RESULT: ${{ needs.shared.result }}
       VERIFY_RESULT: ${{ needs.verify.result }}
       RUNTIME_RESULT: ${{ needs.runtime.result }}
+      BINDINGS_RESULT: ${{ needs.bindings.result }}
       SHARED_SELECTED: 'true'
       VERIFY_SELECTED: 'true'
+      BINDINGS_SELECTED: 'true'
       RUNTIME_SELECTED: ${{ needs.shared.outputs.has_runtimes == 'true' }}
     steps:
       - name: require every job that the plan selected
@@ -162,4 +200,5 @@ jobs:
           judge shared "$SHARED_RESULT" "$SHARED_SELECTED"
           judge verify "$VERIFY_RESULT" "$VERIFY_SELECTED"
           judge runtime "$RUNTIME_RESULT" "$RUNTIME_SELECTED"
+          judge bindings "$BINDINGS_RESULT" "$BINDINGS_SELECTED"
           exit "$failed"

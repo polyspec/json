@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: aa074fd398a74b2cda4e2164a6c43025939460c67e6eacb9298e77f8977d4269 -->
+<!-- source-sha256: f5bf2fecfca583800159ca1c551510b39be0cd529f4355e1c06963a8ea4bda45 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -9,6 +9,7 @@
 
 ## 0.0.28
 
+- CI는 `contracts/core.json`의 case를 담은 다섯 바인딩 target의 생성 시험을 실행한다(T3.2, binding G-5, GN-13e). `make test-binding-python`, `test-binding-node`, `test-binding-wasm`, `test-binding-php`, `test-binding-go`는 각 바인딩 crate를 test feature로 빌드하고, 그 생성 시험을 설치한 wheel에 unittest로, 설치한 npm package와 `./wasm`을 통해 node --test로, 확장을 로드한 PHPUnit으로, 정적 라이브러리로 go test로 실행한다. `.github/workflows/ci-pipeline.yml`의 job `bindings`가 `kit-gates-bindings`로 `lint-bindings`, `check-declarations`, `test-binding-crates`와 함께 그것들을 실행하고, 전체 suite가 그것들을 담으며, `mise.toml`은 `mise.lock`에 digest를 둔 maturin 1.16.0을 고정한다. `docs/spec/json-contract.md#transition`이 legacy package는 각각 지워질 때까지 자기 시험을 실행한다고 정하므로 legacy package는 gate에 자기 시험을 둔다(T3.25). Red: 어떤 CI gate도 바인딩의 생성 시험을 실행하지 않아서, release는 어떤 run도 시험하지 않은 바인딩 package를 게시했다.
 - 저장소는 binding 0.0.5를 고정한다(`package.json`과 `package-lock.json`의 release asset, `polyspec-binding-core`에 대한 모든 의존 줄과 `Cargo.lock`의 tag v0.0.5). 그 판의 `release-wheel`은 Linux에서 manylinux_2_34 wheel을 빌드한다(T3.22, binding B2.267). Red: 0.0.5의 `binding check --release`가 0.0.4를 고정한 `Cargo.lock`에 CK-20을 보고했다. Green: 아무것도 보고하지 않는다.
 - 릴리스는 `packages/php-ext`의 PHP 확장을 지원하는 모든 PHP minor마다 빌드한다(T3.24). 확장의 빌드는 그것을 빌드한 PHP minor에서만 로드되므로, `config/toolchain.json`의 `phpExtension.minors`는 `packages/php-ext/composer.json`의 범위 `>=8.4`의 하한부터 8.4와 8.5를 적고, `.github/workflows/assets.yml`의 job `platform`은 각 minor를 설정한 뒤 빌드한다. Red: `tests/scripts/workflow-rules.test.mts`는 그 job이 `.php-version`의 PHP 8.4 하나로만 확장을 빌드함을 발견했다. Green: 그 job은 8.4와 8.5로 빌드한다.
 ## 0.0.27
