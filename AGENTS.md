@@ -92,6 +92,8 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
   Enforced by: none, judged at review.
 - Own: A package that pins a package of another repository names only a tag that exists on GitHub. The pin is written after that tag is pushed.
   Enforced by: none, judged at review.
+- Own: After a release the repository holds the branch `main` alone, locally and on the remote. A line of development, such as `v1/rust-core`, is merged into `main` for its release and is then deleted with its worktrees and every other branch beside `main`, because a branch that remains after a release holds commits that no release and no CI run of `main` covers.
+  Enforced by: none, judged at review.
 
 <a id="tools"></a>
 ## Shared tools

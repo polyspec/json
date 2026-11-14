@@ -1,5 +1,5 @@
 <!-- doc-id: development -->
-<!-- source-sha256: 7855d2cc5d2c2d0a5b2389c915c67488265cb13c430c52828ae71e2220eed964 -->
+<!-- source-sha256: 6de8b26923ed09aef679a4146b5200328bd89c9999e7de5277fde00254a8b24b -->
 # Development procedure
 
 [English](AGENTS.md)
@@ -92,6 +92,8 @@
 - Own: tag push 뒤 모든 manifest에 tag의 version이 있고 `CHANGELOG.md`에 `## X.Y.Z` 절이 있으며, 그다음 release.yml이 archive와 Python wheel을 빌드하고 GitHub Release를 만듭니다.
   Enforced by: none, 검토에서 판단합니다.
 - Own: 다른 저장소의 패키지를 고정하는 패키지는 GitHub에 실제로 존재하는 tag만 이름으로 적습니다. 고정은 그 tag를 push한 뒤에 씁니다.
+  Enforced by: none, 검토에서 판단합니다.
+- Own: release 뒤 저장소에는 로컬과 원격 모두 branch `main`만 있습니다. `v1/rust-core` 같은 개발 line은 그 release를 위해 `main`에 병합된 뒤 그 worktree, 그리고 `main` 곁의 다른 모든 branch와 함께 지워집니다. release 뒤에 남은 branch는 어떤 release도, `main`의 어떤 CI 실행도 다루지 않는 commit을 담기 때문입니다.
   Enforced by: none, 검토에서 판단합니다.
 
 <a id="tools"></a>
