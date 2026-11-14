@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 45957476a078831bfaaef0bee5b962dff60188060b35295b75d034981dc19dc9 -->
+<!-- source-sha256: aa074fd398a74b2cda4e2164a6c43025939460c67e6eacb9298e77f8977d4269 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,9 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.28
+
+- 저장소는 binding 0.0.5를 고정한다(`package.json`과 `package-lock.json`의 release asset, `polyspec-binding-core`에 대한 모든 의존 줄과 `Cargo.lock`의 tag v0.0.5). 그 판의 `release-wheel`은 Linux에서 manylinux_2_34 wheel을 빌드한다(T3.22, binding B2.267). Red: 0.0.5의 `binding check --release`가 0.0.4를 고정한 `Cargo.lock`에 CK-20을 보고했다. Green: 아무것도 보고하지 않는다.
 - 릴리스는 `packages/php-ext`의 PHP 확장을 지원하는 모든 PHP minor마다 빌드한다(T3.24). 확장의 빌드는 그것을 빌드한 PHP minor에서만 로드되므로, `config/toolchain.json`의 `phpExtension.minors`는 `packages/php-ext/composer.json`의 범위 `>=8.4`의 하한부터 8.4와 8.5를 적고, `.github/workflows/assets.yml`의 job `platform`은 각 minor를 설정한 뒤 빌드한다. Red: `tests/scripts/workflow-rules.test.mts`는 그 job이 `.php-version`의 PHP 8.4 하나로만 확장을 빌드함을 발견했다. Green: 그 job은 8.4와 8.5로 빌드한다.
 ## 0.0.27
 

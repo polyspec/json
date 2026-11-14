@@ -33,7 +33,7 @@
   "devDependencies": {
     "@humanwhocodes/momoa": "3.3.13",
     "@napi-rs/cli": "3.10.12",
-    "@polyspec/binding": "https://github.com/polyspec/binding/releases/download/v0.0.4/polyspec-binding-0.0.4.tgz",
+    "@polyspec/binding": "https://github.com/polyspec/binding/releases/download/v0.0.5/polyspec-binding-0.0.5.tgz",
     "@polyspec/kit": "https://github.com/polyspec/kit/releases/download/v0.0.112/polyspec-kit-0.0.112.tgz",
     "@types/mdast": "4.0.4",
     "@types/node": "26.6.5",

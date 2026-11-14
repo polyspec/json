@@ -6,6 +6,9 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.28
+
+- The repository pins binding 0.0.5 (the release asset in `package.json` and `package-lock.json`, the tag v0.0.5 in every dependency line on `polyspec-binding-core` and in `Cargo.lock`), whose `release-wheel` builds a manylinux_2_34 wheel on Linux (T3.22, binding B2.267). Red: `binding check --release` of 0.0.5 reported CK-20 for `Cargo.lock`, which pinned 0.0.4. Green: it reports nothing.
 - A release builds the PHP extension of `packages/php-ext` for every PHP minor that it supports (T3.24): `phpExtension.minors` of `config/toolchain.json` names 8.4 and 8.5, from the lower bound of the range `>=8.4` of `packages/php-ext/composer.json`, because a build of the extension loads only in the PHP minor that built it, and the job `platform` of `.github/workflows/assets.yml` sets up each minor and builds after it. Red: `tests/scripts/workflow-rules.test.mts` found that the job built the extension for the PHP of `.php-version`, 8.4, alone. Green: the job builds for 8.4 and 8.5.
 ## 0.0.27
 
