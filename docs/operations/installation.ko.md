@@ -1,5 +1,5 @@
 <!-- doc-id: installation -->
-<!-- source-sha256: 083f19cce44d8999d1f398bf8a5ad3bcff2b3e007faec2b7f2394162a9663a23 -->
+<!-- source-sha256: 29a51f7404073eb50aef1f335d5f648a5c92fcb502ad6e899e8bcfc4409a9b2b -->
 # 설치와 실행
 
 [English](installation.md)
@@ -44,7 +44,13 @@ pip install "https://github.com/polyspec/json/releases/download/vX.Y.Z/polyspec_
 <a id="release-assets"></a>
 ## 릴리스 asset
 
-v0.0.27부터의 GitHub Release는 바인딩 패키지의 플랫폼별 asset을 담습니다. npm 패키지와 그 플랫폼 패키지, abi3 wheel, 그리고 `packages/php-ext/composer.json`의 PHP 범위 하한부터 `config/toolchain.json`의 `phpExtension.minors`가 적는 PHP minor마다 빌드한 플랫폼별 PHP 확장입니다([이행 기간](../spec/json-contract.ko.md#transition)). v0.0.25까지의 GitHub Release `vX.Y.Z`마다 `polyspec-ordered-json-X.Y.Z.tgz`, `polyspec-ordered-json-php-X.Y.Z.zip`, `polyspec-ordered-json-php-ext-X.Y.Z.zip`과 wheel `polyspec_ordered_json-X.Y.Z-py3-none-any.whl`이 있습니다. 각 archive는 자기 package의 manifest를 바꾸지 않고 담습니다. `legacy/packages/js/`의 `package.json`, `legacy/packages/php/`와 `legacy/packages/php-ext/`의 `composer.json`이며, 모두 `version` X.Y.Z를 선언하고 `repositories`와 `@dev`가 없습니다. Python 패키지는 wheel만 릴리스합니다. pip는 위 설치 절의 wheel asset URL로 설치하며, git tag로는 설치하지 않습니다.
+v0.0.27부터의 GitHub Release는 바인딩 패키지의 플랫폼별 asset을 담습니다. npm 패키지와 그 플랫폼 패키지, abi3 wheel, 그리고 `packages/php-ext/composer.json`의 PHP 범위 하한부터 `config/toolchain.json`의 `phpExtension.minors`가 적는 PHP minor마다 빌드한 플랫폼별 PHP 확장입니다([이행 기간](../spec/json-contract.ko.md#transition)). v0.0.29부터는 `packages/php-ext`의 Composer package `polyspec/json`인 `polyspec-json-php-ext-X.Y.Z.zip`과 release의 Composer 저장소 `packages.json`도 담습니다. PIE는 그 저장소에서 확장을 설치하고, 자기 플랫폼과 PHP minor의 빌드를 같은 release에서 내려받습니다.
+
+~~~sh
+pie repository:add composer https://github.com/polyspec/json/releases/download/vX.Y.Z/packages.json
+pie install polyspec/json:X.Y.Z
+~~~
+ v0.0.25까지의 GitHub Release `vX.Y.Z`마다 `polyspec-ordered-json-X.Y.Z.tgz`, `polyspec-ordered-json-php-X.Y.Z.zip`, `polyspec-ordered-json-php-ext-X.Y.Z.zip`과 wheel `polyspec_ordered_json-X.Y.Z-py3-none-any.whl`이 있습니다. 각 archive는 자기 package의 manifest를 바꾸지 않고 담습니다. `legacy/packages/js/`의 `package.json`, `legacy/packages/php/`와 `legacy/packages/php-ext/`의 `composer.json`이며, 모두 `version` X.Y.Z를 선언하고 `repositories`와 `@dev`가 없습니다. Python 패키지는 wheel만 릴리스합니다. pip는 위 설치 절의 wheel asset URL로 설치하며, git tag로는 설치하지 않습니다.
 
 npm은 tarball을 경로로 설치합니다.
 

@@ -43,7 +43,13 @@ pip install "https://github.com/polyspec/json/releases/download/vX.Y.Z/polyspec_
 <a id="release-assets"></a>
 ## Release assets
 
-A GitHub Release from v0.0.27 carries the assets of the binding packages of each platform: the npm package and its platform packages, the abi3 wheel, and the PHP extension of each platform for each PHP minor that `phpExtension.minors` of `config/toolchain.json` names, from the lower bound of the PHP range of `packages/php-ext/composer.json` ([transition](../spec/json-contract.md#transition)). Each GitHub Release `vX.Y.Z` up to v0.0.25 carries `polyspec-ordered-json-X.Y.Z.tgz`, `polyspec-ordered-json-php-X.Y.Z.zip`, `polyspec-ordered-json-php-ext-X.Y.Z.zip` and the wheel `polyspec_ordered_json-X.Y.Z-py3-none-any.whl`. Each archive carries the manifest of its package unchanged: `package.json` of `legacy/packages/js/` and `composer.json` of `legacy/packages/php/` and `legacy/packages/php-ext/`, each with `version` X.Y.Z, without `repositories` and without `@dev`. The Python package ships only its wheel: pip installs the wheel asset URL shown in the install section above, and no git tag installs it.
+A GitHub Release from v0.0.27 carries the assets of the binding packages of each platform: the npm package and its platform packages, the abi3 wheel, and the PHP extension of each platform for each PHP minor that `phpExtension.minors` of `config/toolchain.json` names, from the lower bound of the PHP range of `packages/php-ext/composer.json` ([transition](../spec/json-contract.md#transition)). From v0.0.29 it also carries `polyspec-json-php-ext-X.Y.Z.zip`, the Composer package `polyspec/json` of `packages/php-ext`, and `packages.json`, the Composer repository of the release. PIE installs the extension from that repository and downloads the build of its platform and PHP minor from the same release:
+
+~~~sh
+pie repository:add composer https://github.com/polyspec/json/releases/download/vX.Y.Z/packages.json
+pie install polyspec/json:X.Y.Z
+~~~
+ Each GitHub Release `vX.Y.Z` up to v0.0.25 carries `polyspec-ordered-json-X.Y.Z.tgz`, `polyspec-ordered-json-php-X.Y.Z.zip`, `polyspec-ordered-json-php-ext-X.Y.Z.zip` and the wheel `polyspec_ordered_json-X.Y.Z-py3-none-any.whl`. Each archive carries the manifest of its package unchanged: `package.json` of `legacy/packages/js/` and `composer.json` of `legacy/packages/php/` and `legacy/packages/php-ext/`, each with `version` X.Y.Z, without `repositories` and without `@dev`. The Python package ships only its wheel: pip installs the wheel asset URL shown in the install section above, and no git tag installs it.
 
 npm installs the tarball by its path:
 

@@ -5,7 +5,15 @@
   "changelogTranslations": [
     "CHANGELOG.ko.md"
   ],
-  "packages": [],
+  "packages": [
+    {
+      "kind": "composer",
+      "directory": "packages/php-ext",
+      "name": "polyspec/json",
+      "product": "json",
+      "runtime": "php-ext"
+    }
+  ],
   "manifests": {
     "packages/rust/Cargo.toml": "git-tag",
     "packages/ts/package.json": "version",
@@ -15,7 +23,7 @@
     "packages/python/Cargo.toml": "version",
     "packages/php-ext/Cargo.toml": "version",
     "packages/go/internal/ffi/Cargo.toml": "version",
-    "packages/php-ext/composer.json": "git-tag"
+    "packages/php-ext/composer.json": "archive"
   },
   "notReleased": {
     "Cargo.toml": "the root Cargo workspace; the crate is released by packages/rust/Cargo.toml",

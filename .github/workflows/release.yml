@@ -20,7 +20,9 @@
 #   release-prepare  the preparation that the release of the repository needs (none for json)
 #   release-tools    installs the tools that config/release.json needs for the packages of this repository
 #   release-tools-path puts var/tools/bin on the PATH of the steps that follow, through GITHUB_PATH
-#   release-assets  builds the archive of every package of config/release.json, which lists none, into var/release/assets
+#   release-assets  builds the archive of every package of config/release.json into var/release/assets: the zip of the PHP
+#                    extension of packages/php-ext, polyspec-json-php-ext-X.Y.Z.zip, and packages.json, the Composer repository
+#                    of the release from which PIE installs polyspec/json
 #   release-recipes  writes packages/release.mk, the release recipes of the bindings (binding GN-19h)
 #   release-go-module carries the Go module of the tag with the static libraries of the platforms (GN-19f) and pushes its tag
 #   release-publish creates the GitHub Release of the tag as a draft, with its notes and those files

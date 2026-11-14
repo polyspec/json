@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: f5bf2fecfca583800159ca1c551510b39be0cd529f4355e1c06963a8ea4bda45 -->
+<!-- source-sha256: deb1f6a4e55e7440e342064ae3780db83a31ff3020b9c7d2df829aaf5dc63e3c -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- release는 `packages/php-ext`의 PHP 확장을 PIE가 설치하는 Composer package `polyspec/json`으로 담는다(T3.26). `config/release.json`이 그것을 product `json`, runtime `php-ext`로, `packages/php-ext/composer.json`을 mode `archive`로 선언하므로, `make release-assets`는 `polyspec-json-php-ext-X.Y.Z.zip`과 release의 Composer 저장소 `packages.json`을 쓰고, `make release-candidate-assets VERSION=X.Y.Z`는 tag 없이 commit된 `HEAD`에서 그것들을 만든다. release 0.0.28은 Composer package와 `packages.json`을 담지 않아서 `pie install polyspec/json`이 package를 찾지 못했다. Red: `config/release.json`이 package를 선언하지 않아서 `tests/scripts/registry.test.mts`가 실패했다. Green: 시험이 통과하고, `make release-candidate-assets VERSION=0.0.29`가 zip과 `packages.json`을 쓴다.
 
 ## 0.0.28
 

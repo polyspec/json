@@ -533,10 +533,11 @@ ci-targets:
 	$(NODE) $(KIT)/ci-targets.mjs -k $(CI_REPORT) $(TARGETS)
 
 # ---- Release: the steps of .github/workflows/release.yml, in its order (config/release.json) ---------------------------------
-.PHONY: release-prepare release-tools release-tools-path release-tag release-tag-output release-assets release-publish release-undraft
+.PHONY: release-prepare release-tools release-tools-path release-tag release-tag-output release-assets release-candidate-assets release-publish release-undraft
 # The release builds the released versions, so its Go runs without the go.work that link writes.
-release-prepare release-tools release-tag release-assets release-publish release-undraft release-coverage: export GOWORK := off
-# release-prepare: this repository needs no preparation before release-tools.
+release-prepare release-tools release-tag release-assets release-candidate-assets release-publish release-undraft release-coverage: export GOWORK := off
+# release-prepare: the Composer package of config/release.json, the PHP extension of packages/php-ext, requires no package, and
+# release-assets packs it from the tagged commit with git archive, so the release installs nothing before release-tools.
 release-prepare:
 	@:
 release-tools:
@@ -555,8 +556,16 @@ release-tag:
 release-tag-output:
 	@test -n "$$GITHUB_OUTPUT" || { echo 'release-tag-output: GITHUB_OUTPUT is not set; run it in the release workflow' >&2; exit 2; }
 	printf 'tag=%s\nversion=%s\n' "$$TAG" "$$VERSION" >> "$$GITHUB_OUTPUT"
+# release-assets builds into var/release/assets the zip polyspec-json-php-ext-X.Y.Z.zip of the Composer package of
+# config/release.json, git archive of packages/php-ext at the tag, and packages.json, the Composer repository from which PIE
+# installs polyspec/json; the assets of each platform join them from the job assets.
 release-assets:
+	@test -n "$$TAG" || { echo 'release-assets: TAG is required, for example make release-assets TAG=v0.0.1' >&2; exit 2; }
 	RELEASE_ASSETS=var/release/assets $(ONLINE) $(NODE) $(KIT)/release.mjs assets "$$TAG"
+# release-candidate-assets builds the same files from the committed HEAD at VERSION, without a tag, into var/release/assets.
+release-candidate-assets:
+	@test -n "$(VERSION)" || { echo 'release-candidate-assets: VERSION is required, for example make release-candidate-assets VERSION=0.0.1' >&2; exit 2; }
+	RELEASE_ASSETS=var/release/assets $(NODE) $(KIT)/release.mjs candidate-assets "$(VERSION)"
 release-publish:
 	RELEASE_ASSETS=var/release/assets RELEASE_RECORDS=var/release $(NODE) $(KIT)/release.mjs publish "$$TAG"
 release-undraft:

@@ -107,17 +107,40 @@ test('the packages follow the polyspec naming convention and each Cargo package 
   assert.deepEqual([old.status, old.stdout, old.stderr], [1, '', '']);
 });
 
+/** The member `key` of the JSON object `value`, or undefined. */
+const member = (value: unknown, key: string): unknown => (typeof value === 'object' && value !== null ? Object.entries(value).find(([name]) => name === key)?.[1] : undefined);
+/** The JSON value of the tracked file `file` of the checkout. */
+const tracked = (file: string): unknown => JSON.parse(readFileSync(path.join(ROOT, file), 'utf8'));
+
 // docs/spec/json-contract.md#transition: the legacy packages keep their last release, and the root package.json and
 // composer.json, which name them, are the manifests of the development checkout. No release publishes them: the root
 // package.json is private, and config/release.json releases neither root manifest, so a version bump leaves them alone.
 test('no release publishes the legacy packages through the root manifests', () => {
-  /** The member `key` of the JSON object `value`, or undefined. */
-  const member = (value: unknown, key: string): unknown => (typeof value === 'object' && value !== null ? Object.entries(value).find(([name]) => name === key)?.[1] : undefined);
-  const manifest: unknown = JSON.parse(readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
+  const manifest = tracked('package.json');
   assert.equal(member(manifest, 'private'), true, 'the root package.json is private');
-  const release: unknown = JSON.parse(readFileSync(path.join(ROOT, 'config/release.json'), 'utf8'));
+  const release = tracked('config/release.json');
   for (const file of ['package.json', 'composer.json']) {
     assert.equal(member(member(release, 'manifests'), file), undefined, `config/release.json releases ${file}`);
     assert.equal(typeof member(member(release, 'notReleased'), file), 'string', `config/release.json names ${file} among the manifests that no release publishes`);
   }
+});
+
+// The PHP extension of packages/php-ext is the Composer package that packages.php of packages/rust/interface.json names, of the
+// type php-ext, which PIE installs. PIE reads the package from the Composer repository packages.json of the release, which kit
+// writes only for a Composer package of config/release.json, beside its zip <vendor>-<product>-<runtime>-<version>.zip, so the
+// release declares the package with its manifest in the mode archive.
+test('the release declares the PHP extension as the Composer package that PIE installs', () => {
+  const contract = tracked('packages/rust/interface.json');
+  const library = member(contract, 'library');
+  const name = member(member(member(contract, 'packages'), 'php'), 'package');
+  assert.deepEqual([typeof library, typeof name], ['string', 'string'], 'packages/rust/interface.json names the library and its PHP package');
+  const manifest = tracked('packages/php-ext/composer.json');
+  assert.deepEqual(
+    [member(manifest, 'name'), member(manifest, 'type'), member(member(manifest, 'php-ext'), 'extension-name'), member(member(manifest, 'require'), 'php')],
+    [name, 'php-ext', `polyspec_${String(library)}`, '>=8.4'],
+    'packages/php-ext/composer.json is the php-ext package that PIE installs',
+  );
+  const release = tracked('config/release.json');
+  assert.deepEqual(member(release, 'packages'), [{ kind: 'composer', directory: 'packages/php-ext', name, product: library, runtime: 'php-ext' }], 'config/release.json declares the Composer package of packages/php-ext');
+  assert.equal(member(member(release, 'manifests'), 'packages/php-ext/composer.json'), 'archive', 'config/release.json releases packages/php-ext/composer.json as the manifest of its archive');
 });
