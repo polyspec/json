@@ -87,3 +87,49 @@ test('make bootstrap installs the lock with the npm of devEngines', () => {
   assert.match(output, /exec --yes --package="npm@\$version" -- npm --prefix "\$root" ci --ignore-scripts/, 'the recipe runs npm ci --ignore-scripts with that release');
   assert.match(output, /npm_config_cache="\$root\/var\/bootstrap\/npm-cache"/, 'the npm cache of the bootstrap is in var/bootstrap of the checkout');
 });
+
+/** The member `key` of the JSON object `value`, or undefined. */
+function member(value: unknown, key: string): unknown {
+  return typeof value === 'object' && value !== null ? Object.entries(value).find(([name]) => name === key)?.[1] : undefined;
+}
+
+/** The JSON value of the file `file` of the repository. */
+function readJson(file: string): unknown {
+  const value: unknown = JSON.parse(readFileSync(path.join(ROOT, file), 'utf8'));
+  return value;
+}
+
+/** The PHP minors whose extension a release builds: phpExtension.minors of config/toolchain.json. */
+function phpExtensionMinors(): string[] {
+  const minors = member(member(readJson('config/toolchain.json'), 'phpExtension'), 'minors');
+  assert.ok(Array.isArray(minors) && minors.length > 0 && minors.every(minor => typeof minor === 'string'), 'config/toolchain.json names the PHP minors of the extension in phpExtension.minors');
+  return minors.map(String);
+}
+
+// The PHP extension of packages/php-ext requires the PHP range of its composer.json, and a build of the extension loads in the
+// PHP minor that built it alone. So config/toolchain.json names every supported minor, from the lower bound of that range, and
+// each job platform of assets.yml builds the extension for each of them: it sets up each minor and builds right after it.
+test('assets.yml builds the PHP extension for every PHP minor that the extension supports', () => {
+  const minors = phpExtensionMinors();
+  const range = String(member(member(readJson('packages/php-ext/composer.json'), 'require'), 'php'));
+  const lower = /^>=\s*(\d+\.\d+)/.exec(range)?.[1];
+  assert.ok(lower, `packages/php-ext/composer.json requires a PHP range with a lower bound, not ${range}`);
+  assert.equal(minors[0], lower, 'the first minor of phpExtension.minors is the lower bound of the PHP range of packages/php-ext/composer.json');
+  const text = readFileSync(path.join(ROOT, '.github/workflows/assets.yml'), 'utf8');
+  const platform = /^ {2}platform:\n([\s\S]*?)(?=^ {2}\S)/m.exec(text)?.[1] ?? '';
+  assert.ok(platform, 'assets.yml defines the job platform');
+  // Each step of the job starts with a line `      - `; a setup-php step sets the PHP of the steps after it, by php-version or by
+  // php-version-file, and each make release-php-ext PHP=php builds for the PHP that the last setup-php step set.
+  const built: string[] = [];
+  let current: string | undefined;
+  for (const step of platform.split(/^(?= {6}- )/m)) {
+    if (/uses: shivammathur\/setup-php@/.test(step)) {
+      const file = /php-version-file: (\S+)/.exec(step)?.[1];
+      current = file === undefined ? /php-version: '([^']+)'/.exec(step)?.[1] : readFileSync(path.join(ROOT, file), 'utf8').trim();
+    } else if (/run: make release-php-ext PHP=php\s*$/m.test(step)) {
+      assert.ok(current, 'a setup-php step comes before each build of the PHP extension');
+      built.push(current);
+    }
+  }
+  assert.deepEqual(built, minors, 'the job platform sets up each PHP minor of phpExtension.minors and builds the extension for it');
+});

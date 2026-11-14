@@ -5,8 +5,8 @@
 #
 # The job platform runs on the runner of its platform, ubuntu-26.04, ubuntu-26.04-arm or macos-15, because no tool of the release
 # compiles for another platform. Each job builds the static library of the Go module (with the musl library of its arch on
-# Linux), the abi3 wheel, the PHP extension for the PHP of .php-version and the npm platform package of its platform, and the
-# job npm the npm package itself with the wasm-bindgen of mise.toml. Each uploads var/release/assets as an artifact, which the
+# Linux), the abi3 wheel, the PHP extension for each PHP minor of phpExtension.minors of config/toolchain.json and the npm
+# platform package of its platform, and the job npm the npm package itself with the wasm-bindgen of mise.toml. Each uploads var/release/assets as an artifact, which the
 # workflow release downloads. Each run step is one make target, and the build steps after the first run also after a failed
 # one, so one run names every asset that does not build.
 name: assets
@@ -51,13 +51,6 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ inputs.ref }}
-      # shivammathur/setup-php 2.40.0: the PHP of .php-version with its php-config, which the build of the extension reads;
-      # make release-php-ext PHP=php resolves php on PATH.
-      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
-        with:
-          php-version-file: .php-version
-          tools: none
-          coverage: none
       - uses: ./.github/actions/kit-bootstrap
       - name: Install Rust and fetch the crates
         run: make json-install-rust-packages
@@ -78,7 +71,25 @@ jobs:
       - name: Install the LLVM of config/toolchain.json
         if: ${{ !cancelled() }}
         run: make install-llvm
-      - name: Build the PHP extension
+      # shivammathur/setup-php 2.40.0: each PHP minor of phpExtension.minors of config/toolchain.json, with its php-config, which
+      # the build of the extension reads; make release-php-ext PHP=php resolves php on PATH, and a build loads only in the PHP
+      # minor that built it, so each minor is set up and built in turn.
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
+        if: ${{ !cancelled() }}
+        with:
+          php-version: '8.4'
+          tools: none
+          coverage: none
+      - name: Build the PHP extension for PHP 8.4
+        if: ${{ !cancelled() }}
+        run: make release-php-ext PHP=php
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
+        if: ${{ !cancelled() }}
+        with:
+          php-version: '8.5'
+          tools: none
+          coverage: none
+      - name: Build the PHP extension for PHP 8.5
         if: ${{ !cancelled() }}
         run: make release-php-ext PHP=php
       - name: Build the npm platform package
