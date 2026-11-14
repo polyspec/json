@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.29
+
 - A release carries the PHP extension of `packages/php-ext` as the Composer package `polyspec/json` that PIE installs (T3.26): `config/release.json` declares it, product `json`, runtime `php-ext`, with `packages/php-ext/composer.json` in the mode `archive`, so `make release-assets` writes `polyspec-json-php-ext-X.Y.Z.zip` and `packages.json`, the Composer repository of the release, and `make release-candidate-assets VERSION=X.Y.Z` builds them from the committed `HEAD` without a tag. The release 0.0.28 carried no Composer package and no `packages.json`, so `pie install polyspec/json` found no package. Red: `tests/scripts/registry.test.mts` failed, because `config/release.json` declared no package. Green: the test passes, and `make release-candidate-assets VERSION=0.0.29` writes the zip and `packages.json`.
 
 ## 0.0.28
