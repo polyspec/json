@@ -280,7 +280,7 @@ test-rust:
 # zz_generated_*.go, which Git ignores; bindings-check runs the contract check, which also compares the tracked binding
 # packages with what binding scaffold writes (binding L-2, CK-19).
 BINDING := $(CURDIR)/node_modules/.bin/binding
-.PHONY: bindings bindings-check lint-bindings test-bindings
+.PHONY: bindings bindings-check release-binding-check lint-bindings test-bindings
 # The lint and the tests of the binding crates, after make bindings writes their generated folders.
 lint-bindings: bindings
 	$(CARGO) clippy --locked $(foreach crate,$(BINDING_CRATES),-p $(crate)) --all-targets -- -D warnings
@@ -296,6 +296,10 @@ $(BINDING_PHONY):
 	$(NODE) $(BINDING) generate --root $(CURDIR) --target $(@:bindings-%=%)
 bindings-check:
 	$(NODE) $(BINDING) check $(CURDIR)/packages/rust/interface.json
+# release-binding-check runs the release check of binding (GN-19g): every dependency line on polyspec-binding-core names the
+# tag of a release of binding, which Cargo.lock pins (CK-20, CK-70).
+release-binding-check:
+	$(NODE) $(BINDING) check $(CURDIR)/packages/rust/interface.json --release
 
 # The PHP extension of legacy/packages/php-ext: build-php-ext builds var/php-ext/polyspec_ordered_json.so with phpize after the check
 # of its stub and arginfo header; gen_stub.php may fetch its PHP-Parser once.

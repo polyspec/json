@@ -15,8 +15,9 @@ include = ["/src/**/*.rs", "/interface.json", "/README.md"]
 [dependencies]
 ryu-js = "=1.0.3"
 # The kind interface that the generated bindings read from the core error (binding design E-1, I-2 (3)). The git source is the
-# binding repository; Cargo.lock pins its commit, the same source as the generated binding crates.
-polyspec-binding-core = { git = "https://github.com/polyspec/binding.git", branch = "v1/rust-core" }
+# binding repository at the tag of its release, the same source as the generated binding crates and the release of the tool
+# binding that package.json names (binding CK-20, CK-70).
+polyspec-binding-core = { git = "https://github.com/polyspec/binding.git", tag = "v0.0.2" }
 serde = { version = "=1.0.229", features = ["derive"] }
 # 1.0.154 is the exact pin of polyspec-binding-core with its feature fault-test, which the tests and the binding crates turn on.
 serde_json = { version = "=1.0.154", features = ["raw_value", "unbounded_depth"] }

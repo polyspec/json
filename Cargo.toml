@@ -1,5 +1,5 @@
 # One workspace: the core crate and the binding crates, which binding scaffold writes (binding design L-2). One
-# Cargo.lock at the root pins every dependency of all of them, the commit of polyspec-binding-core included.
+# Cargo.lock at the root pins every dependency of all of them, polyspec-binding-core at the tag of its release included.
 [workspace]
 resolver = "2"
 members = ["packages/rust", "packages/ts", "packages/ts/wasm", "packages/python", "packages/php-ext", "packages/go/internal/ffi"]
