@@ -1,7 +1,7 @@
 # CI: one pipeline (PRINCIPLES S12). The job kit calls ci-pipeline.yml of this repository, which runs, in each of its jobs, the
 # setup targets that config/ci.json declares for that job and then the target of the job in the Makefile: kit-gates-static,
-# kit-gates-verify and kit-gates-runtime-<runtime>. The release workflow releases the commit whose run of this
-# workflow is green.
+# kit-gates-verify and kit-gates-runtime-<runtime>. The job assets calls assets.yml, which builds the assets of each platform
+# of the bindings on the runner of that platform. The release workflow releases the commit whose run of this workflow is green.
 name: ci
 
 on:
@@ -22,3 +22,7 @@ permissions:
 jobs:
   kit:
     uses: ./.github/workflows/ci-pipeline.yml
+  # The assets of each platform of the commit, built as a release builds them (assets.yml, binding GN-19i), without the release
+  # check of binding, so a commit whose assets do not build fails its run and no release tags it.
+  assets:
+    uses: ./.github/workflows/assets.yml

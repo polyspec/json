@@ -1,0 +1,118 @@
+# The assets of each platform of the bindings (binding GN-19a, GN-19i). The workflow ci calls it for the commit of its run, and
+# the workflow release calls it for the tree of the tag that it releases, with release true, which runs the release check of
+# binding before a job builds (make release-binding-check, GN-19g). Every recipe that builds an asset is in packages/release.mk,
+# which binding release-recipes writes and Git ignores, so each job first runs make release-recipes.
+#
+# The job platform runs on the runner of its platform, ubuntu-26.04, ubuntu-26.04-arm or macos-15, because no tool of the release
+# compiles for another platform. Each job builds the static library of the Go module (with the musl library of its arch on
+# Linux), the abi3 wheel, the PHP extension for the PHP of .php-version and the npm platform package of its platform, and the
+# job npm the npm package itself with the wasm-bindgen of mise.toml. Each uploads var/release/assets as an artifact, which the
+# workflow release downloads. Each run step is one make target, and the build steps after the first run also after a failed
+# one, so one run names every asset that does not build.
+name: assets
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: The tag whose tree the jobs build; empty builds the commit of the calling run
+        required: false
+        type: string
+        default: ''
+      release:
+        description: Whether each job runs the release check of binding before it builds
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+# rustup installs no toolchain on the first cargo; make json-install-rust-packages installs the toolchain of rust-toolchain.toml,
+# with its components llvm-tools and clippy and its targets, and fetches the crates of Cargo.lock, which binding reads offline.
+env:
+  RUSTUP_AUTO_INSTALL: '0'
+
+jobs:
+  platform:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux-x64-gnu
+            runner: ubuntu-26.04
+          - platform: linux-arm64-gnu
+            runner: ubuntu-26.04-arm
+          - platform: darwin-arm64
+            runner: macos-15
+    runs-on: ${{ matrix.runner }}
+    steps:
+      # actions/checkout v7.0.1: the commit alone, whose time release-wheel reads to date the files of the wheel.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ inputs.ref }}
+      # shivammathur/setup-php 2.40.0: the PHP of .php-version with its php-config, which the build of the extension reads;
+      # make release-php-ext PHP=php resolves php on PATH.
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
+        with:
+          php-version-file: .php-version
+          tools: none
+          coverage: none
+      - uses: ./.github/actions/kit-bootstrap
+      - name: Install Rust and fetch the crates
+        run: make json-install-rust-packages
+      # The uv and the Python of mise.toml, with which uv builds the wheel.
+      - name: Install uv and Python
+        run: make install-tools TOOLS="uv python"
+      - name: Write the release recipes
+        run: make release-recipes
+      - name: Run the release check of binding
+        if: ${{ inputs.release }}
+        run: make release-binding-check
+      - name: Build the static library of the Go module
+        run: make release-go-static
+      - name: Build the wheel
+        if: ${{ !cancelled() }}
+        run: make release-wheel
+      # The LLVM of config/toolchain.json, whose libclang and clang the bindgen of ext-php-rs uses.
+      - name: Install the LLVM of config/toolchain.json
+        if: ${{ !cancelled() }}
+        run: make install-llvm
+      - name: Build the PHP extension
+        if: ${{ !cancelled() }}
+        run: make release-php-ext PHP=php
+      - name: Build the npm platform package
+        if: ${{ !cancelled() }}
+        run: make release-npm-platform
+      # actions/upload-artifact v7.0.1.
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: ${{ !cancelled() }}
+        with:
+          name: assets-${{ matrix.platform }}
+          path: var/release/assets/
+          if-no-files-found: error
+
+  npm:
+    runs-on: ubuntu-26.04-arm
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: ./.github/actions/kit-bootstrap
+      - name: Install Rust and fetch the crates
+        run: make json-install-rust-packages
+      - name: Write the release recipes
+        run: make release-recipes
+      - name: Install the wasm-bindgen of mise.toml
+        run: make install-wasm-bindgen
+      - name: Run the release check of binding
+        if: ${{ inputs.release }}
+        run: make release-binding-check
+      - name: Pack the npm package
+        run: make release-npm
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: ${{ !cancelled() }}
+        with:
+          name: assets-npm
+          path: var/release/assets/
+          if-no-files-found: error

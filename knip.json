@@ -13,6 +13,7 @@
   ],
   "ignoreDependencies": [
     "@polyspec/kit",
-    "@polyspec/binding"
+    "@polyspec/binding",
+    "@napi-rs/cli"
   ]
 }

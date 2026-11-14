@@ -7,26 +7,26 @@
   ],
   "packages": [],
   "manifests": {
-    "packages/rust/Cargo.toml": "git-tag"
+    "packages/rust/Cargo.toml": "git-tag",
+    "packages/ts/package.json": "version",
+    "packages/ts/Cargo.toml": "version",
+    "packages/ts/wasm/Cargo.toml": "version",
+    "packages/python/pyproject.toml": "version",
+    "packages/python/Cargo.toml": "version",
+    "packages/php-ext/Cargo.toml": "version",
+    "packages/go/internal/ffi/Cargo.toml": "version",
+    "packages/php-ext/composer.json": "git-tag"
   },
   "notReleased": {
-    "package.json": "the private manifest of the development checkout, which names the legacy JavaScript package; the legacy packages keep their last release (docs/spec/json-contract.md#transition)",
-    "composer.json": "the manifest of the development checkout, which loads the legacy PHP package for the lints; the legacy packages keep their last release (docs/spec/json-contract.md#transition)",
     "Cargo.toml": "the root Cargo workspace; the crate is released by packages/rust/Cargo.toml",
+    "composer.json": "the manifest of the development checkout, which loads the legacy PHP package for the lints; the legacy packages keep their last release (docs/spec/json-contract.md#transition)",
     "legacy/packages/go/go.mod": "the legacy language package of the transition, which is no release target until it is removed (docs/spec/json-contract.md#transition)",
     "legacy/packages/js/package.json": "the legacy language package of the transition, which is no release target until it is removed (docs/spec/json-contract.md#transition)",
     "legacy/packages/php-ext/composer.json": "the legacy language package of the transition, which is no release target until it is removed (docs/spec/json-contract.md#transition)",
     "legacy/packages/php/composer.json": "the legacy language package of the transition, which is no release target until it is removed (docs/spec/json-contract.md#transition)",
     "legacy/packages/python/pyproject.toml": "the legacy language package of the transition, which is no release target until it is removed (docs/spec/json-contract.md#transition)",
-    "packages/go/go.mod": "a binding package of binding, released after the generated bindings pass the shared suite and the package tests (V-6 (2)) and kit makes its platform assets (K-3)",
-    "packages/go/internal/ffi/Cargo.toml": "a binding package of binding, released after the generated bindings pass the shared suite and the package tests (V-6 (2)) and kit makes its platform assets (K-3)",
-    "packages/php-ext/Cargo.toml": "a binding package of binding, released after the generated bindings pass the shared suite and the package tests (V-6 (2)) and kit makes its platform assets (K-3)",
-    "packages/php-ext/composer.json": "a binding package of binding, released after the generated bindings pass the shared suite and the package tests (V-6 (2)) and kit makes its platform assets (K-3)",
-    "packages/python/Cargo.toml": "a binding package of binding, released after the generated bindings pass the shared suite and the package tests (V-6 (2)) and kit makes its platform assets (K-3)",
-    "packages/python/pyproject.toml": "a binding package of binding, released after the generated bindings pass the shared suite and the package tests (V-6 (2)) and kit makes its platform assets (K-3)",
-    "packages/ts/Cargo.toml": "a binding package of binding, released after the generated bindings pass the shared suite and the package tests (V-6 (2)) and kit makes its platform assets (K-3)",
-    "packages/ts/package.json": "a binding package of binding, released after the generated bindings pass the shared suite and the package tests (V-6 (2)) and kit makes its platform assets (K-3)",
-    "packages/ts/wasm/Cargo.toml": "a binding package of binding, released after the generated bindings pass the shared suite and the package tests (V-6 (2)) and kit makes its platform assets (K-3)"
+    "package.json": "the private manifest of the development checkout, which names the legacy JavaScript package; the legacy packages keep their last release (docs/spec/json-contract.md#transition)",
+    "packages/go/go.mod": "the Go module of the bindings, which make release-go-module of packages/release.mk releases with binding release-go-module: it tags a commit of its own that carries the generated files and the static libraries (binding GN-19f), so the tag of the release names no Go module"
   },
   "goModules": {},
   "annotatedTags": true,

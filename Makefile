@@ -292,7 +292,7 @@ test-rust:
 # zz_generated_*.go, which Git ignores; bindings-check runs the contract check, which also compares the tracked binding
 # packages with what binding scaffold writes (binding L-2, CK-19).
 BINDING := $(CURDIR)/node_modules/.bin/binding
-.PHONY: bindings bindings-check release-binding-check lint-bindings test-bindings
+.PHONY: bindings bindings-check lint-bindings test-bindings
 # The lint and the tests of the binding crates, after make bindings writes their generated folders.
 lint-bindings: bindings
 	$(CARGO) clippy --locked $(foreach crate,$(BINDING_CRATES),-p $(crate)) --all-targets -- -D warnings
@@ -308,10 +308,18 @@ $(BINDING_PHONY):
 	$(NODE) $(BINDING) generate --root $(CURDIR) --target $(@:bindings-%=%)
 bindings-check:
 	$(NODE) $(BINDING) check $(CURDIR)/packages/rust/interface.json
-# release-binding-check runs the release check of binding (GN-19g): every dependency line on polyspec-binding-core names the
-# tag of a release of binding, which Cargo.lock pins (CK-20, CK-70).
-release-binding-check:
-	$(NODE) $(BINDING) check $(CURDIR)/packages/rust/interface.json --release
+
+# ---- Release recipes of the bindings: packages/release.mk, which binding release-recipes writes (binding GN-19h) -----------
+# The recipes of the platform assets (release-go-static, release-wheel, release-php-ext, release-npm-platform, release-npm,
+# release-go-module, release-binding-check, release-platform-assets, install-llvm and install-wasm-bindgen) are the file that
+# binding release-recipes writes for the contract; Git ignores it, and make release-recipes writes it again before a release
+# runs a recipe, because no recipe of these targets is written by hand (CK-94). The file reads BINDING_RUN, NODE, NPM and UV,
+# which this Makefile defines before the include; a checkout that has not written the file yet reads none of its targets.
+BINDING_RUN := $(NODE) $(BINDING)
+.PHONY: release-recipes
+release-recipes:
+	$(BINDING_RUN) release-recipes --root $(CURDIR)
+-include packages/release.mk
 
 # The PHP extension of legacy/packages/php-ext: build-php-ext builds var/php-ext/polyspec_ordered_json.so with phpize after the check
 # of its stub and arginfo header; gen_stub.php may fetch its PHP-Parser once.
@@ -432,7 +440,7 @@ ci-targets:
 	$(NODE) $(KIT)/ci-targets.mjs -k $(CI_REPORT) $(TARGETS)
 
 # ---- Release: the steps of .github/workflows/release.yml, in its order (config/release.json) ---------------------------------
-.PHONY: release-prepare release-tools release-tools-path release-tag release-assets release-publish release-undraft
+.PHONY: release-prepare release-tools release-tools-path release-tag release-tag-output release-assets release-publish release-undraft
 # The release builds the released versions, so its Go runs without the go.work that link writes.
 release-prepare release-tools release-tag release-assets release-publish release-undraft release-coverage: export GOWORK := off
 # release-prepare: this repository needs no preparation before release-tools.
@@ -448,6 +456,12 @@ release-tools-path:
 # release-tag tags the commit of the successful CI run RUN; AUTO=1 releases only the version commit of the top version.
 release-tag:
 	RELEASE_MAIN=origin/main $(NODE) $(KIT)/release-run.mjs tag "$$RUN"$(if $(AUTO), --auto)
+# release-tag-output gives the later jobs of the release workflow the tag and the version that release-tag wrote into the
+# environment of its job (TAG, VERSION), through the outputs of the step (GITHUB_OUTPUT); both are empty when the run releases
+# nothing.
+release-tag-output:
+	@test -n "$$GITHUB_OUTPUT" || { echo 'release-tag-output: GITHUB_OUTPUT is not set; run it in the release workflow' >&2; exit 2; }
+	printf 'tag=%s\nversion=%s\n' "$$TAG" "$$VERSION" >> "$$GITHUB_OUTPUT"
 release-assets:
 	RELEASE_ASSETS=var/release/assets $(ONLINE) $(NODE) $(KIT)/release.mjs assets "$$TAG"
 release-publish:
