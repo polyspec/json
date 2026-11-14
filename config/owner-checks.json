@@ -137,6 +137,14 @@
     },
     {
       "paths": [
+        ".githooks/**"
+      ],
+      "targets": [
+        "hooks-check"
+      ]
+    },
+    {
+      "paths": [
         "config/checklist.json",
         "config/owner-checks.json"
       ],

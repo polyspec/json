@@ -48,6 +48,8 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
   Enforced by: none, judged at review.
 - Own: The full suite (`make check`) and the end-to-end checks (`make pie-check`, `make owner-check`, the adapter suites and the supplementary suite) run in hosted CI on every pull request and every push to `main`. No rule requires a local run before a commit or a push, and no rule runs a broader check after each correction.
   Enforced by: `make ci-targets`
+- Own: Every commit runs the commit-msg hook of `.githooks`, which refuses a message with the footer or the identity of an AI tool, because a commit message names no tool and no author but the person who commits. `make hooks` points `core.hooksPath` at `.githooks`, makes the hook executable and declares the merge drivers of the changelogs and the checklists; a checkout runs it once after its first install.
+  Enforced by: none, judged at review: the hooks of a checkout are its local Git configuration, which no CI job sees; `make hooks-check` names a checkout that lacks them.
 - Own: Every tracked path is owned by a rule of [config/owner-checks.json](config/owner-checks.json). `make owner-validate` fails while a path matches no rule, a glob matches no path or an owner does not exist. A new file is mapped in the same commit.
   Enforced by: `make layout-check`
 - Own: A target that reads a record of another target names that target as its prerequisite, so it reads only the record of its own tree: `make verify-all` checks the PIE record of `make pie-check` and runs it first, and `pie-check` is no target of `CHECK_TARGETS` of its own.

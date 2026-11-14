@@ -1,5 +1,5 @@
 <!-- doc-id: development -->
-<!-- source-sha256: 604bc772f431326720c21cf1df8306f2b5dc23f58479bb24c089752513d99408 -->
+<!-- source-sha256: 7855d2cc5d2c2d0a5b2389c915c67488265cb13c430c52828ae71e2220eed964 -->
 # Development procedure
 
 [English](AGENTS.md)
@@ -49,6 +49,8 @@
   Enforced by: none, review에서 판단합니다.
 - Own: 전체 suite(`make check`)와 end-to-end 검사(`make pie-check`, `make owner-check`, adapter suite, 보충 suite)는 모든 pull request와 `main`에 대한 모든 push마다 hosted CI가 실행합니다. commit이나 push 전 로컬 실행을 요구하는 규칙은 없으며, 수정할 때마다 더 넓은 검사를 다시 실행하라는 규칙도 없습니다.
   Enforced by: `make ci-targets`
+- Own: 모든 commit은 `.githooks`의 commit-msg hook을 실행하며, 이 hook은 AI 도구의 footer나 identity를 담은 message를 거부합니다. commit message는 commit하는 사람 외에 어떤 도구나 작성자도 적지 않기 때문입니다. `make hooks`는 `core.hooksPath`를 `.githooks`로 지정하고, hook을 실행 가능하게 만들며, changelog와 checklist의 merge driver를 선언합니다. checkout은 첫 설치 뒤에 그것을 한 번 실행합니다.
+  Enforced by: none, review에서 판단합니다. checkout의 hook은 CI job이 보지 못하는 그 checkout의 로컬 Git 설정이며, `make hooks-check`는 hook이 없는 checkout을 알려 줍니다.
 - Own: 모든 추적 경로는 [config/owner-checks.json](config/owner-checks.json)의 규칙이 소유합니다. `make owner-validate`는 어떤 규칙도 맞지 않는 경로, 어떤 path도 맞지 않는 glob, 존재하지 않는 owner가 있으면 실패합니다. 새 파일은 같은 commit에서 매핑합니다.
   Enforced by: `make layout-check`
 - Own: 다른 target의 기록을 읽는 target은 그 target을 prerequisite로 적어 자기 tree의 기록만 읽습니다. `make verify-all`은 `make pie-check`의 PIE 기록을 검사하므로 그것을 먼저 실행하고, `pie-check`는 `CHECK_TARGETS`의 독립 target이 아닙니다.

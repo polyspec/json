@@ -472,6 +472,21 @@ text-absent: export KIT_TEXT_ABSENT_FILE = $(value FILE)
 text-absent: export KIT_TEXT_ABSENT_TEXT = $(value TEXT)
 text-absent:
 	$(NODE) $(KIT)/text-absent.mjs
+# The hooks of json are its own files under .githooks, which HOOK_DECLARATION lists: commit-msg runs commit-msg-hook. make hooks
+# points core.hooksPath at .githooks, makes each listed hook executable and declares the merge drivers of the changelogs and the
+# checklists, which git runs as make twin-merge; make hooks-check fails while one of them is not installed (kit K1099).
+.PHONY: hooks hooks-check commit-msg-hook
+TWIN_MERGE_DRIVER := make --no-print-directory twin-merge MERGE="%O %A %B %P"
+HOOK_DECLARATION := --hooks-path .githooks --hook commit-msg --merge 'CHANGELOG.md=kit-changelog' --merge 'CHANGELOG.ko.md=kit-twin' \
+	--merge 'docs/plans/*/checklist.md=kit-checklist' --merge 'docs/plans/*/checklist.ko.md=kit-twin' \
+	--driver 'kit-twin=$(TWIN_MERGE_DRIVER)' --driver 'kit-changelog=$(TWIN_MERGE_DRIVER)' --driver 'kit-checklist=$(TWIN_MERGE_DRIVER)'
+hooks:
+	$(NODE) $(KIT)/git-hooks.mjs install $(HOOK_DECLARATION)
+hooks-check:
+	$(NODE) $(KIT)/git-hooks.mjs check $(HOOK_DECLARATION)
+# commit-msg-hook refuses a commit message with the footer or the identity of an AI tool; the hook commit-msg runs it.
+commit-msg-hook:
+	$(NODE) $(KIT)/check-commits.mjs --message $(MESSAGE) --rules commit-ai-footer,commit-ai-identity
 # twin-merge is the merge driver of a Korean twin, a changelog and a checklist that git config names (merge.kit-*.driver).
 twin-merge:
 	@$(NODE) $(KIT)/twin-merge.mjs $(MERGE)
