@@ -273,22 +273,28 @@ test-rust:
 	$(NODE) $(KIT)/runtime-targets.mjs test --runner cargo --roots packages/rust -- -p polyspec-json -- --test-threads=1
 
 # ---- Bindings: generated from packages/rust/interface.json by binding (C-0) ---------------------------------------------
-# binding is not yet a package that package-lock.json pins; until it is, BINDING names the cli (packages/ts/src/cli.ts) of
-# a binding checkout, and both targets refuse to run without it. bindings writes the generated folders of packages/ts,
-# packages/python and packages/php-ext, which Git ignores; bindings-check runs the contract check, which also compares the
-# tracked binding packages with what binding scaffold writes (binding L-2, CK-19).
+# binding is the npm package @polyspec/binding of package.json, the asset of the GitHub Release of the tag that every
+# dependency line on polyspec-binding-core names, so that the tool and the crate are one release (binding CK-20, CK-70).
+# binding reads the crates of Cargo.lock with cargo metadata --locked --offline, which make install fetches
+# (json-install-rust-packages). bindings writes the generated folders of the binding packages and the Go files
+# zz_generated_*.go, which Git ignores; bindings-check runs the contract check, which also compares the tracked binding
+# packages with what binding scaffold writes (binding L-2, CK-19).
+BINDING := $(CURDIR)/node_modules/.bin/binding
 .PHONY: bindings bindings-check lint-bindings test-bindings
 # The lint and the tests of the binding crates, after make bindings writes their generated folders.
 lint-bindings: bindings
 	$(CARGO) clippy --locked $(foreach crate,$(BINDING_CRATES),-p $(crate)) --all-targets -- -D warnings
 test-bindings: bindings
 	$(CARGO) test --locked $(foreach crate,$(BINDING_CRATES),-p $(crate))
-BINDING ?=
-bindings:
-	@test -n "$(BINDING)" || { echo "bindings: set BINDING to the cli of binding"; exit 1; }
-	$(NODE) $(BINDING) generate --root $(CURDIR)
+# bindings generates the five targets, each in its own target bindings-<target>, so that a target that binding does not
+# generate fails with its name (binding GN-1c) and the other targets still run.
+BINDING_TARGETS := php python node wasm go
+BINDING_PHONY = $(foreach target,$(BINDING_TARGETS),bindings-$(target))
+.PHONY: $(BINDING_PHONY)
+bindings: $(BINDING_PHONY)
+$(BINDING_PHONY):
+	$(NODE) $(BINDING) generate --root $(CURDIR) --target $(@:bindings-%=%)
 bindings-check:
-	@test -n "$(BINDING)" || { echo "bindings-check: set BINDING to the cli of binding"; exit 1; }
 	$(NODE) $(BINDING) check $(CURDIR)/packages/rust/interface.json
 
 # The PHP extension of legacy/packages/php-ext: build-php-ext builds var/php-ext/polyspec_ordered_json.so with phpize after the check

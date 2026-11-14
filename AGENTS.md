@@ -108,6 +108,8 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
 
 - Own: While polyspec versions are 0.0.x, development checkouts link installed polyspec packages to their source as kit `docs/plans/local-links.md` describes. Links are never committed.
   Enforced by: none, a development link is kept out of Git by the ignored `node_modules/`, and no tool judges a development checkout.
+- Own: The tool binding is the npm package `@polyspec/binding`, the asset of a GitHub Release of binding, which `package.json` names by its URL and `package-lock.json` pins by its integrity. Its release is the release whose tag every dependency line on `polyspec-binding-core` names, so that the tool and the crate that it generates code for are one release. `make bindings` runs it for the five targets and `make bindings-check` runs its contract check, which reads the crates that `make install` fetched.
+  Enforced by: none, judged at review: no CI job runs the contract check yet, which reports CK-20 while the lock pins another release of binding.
 
 <a id="idempotency"></a>
 ## Idempotency

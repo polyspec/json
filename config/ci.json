@@ -5,6 +5,7 @@
     "shared": [],
     "runtimes": {
       "go": [
+        "json-install-rust-packages",
         "build-go"
       ],
       "php": [

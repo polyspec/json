@@ -1,5 +1,5 @@
 <!-- doc-id: development -->
-<!-- source-sha256: 6de8b26923ed09aef679a4146b5200328bd89c9999e7de5277fde00254a8b24b -->
+<!-- source-sha256: 8418354d9b60430f21e56df3b017c9c6d0818ab0b738569a596739d5ba0a12b7 -->
 # Development procedure
 
 [English](AGENTS.md)
@@ -109,6 +109,8 @@
 
 - Own: polyspec 버전이 0.0.x인 동안 개발 checkout은 kit `docs/plans/local-links.md`가 설명하는 대로 설치된 polyspec 패키지를 원본에 link합니다. link는 commit하지 않습니다.
   Enforced by: none, 개발 link는 무시되는 `node_modules/`에 있어 Git 밖에 남고, 어떤 도구도 개발 checkout을 판단하지 않습니다.
+- Own: 도구 binding은 binding의 GitHub Release 에셋인 npm 패키지 `@polyspec/binding`이며, `package.json`이 그 URL로 적고 `package-lock.json`이 그 integrity로 고정합니다. 그 release는 `polyspec-binding-core`에 대한 모든 의존 줄이 이름 대는 tag의 release이므로, 도구와 도구가 코드를 생성하는 대상 crate는 하나의 release입니다. `make bindings`는 다섯 대상에 대해 그것을 실행하고, `make bindings-check`는 그 계약 검사를 실행하며, 검사는 `make install`이 가져온 crate를 읽습니다.
+  Enforced by: none, 검토에서 판단합니다: 아직 어떤 CI job도 계약 검사를 실행하지 않으며, 그 검사는 lock이 binding의 다른 release를 고정하는 동안 CK-20을 보고합니다.
 
 <a id="idempotency"></a>
 ## Idempotency

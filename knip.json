@@ -12,6 +12,7 @@
     "make"
   ],
   "ignoreDependencies": [
-    "@polyspec/kit"
+    "@polyspec/kit",
+    "@polyspec/binding"
   ]
 }

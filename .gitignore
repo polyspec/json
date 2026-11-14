@@ -33,3 +33,8 @@ go.work.sum
 
 # The bindings that binding writes from packages/rust/interface.json (binding design L-1); make bindings writes them again.
 /packages/*/generated/
+# The generated folders of the WASM crate and of the C ABI crate of Go, and the Go files zz_generated_*.go of packages/go,
+# which a release adds in the commit of its Go tag (binding GN-15g).
+/packages/ts/wasm/generated/
+/packages/go/internal/ffi/generated/
+/packages/go/**/zz_generated_*.go
