@@ -8,6 +8,8 @@
 
 ## 0.0.29
 
+- The repository pins binding 0.0.7 (the release asset in `package.json` and `package-lock.json`, the tag v0.0.7 in every dependency line on `polyspec-binding-core`, which `binding scaffold` writes again in the binding crates, and in `Cargo.lock`) (T3.28). Before, it pinned binding 0.0.5.
+
 - The repository pins kit 0.0.113 (the release asset in `package.json` and its integrity in `package-lock.json`), the latest release of the shared tools.
 
 - Every job of `ci.yml`, `ci-pipeline.yml`, `assets.yml` and `release.yml` has one run step, `make ci-<job>` with make variables as its only arguments, and the recipe of the Makefile holds the order and the conditions of the job (T3.27): the installs first, which stop the job when one fails, then the checks or the builds through `make ci-targets`, each to its end, then the cleanup of the CI context whenever its prepare started. A local run of a job is the call that CI makes, such as `make ci-runtime RUNTIME=php` or `make ci-assets-php PHP_MINOR=8.4`. The pipeline gains the job `plan`, which writes the plan of `config/ci.json`; the recipes read the tools of the plan from `config/ci.json` instead of the step outputs, the jobs `platform`, `php` and `npm` of `assets.yml` are `assets-platform`, `assets-php` and `assets-npm`, the job `required` runs `make ci-required` with the results of the other jobs, and the jobs `tag` and `release` of `release.yml` run `make ci-tag` and `make ci-release`. Before, the jobs held several run steps, conditions on them and expressions in their run lines, so a local run could not run a job as CI runs it. Red: `tests/scripts/workflow-rules.test.mts` found six run steps in the job `shared` of `ci-pipeline.yml`.

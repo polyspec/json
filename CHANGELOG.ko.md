@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: c40145235251676269c98ba86444dcd568bbbc0020542edadf2bdbac0e6113f3 -->
+<!-- source-sha256: c9c961a6d8fb3d297a2f697cd7bb0529ae848e4d7bca9b4256623511b1a6da08 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -8,6 +8,8 @@
 ## Unreleased
 
 ## 0.0.29
+
+- 저장소는 binding 0.0.7을 고정한다(`package.json`과 `package-lock.json`의 release asset, `binding scaffold`가 바인딩 crate에 다시 쓰는 `polyspec-binding-core`의 모든 의존 줄과 `Cargo.lock`의 tag v0.0.7)(T3.28). 전에는 binding 0.0.5를 고정했다.
 
 - 저장소는 kit 0.0.113을 고정한다(`package.json`의 release asset과 `package-lock.json`의 integrity). 공유 도구의 최신 release다.
 
