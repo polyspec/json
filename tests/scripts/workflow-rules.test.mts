@@ -75,7 +75,8 @@ test('verify-all writes the PIE record that it reads before it reads it', () => 
 
 /** The recipe lines of the make target `target` in the make database `text`, as make prints them, variables unexpanded. */
 function recipe(text: string, target: string): string[] {
-  const block = new RegExp(`^${target}:(?!=).*\\n((?:#.*\\n)*)((?:\\t.*\\n)*)`, 'm').exec(text);
+  // A target-specific variable (`target: NAME :=`) is a line of its own in the database, which is no rule line.
+  const block = new RegExp(`^${target}:(?!=)(?! *[A-Za-z_][A-Za-z0-9_]* *[:+?!]?=).*\\n((?:#.*\\n)*)((?:\\t.*\\n)*)`, 'm').exec(text);
   assert.ok(block, `the make database of ${ROOT} declares ${target}`);
   return (block[2] ?? '').split('\n').map(line => line.trim()).filter(Boolean);
 }

@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: 444ce614fadeec26ce07d3bca33668656c10e6c7a836f53d19360651aed54d4a -->
+<!-- source-sha256: 0ac35aad70c52a0e3443fa4d56c11610e50429631c337b54cc53e04b03874b26 -->
 # 실행 체크리스트
 
 ## Wave 1 — 전체 suite를 실행하는 hosted CI
@@ -153,3 +153,4 @@
 | T3.31 | 저장소는 kit 0.0.114를 고정하며, rules check가 그 ci-setup을 따른다: kit 0.0.113에서 make rules-check는 64건을 보고했다. | package.json, package-lock.json, CHANGELOG.md(.ko) | `make rules-check` | [o] |
 | T3.32 | make ci-assets-php는 Makefile의 target 전용 변수로 DYLD_LIBRARY_PATH와 LD_LIBRARY_PATH를 비운 채 돈다: macOS에서 install-llvm-action이 둘을 /usr/lib을 앞에 두고 GITHUB_ENV로 내보내, setup-php의 PHP가 시스템의 libsqlite3를 읽고 status 134로 중단했다. Red: 두 줄이 없으면 tests/scripts/workflow-rules.test.mts가 실패한다 | Makefile, tests/scripts/workflow-rules.test.mts, CHANGELOG.md(.ko) | `make json-test-scripts TESTS=tests/scripts/workflow-rules.test.mts` | [o] |
 | T3.33 | 저장소는 binding 0.0.8을 고정한다: package.json과 package-lock.json의 release asset, polyspec-binding-core에 대한 모든 의존 줄과 Cargo.lock의 tag v0.0.8. binding 0.0.8은 생성된 Node 시험의 await와 생성된 Go 파일의 gofmt를 고친다. | package.json, package-lock.json, packages/*/Cargo.toml, Cargo.lock, CHANGELOG.md(.ko) | `make bindings-check`, `make test-bindings` | [o] |
+| T3.34 | corpus 레인의 CI가 통과한다: packages/rust/tests/contract.rs는 rustfmt 형태이고 금지된 Option::unwrap_or를 쓰지 않으며, tests/scripts/case-corpus.test.mts는 oxlint가 거부한 단언 대신 타입 가드로 JSON을 좁히고, tests/scripts/workflow-rules.test.mts의 recipe 파서는 GNU make 4의 database가 rule 앞에 `target: NAME :=` 줄로 찍는 target 전용 변수 줄을 건너뛴다. 그래서 CI에서 그 시험 5개가 실패했다. Red: df37780의 CI 실행이 lint-rust, fmt-check, lint-ts, verify-all과 GNU make 4.4의 workflow 시험 5개에서 실패했다 | packages/rust/tests/contract.rs, tests/scripts/case-corpus.test.mts, tests/scripts/workflow-rules.test.mts, CHANGELOG.md(.ko) | `make fmt-check`, `make lint-rust`, `make lint-ts`, `make json-test-scripts TESTS=tests/scripts/workflow-rules.test.mts`, `make verify-all` | [o] |

@@ -154,7 +154,11 @@ fn receiver(case: &Json) -> Result<Value, Failed> {
 /// on the instance value of its receiver.
 fn instance(given: &Json) -> Result<Value, Failed> {
     let args = field(given, "args")?;
-    let found = |member: Option<&Value>| member.cloned().ok_or_else(|| failed("the receiver has no such member"));
+    let found = |member: Option<&Value>| {
+        member
+            .cloned()
+            .ok_or_else(|| failed("the receiver has no such member"))
+    };
     match text(given, "new")? {
         "parse" => parse(&source(field(args, "source")?)?, &parse_options(args)?).map_err(failed),
         "value.string" => Ok(Value::string(text(args, "text")?)),
@@ -172,7 +176,11 @@ fn instance(given: &Json) -> Result<Value, Failed> {
             Value::array(&items).map_err(failed)
         }
         "value.object" => Value::object(&ordered_map(field(args, "members")?)?).map_err(failed),
-        "value.get" => found(instance(field(given, "receiver")?)?.get(text(args, "key")?).map_err(failed)?),
+        "value.get" => found(
+            instance(field(given, "receiver")?)?
+                .get(text(args, "key")?)
+                .map_err(failed)?,
+        ),
         "value.get_units" => found(
             instance(field(given, "receiver")?)?
                 .get_units(&integers(args, "units")?)
@@ -243,10 +251,10 @@ fn found(case: &Json, result: Result<Option<&Value>, Error>) -> Result<(), Faile
 fn run(group: &str, case: &Json) -> Result<(), Failed> {
     // A group `<member>.<corpus>` holds more cases of the member: parsed values, the fixtures, the official examples,
     // the argument cases and the behaviours of the legacy package tests (contracts/README.md).
-    let group = CORPORA
-        .iter()
-        .find_map(|corpus| group.strip_suffix(corpus))
-        .unwrap_or(group);
+    let group = match CORPORA.iter().find_map(|corpus| group.strip_suffix(corpus)) {
+        Some(member) => member,
+        None => group,
+    };
     match group {
         "parse" => outcome(
             case,
@@ -290,12 +298,16 @@ fn run(group: &str, case: &Json) -> Result<(), Failed> {
         }
         "value.members" => outcome(case, receiver(case)?.members().map(drop), |()| Ok(())),
         "value.items" => outcome(case, receiver(case)?.items().map(drop), |()| Ok(())),
-        "value.number_literal" => outcome(case, receiver(case)?.number_literal(), |literal| {
-            match case.get("result") {
-                Some(_) => same(literal, text(case, "result")?),
-                None => Ok(()),
-            }
-        }),
+        "value.number_literal" => {
+            outcome(
+                case,
+                receiver(case)?.number_literal(),
+                |literal| match case.get("result") {
+                    Some(_) => same(literal, text(case, "result")?),
+                    None => Ok(()),
+                },
+            )
+        }
         "value.boolean_value" => {
             outcome(case, receiver(case)?.boolean_value().map(drop), |()| Ok(()))
         }

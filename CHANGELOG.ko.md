@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: dee84cd3bb85c9fcace78afbf6700fce8203f5aafa28fe595d4509c0e6906f19 -->
+<!-- source-sha256: de2fc741f8364e801ffd181eb8bac05847a208ea56a09445750f03b8f7ad2458 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -8,6 +8,8 @@
 ## Unreleased
 
 ## 0.0.29
+
+- T3.30부터 T3.33까지의 CI가 통과한다(T3.34). `packages/rust/tests/contract.rs`는 rustfmt 형태이고 금지된 `Option::unwrap_or`를 쓰지 않는다. 이것이 `make verify-all`의 Rust build도 멈췄다. `tests/scripts/case-corpus.test.mts`는 oxlint가 요구하는 타입 가드로 JSON을 좁히고, `tests/scripts/workflow-rules.test.mts`의 recipe 파서는 GNU make 4가 database에서 rule 앞에 `ci-assets-php: DYLD_LIBRARY_PATH :=`로 찍는 target 전용 변수 줄을 건너뛴다. Red: df37780의 CI 실행이 `lint-rust`, `fmt-check`, `lint-ts`, `verify-all`, `workflow-rules.test.mts`의 시험 5개에서 실패했고, 그 5개는 로컬 GNU make 4.4.1에서도 실패한다.
 
 - 저장소는 binding 0.0.8을 고정한다(T3.33): `package.json`과 `package-lock.json`의 release asset, `polyspec-binding-core`에 대한 모든 의존 줄과 `Cargo.lock`의 tag v0.0.8. binding 0.0.8은 생성된 Node 시험의 await와 생성된 Go 파일의 gofmt를 고친다.
 

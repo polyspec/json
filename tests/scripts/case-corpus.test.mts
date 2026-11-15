@@ -11,21 +11,36 @@ import { reference } from '../../scripts/reference.mts';
 import { ROOT } from '../../scripts/registry.mts';
 
 type Json = Record<string, unknown>;
-type Case = Json & { id: string };
-const core = JSON.parse(readFileSync(path.join(ROOT, 'contracts/core.json'), 'utf8')) as Record<string, Case[]>;
+const isObject = (value: unknown): value is Json => typeof value === 'object' && value !== null && !Array.isArray(value);
+const list = (value: unknown): unknown[] => (Array.isArray(value) ? value : []);
+const field = (value: unknown, name: string): unknown => (isObject(value) ? value[name] : undefined);
+const read = (file: string): unknown => JSON.parse(readFileSync(path.join(ROOT, file), 'utf8'));
+
+const core = read('contracts/core.json');
 const DECODER = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true });
+
+/** The cases of a group of contracts/core.json. */
+const group = (name: string): Json[] => list(field(core, name)).filter(isObject);
+/** The cases of a member: its group and every group `<member>.<corpus>`. */
+const memberCases = (member: string): Json[] =>
+  Object.keys(isObject(core) ? core : {})
+    .filter((name) => name === member || name.startsWith(`${member}.`))
+    .flatMap(group);
+const byId = (name: string): Map<string, Json> => new Map(group(name).map((kase) => [String(field(kase, 'id')), kase]));
 
 /** The bytes of a `source` of binding G-5: its text, or `{"hex": ...}`. */
 const bytesOf = (source: unknown): Buffer =>
-  typeof source === 'string' ? Buffer.from(source, 'utf8') : Buffer.from(String((source as Json)['hex']), 'hex');
+  typeof source === 'string' ? Buffer.from(source, 'utf8') : Buffer.from(String(field(source, 'hex')), 'hex');
 /** The source of a case: its own, or the one of the parse that makes its value. */
-const sourceOf = (kase: Case): unknown => kase['source'] ?? ((kase['value'] as Json)['args'] as Json)['source'];
+const sourceOf = (kase: Json): unknown => kase['source'] ?? field(field(kase['value'], 'args'), 'source');
 const caseId = (category: string, file: string): string => `${category}_${file.replace(/\.json$/, '')}`.replace(/[^a-z0-9]+/gi, '_').toLowerCase();
-const byId = (group: string): Map<string, Case> => new Map((core[group] ?? []).map((kase) => [kase.id, kase]));
+const kindOf = (kase: Json): unknown => field(kase['raises'], 'kind') ?? null;
+const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
 
 test('every fixture is a parse case with its bytes, and every valid one a stringify case with the compact text of the reference', () => {
   const parsed = byId('parse.fixtures');
   const written = byId('stringify.fixtures');
+  assert.ok(parsed.size > 0, 'contracts/core.json has no group parse.fixtures');
   const findings: string[] = [];
   for (const category of ['valid', 'invalid']) {
     const directory = path.join(ROOT, 'contracts/fixtures', category);
@@ -48,59 +63,62 @@ test('every fixture is a parse case with its bytes, and every valid one a string
       }
     }
   }
-  assert.equal(parsed.size + written.size > 0, true, 'contracts/core.json has no fixture group');
   assert.deepEqual(findings, []);
 });
 
 test('every official example is a stringify case with its compact text', () => {
   const written = byId('stringify.official');
-  const examples = (JSON.parse(readFileSync(path.join(ROOT, 'examples/official.json'), 'utf8')) as { cases: { id: string; source: string; compact: string }[] }).cases;
+  const examples = list(field(read('examples/official.json'), 'cases')).filter(isObject);
   assert.ok(examples.length > 0);
   const findings = examples
-    .filter(({ id, source, compact }) => {
-      const kase = written.get(id.replace(/[^a-z0-9]+/gi, '_').toLowerCase());
-      return kase === undefined || sourceOf(kase) !== source || kase['text'] !== compact;
+    .filter((example) => {
+      const kase = written.get(String(example['id']).replace(/[^a-z0-9]+/gi, '_').toLowerCase());
+      return kase === undefined || sourceOf(kase) !== example['source'] || kase['text'] !== example['compact'];
     })
-    .map(({ id }) => `stringify.official has no case of ${id}`);
+    .map((example) => `stringify.official has no case of ${String(example['id'])}`);
   assert.deepEqual(findings, []);
 });
 
 test('every argument case has a case of its member with the same argument and kind', () => {
-  const { cases } = JSON.parse(readFileSync(path.join(ROOT, 'contracts/fixtures/arguments.json'), 'utf8')) as { cases: { name: string; call: string; argument: unknown; kind: string | null }[] };
-  const groups = (member: string): Case[] => Object.entries(core).filter(([group]) => group === member || group.startsWith(`${member}.`)).flatMap(([, list]) => list);
-  const kindOf = (kase: Case): string | null => ((kase['raises'] as Json | undefined)?.['kind'] as string | undefined) ?? null;
-  // The value that a case of string_value reads: its receiver, made by a factory of the value, or null without one.
-  const receiverValue = (kase: Case): unknown => {
-    const receiver = kase['receiver'] as Json | undefined;
-    if (receiver === undefined) return kase['units'] === undefined && kase['text'] === undefined && kase['literal'] === undefined ? null : undefined;
-    const args = receiver['args'] as Json;
-    return { 'value.string': args['text'], 'value.number': Number(args['literal']), 'value.array': args['items'], 'value.object': {}, 'value.boolean': args['value'] }[String(receiver['new'])];
-  };
-  const keyValue = (key: Json): unknown => (key['kind'] === 'null' ? null : key['kind'] === 'map' ? {} : key['kind'] === 'number' ? Number(key['value']) : key['value']);
-  const findings = cases
-    .filter(({ call, argument, kind }) => {
-      const match = (kase: Case): boolean => kindOf(kase) === kind;
-      if (call === 'number') return !groups('value.number').some((kase) => kase['literal'] === argument && match(kase));
-      if (call === 'max_depth') return !groups('parse').some((kase) => kase['source'] === '1' && (kase['options'] as Json | undefined)?.['max_depth'] === argument && match(kase));
-      if (call === 'string_value') return !groups('value.string_value').some((kase) => JSON.stringify(receiverValue(kase)) === JSON.stringify(argument) && match(kase));
-      return !groups('ordered_map.insert').some((kase) => JSON.stringify(keyValue(kase['key'] as Json)) === JSON.stringify(argument) && match(kase));
-    })
-    .map(({ name }) => `no case of the argument case ${name}`);
+  const cases = list(field(read('contracts/fixtures/arguments.json'), 'cases')).filter(isObject);
   assert.ok(cases.length > 0);
+  // The value that a case of string_value reads: its receiver, made by a factory of the value, or null without one.
+  const receiverValue = (kase: Json): unknown => {
+    const receiver = kase['receiver'];
+    if (receiver === undefined) return kase['units'] === undefined && kase['text'] === undefined && kase['literal'] === undefined ? null : undefined;
+    const args = field(receiver, 'args');
+    const made: Record<string, unknown> = { 'value.string': field(args, 'text'), 'value.number': Number(field(args, 'literal')), 'value.array': field(args, 'items'), 'value.object': {}, 'value.boolean': field(args, 'value') };
+    return made[String(field(receiver, 'new'))];
+  };
+  const keyValue = (key: unknown): unknown => {
+    const kind = field(key, 'kind');
+    if (kind === 'null') return null;
+    if (kind === 'map') return {};
+    if (kind === 'number') return Number(field(key, 'value'));
+    return field(key, 'value');
+  };
+  const findings = cases
+    .filter((check) => {
+      const { call, argument } = check;
+      const match = (kase: Json): boolean => kindOf(kase) === (check['kind'] ?? null);
+      if (call === 'number') return !memberCases('value.number').some((kase) => kase['literal'] === argument && match(kase));
+      if (call === 'max_depth') return !memberCases('parse').some((kase) => kase['source'] === '1' && field(kase['options'], 'max_depth') === argument && match(kase));
+      if (call === 'string_value') return !memberCases('value.string_value').some((kase) => same(receiverValue(kase), argument) && match(kase));
+      return !memberCases('ordered_map.insert').some((kase) => same(keyValue(kase['key']), argument) && match(kase));
+    })
+    .map((check) => `no case of the argument case ${String(check['name'])}`);
   assert.deepEqual(findings, []);
 });
 
-test('a source of a case is text only where the bytes are UTF-8 without a byte order mark', () => {
-  const findings = (core['parse.fixtures'] ?? []).filter((kase) => {
+test('a source of a fixture case is text only where the bytes are UTF-8 without a byte order mark', () => {
+  const findings = group('parse.fixtures').filter((kase) => {
     const source = kase['source'];
-    if (typeof source !== 'string') {
-      try {
-        return !DECODER.decode(bytesOf(source)).startsWith('﻿');
-      } catch {
-        return false;
-      }
+    if (typeof source === 'string') return source.startsWith('﻿');
+    try {
+      return !DECODER.decode(bytesOf(source)).startsWith('﻿');
+    } catch {
+      return false;
     }
-    return source.startsWith('﻿');
   });
-  assert.deepEqual(findings.map((kase) => kase.id), []);
+  assert.deepEqual(findings.map((kase) => kase['id']), []);
 });
