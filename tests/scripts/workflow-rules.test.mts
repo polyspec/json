@@ -411,4 +411,8 @@ test('T3.29: no recipe makes install-llvm, and the PHP job provisions LLVM on ma
   assert.match(llvm[0] ?? '', new RegExp(`^ {10}version: '${major}\\.\\d+\\.\\d+'$`, 'm'), `the step installs LLVM ${major} of config/toolchain.json`);
   assert.ok(steps.indexOf(llvm[0] ?? '') < run, 'the LLVM is provisioned before the run step');
   assert.ok(recipe(text, 'ci-assets-php').some(line => line.includes('$(if $(LLVM_PATH),LLVM_ROOT=$(LLVM_PATH))')), 'the build reads the LLVM that the step installed');
+  // install-llvm-action exports DYLD_LIBRARY_PATH and LD_LIBRARY_PATH, which make the PHP of setup-php load the system libsqlite3.
+  for (const name of ['DYLD_LIBRARY_PATH', 'LD_LIBRARY_PATH']) {
+    assert.match(readFileSync(path.join(ROOT, 'Makefile'), 'utf8'), new RegExp(`^ci-assets-php: ${name} :=$`, 'm'), `the recipe ci-assets-php runs with ${name} empty, which install-llvm-action exports`);
+  }
 });

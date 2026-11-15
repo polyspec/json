@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: a40efad803e0435fbcf1d8623b85fbfd16f3e6da14f5d992708764cd9f9ef87a -->
+<!-- source-sha256: 4ddaad5299ff97af14d3a18751890cc6b2599abd0571c491d133bad1e9316b69 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -12,6 +12,8 @@
 - 계약 corpus 전체가 Rust 코어와 생성된 다섯 바인딩에서 돈다(T3.30). `contracts/core.json`에 group `parse.fixtures`와 `stringify.fixtures`(`contracts/fixtures`의 파일 98개, 유효한 것은 독립 참조의 compact 텍스트로 다시 쓴다), `stringify.official`(compact 텍스트를 가진 공식 예제 17개), 없던 argument case의 `.arguments` group, `legacy/`의 손으로 쓴 시험의 동작을 담는 `.api`와 `.parsed` group이 생긴다. `packages/rust/interface.json`이 이를 연결하고, `stringify` 행은 텍스트를 비교한다. `tests/scripts/case-corpus.test.mts`는 case가 없는 fixture, 공식 예제, argument case를 실패시킨다. method의 `.parsed` group은 연결하지 않는다, binding 0.0.8이 `parse`가 만드는 수신자(타입 `json_value`를 class `value`로 풀지 않는다)와 `value.get`이 만드는 수신자를 거부하기 때문이며, Rust 시험이 실행한다. 전에는 바인딩이 member group 29개만 실행했고 `stringify`의 텍스트를 비교하지 않았다. 수: 코어의 Rust 시험 368, Node 384, WASM 382, Python 382, PHP 380, Go 362개 시험이 모두 통과한다.
 
 - 저장소는 kit 0.0.114를 고정한다(T3.31). rules check가 그 `ci-setup`을 따른다: kit 0.0.113에서 `make rules-check`는 64건을 보고했고 이제 0건이다.
+
+- `make ci-assets-php`는 Makefile의 target 전용 변수로 `DYLD_LIBRARY_PATH`와 `LD_LIBRARY_PATH`를 비운 채 돈다(T3.32). macOS에서 `install-llvm-action`이 둘을 `/usr/lib`을 앞에 두고 `GITHUB_ENV`로 내보내, setup-php의 PHP가 시스템의 libsqlite3를 읽고 status 134로 중단했다. Red: 두 줄이 없으면 `tests/scripts/workflow-rules.test.mts`가 실패했다.
 
 - CI는 kit 0.0.113과 binding 0.0.7로 돈다(T3.29). `make ci-shared`, `make ci-runtime RUNTIME=<runtime>`, `make ci-required`는 kit의 `ci-setup --job shared`, `--job runtime <runtime>`, `--required`를 실행하며, 이것이 job의 도구를 설치하고 setup target을 실행하고 gate를 `make ci-targets`로 실행하고 pipeline을 판정한다. target `kit-ci-setup`, `kit-ci-context-prepare`, `kit-ci-context-cleanup`, `ci-plan-tools`는 지운다. `make ci-bindings`와 `make ci-assets-php`는 binding 0.0.7이 더는 쓰지 않는 `install-llvm`을 만들지 않는다. ubuntu-26.04 image는 LLVM 21을 `/usr/lib/llvm-21`에 담고, `assets.yml`의 macOS job은 run step 전에 commit으로 고정한 `KyleMayes/install-llvm-action`으로 그것을 설치하며, recipe는 그 `LLVM_PATH`를 `LLVM_ROOT`로 넘긴다. 전에는 release commit의 CI 실행이 모든 kit job을 "unknown CI setup mode --setup"으로, 모든 PHP asset job과 job `bindings`를 "No rule to make target 'install-llvm'"로 멈췄다. Red: `tests/scripts/workflow-rules.test.mts`가 mode `--setup`과 `install-llvm`의 make를 찾았다. Green: 그 시험 15개가 통과한다.
 
