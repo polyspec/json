@@ -1,5 +1,5 @@
 <!-- doc-id: contracts-readme -->
-<!-- source-sha256: 6f973cc56571e87b5fd19176e155d1c1ed7e5228a4ab3d451b3150c431e3046e -->
+<!-- source-sha256: caf9f9f48958fe392fb9bfa93995a47a47f9053ec41b6a610464d144f9385039 -->
 # 계약
 
 [English](README.md)
@@ -16,9 +16,9 @@ member의 case를 더 담고, 코어의 Rust 시험은 각각을 그 member의 c
 - `.arguments`: [`fixtures/arguments.json`](fixtures/arguments.json)의 case 가운데 기본 group에 없는 것.
 - `.api`: `legacy/` 아래 언어 패키지 시험의 동작.
 - `.parsed`: 수신자나 값이 binding GN-13f의 instance value `{"new": "parse", ...}`인 case.
+- `.chained`: 수신자가 `value.get`이나 `value.get_units`가 찾는 member인 case.
 
-`tests/scripts/case-corpus.test.mts`는 case가 없는 fixture, 공식 예제, argument case를 실패시킨다. method의 `.parsed` group을
-빼고 모든 group이 인터페이스 계약의 `cases`에 연결된다: binding 0.0.8은 `parse`가 만드는 수신자를 거부하는데, 그 결과 타입
-`json_value`를 class `value`로 풀지 않기 때문이며, `value.get`이나 `value.get_units`가 만드는 수신자도 결과가 optional이라
-거부한다. binding이 이를 받을 때까지 그 group은 Rust 시험이 실행한다.
+`tests/scripts/case-corpus.test.mts`는 case가 없는 fixture, 공식 예제, argument case를 실패시킨다. `.chained`
+group을 빼고 모든 group이 인터페이스 계약의 `cases`에 연결된다: `value.get`과 `value.get_units`의 결과는 optional이고, binding은
+class를 반환하는 member에서만 수신자를 만들므로(GN-13f), 그 group은 코어의 Rust 시험만 실행한다.
 [`fixtures/`](fixtures)는 검증기의 공유 case도 담는다([AGENTS.md](../AGENTS.ko.md#implementations)).

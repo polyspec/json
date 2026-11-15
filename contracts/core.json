@@ -1,5 +1,5 @@
 {
- "comment": "The cases of the Rust core and of the bindings generated from it (docs/spec/json-contract.md#core, RQ-026 to RQ-035), one group per member of packages/rust/interface.json in the case convention of binding G-5: the keys are the parameter names of the member, and a method takes its receiver from the keys of a factory of the value (text, units, literal, value or members; no key is null). bytes are {\"hex\": ...}, a float that JSON cannot write is {\"float\": ...}, and a json_value is {\"kind\", \"value\"}. A failure is raises: its kind, its category (F-3) and, where the rule fixes them, properties. A result of a case that does not raise is result, raw (the token of the made value), number_literal, size, text or ok. bits is the big-endian hex of the binary64 float of value. faults names the fault injection points that a case arms before its call (G-5, X-1). A group <member>.<corpus> holds more cases of the member (contracts/README.md): .fixtures the files of contracts/fixtures, .official the examples of examples/official.json, .arguments the cases of contracts/fixtures/arguments.json, .api the behaviours of the legacy package tests, and .parsed the cases whose receiver or value is the instance value {\"new\": \"parse\"} of binding GN-13f. A receiver or a value is an instance value under receiver or at its parameter key.",
+ "comment": "The cases of the Rust core and of the bindings generated from it (docs/spec/json-contract.md#core, RQ-026 to RQ-035), one group per member of packages/rust/interface.json in the case convention of binding G-5: the keys are the parameter names of the member, and a method takes its receiver from the keys of a factory of the value (text, units, literal, value or members; no key is null). bytes are {\"hex\": ...}, a float that JSON cannot write is {\"float\": ...}, and a json_value is {\"kind\", \"value\"}. A failure is raises: its kind, its category (F-3) and, where the rule fixes them, properties. A result of a case that does not raise is result, raw (the token of the made value), number_literal, size, text or ok. bits is the big-endian hex of the binary64 float of value. faults names the fault injection points that a case arms before its call (G-5, X-1). A group <member>.<corpus> holds more cases of the member (contracts/README.md): .fixtures the files of contracts/fixtures, .official the examples of examples/official.json, .arguments the cases of contracts/fixtures/arguments.json, .api the behaviours of the legacy package tests, .parsed the cases whose receiver or value is the instance value {\"new\": \"parse\"} of binding GN-13f, and .chained the cases whose receiver is the member that value.get or value.get_units finds, which only the Rust test runs. A receiver or a value is an instance value under receiver or at its parameter key.",
  "parse": [
   {
    "id": "nest_256",
@@ -6021,26 +6021,7 @@
    }
   },
   {
-   "id": "long_multibyte_value",
-   "rule": "RQ-007",
-   "receiver": {
-    "new": "value.get",
-    "receiver": {
-     "new": "parse",
-     "args": {
-      "source": {
-       "hex": "7b226b6579223a22ed959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8d227d"
-      }
-     }
-    },
-    "args": {
-     "key": "key"
-    }
-   },
-   "result": "한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍"
-  },
-  {
-   "id": "string_value_of_object",
+   "id": "parsed_string_value_of_object",
    "rule": "RQ-014",
    "receiver": {
     "new": "parse",
@@ -6175,7 +6156,7 @@
    "result": "🌍"
   },
   {
-   "id": "lone_high",
+   "id": "parsed_lone_high",
    "rule": "RQ-027",
    "receiver": {
     "new": "parse",
@@ -6212,7 +6193,7 @@
    "key": "missing"
   },
   {
-   "id": "get_of_array",
+   "id": "parsed_get_of_array",
    "rule": "RQ-014",
    "receiver": {
     "new": "parse",
@@ -6231,7 +6212,7 @@
  ],
  "value.get_units.parsed": [
   {
-   "id": "get_units_above_largest",
+   "id": "parsed_get_units_above_largest",
    "rule": "RQ-029",
    "receiver": {
     "new": "parse",
@@ -6271,42 +6252,6 @@
  ],
  "value.raw.parsed": [
   {
-   "id": "get_present",
-   "rule": "RQ-032",
-   "receiver": {
-    "new": "value.get",
-    "receiver": {
-     "new": "parse",
-     "args": {
-      "source": "{\"a\":1}"
-     }
-    },
-    "args": {
-     "key": "a"
-    }
-   },
-   "result": "1"
-  },
-  {
-   "id": "get_units_lone",
-   "rule": "RQ-032",
-   "receiver": {
-    "new": "value.get_units",
-    "receiver": {
-     "new": "parse",
-     "args": {
-      "source": "{\"\\ud800\":true}"
-     }
-    },
-    "args": {
-     "units": [
-      55296
-     ]
-    }
-   },
-   "result": "true"
-  },
-  {
    "id": "root_keeps_whitespace",
    "rule": "RQ-018",
    "receiver": {
@@ -6327,43 +6272,6 @@
     }
    },
    "result": " [1] "
-  },
-  {
-   "id": "decoded_name",
-   "rule": "RQ-019",
-   "receiver": {
-    "new": "value.get",
-    "receiver": {
-     "new": "parse",
-     "args": {
-      "source": "{\"\\u0062\":1,\"b\":2,\"\\ud83d\\ude00\":3}"
-     }
-    },
-    "args": {
-     "key": "b"
-    }
-   },
-   "result": "2"
-  },
-  {
-   "id": "decoded_pair_units",
-   "rule": "RQ-019",
-   "receiver": {
-    "new": "value.get_units",
-    "receiver": {
-     "new": "parse",
-     "args": {
-      "source": "{\"\\u0062\":1,\"b\":2,\"\\ud83d\\ude00\":3}"
-     }
-    },
-    "args": {
-     "units": [
-      55357,
-      56832
-     ]
-    }
-   },
-   "result": "3"
   }
  ],
  "parse.fixtures": [
@@ -9758,7 +9666,7 @@
  ],
  "value.items.parsed": [
   {
-   "id": "items_of_object",
+   "id": "parsed_items_of_object",
    "rule": "RQ-014",
    "receiver": {
     "new": "parse",
@@ -9776,7 +9684,7 @@
  ],
  "value.members.parsed": [
   {
-   "id": "members_of_array",
+   "id": "parsed_members_of_array",
    "rule": "RQ-014",
    "receiver": {
     "new": "parse",
@@ -9808,6 +9716,102 @@
     "category": "type",
     "message": null
    }
+  }
+ ],
+ "value.string_value.chained": [
+  {
+   "id": "long_multibyte_value",
+   "rule": "RQ-007",
+   "receiver": {
+    "new": "value.get",
+    "receiver": {
+     "new": "parse",
+     "args": {
+      "source": {
+       "hex": "7b226b6579223a22ed959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8ded959cf09f8c8d227d"
+      }
+     }
+    },
+    "args": {
+     "key": "key"
+    }
+   },
+   "result": "한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍한🌍"
+  }
+ ],
+ "value.raw.chained": [
+  {
+   "id": "get_present",
+   "rule": "RQ-032",
+   "receiver": {
+    "new": "value.get",
+    "receiver": {
+     "new": "parse",
+     "args": {
+      "source": "{\"a\":1}"
+     }
+    },
+    "args": {
+     "key": "a"
+    }
+   },
+   "result": "1"
+  },
+  {
+   "id": "get_units_lone",
+   "rule": "RQ-032",
+   "receiver": {
+    "new": "value.get_units",
+    "receiver": {
+     "new": "parse",
+     "args": {
+      "source": "{\"\\ud800\":true}"
+     }
+    },
+    "args": {
+     "units": [
+      55296
+     ]
+    }
+   },
+   "result": "true"
+  },
+  {
+   "id": "decoded_name",
+   "rule": "RQ-019",
+   "receiver": {
+    "new": "value.get",
+    "receiver": {
+     "new": "parse",
+     "args": {
+      "source": "{\"\\u0062\":1,\"b\":2,\"\\ud83d\\ude00\":3}"
+     }
+    },
+    "args": {
+     "key": "b"
+    }
+   },
+   "result": "2"
+  },
+  {
+   "id": "decoded_pair_units",
+   "rule": "RQ-019",
+   "receiver": {
+    "new": "value.get_units",
+    "receiver": {
+     "new": "parse",
+     "args": {
+      "source": "{\"\\u0062\":1,\"b\":2,\"\\ud83d\\ude00\":3}"
+     }
+    },
+    "args": {
+     "units": [
+      55357,
+      56832
+     ]
+    }
+   },
+   "result": "3"
   }
  ]
 }

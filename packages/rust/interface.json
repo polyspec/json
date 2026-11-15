@@ -1793,11 +1793,6 @@
       "group": "ordered_map.entries"
     },
     {
-      "member": "parse",
-      "file": "examples/official.json",
-      "group": "cases"
-    },
-    {
       "member": "stringify",
       "file": "contracts/core.json",
       "group": "stringify.parsed",
@@ -1855,6 +1850,61 @@
       "member": "value.number",
       "file": "contracts/core.json",
       "group": "value.number.api"
+    },
+    {
+      "member": "value.string_value",
+      "file": "contracts/core.json",
+      "group": "value.string_value.parsed"
+    },
+    {
+      "member": "value.string_units",
+      "file": "contracts/core.json",
+      "group": "value.string_units.parsed"
+    },
+    {
+      "member": "value.string_text",
+      "file": "contracts/core.json",
+      "group": "value.string_text.parsed"
+    },
+    {
+      "member": "value.get",
+      "file": "contracts/core.json",
+      "group": "value.get.parsed"
+    },
+    {
+      "member": "value.get_units",
+      "file": "contracts/core.json",
+      "group": "value.get_units.parsed"
+    },
+    {
+      "member": "value.raw",
+      "file": "contracts/core.json",
+      "group": "value.raw.parsed"
+    },
+    {
+      "member": "value.number_literal",
+      "file": "contracts/core.json",
+      "group": "value.number_literal.parsed"
+    },
+    {
+      "member": "value.kind",
+      "file": "contracts/core.json",
+      "group": "value.kind.parsed"
+    },
+    {
+      "member": "value.items",
+      "file": "contracts/core.json",
+      "group": "value.items.parsed"
+    },
+    {
+      "member": "value.members",
+      "file": "contracts/core.json",
+      "group": "value.members.parsed"
+    },
+    {
+      "member": "value.boolean_value",
+      "file": "contracts/core.json",
+      "group": "value.boolean_value.parsed"
     }
   ]
 }

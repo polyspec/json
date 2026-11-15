@@ -1177,8 +1177,8 @@ checksum = "f6b464fbc74e149a392436b17d523f769e057cb6877f6a5c4618bc6f11800548"
 
 [[package]]
 name = "polyspec-binding-core"
-version = "0.0.8"
-source = "git+https://github.com/polyspec/binding.git?tag=v0.0.8#7b71949ede916c00c17c0ab35ddc735ab33fa8f6"
+version = "0.0.10"
+source = "git+https://github.com/polyspec/binding.git?tag=v0.0.10#e38c4a2b3c7ceb322e6d573c278920f27e7f0ba2"
 dependencies = [
  "indexmap",
  "libc",
@@ -1189,7 +1189,7 @@ dependencies = [
 
 [[package]]
 name = "polyspec-json"
-version = "0.0.29"
+version = "0.0.30"
 dependencies = [
  "base64 0.22.1",
  "libtest-mimic",
@@ -1203,7 +1203,7 @@ dependencies = [
 
 [[package]]
 name = "polyspec-json-go"
-version = "0.0.29"
+version = "0.0.30"
 dependencies = [
  "polyspec-binding-core",
  "polyspec-json",
@@ -1211,7 +1211,7 @@ dependencies = [
 
 [[package]]
 name = "polyspec-json-node"
-version = "0.0.29"
+version = "0.0.30"
 dependencies = [
  "napi",
  "napi-build",
@@ -1222,7 +1222,7 @@ dependencies = [
 
 [[package]]
 name = "polyspec-json-php-ext"
-version = "0.0.29"
+version = "0.0.30"
 dependencies = [
  "ext-php-rs",
  "polyspec-binding-core",
@@ -1231,7 +1231,7 @@ dependencies = [
 
 [[package]]
 name = "polyspec-json-python"
-version = "0.0.29"
+version = "0.0.30"
 dependencies = [
  "polyspec-binding-core",
  "polyspec-json",
@@ -1240,7 +1240,7 @@ dependencies = [
 
 [[package]]
 name = "polyspec-json-wasm"
-version = "0.0.29"
+version = "0.0.30"
 dependencies = [
  "js-sys",
  "polyspec-binding-core",

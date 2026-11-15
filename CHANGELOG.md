@@ -6,6 +6,10 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.30
+
+- The release pins binding 0.0.10 (T3.35): the release asset in `package.json` and `package-lock.json`, the tag v0.0.10 in every dependency line on `polyspec-binding-core` and in `Cargo.lock`, and the version 0.0.30 of the packages. binding 0.0.10 takes a receiver made by `parse` (GN-13f), so `packages/rust/interface.json` links the `.parsed` groups of `contracts/core.json` and the five bindings run them. The cases whose receiver is the member that `value.get` or `value.get_units` finds move to `.chained` groups, which only the Rust test of the core runs, because binding makes a receiver only from a member that returns the class and the result of those members is optional. Counts: the Rust test of the core 368, Node 400, WASM 398, Python 398, PHP 396 and Go 378 tests, all passing.
+
 ## 0.0.29
 
 - The CI of T3.30 to T3.33 passes (T3.34). `packages/rust/tests/contract.rs` is in the form of rustfmt and uses no disallowed `Option::unwrap_or`, which also stopped the Rust build of `make verify-all`; `tests/scripts/case-corpus.test.mts` narrows its JSON with type guards, which oxlint requires; and the recipe parser of `tests/scripts/workflow-rules.test.mts` skips a target-specific variable line, which GNU make 4 prints in its database as `ci-assets-php: DYLD_LIBRARY_PATH :=` before the rule. Red: the CI run of df37780 failed in `lint-rust`, `fmt-check`, `lint-ts`, `verify-all` and five tests of `workflow-rules.test.mts`, which fail locally under GNU make 4.4.1.

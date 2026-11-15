@@ -8,7 +8,14 @@ use polyspec_json::{parse, stringify, Error, OrderedMap, ParseOptions, Stringify
 use serde_json::Value as Json;
 
 /// The suffixes of the groups that hold more cases of a member (contracts/README.md).
-const CORPORA: [&str; 5] = [".parsed", ".fixtures", ".official", ".arguments", ".api"];
+const CORPORA: [&str; 6] = [
+    ".parsed",
+    ".chained",
+    ".fixtures",
+    ".official",
+    ".arguments",
+    ".api",
+];
 
 const CONTRACT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../contracts/core.json");
 

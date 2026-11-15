@@ -15,9 +15,10 @@ A group named after a member of `packages/rust/interface.json` is linked in the 
 - `.arguments`: the cases of [`fixtures/arguments.json`](fixtures/arguments.json) that the plain groups do not hold.
 - `.api`: the behaviours of the tests of the language packages under `legacy/`.
 - `.parsed`: a case whose receiver or value is the instance value `{"new": "parse", ...}` of binding GN-13f.
+- `.chained`: a case whose receiver is the member that `value.get` or `value.get_units` finds.
 
 `tests/scripts/case-corpus.test.mts` fails a fixture, an official example or an argument case without its case. Every
-group is linked in the `cases` of the interface contract except the `.parsed` groups of a method: binding 0.0.8 refuses a
-receiver made by `parse`, whose result type `json_value` it does not resolve to the class `value`, and a receiver made by
-`value.get` or `value.get_units`, whose result is optional. The Rust test runs those groups until binding takes them.
+group is linked in the `cases` of the interface contract except the `.chained` groups: the result of `value.get` and
+`value.get_units` is optional, and binding makes a receiver only from a member that returns the class (GN-13f), so the
+Rust test of the core runs them alone.
 [`fixtures/`](fixtures) also holds the shared cases of the verifier ([AGENTS.md](../AGENTS.md#implementations)).

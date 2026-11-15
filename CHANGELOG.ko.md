@@ -1,11 +1,15 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: de2fc741f8364e801ffd181eb8bac05847a208ea56a09445750f03b8f7ad2458 -->
+<!-- source-sha256: ef5f120016de7a92411ca985b00b06c7e9e5d53e1c11d2e58de89dc9698afdde -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+## 0.0.30
+
+- 릴리스는 binding 0.0.10을 고정한다(T3.35): `package.json`과 `package-lock.json`의 release asset, `polyspec-binding-core`에 대한 모든 의존 줄과 `Cargo.lock`의 tag v0.0.10, 패키지 버전 0.0.30. binding 0.0.10은 `parse`가 만드는 수신자를 받으므로(GN-13f) `packages/rust/interface.json`이 `contracts/core.json`의 `.parsed` group을 연결하고 다섯 바인딩이 실행한다. 수신자가 `value.get`이나 `value.get_units`가 찾는 member인 case는 `.chained` group으로 옮기며 코어의 Rust 시험만 실행한다, binding은 class를 반환하는 member에서만 수신자를 만들고 그 member의 결과는 optional이기 때문이다. 수: 코어의 Rust 시험 368, Node 400, WASM 398, Python 398, PHP 396, Go 378개 시험이 모두 통과한다.
 
 ## 0.0.29
 
