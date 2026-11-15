@@ -78,11 +78,19 @@ The PIE record `var/records/pie-verification.json` records the PIE version and P
 <a id="ci"></a>
 ## Hosted CI
 
-`.github/workflows/ci.yml` runs on every pull request, push to `main` and manual dispatch. It is one pipeline (PRINCIPLES S12): its one job `kit` calls `.github/workflows/ci-pipeline.yml`, the pipeline of this repository taken from the one of `@polyspec/kit`, which runs a target of the Makefile in each of its jobs: `kit-gates-static` in the shared job, `kit-gates-verify` in the verify job and `kit-gates-runtime-<runtime>` in the job of each runtime that its matrix lists.
+`.github/workflows/ci.yml` runs on every pull request, push to `main` and manual dispatch. It is one pipeline (PRINCIPLES S12): its one job `kit` calls `.github/workflows/ci-pipeline.yml`, the pipeline of this repository taken from the one of `@polyspec/kit`, whose job `plan` writes the plan of `config/ci.json` and whose other jobs each run one target of the Makefile: `kit-gates-static` in the shared job, `kit-gates-verify` in the verify job, `kit-gates-bindings` in the bindings job and `kit-gates-runtime-<runtime>` in the job of each runtime that its matrix lists.
+
+A job holds no content in YAML. Its one run step is `make ci-<job>` with make variables as its only arguments, and the recipe of the Makefile installs what the job needs, stops when an install fails, runs the target of the job through `make ci-targets` and cleans the CI context up. The other steps are `uses:` steps: the checkout, the setup of PHP, the bootstrap of kit and the upload of the report. A local run of a job is the call that CI makes:
+
+~~~sh
+make ci-shared
+make ci-runtime RUNTIME=php
+make ci-assets-php PHP_MINOR=8.4
+~~~
 
 [config/ci.json](../../config/ci.json) declares, for those jobs, the setup targets (`setup`) and the tools beyond those of kit (`tools`). The verify job, which the pipeline itself declares, installs the toolchains of every language and the comparison environments with `json-install-verify`; the php-ext job installs PIE and the supplementary suite with `json-install-pie`; each runtime job builds its package. Every target of `CHECK_TARGETS` is a prerequisite of exactly one of these job targets; `tests/scripts/workflow-rules.test.mts` fails otherwise.
 
-Each job checks out this repository at the workspace root and installs the locked kit package before its first make command; no sibling checkout is required. Downloads remain installation steps; no check enables network access. The closing job `kit / required` of the pipeline passes only when every job passed, so a run of `ci` that concludes `success` is the evidence that the release workflow requires ([publishing main](#publish)).
+Each job checks out this repository at the workspace root and installs the locked kit package before its first make command; no sibling checkout is required. Downloads remain installation steps; no check enables network access. The closing job `kit / required` of the pipeline runs `make ci-required` with the results of the other jobs and passes only when every job passed, so a run of `ci` that concludes `success` is the evidence that the release workflow requires ([publishing main](#publish)).
 
 <a id="publish"></a>
 ## Publishing main

@@ -1,5 +1,5 @@
 <!-- doc-id: distribution -->
-<!-- source-sha256: e5aab33671089f45ac1e0eb693561035ffd4583bd68b6d59deca76cfeebb7a64 -->
+<!-- source-sha256: 299200a6b54d7c6dad7ba1bcb132228a8f8c8f068884bb0a93daac1791345067 -->
 # 배포
 
 [English](distribution.md)
@@ -34,21 +34,11 @@ git push origin HEAD:main
 ~~~sh
 make install-tools TOOLS=npm
 make install-packages
-make release-tag
-make release-prepare
-make release-tools
-make release-tools-path
-make release-assets
-make json-install-rust-packages
-make install-tools TOOLS=go
-make release-recipes
-make release-go-module
-make release-publish
-make release-platform-assets
-make release-undraft TAG="$TAG"
+make ci-tag
+make ci-release
 ~~~
 
-workflow는 `@polyspec/kit`의 `workflows/release.yml`의 사본입니다. `make install-tools TOOLS=npm`과 `make install-packages`는 npm과 package `@polyspec/kit`을 설치하며, 이어지는 step이 그 target을 실행합니다. `make release-tools`는 `config/release.json`이 필요로 하는 도구(npm, `mise.lock`의 도구와 Python build backend, Rust)를 설치하고, `make release-tools-path`는 이어지는 step의 `PATH`에 `var/tools/bin`과 mise의 shim을 넣고 mise의 환경을 `GITHUB_ENV`에 씁니다.
+workflow는 `@polyspec/kit`의 `workflows/release.yml`의 사본입니다. `make install-tools TOOLS=npm`과 `make install-packages`는 npm과 package `@polyspec/kit`을 설치하며, 이어지는 step이 그 target을 실행합니다. 각 job은 run step 하나를 가집니다. job `tag`는 `make ci-tag`를 실행하고, 이 recipe는 `make release-tag`를 실행해 `TAG`와 `VERSION`을 뒤 job에 넘깁니다. job `release`는 플랫폼별 asset을 `var/release/platform-assets`에 내려받고 `make ci-release`를 실행하며, 그 recipe는 `make release-prepare`, `make release-tools`, `make release-assets`를 실행하고 플랫폼별 asset을 `var/release/assets`에 합친 뒤 `make json-install-rust-packages`, `make install-tools TOOLS=go`, `make release-recipes`, `make release-go-module`, `make release-publish`, `make release-platform-assets`, `make release-undraft`를 실행하며 첫 실패에서 멈춥니다. `make release-tools`는 `config/release.json`이 필요로 하는 도구(npm, `mise.lock`의 도구와 Python build backend, Rust)를 설치하며, Makefile이 `var/tools/bin`과 mise의 shim을 recipe의 `PATH`에 넣습니다.
 
 1. `make release-tag`는 commit이 `origin/main`에 있는 `main`의 `ci` push 또는 dispatch 실행이 성공으로 완료되었는지 요구합니다. 그 실행이 시작하면 release workflow는 그 실행의 commit이 version commit이거나, version에 tag가 없고 `## Unreleased`가 비어 있는 그 뒤의 commit일 때 그 commit에 change log 최상위 `## X.Y.Z`를 릴리스합니다. 판단은 `@polyspec/kit`의 `make release-tag`가 합니다. `config/release.json`의 `goModules`가 비어 있으므로 그 commit에 tag `vX.Y.Z`만 만들어 push합니다. 이후 `make release-go-module` step이 생성 파일과 정적 라이브러리를 담은 자기 commit에 binding Go 모듈 tag를 만듭니다. 현재 release는 legacy Go 모듈 tag를 만들지 않습니다. 그 commit의 계보에 이미 tag된 version은 아무것도 릴리스하지 않고, 계보 밖에 tag된 version은 실행을 실패시킵니다. 테스트를 다시 실행하지 않습니다.
 2. version은 version 올림 commit `Release X.Y.Z`가 `config/release.json`의 모든 manifest에 X.Y.Z를 설정하고 각 changelog의 `## Unreleased`를 `## X.Y.Z`로 바꾸며, 어떤 make target도 검사하지 않고 검토에서 판단합니다([릴리스 절차](../../AGENTS.ko.md#release)).

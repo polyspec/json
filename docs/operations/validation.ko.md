@@ -1,5 +1,5 @@
 <!-- doc-id: validation -->
-<!-- source-sha256: 9fc5cb7be68144897631ac90c8937f76f7245c2a6903009f43e999535ddc2aa4 -->
+<!-- source-sha256: 9be78e1d63a9330ed9caf860542028944e4611d0cd9b4b6b7f36ad90b3478e08 -->
 # 검증
 
 [English](validation.md)
@@ -79,11 +79,19 @@ PIE 기록 `var/records/pie-verification.json`은 PIE 버전과 PHAR 해시, 실
 <a id="ci"></a>
 ## Hosted CI
 
-`.github/workflows/ci.yml`은 모든 pull request, `main`으로의 push와 수동 실행에서 동작합니다. 이 workflow는 하나의 pipeline입니다(PRINCIPLES S12). 유일한 job `kit`이 `@polyspec/kit`의 pipeline에서 가져온 이 저장소의 `.github/workflows/ci-pipeline.yml`을 호출하고, 이 pipeline은 각 job에서 Makefile의 target 하나를 실행합니다: shared job에서 `kit-gates-static`, verify job에서 `kit-gates-verify`, matrix가 나열한 각 runtime의 job에서 `kit-gates-runtime-<runtime>`입니다.
+`.github/workflows/ci.yml`은 모든 pull request, `main`으로의 push와 수동 실행에서 동작합니다. 이 workflow는 하나의 pipeline입니다(PRINCIPLES S12). 유일한 job `kit`이 `@polyspec/kit`의 pipeline에서 가져온 이 저장소의 `.github/workflows/ci-pipeline.yml`을 호출하고, 이 pipeline의 job `plan`은 `config/ci.json`의 plan을 쓰고, 다른 job은 각각 Makefile의 target 하나를 실행합니다: shared job에서 `kit-gates-static`, verify job에서 `kit-gates-verify`, bindings job에서 `kit-gates-bindings`, matrix가 나열한 각 runtime의 job에서 `kit-gates-runtime-<runtime>`입니다.
+
+job은 YAML에 내용을 두지 않습니다. 유일한 run step은 make 변수만을 인자로 받는 `make ci-<job>`이며, Makefile의 recipe가 job에 필요한 것을 설치하고, 설치가 실패하면 멈추며, job의 target을 `make ci-targets`로 실행하고 CI context를 정리합니다. 다른 step은 `uses:` step입니다: checkout, PHP 준비, kit bootstrap, 보고서 업로드입니다. job의 로컬 실행은 CI가 하는 호출과 같습니다.
+
+~~~sh
+make ci-shared
+make ci-runtime RUNTIME=php
+make ci-assets-php PHP_MINOR=8.4
+~~~
 
 [config/ci.json](../../config/ci.json)은 그 job들의 setup target(`setup`)과 kit 외에 필요한 도구(`tools`)를 선언합니다. pipeline이 직접 선언하는 verify job은 모든 언어의 toolchain과 `json-install-verify`로 비교 환경을 설치하며, php-ext job은 `json-install-pie`로 PIE와 보조 suite를 설치하고, 각 runtime job은 자기 package를 build합니다. `CHECK_TARGETS`의 모든 target은 이 job target 중 정확히 하나의 prerequisite입니다. 그렇지 않으면 `tests/scripts/workflow-rules.test.mts`가 실패합니다.
 
-각 job은 workspace 루트에 이 저장소를 checkout하고 첫 make 명령 전에 잠긴 kit 패키지를 설치하며, 형제 checkout은 필요하지 않습니다. 다운로드는 설치 단계에만 있으며, 어떤 검사도 네트워크를 켜지 않습니다. pipeline의 마지막 job `kit / required`는 모든 job이 통과했을 때만 통과하므로, `success`로 끝난 `ci` 실행이 release workflow가 요구하는 증거입니다([main 게시](#publish)).
+각 job은 workspace 루트에 이 저장소를 checkout하고 첫 make 명령 전에 잠긴 kit 패키지를 설치하며, 형제 checkout은 필요하지 않습니다. 다운로드는 설치 단계에만 있으며, 어떤 검사도 네트워크를 켜지 않습니다. pipeline의 마지막 job `kit / required`는 다른 job의 결과를 받아 `make ci-required`를 실행하고 모든 job이 통과했을 때만 통과하므로, `success`로 끝난 `ci` 실행이 release workflow가 요구하는 증거입니다([main 게시](#publish)).
 
 <a id="publish"></a>
 ## main 게시

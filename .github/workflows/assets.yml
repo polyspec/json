@@ -1,14 +1,16 @@
 # The assets of each platform of the bindings (binding GN-19a, GN-19i). The workflow ci calls it for the commit of its run, and
 # the workflow release calls it for the tree of the tag that it releases, with release true, which runs the release check of
 # binding before a job builds (make release-binding-check, GN-19g). Every recipe that builds an asset is in packages/release.mk,
-# which binding release-recipes writes and Git ignores, so each job first runs make release-recipes.
+# which binding release-recipes writes and Git ignores, so the recipe of each job first runs make release-recipes.
 #
-# The job platform runs on the runner of its platform, ubuntu-26.04, ubuntu-26.04-arm or macos-15, because no tool of the release
-# compiles for another platform. Each job builds the static library of the Go module (with the musl library of its arch on
-# Linux), the abi3 wheel and the npm platform package once. The independent php job selects and builds one PHP minor per
-# platform/minor result; the job npm builds the npm package itself with the wasm-bindgen of mise.toml. Each uploads var/release/assets as an artifact, which the
-# workflow release downloads. Each run step is one make target, and the build steps after the first run also after a failed
-# one, so one run names every asset that does not build.
+# The job assets-platform runs on the runner of its platform, ubuntu-26.04, ubuntu-26.04-arm or macos-15, because no tool of
+# the release compiles for another platform. Each of its jobs builds the static library of the Go module (with the musl
+# library of its arch on Linux), the abi3 wheel and the npm platform package once. The independent job assets-php selects and
+# builds one PHP minor per platform/minor result; the job assets-npm builds the npm package itself with the wasm-bindgen of
+# mise.toml. Each uploads var/release/assets as an artifact, which the workflow release downloads. Each job has one run step,
+# make ci-<job> with make variables as its only arguments, RELEASE passing the input release; its recipe in the Makefile
+# installs first and then runs every build through ci-targets, each to its end, so one run names every asset that does not
+# build.
 name: assets
 
 on:
@@ -34,7 +36,7 @@ env:
   RUSTUP_AUTO_INSTALL: '0'
 
 jobs:
-  platform:
+  assets-platform:
     strategy:
       fail-fast: false
       matrix:
@@ -52,24 +54,9 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
       - uses: ./.github/actions/kit-bootstrap
-      - name: Install Rust and fetch the crates
-        run: make json-install-rust-packages
-      # The uv and the Python of mise.toml, with which uv builds the wheel.
-      - name: Install uv and Python
-        run: make install-tools TOOLS="uv python"
-      - name: Write the release recipes
-        run: make release-recipes
-      - name: Run the release check of binding
-        if: ${{ inputs.release }}
-        run: make release-binding-check
-      - name: Build the static library of the Go module
-        run: make release-go-static
-      - name: Build the wheel
-        if: ${{ !cancelled() }}
-        run: make release-wheel
-      - name: Build the npm platform package
-        if: ${{ !cancelled() }}
-        run: make release-npm-platform
+      # Rust and its crates, the uv and the Python of mise.toml, with which uv builds the wheel, then the static library of the Go
+      # module, the wheel and the npm platform package.
+      - run: make ci-assets-platform RELEASE=${{ inputs.release }}
       # actions/upload-artifact v7.0.1.
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: ${{ !cancelled() }}
@@ -78,7 +65,7 @@ jobs:
           path: var/release/assets/
           if-no-files-found: error
 
-  php:
+  assets-php:
     strategy:
       fail-fast: false
       matrix:
@@ -106,27 +93,15 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ inputs.ref }}
-      - uses: ./.github/actions/kit-bootstrap
-      - name: Install Rust and fetch the crates
-        run: make json-install-rust-packages
-      - name: Write the release recipes
-        run: make release-recipes
-      - name: Run the release check of binding
-        if: ${{ inputs.release }}
-        run: make release-binding-check
-      - name: Install the LLVM of config/toolchain.json
-        if: ${{ !cancelled() }}
-        run: make install-llvm
       # Select one native runtime and its php-config for this platform/minor job.
       - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
-        if: ${{ !cancelled() }}
         with:
           php-version: '${{ matrix.php }}'
           tools: none
           coverage: none
-      - name: Build the PHP extension
-        if: ${{ !cancelled() }}
-        run: make release-php-ext PHP=php EXPECTED_PHP_MINOR=${{ matrix.php }}
+      - uses: ./.github/actions/kit-bootstrap
+      # Rust and its crates and the LLVM of config/toolchain.json, then the build of the PHP extension for PHP_MINOR.
+      - run: make ci-assets-php PHP_MINOR=${{ matrix.php }} RELEASE=${{ inputs.release }}
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: ${{ !cancelled() }}
         with:
@@ -134,24 +109,15 @@ jobs:
           path: var/release/assets/
           if-no-files-found: error
 
-  npm:
+  assets-npm:
     runs-on: ubuntu-26.04-arm
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ inputs.ref }}
       - uses: ./.github/actions/kit-bootstrap
-      - name: Install Rust and fetch the crates
-        run: make json-install-rust-packages
-      - name: Write the release recipes
-        run: make release-recipes
-      - name: Install the wasm-bindgen of mise.toml
-        run: make install-wasm-bindgen
-      - name: Run the release check of binding
-        if: ${{ inputs.release }}
-        run: make release-binding-check
-      - name: Pack the npm package
-        run: make release-npm
+      # Rust and its crates and the wasm-bindgen of mise.toml, then the npm package.
+      - run: make ci-assets-npm RELEASE=${{ inputs.release }}
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: ${{ !cancelled() }}
         with:

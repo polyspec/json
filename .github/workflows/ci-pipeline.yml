@@ -1,10 +1,10 @@
 # The CI pipeline of json, a file of this repository taken from the pipeline of kit (kit writes no copy, kit
 # docs/spec/utilities-and-recipes.md). .github/workflows/ci.yml holds the triggers and the concurrency and calls it as its job
-# kit, so one push runs one workflow: shared first, then the verify, runtime and bindings jobs in parallel, then required. Each
-# job runs only make targets of the Makefile of this repository: it installs its own locked prerequisites, declared in
-# config/ci.json, the deps-<runtime> targets or json-install-bindings, and runs the target of its job, kit-gates-static,
-# kit-gates-verify, kit-gates-runtime-<runtime> or kit-gates-bindings, through make ci-targets. The steps name these targets, so rules-check reaches their
-# prerequisites (kit K1057); the runtime matrix lists the runtimes of the repository, and the plan adds the tools of each.
+# kit, so one push runs one workflow: plan first, then the shared, verify, runtime and bindings jobs in parallel, then required.
+# A job holds no content of its own: its one run step is make ci-<job> with make variables as its only arguments, the call
+# that a local run of the job makes (make ci-runtime RUNTIME=php), and the recipe of the Makefile holds the order and the
+# conditions of the job (tests/scripts/workflow-rules.test.mts). The other steps provision the runner or upload the report.
+# The runtime matrix lists the runtimes of config/ci.json, so rules-check reaches the targets of each (kit K1057).
 name: ci-pipeline
 
 on:
@@ -14,40 +14,36 @@ permissions:
   contents: read
 
 jobs:
-  # The shared job writes the plan that names the runner of the other jobs (config/ci.json runner), so it runs on the default runner.
-  shared:
+  # The plan of config/ci.json names the runner of the other jobs and whether the shared job needs PHP, so it runs on the
+  # default runner.
+  plan:
     runs-on: ubuntu-24.04
     outputs:
-      runtimes: ${{ steps.plan.outputs.runtimes }}
       runner: ${{ steps.plan.outputs.runner }}
       has_runtimes: ${{ steps.plan.outputs.has_runtimes }}
+      common_tools: ${{ steps.plan.outputs.common_tools }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      # The bootstrap of kit (K992): the Node.js of mise.toml, the locked kit package, the npm of var/tools and the packages.
+      - uses: ./.github/actions/kit-bootstrap
+      - id: plan
+        run: make ci-plan
+
+  shared:
+    needs: plan
+    runs-on: ${{ needs.plan.outputs.runner }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 0
-      # The bootstrap of kit (K992): the Node.js of mise.toml, the locked kit package, the npm of var/tools and the packages.
-      - uses: ./.github/actions/kit-bootstrap
-      - id: plan
-        run: make kit-ci-plan
       - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
-        if: ${{ contains(steps.plan.outputs.common_tools, 'php') }}
+        if: ${{ contains(needs.plan.outputs.common_tools, 'php') }}
         with:
           php-version-file: .php-version
           tools: none
           coverage: none
-      - name: install common gate tools
-        if: ${{ steps.plan.outputs.common_tools != '[]' }}
-        run: make install-tools TOOLS="${{ join(fromJSON(steps.plan.outputs.common_tools), ' ') }}"
-      - name: install shared prerequisites
-        run: make kit-ci-setup GROUP=shared
-      - id: context_prepare
-        name: prepare shared CI context
-        run: make kit-ci-context-prepare GROUP=shared
-      - name: shared gates
-        run: make ci-targets TARGETS=kit-gates-static
-      - name: cleanup shared CI context
-        if: ${{ always() && steps.context_prepare.outcome != 'skipped' }}
-        run: make kit-ci-context-cleanup GROUP=shared
+      - uses: ./.github/actions/kit-bootstrap
+      - run: make ci-shared
       # actions/upload-artifact v7.0.1: the report of make ci-targets, var/report/ci-targets.
       - name: report
         if: ${{ !cancelled() }}
@@ -60,8 +56,8 @@ jobs:
   # The shared verifier of this repository (scripts/verify.mts): it builds every implementation and compares their replies on
   # the shared cases, so it installs the toolchains of every language.
   verify:
-    needs: shared
-    runs-on: ${{ needs.shared.outputs.runner }}
+    needs: plan
+    runs-on: ${{ needs.plan.outputs.runner }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -71,14 +67,8 @@ jobs:
           php-version-file: .php-version
           tools: none
           coverage: none
-      # The bootstrap of kit (K992): the Node.js of mise.toml, the locked kit package, the npm of var/tools and the packages.
       - uses: ./.github/actions/kit-bootstrap
-      - name: install verify toolchains
-        run: make install-tools TOOLS="go rust php composer python uv"
-      - name: install verify prerequisites
-        run: make json-install-verify
-      - name: verify gate
-        run: make ci-targets TARGETS=kit-gates-verify
+      - run: make ci-verify
       # actions/upload-artifact v7.0.1: the report of make ci-targets, var/report/ci-targets.
       - name: report
         if: ${{ !cancelled() }}
@@ -89,14 +79,13 @@ jobs:
           if-no-files-found: ignore
 
   runtime:
-    needs: shared
-    if: ${{ needs.shared.outputs.has_runtimes == 'true' }}
+    needs: plan
+    if: ${{ needs.plan.outputs.has_runtimes == 'true' }}
     strategy:
       fail-fast: false
       matrix:
         runtime: [go, php, php-ext, python, rust, ts]
-        include: ${{ fromJSON(needs.shared.outputs.runtimes) }}
-    runs-on: ${{ needs.shared.outputs.runner }}
+    runs-on: ${{ needs.plan.outputs.runner }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
@@ -105,21 +94,8 @@ jobs:
           php-version-file: .php-version
           tools: none
           coverage: none
-      # The bootstrap of kit (K992): the Node.js of mise.toml, the locked kit package, the npm of var/tools and the packages.
       - uses: ./.github/actions/kit-bootstrap
-      - name: install runtime tools
-        if: ${{ join(matrix.installTools, ' ') != '' }}
-        run: make install-tools TOOLS="${{ join(matrix.installTools, ' ') }}"
-      - name: install runtime prerequisites
-        run: make kit-ci-setup GROUP=runtime RUNTIME=${{ matrix.runtime }}
-      - id: context_prepare
-        name: prepare runtime CI context
-        run: make kit-ci-context-prepare GROUP=runtime RUNTIME=${{ matrix.runtime }}
-      - name: runtime gate
-        run: make ci-targets TARGETS=kit-gates-runtime-${{ matrix.runtime }}
-      - name: cleanup runtime CI context
-        if: ${{ always() && steps.context_prepare.outcome != 'skipped' }}
-        run: make kit-ci-context-cleanup GROUP=runtime RUNTIME=${{ matrix.runtime }}
+      - run: make ci-runtime RUNTIME=${{ matrix.runtime }}
       # actions/upload-artifact v7.0.1: the report of make ci-targets, var/report/ci-targets.
       - name: report
         if: ${{ !cancelled() }}
@@ -135,7 +111,7 @@ jobs:
   # whose packages hold the LLVM of config/toolchain.json that the build of the PHP extension reads (make install-llvm of
   # packages/release.mk, which make release-recipes writes).
   bindings:
-    needs: shared
+    needs: plan
     runs-on: ubuntu-26.04-arm
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -144,18 +120,8 @@ jobs:
           php-version-file: .php-version
           tools: none
           coverage: none
-      # The bootstrap of kit (K992): the Node.js of mise.toml, the locked kit package, the npm of var/tools and the packages.
       - uses: ./.github/actions/kit-bootstrap
-      - name: install binding toolchains
-        run: make install-tools TOOLS="go php composer python uv"
-      - name: install binding prerequisites
-        run: make json-install-bindings
-      - name: write the release recipes
-        run: make release-recipes
-      - name: install the LLVM of config/toolchain.json
-        run: make install-llvm
-      - name: bindings gate
-        run: make ci-targets TARGETS=kit-gates-bindings
+      - run: make ci-bindings
       # actions/upload-artifact v7.0.1: the report of make ci-targets, var/report/ci-targets.
       - name: report
         if: ${{ !cancelled() }}
@@ -165,40 +131,14 @@ jobs:
           path: var/report/ci-targets/
           if-no-files-found: ignore
 
-  # The closing common part: it fails when a job that the plan selected does not succeed. The plan selects shared and verify,
-  # and runtime when the repository has one (K950); bindings always runs. A job
-  # the plan did not select is skipped and is not a result; a selected job that is skipped fails the pipeline. It runs on the
-  # default runner, since the runner output of shared is empty when shared fails before the plan.
+  # The judgement of the pipeline, which exists only in CI: make ci-required reads the results of every other job from the JSON
+  # of needs and fails when one of them did not succeed. The plan selects every job, so a skipped job fails it too. It runs on
+  # the default runner, since the runner output of plan is empty when plan fails.
   required:
     if: ${{ always() }}
-    needs: [shared, verify, runtime, bindings]
+    needs: [plan, shared, verify, runtime, bindings]
     runs-on: ubuntu-24.04
-    env:
-      SHARED_RESULT: ${{ needs.shared.result }}
-      VERIFY_RESULT: ${{ needs.verify.result }}
-      RUNTIME_RESULT: ${{ needs.runtime.result }}
-      BINDINGS_RESULT: ${{ needs.bindings.result }}
-      SHARED_SELECTED: 'true'
-      VERIFY_SELECTED: 'true'
-      BINDINGS_SELECTED: 'true'
-      RUNTIME_SELECTED: ${{ needs.shared.outputs.has_runtimes == 'true' }}
     steps:
-      - name: require every job that the plan selected
-        run: |
-          failed=0
-          judge() {
-            if [ "$3" != true ]; then
-              echo "$1: not selected by the plan, not judged"
-              return 0
-            fi
-            echo "$1: $2"
-            if [ "$2" != success ]; then
-              echo "$1 ended with $2, and the plan selected it; expected success" >&2
-              failed=1
-            fi
-          }
-          judge shared "$SHARED_RESULT" "$SHARED_SELECTED"
-          judge verify "$VERIFY_RESULT" "$VERIFY_SELECTED"
-          judge runtime "$RUNTIME_RESULT" "$RUNTIME_SELECTED"
-          judge bindings "$BINDINGS_RESULT" "$BINDINGS_SELECTED"
-          exit "$failed"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: ./.github/actions/kit-bootstrap
+      - run: make ci-required RESULTS='${{ toJSON(needs) }}'

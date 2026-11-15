@@ -1,5 +1,5 @@
 <!-- doc-id: installation -->
-<!-- source-sha256: b6834402ec22aa5d5c79336edc9c82d806b501e86e6240f929f1c02ecb999c36 -->
+<!-- source-sha256: e4e96844731d4083727a51d8c5112aa140719e04143e7dacd004929e5aaaf8ae -->
 # 설치와 실행
 
 [English](installation.md)
@@ -44,7 +44,7 @@ pip install "https://github.com/polyspec/json/releases/download/vX.Y.Z/polyspec_
 <a id="release-assets"></a>
 ## 릴리스 asset
 
-Asset workflow는 native platform마다 non-PHP asset을 한 번 빌드한다. 독립 PHP job은 모든 native platform과 지원 minor 조합을 실행하며 runtime 하나를 선택하고 `make release-php-ext PHP=php EXPECTED_PHP_MINOR=${{ matrix.php }}`를 한 번 호출한다. Release가 `assets-*`를 수집할 때 `assets-${{ matrix.platform }}`과 `assets-php-${{ matrix.platform }}-${{ matrix.php }}` artifact는 구분된다. Source assertion은 이 연결을 검증한다. Binding의 expected-minor gate 공개, release recipe 재생성, native job 통과 전까지 native 선택과 전체 CI는 검증되지 않았다.
+Asset workflow는 native platform마다 non-PHP asset을 한 번 빌드한다. 독립 PHP job은 모든 native platform과 지원 minor 조합을 실행하며 runtime 하나를 선택하고 `make ci-assets-php PHP_MINOR=${{ matrix.php }}`를 실행하며, 그 recipe가 `make release-php-ext PHP=php EXPECTED_PHP_MINOR=$(PHP_MINOR)`를 한 번 호출한다. Release가 `assets-*`를 수집할 때 `assets-${{ matrix.platform }}`과 `assets-php-${{ matrix.platform }}-${{ matrix.php }}` artifact는 구분된다. Source assertion은 이 연결을 검증한다. Binding의 expected-minor gate 공개, release recipe 재생성, native job 통과 전까지 native 선택과 전체 CI는 검증되지 않았다.
 
 v0.0.27부터의 GitHub Release는 바인딩 패키지의 플랫폼별 asset을 담습니다. npm 패키지와 그 플랫폼 패키지, abi3 wheel, 그리고 `packages/php-ext/composer.json`의 PHP 범위 하한부터 `config/toolchain.json`의 `phpExtension.minors`가 적는 PHP minor마다 빌드한 플랫폼별 PHP 확장입니다([이행 기간](../spec/json-contract.ko.md#transition)). v0.0.29부터는 `packages/php-ext`의 Composer package `polyspec/json`인 `polyspec-json-php-ext-X.Y.Z.zip`과 release의 Composer 저장소 `packages.json`도 담습니다. PIE는 그 저장소에서 확장을 설치하고, 자기 플랫폼과 PHP minor의 빌드를 같은 release에서 내려받습니다.
 

@@ -1,7 +1,7 @@
-# CI: one pipeline (PRINCIPLES S12). The job kit calls ci-pipeline.yml of this repository, which runs, in each of its jobs, the
-# setup targets that config/ci.json declares for that job and then the target of the job in the Makefile: kit-gates-static,
-# kit-gates-verify and kit-gates-runtime-<runtime>. The job assets calls assets.yml, which builds the assets of each platform
-# of the bindings on the runner of that platform. The release workflow releases the commit whose run of this workflow is green.
+# CI: one pipeline (PRINCIPLES S12). The job kit calls ci-pipeline.yml of this repository, whose job <job> runs make ci-<job>:
+# the recipe installs the setup targets that config/ci.json declares for that job and then runs the target of the job in the
+# Makefile, kit-gates-static, kit-gates-verify, kit-gates-bindings or kit-gates-runtime-<runtime>. The job assets calls
+# assets.yml, which builds the assets of each platform of the bindings on the runner of that platform. The release workflow releases the commit whose run of this workflow is green.
 name: ci
 
 on:

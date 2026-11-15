@@ -1,5 +1,5 @@
 <!-- doc-id: json-contract -->
-<!-- source-sha256: eb380186c9ffb481cf7f1b9e007f43396ec224b10e0decad95615261307d2ff4 -->
+<!-- source-sha256: ea5da1bd04002c4d837543e9bb975475b360c2e48423444aa94b4a5dc3dfec6e -->
 # JSON 계약
 
 [English](json-contract.md)
@@ -175,7 +175,8 @@ Workflow는 T3.24-1의 source 계약을 구현한다. ASSET-3에 명시한 nativ
   독립 PHP job은 이 platform과 `config/toolchain.json`의 `phpExtension.minors`에 적은 지원 minor의 정확한 곱을
   누락되거나 반복되는 pair 없이 다룬다(binding GN-19i).
 - **ASSET-2** 각 PHP job은 setup action 하나로 native PHP minor 하나를 선택하고
-  `make release-php-ext PHP=php EXPECTED_PHP_MINOR=${{ matrix.php }}`로 한 번 빌드한다. 그 job의 asset만
+  `make ci-assets-php PHP_MINOR=${{ matrix.php }}`를 실행하며, 그 recipe가
+  `make release-php-ext PHP=php EXPECTED_PHP_MINOR=$(PHP_MINOR)`로 한 번 빌드한다. 그 job의 asset만
   `assets-php-${{ matrix.platform }}-${{ matrix.php }}`로 올린다. Non-PHP job은 PHP를 빌드하거나 runtime을 선택하지 않는다.
   서로 다른 artifact 이름은 release가 전체 asset 집합을 검증하기 전에 `assets-*`를 모을 때 모든 platform/minor 결과를 보존한다.
 - **ASSET-3** Workflow source assertion은 matrix coverage와 command 연결만 증명한다. Native minor 선택과 확장 적재는

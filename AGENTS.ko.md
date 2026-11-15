@@ -1,5 +1,5 @@
 <!-- doc-id: development -->
-<!-- source-sha256: 39f4f2d545741bec450a44aa0a4e5f6a9df3884900d83ef0282bb29aeddc8d45 -->
+<!-- source-sha256: c987ccef1c94ddeb6db328894a3b29fdd455e6704c9fbd409b4b324b47c63368 -->
 # Development procedure
 
 [English](AGENTS.md)
@@ -55,7 +55,9 @@
   Enforced by: `make layout-check`
 - Own: 다른 target의 기록을 읽는 target은 그 target을 prerequisite로 적어 자기 tree의 기록만 읽습니다. `make verify-all`은 `make pie-check`의 PIE 기록을 검사하므로 그것을 먼저 실행하고, `pie-check`는 `CHECK_TARGETS`의 독립 target이 아닙니다.
   Enforced by: `make json-test-scripts`
-- Own: Makefile의 `CHECK_TARGETS`의 각 target은 `.github/workflows/ci-pipeline.yml`의 정확히 한 job의 target(`kit-gates-static`, `kit-gates-verify`, `kit-gates-runtime-<runtime>`)의 prerequisite이며, 그 job은 이 target을 이름으로 `make ci-targets`로 실패 뒤에도 끝까지 실행하고 보고서를 업로드합니다.
+- Own: Makefile의 `CHECK_TARGETS`의 각 target은 `.github/workflows/ci-pipeline.yml`의 정확히 한 job의 target(`kit-gates-static`, `kit-gates-verify`, `kit-gates-bindings`, `kit-gates-runtime-<runtime>`)의 prerequisite이며, 그 job의 recipe `ci-<job>`은 이 target을 이름으로 `make ci-targets`로 실패 뒤에도 끝까지 실행하고, job은 보고서를 업로드합니다.
+  Enforced by: `make json-test-scripts`
+- Own: CI가 실행하는 workflow(`ci.yml`, `ci-pipeline.yml`, `assets.yml`, `release.yml`)의 모든 job은 정확히 하나의 `run:` step을 가지며, 그 step은 make 변수만을 인자로 받는 `make ci-<job>`입니다. Makefile의 recipe `ci-<job>`이 job의 순서와 조건을 가집니다. 설치와 prerequisite을 먼저 실행하고 그 각각이 실패하면 job을 멈추며, 이어서 검사를 `make ci-targets`로 각각 끝까지 실행하고, 끝으로 CI context의 prepare가 시작되었다면 언제나 그 정리를 실행합니다. matrix 값이나 호출된 workflow의 input은 `NAME=${{ matrix.key }}` 또는 `NAME=${{ inputs.key }}`로 넘기며, run 줄에는 다른 식이 없습니다. 예외는 판정 job `required`의 `RESULTS='${{ toJSON(needs) }}'`이며, 이 job은 다른 job의 결과를 읽고 CI에만 있습니다. 다른 step은 모두 runner를 준비하거나 결과를 옮기는 `uses:` step이며, `if:` 조건은 `uses:` step에만 있습니다. matrix의 fan-out은 job의 내용이 아니므로 job `plan`의 출력에서 올 수 있으며, recipe는 plan의 도구를 `config/ci.json`에서 직접 읽습니다. 이유: 순서, 조건, 인자를 YAML에 둔 job은 GitHub의 runner에서만 실행되므로 로컬 실행이 CI와 같은 실행일 수 없습니다. 내용이 recipe에 있으면 로컬 실행은 CI가 하는 호출, 예를 들어 `make ci-runtime RUNTIME=php`와 같습니다.
   Enforced by: `make json-test-scripts`
 - Own: 각 언어의 lint가 통과합니다: `make lint-rust`(`-D warnings`의 clippy), `make lint-go`(`.golangci.yml`의 golangci-lint와 deadcode), `make lint-php`(`phpcs.xml.dist`의 phpcs와 PHPStan), `make lint-python`(`ruff.toml`의 ruff와 vulture).
   Enforced by: `make ci-targets`

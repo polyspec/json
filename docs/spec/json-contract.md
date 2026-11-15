@@ -173,8 +173,9 @@ The workflow implements the source contract of T3.24-1. Native verification rema
   native platform: linux-x64-gnu on ubuntu-26.04, linux-arm64-gnu on ubuntu-26.04-arm, and darwin-arm64 on macos-15.
   An independent PHP job covers the exact product of those platforms and the supported minors in
   `config/toolchain.json` `phpExtension.minors`, with no missing or repeated pair (binding GN-19i).
-- **ASSET-2** Each PHP job selects one native PHP minor with one setup action and builds once with
-  `make release-php-ext PHP=php EXPECTED_PHP_MINOR=${{ matrix.php }}`. It uploads only that job's assets as
+- **ASSET-2** Each PHP job selects one native PHP minor with one setup action and runs
+  `make ci-assets-php PHP_MINOR=${{ matrix.php }}`, whose recipe builds once with
+  `make release-php-ext PHP=php EXPECTED_PHP_MINOR=$(PHP_MINOR)`. It uploads only that job's assets as
   `assets-php-${{ matrix.platform }}-${{ matrix.php }}`. Non-PHP jobs never build PHP or select its runtime. Distinct artifact
   names preserve every platform/minor result when the release collects `assets-*` before validating the full asset set.
 - **ASSET-3** Workflow source assertions establish matrix coverage and command wiring only. Native minor selection and

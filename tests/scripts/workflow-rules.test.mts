@@ -1,7 +1,8 @@
-// The CI of json is one pipeline (PRINCIPLES S12): ci.yml calls ci-pipeline.yml of this repository as its job kit,
-// whose steps run the target of each job by name: kit-gates-static, kit-gates-verify and kit-gates-runtime-<runtime> for each
-// runtime of its matrix. This test keeps the full suite whole: every target of CHECK_TARGETS, the full suite of make check, is
-// a prerequisite of exactly one target that a step of the pipeline runs, and those targets hold no other target.
+// The CI of json is one pipeline (PRINCIPLES S12): ci.yml calls ci-pipeline.yml of this repository as its job kit, whose
+// job <job> runs make ci-<job>, and its recipe runs the target of the job through ci-targets: kit-gates-static, kit-gates-verify,
+// kit-gates-bindings and kit-gates-runtime-<runtime> for each runtime of its matrix. This test keeps the full suite whole: every
+// target of CHECK_TARGETS, the full suite of make check, is a prerequisite of exactly one target that a job of the pipeline
+// runs, and those targets hold no other target.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
@@ -28,21 +29,30 @@ function variable(text: string, name: string): string[] {
   return (line[1] ?? '').trim().split(/\s+/).filter(Boolean);
 }
 
-/** The targets that the steps of the pipeline run through make ci-targets, with matrix.runtime taken from its literal list. */
-function jobTargets(): string[] {
-  const text = readFileSync(path.join(ROOT, '.github/workflows/ci-pipeline.yml'), 'utf8');
-  const runtimes = (/^\s+runtime: \[([^\]]*)\]\s*$/m.exec(text)?.[1] ?? '').split(',').map(value => value.trim()).filter(Boolean);
+/**
+ * The targets that the jobs of the pipeline run through make ci-targets, in the make database `text`: the job <job> runs
+ * make ci-<job>, whose recipe runs the checks CI_<JOB>_CHECKS, with RUNTIME taken from the literal list of matrix.runtime.
+ */
+function jobTargets(text: string): string[] {
+  const source = readFileSync(path.join(ROOT, '.github/workflows/ci-pipeline.yml'), 'utf8');
+  const runtimes = (/^\s+runtime: \[([^\]]*)\]\s*$/m.exec(source)?.[1] ?? '').split(',').map(value => value.trim()).filter(Boolean);
   assert.ok(runtimes.length > 0, 'the runtime job of the pipeline lists its runtimes');
-  return [...text.matchAll(/make ci-targets TARGETS=(.+)$/gm)]
-    .map(match => (match[1] ?? '').trim())
-    .flatMap(target => (target.includes('${{ matrix.runtime }}') ? runtimes.map(runtime => target.replace('${{ matrix.runtime }}', runtime)) : [target]));
+  const jobs = [...source.matchAll(/^ {6}- run: make ci-([\w-]+)(.*)$/gm)].filter(match => match[1] !== 'plan' && match[1] !== 'required');
+  assert.ok(jobs.length > 0, 'the jobs of the pipeline run make ci-<job>');
+  return jobs.flatMap(([, job = '', rest = '']) => {
+    const name = `CI_${job.toUpperCase().replace(/-/g, '_')}_CHECKS`;
+    assert.ok(recipe(text, `ci-${job}`).some(line => line.includes(`$(${name})`)), `the recipe ci-${job} runs the checks $(${name})`);
+    const checks = variable(text, name);
+    const perRuntime = rest.includes('RUNTIME=${{ matrix.runtime }}');
+    return perRuntime ? runtimes.flatMap(runtime => checks.map(check => check.replace('$(RUNTIME)', runtime))) : checks;
+  });
 }
 
 test('every target of the full suite runs in exactly one job of the pipeline', () => {
   const text = database();
   const suite = variable(text, 'CHECK_TARGETS');
   assert.ok(suite.length > 0, 'the Makefile declares CHECK_TARGETS');
-  const run = jobTargets().flatMap(target => prerequisites(text, target));
+  const run = jobTargets(text).flatMap(target => prerequisites(text, target));
   assert.deepEqual(run.filter((target, index) => run.indexOf(target) !== index), [], 'no target runs in two jobs');
   assert.deepEqual([...run].sort(), [...suite].sort());
 });
@@ -146,23 +156,40 @@ function assetArtifact(job: string): string {
   return name;
 }
 
+// T3.27: each asset job runs make ci-assets-<job>, whose recipe runs the builds of the job through ci-targets.
+const ASSET_JOBS = ['platform', 'php', 'npm'];
+
+/** The builds that the recipe ci-assets-<job> runs through ci-targets, in the make database `text`, the release check aside. */
+function assetBuilds(text: string, job: string): string[] {
+  const lines = recipe(text, `ci-assets-${job}`).filter(line => line.includes(' ci-targets '));
+  assert.equal(lines.length, 1, `the recipe ci-assets-${job} runs its builds through one ci-targets`);
+  const targets = / TARGETS="([^"]*)"/.exec(lines[0] ?? '')?.[1];
+  assert.ok(targets !== undefined, `the recipe ci-assets-${job} names its builds in TARGETS`);
+  return targets.split(/\s+/).filter(target => target !== '' && target !== '$(CI_RELEASE_CHECK)');
+}
+
 /** Every build target belongs to one job; another job cannot silently repeat an asset producer. */
-function assertAssetOwnership(source: string): void {
+function assertAssetOwnership(source: string, builds: Map<string, string[]>): void {
   for (const target of ['release-go-static', 'release-wheel', 'release-npm-platform', 'release-php-ext', 'release-npm']) {
-    assert.equal([...source.matchAll(new RegExp(`^ {8}run: make ${target}(?: |$)`, 'gm'))].length, 1, `${target} has exactly one owning job`);
+    assert.equal([...builds.values()].flat().filter(build => build === target).length, 1, `${target} has exactly one owning job`);
   }
   assert.equal([...source.matchAll(/^ {6}- uses: shivammathur\/setup-php@/gm)].length, 1, 'only the PHP job selects PHP');
 }
 
+/** The builds of every asset job. */
+function allAssetBuilds(text: string): Map<string, string[]> {
+  return new Map(ASSET_JOBS.map(job => [job, assetBuilds(text, job)]));
+}
+
 test('T3.24-1 ASSET-1: non-PHP assets build exactly once on every native platform', () => {
   const source = readFileSync(path.join(ROOT, '.github/workflows/assets.yml'), 'utf8');
-  const job = assetJob(source, 'platform');
+  const job = assetJob(source, 'assets-platform');
   assert.deepEqual(assetMatrix(job), NATIVE_PLATFORMS);
-  assertAssetOwnership(source);
-  assert.doesNotMatch(job, /uses: shivammathur\/setup-php@|run: make release-php-ext\b/, 'the non-PHP job selects and builds no PHP runtime');
-  for (const target of ['release-go-static', 'release-wheel', 'release-npm-platform']) {
-    assert.equal(assetSteps(job).filter(step => new RegExp(`run: make ${target}\\s*$`, 'm').test(step)).length, 1, `${target} runs once per platform`);
-  }
+  const text = database();
+  assertAssetOwnership(source, allAssetBuilds(text));
+  assert.doesNotMatch(job, /uses: shivammathur\/setup-php@/, 'the non-PHP job selects no PHP runtime');
+  assert.deepEqual(assetBuilds(text, 'platform'), ['release-go-static', 'release-wheel', 'release-npm-platform'], 'each non-PHP asset builds once per platform');
+  assert.match(job, /^ {6}- run: make ci-assets-platform RELEASE=\$\{\{ inputs\.release \}\}$/m);
   assert.equal(assetArtifact(job), 'assets-${{ matrix.platform }}');
 });
 
@@ -173,57 +200,65 @@ test('T3.24-1 ASSET-1: PHP jobs cover every native platform and supported minor 
   assert.ok(lower, `packages/php-ext/composer.json requires a PHP range with a lower bound, not ${range}`);
   assert.equal(minors[0], lower, 'the first minor of phpExtension.minors is the lower bound of the PHP range of packages/php-ext/composer.json');
   const source = readFileSync(path.join(ROOT, '.github/workflows/assets.yml'), 'utf8');
-  const rows = assetMatrix(assetJob(source, 'php'));
+  const rows = assetMatrix(assetJob(source, 'assets-php'));
   const expected = NATIVE_PLATFORMS.flatMap(platform => minors.map(php => ({ ...platform, php })));
   const keys = (values: typeof rows) => values.map(row => `${row.platform}:${row.runner}:${row.php ?? ''}`).sort();
   assert.deepEqual(keys(rows), keys(expected), 'the matrix has no missing, repeated or foreign platform/minor pair');
 });
 
-function assertPhpBuild(job: string): void {
+/** The PHP job `job` selects the PHP minor of its matrix before its run step, and the recipe `lines` builds for that minor. */
+function assertPhpBuild(job: string, lines: string[]): void {
   const steps = assetSteps(job);
   const setup = steps.filter(step => /uses: shivammathur\/setup-php@/.test(step));
-  const builds = steps.filter(step => /run: make release-php-ext\b/.test(step));
+  const runs = steps.filter(step => /^ {6}- run: /m.test(step));
   assert.equal(setup.length, 1);
-  assert.equal(builds.length, 1);
+  assert.equal(runs.length, 1);
   assert.match(setup[0] ?? '', /^ {10}php-version: '\$\{\{ matrix\.php \}\}'$/m);
-  assert.ok(steps.indexOf(setup[0] ?? '') < steps.indexOf(builds[0] ?? ''), 'runtime setup precedes the build');
-  assert.match(builds[0] ?? '', /^ {8}run: make release-php-ext PHP=php EXPECTED_PHP_MINOR=\$\{\{ matrix\.php \}\}\s*$/m);
-  assert.match(builds[0] ?? '', /if: \$\{\{ !cancelled\(\) \}\}/);
+  assert.ok(steps.indexOf(setup[0] ?? '') < steps.indexOf(runs[0] ?? ''), 'runtime setup precedes the build');
+  assert.match(runs[0] ?? '', /^ {6}- run: make ci-assets-php PHP_MINOR=\$\{\{ matrix\.php \}\} RELEASE=\$\{\{ inputs\.release \}\}$/m);
+  const build = lines.filter(line => / TARGETS="[^"]*\brelease-php-ext\b/.test(line));
+  assert.equal(build.length, 1, 'the recipe ci-assets-php builds the extension once');
+  assert.match(build[0] ?? '', / PHP=php EXPECTED_PHP_MINOR=\$\(PHP_MINOR\)$/, 'the build checks the PHP minor of the job');
 }
 
 test('T3.24-1 ASSET-2: each PHP job selects one minor and invokes one generated guarded build', () => {
-  assertPhpBuild(assetJob(readFileSync(path.join(ROOT, '.github/workflows/assets.yml'), 'utf8'), 'php'));
+  assertPhpBuild(assetJob(readFileSync(path.join(ROOT, '.github/workflows/assets.yml'), 'utf8'), 'assets-php'), recipe(database(), 'ci-assets-php'));
 });
 
 test('T3.24-1 ASSET-1/2: reject unexamined matrices and misplaced runtime selection', () => {
-  const job = assetJob(readFileSync(path.join(ROOT, '.github/workflows/assets.yml'), 'utf8'), 'php');
+  const job = assetJob(readFileSync(path.join(ROOT, '.github/workflows/assets.yml'), 'utf8'), 'assets-php');
   for (const addition of ['        extra: [one, two]\n', '        exclude: []\n', '        include: []\n']) {
     assert.throws(() => assetMatrix(job.replace('        include:\n', `${addition}        include:\n`)), /unchecked entries/);
   }
   const source = readFileSync(path.join(ROOT, '.github/workflows/assets.yml'), 'utf8');
+  const text = database();
   for (const target of ['release-php-ext', 'release-wheel']) {
-    assert.throws(() => assertAssetOwnership(`${source}\n  extra:\n    steps:\n      - name: Repeat build\n        run: make ${target}\n`), /owning job/);
+    const builds = allAssetBuilds(text);
+    builds.set('npm', [...(builds.get('npm') ?? []), target]);
+    assert.throws(() => assertAssetOwnership(source, builds), /owning job/);
   }
-  for (const name of ['platform', 'php']) {
+  for (const name of ['assets-platform', 'assets-php']) {
     assert.throws(() => assetMatrix(assetJob(source, name).replace('runs-on: ${{ matrix.runner }}', 'runs-on: ubuntu-26.04')), /native runner selector/);
   }
   for (const addition of ['        extra: [one]\n', '        exclude: []\n']) {
-    assert.throws(() => assetMatrix(assetJob(source, 'platform').replace('        include:\n', `${addition}        include:\n`)), /unchecked entries/);
+    assert.throws(() => assetMatrix(assetJob(source, 'assets-platform').replace('        include:\n', `${addition}        include:\n`)), /unchecked entries/);
   }
+  const lines = recipe(text, 'ci-assets-php');
   const steps = assetSteps(job);
   const setup = steps.find(step => /uses: shivammathur\/setup-php@/.test(step));
-  const build = steps.find(step => /run: make release-php-ext\b/.test(step));
+  const build = steps.find(step => /run: make ci-assets-php\b/.test(step));
   assert.ok(setup && build);
-  assert.throws(() => assertPhpBuild(job.replace(setup, '').replace(build, build + setup)), /setup precedes/);
+  assert.throws(() => assertPhpBuild(job.replace(setup, '').replace(build, build + setup), lines), /setup precedes/);
   const version = "          php-version: '${{ matrix.php }}'\n";
-  assert.throws(() => assertPhpBuild(job.replace(version, '').replace(build, build + version)));
+  assert.throws(() => assertPhpBuild(job.replace(version, '').replace(build, build + version), lines));
+  assert.throws(() => assertPhpBuild(job, lines.map(line => line.replace(' EXPECTED_PHP_MINOR=$(PHP_MINOR)', ''))), /PHP minor of the job/);
 });
 
 test('T3.24-1 ASSET-2: every asset job has a distinct artifact for each matrix result', () => {
   const source = readFileSync(path.join(ROOT, '.github/workflows/assets.yml'), 'utf8');
   const names: string[] = [];
-  for (const name of ['platform', 'php', 'npm']) {
-    const job = assetJob(source, name);
+  for (const name of ASSET_JOBS) {
+    const job = assetJob(source, `assets-${name}`);
     const artifact = assetArtifact(job);
     if (name === 'php') assert.equal(artifact, 'assets-php-${{ matrix.platform }}-${{ matrix.php }}');
     const rows = name === 'npm' ? [{}] : assetMatrix(job);
@@ -235,6 +270,86 @@ test('T3.24-1 ASSET-2: every asset job has a distinct artifact for each matrix r
   assert.match(release, /merge-multiple: true/);
 });
 
+// T3.27: a job of a workflow that CI runs holds no content in YAML. Its one run step is make ci-<job> with make variables as its
+// only arguments, so a local run of the job is the same call (make ci-runtime RUNTIME=php), and the recipe holds the order and
+// the conditions of the job. A matrix value or an input of the called workflow is passed as NAME=${{ matrix.key }} or
+// NAME=${{ inputs.key }}; the judgement job, which exists only in CI, passes RESULTS='${{ toJSON(needs) }}'. Every other step
+// is a uses: step, which provisions the runner or carries a result, and only a uses: step has an if: condition.
+const CI_WORKFLOWS = ['ci.yml', 'ci-pipeline.yml', 'assets.yml', 'release.yml'];
+const JUDGEMENT_JOBS = ['required'];
+
+/** One step of a job: whether it is a uses: or a run: step, its run line, and whether it has an if: condition. */
+type Step = { uses: boolean; run: string | undefined; condition: boolean; text: string };
+
+/** The workflow `file` of .github/workflows. */
+function workflow(file: string): string {
+  return readFileSync(path.join(ROOT, '.github/workflows', file), 'utf8');
+}
+
+/** The jobs of the workflow `text` with their steps; a job that calls a workflow (uses: at the job) has no steps. */
+function workflowJobs(text: string): Map<string, Step[]> {
+  const jobs = new Map<string, Step[]>();
+  const body = /^jobs:\n([\s\S]*)$/m.exec(text)?.[1];
+  assert.ok(body, 'the workflow declares jobs');
+  for (const block of body.split(/^(?= {2}[\w-]+:\s*$)/m)) {
+    const name = /^ {2}([\w-]+):\s*$/m.exec(block)?.[1];
+    if (name === undefined) continue;
+    const steps = /^ {4}steps:\n([\s\S]*?)(?=^ {4}\S|(?![\s\S]))/m.exec(block)?.[1] ?? '';
+    jobs.set(name, steps.split(/^(?= {6}- )/m).filter(step => /^ {6}- /.test(step)).map(step => {
+      const key = (field: string) => new RegExp(`^(?: {6}- | {8})${field}:(.*)$`, 'm').exec(step)?.[1]?.trim();
+      return { uses: key('uses') !== undefined, run: key('run'), condition: key('if') !== undefined, text: step.trim() };
+    }));
+  }
+  return jobs;
+}
+
+/** The findings of the job `job` of `file` with its steps `steps`, empty when the job follows T3.27. */
+function jobFindings(file: string, job: string, steps: Step[]): string[] {
+  const where = `${file} job ${job}`;
+  const findings: string[] = [];
+  const runs = steps.filter(step => step.run !== undefined);
+  if (steps.length > 0 && runs.length !== 1) findings.push(`${where} has ${runs.length} run steps; expected one, make ci-${job}`);
+  for (const step of steps) {
+    if (step.run === undefined && !step.uses) findings.push(`${where} has a step that is neither uses: nor run: ${step.text}`);
+    if (step.run !== undefined && step.condition) findings.push(`${where} has a condition on its run step; the recipe ci-${job} holds the conditions`);
+  }
+  const argument = String.raw`[A-Z][A-Z0-9_]*=(?:[\w./-]*|\$\{\{ (?:matrix|inputs)\.[\w-]+ \}\})`;
+  const judgement = JUDGEMENT_JOBS.includes(job) ? String.raw`|RESULTS='\$\{\{ toJSON\(needs\) \}\}'` : '';
+  const line = new RegExp(String.raw`^make ci-${job}(?: (?:${argument}${judgement}))*$`);
+  for (const step of runs)
+    if (!line.test(step.run ?? '')) findings.push(`${where} runs ${JSON.stringify(step.run)}; expected make ci-${job} with make variables only`);
+  return findings;
+}
+
+test('T3.27: every job of a CI workflow has one run step, make ci-<job> with make variables only', () => {
+  const findings = CI_WORKFLOWS.flatMap(file => [...workflowJobs(workflow(file))].flatMap(([job, steps]) => jobFindings(file, job, steps)));
+  assert.deepEqual(findings, []);
+});
+
+test('T3.27: every run step of a CI workflow names a recipe of the Makefile', () => {
+  const text = database();
+  for (const file of CI_WORKFLOWS)
+    for (const [job, steps] of workflowJobs(workflow(file)))
+      if (steps.some(step => step.run !== undefined)) assert.ok(recipe(text, `ci-${job}`).length > 0, `the Makefile defines the recipe ci-${job} of ${file}`);
+});
+
+test('T3.27: the check names a run step with content, a condition or an expression', () => {
+  const run = (line: string): Step => ({ uses: false, run: line, condition: false, text: `- run: ${line}` });
+  const checkout: Step = { uses: true, run: undefined, condition: false, text: '- uses: actions/checkout' };
+  const findings = (steps: Step[], job = 'verify') => jobFindings('ci-pipeline.yml', job, steps).join('\n');
+  assert.equal(findings([checkout, run('make ci-verify')]), '');
+  assert.equal(findings([checkout, run('make ci-runtime RUNTIME=${{ matrix.runtime }}')], 'runtime'), '');
+  assert.equal(findings([checkout, run("make ci-required RESULTS='${{ toJSON(needs) }}'")], 'required'), '');
+  assert.match(findings([checkout, run('make install-tools TOOLS=go'), run('make ci-verify')]), /2 run steps/);
+  assert.match(findings([checkout]), /0 run steps/);
+  assert.match(findings([checkout, { ...run('make ci-verify'), condition: true }]), /condition on its run step/);
+  assert.match(findings([{ uses: false, run: undefined, condition: false, text: '- name: a step' }, run('make ci-verify')]), /neither uses: nor run:/);
+  for (const line of ['make ci-verify TOOLS="${{ join(fromJSON(needs.plan.outputs.common_tools), \' \') }}"', 'make ci-verify && make docs-check', 'make kit-gates-verify', "make ci-verify RESULTS='${{ toJSON(needs) }}'", 'make ci-verify TARGETS=kit-gates-verify-${{ matrix.runtime }}', '|'])
+    assert.match(findings([checkout, run(line)]), /make variables only/, line);
+  const pipeline = workflowJobs(workflow('ci-pipeline.yml'));
+  assert.ok(['plan', 'shared', 'verify', 'runtime', 'bindings', 'required'].every(job => (pipeline.get(job) ?? []).length > 0), 'the parser finds the steps of every job of ci-pipeline.yml');
+});
+
 // docs/spec/json-contract.md#transition: the binding packages of packages/ are the released packages, so the CI runs the
 // generated tests of every target of the contract, which hold the cases of contracts/core.json (binding G-5), on the standard
 // runner of its language, before a release publishes them. Each target of BINDING_TARGETS has its target test-binding-<target>,
@@ -243,7 +358,7 @@ test('the pipeline runs the generated tests of every binding target', () => {
   const text = database();
   const targets = variable(text, 'BINDING_TARGETS');
   assert.deepEqual([...targets].sort(), ['go', 'node', 'php', 'python', 'wasm'], 'BINDING_TARGETS names the five targets of the contract');
-  const run = jobTargets().flatMap(target => prerequisites(text, target));
+  const run = jobTargets(text).flatMap(target => prerequisites(text, target));
   const suite = variable(text, 'CHECK_TARGETS');
   for (const target of ['lint-bindings', 'check-declarations', ...targets.map(name => `test-binding-${name}`)]) {
     assert.ok(run.includes(target), `a job of the pipeline runs ${target}`);

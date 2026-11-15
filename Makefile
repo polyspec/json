@@ -532,6 +532,86 @@ CI_REPORT ?= var/report/ci-targets
 ci-targets:
 	$(NODE) $(KIT)/ci-targets.mjs -k $(CI_REPORT) $(TARGETS)
 
+# ---- CI: the one recipe of each job (tests/scripts/workflow-rules.test.mts) -------------------------------------------------
+# Each job of .github/workflows/ci-pipeline.yml and .github/workflows/assets.yml has one run step, make ci-<job> with make
+# variables as its only arguments, so a local run of a job is the call that CI makes, such as make ci-runtime RUNTIME=php. The
+# recipe holds the order and the conditions of the job: the installs and the prerequisites first, each of which stops the job
+# when it fails, then the checks through ci-targets, each to its end, then the cleanup of the CI context whenever its prepare
+# started. The status of the job is that of its checks, or that of the prepare or the cleanup when one of them fails.
+.PHONY: ci-plan ci-plan-tools ci-shared ci-verify ci-runtime ci-bindings ci-required ci-assets-platform ci-assets-php ci-assets-npm
+# The checks of each job, the targets that it runs through ci-targets.
+CI_SHARED_CHECKS := kit-gates-static
+CI_VERIFY_CHECKS := kit-gates-verify
+CI_RUNTIME_CHECKS = kit-gates-runtime-$(RUNTIME)
+CI_BINDINGS_CHECKS := kit-gates-bindings
+# The job of a CI context runs its checks between make kit-ci-context-prepare and make kit-ci-context-cleanup of its GROUP
+# and RUNTIME, as one shell line: the cleanup runs whenever the prepare started, and the status is that of the checks, or 1
+# when they passed and the cleanup failed. The line names each target itself, so rules-check reaches them (kit K1057).
+# The plan job writes the plan of config/ci.json to GITHUB_OUTPUT: the runner of the other jobs, whether a runtime job runs,
+# and the common tools, which tell the shared job whether it sets PHP up.
+ci-plan:
+	$(MAKE) --no-print-directory kit-ci-plan
+# ci-plan-tools installs the tools that the plan of config/ci.json names for a job, as ci-setup --plan of kit prints the plan
+# without GITHUB_OUTPUT: commonTools for the shared job, and installTools of RUNTIME for the job of a runtime.
+CI_PLAN_TOOLS_JS := const plan = JSON.parse(require("node:fs").readFileSync(0, "utf8")); const runtime = process.argv[1]; \
+	const tools = runtime ? plan.runtimes.find(job => job.runtime === runtime)?.installTools : plan.commonTools; \
+	if (tools === undefined) throw new Error(`the plan of config/ci.json has no runtime $${runtime}`); console.log(tools.join(" "));
+ci-plan-tools:
+	tools="$$(env -u GITHUB_OUTPUT $(NODE) $(KIT)/ci-setup.mjs --plan | $(NODE) -e '$(CI_PLAN_TOOLS_JS)' $(RUNTIME))" || exit 1; \
+	if [ -n "$$tools" ]; then $(MAKE) --no-print-directory install-tools TOOLS="$$tools"; \
+	else echo "[ci-plan-tools] the plan of config/ci.json names no tool for $(or $(RUNTIME),the shared job)"; fi
+ci-shared:
+	$(MAKE) --no-print-directory ci-plan-tools RUNTIME=
+	$(MAKE) --no-print-directory kit-ci-setup GROUP=shared RUNTIME=
+	$(MAKE) --no-print-directory kit-ci-context-prepare GROUP=shared RUNTIME= && $(MAKE) --no-print-directory ci-targets TARGETS="$(CI_SHARED_CHECKS)"; \
+	status=$$?; $(MAKE) --no-print-directory kit-ci-context-cleanup GROUP=shared RUNTIME= || { [ $$status -ne 0 ] || status=1; }; exit $$status
+ci-verify:
+	$(MAKE) --no-print-directory install-tools TOOLS="go rust php composer python uv"
+	$(MAKE) --no-print-directory json-install-verify
+	$(MAKE) --no-print-directory ci-targets TARGETS="$(CI_VERIFY_CHECKS)"
+# RUNTIME is a runtime of config/ci.json, which the matrix of the job runtime lists.
+ci-runtime:
+	@[ -n "$(RUNTIME)" ] || { echo "ci-runtime needs RUNTIME, a runtime of config/ci.json: make ci-runtime RUNTIME=php" >&2; exit 2; }
+	$(MAKE) --no-print-directory ci-plan-tools RUNTIME=$(RUNTIME)
+	$(MAKE) --no-print-directory kit-ci-setup GROUP=runtime RUNTIME=$(RUNTIME)
+	$(MAKE) --no-print-directory kit-ci-context-prepare GROUP=runtime RUNTIME=$(RUNTIME) && $(MAKE) --no-print-directory ci-targets TARGETS="$(CI_RUNTIME_CHECKS)"; \
+	status=$$?; $(MAKE) --no-print-directory kit-ci-context-cleanup GROUP=runtime RUNTIME=$(RUNTIME) || { [ $$status -ne 0 ] || status=1; }; exit $$status
+# The job bindings writes packages/release.mk before it installs the LLVM that the build of the PHP extension reads, so the
+# make that installs it reads install-llvm from that file.
+ci-bindings:
+	$(MAKE) --no-print-directory install-tools TOOLS="go php composer python uv"
+	$(MAKE) --no-print-directory json-install-bindings
+	$(MAKE) --no-print-directory release-recipes
+	$(MAKE) --no-print-directory install-llvm
+	$(MAKE) --no-print-directory ci-targets TARGETS="$(CI_BINDINGS_CHECKS)"
+# The judgement of the pipeline, which exists only in CI: RESULTS is the JSON of toJSON(needs). config/ci.json declares
+# runtimes, so the plan selects every job of needs, and each has to succeed; a skipped job fails it (FAIL_SKIPPED=1).
+ci-required:
+	FAIL_SKIPPED=1 $(NODE) $(KIT)/ci-passed.mjs
+
+# The jobs of .github/workflows/assets.yml. RELEASE=true, which the release workflow passes, runs the release check of binding
+# before the builds. The builds run through ci-targets, each to its end, so one run names every asset that does not build;
+# their report is var/report/ci-assets.
+CI_ASSETS_REPORT := var/report/ci-assets
+CI_RELEASE_CHECK = $(if $(filter true,$(RELEASE)),release-binding-check)
+ci-assets-platform:
+	$(MAKE) --no-print-directory json-install-rust-packages
+	$(MAKE) --no-print-directory install-tools TOOLS="uv python"
+	$(MAKE) --no-print-directory release-recipes
+	$(MAKE) --no-print-directory ci-targets CI_REPORT=$(CI_ASSETS_REPORT) TARGETS="$(CI_RELEASE_CHECK) release-go-static release-wheel release-npm-platform"
+# PHP_MINOR is the PHP minor that setup-php of the job selected; the build checks that the PHP on PATH is that minor.
+ci-assets-php:
+	@[ -n "$(PHP_MINOR)" ] || { echo "ci-assets-php needs PHP_MINOR, the PHP minor of the job: make ci-assets-php PHP_MINOR=8.4" >&2; exit 2; }
+	$(MAKE) --no-print-directory json-install-rust-packages
+	$(MAKE) --no-print-directory release-recipes
+	$(MAKE) --no-print-directory install-llvm
+	$(MAKE) --no-print-directory ci-targets CI_REPORT=$(CI_ASSETS_REPORT) TARGETS="$(CI_RELEASE_CHECK) release-php-ext" PHP=php EXPECTED_PHP_MINOR=$(PHP_MINOR)
+ci-assets-npm:
+	$(MAKE) --no-print-directory json-install-rust-packages
+	$(MAKE) --no-print-directory release-recipes
+	$(MAKE) --no-print-directory install-wasm-bindgen
+	$(MAKE) --no-print-directory ci-targets CI_REPORT=$(CI_ASSETS_REPORT) TARGETS="$(CI_RELEASE_CHECK) release-npm"
+
 # ---- Release: the steps of .github/workflows/release.yml, in its order (config/release.json) ---------------------------------
 .PHONY: release-prepare release-tools release-tools-path release-tag release-tag-output release-assets release-candidate-assets release-publish release-undraft
 # The release builds the released versions, so its Go runs without the go.work that link writes.
@@ -547,6 +627,35 @@ release-tools-path:
 	@echo "$(KIT_TOOLS)/mise/shims" >> "$$GITHUB_PATH"
 	@echo "$(KIT_TOOLS)/bin" >> "$$GITHUB_PATH"
 	@for name in $(MISE_ENVIRONMENT); do echo "$$name=$$(printenv $$name)"; done >> "$$GITHUB_ENV"
+# The jobs of .github/workflows/release.yml, one run step each (tests/scripts/workflow-rules.test.mts). ci-tag tags the commit of
+# the CI run RUN, with AUTO=1 when a workflow_run started the release (GITHUB_EVENT_NAME, which the runner sets), and gives
+# the later jobs the TAG and VERSION that release-tag wrote to GITHUB_ENV, through GITHUB_OUTPUT; both are empty when the run
+# releases nothing.
+.PHONY: ci-tag ci-release
+ci-tag:
+	$(MAKE) --no-print-directory release-tag $(if $(filter workflow_run,$(GITHUB_EVENT_NAME)),AUTO=1)
+	@test -n "$$GITHUB_OUTPUT" || { echo 'ci-tag: GITHUB_OUTPUT is not set; run it in the release workflow' >&2; exit 2; }
+	{ grep -E '^TAG=' "$$GITHUB_ENV" | tail -n 1 | sed 's/^TAG=/tag=/'; grep -E '^VERSION=' "$$GITHUB_ENV" | tail -n 1 | sed 's/^VERSION=/version=/'; } >> "$$GITHUB_OUTPUT"
+# ci-release releases TAG in the order of config/release.json. The job downloads the assets of each platform into
+# var/release/platform-assets before its run step, and the recipe merges them into var/release/assets after release-assets
+# built the archives of the tag. The tools of var/tools are on the PATH that this Makefile exports, so no step puts them on
+# GITHUB_PATH; binding makes the commit of the Go module with the identity of the actor of the run (GITHUB_ACTOR), as the tags
+# of release-tag are.
+ci-release:
+	@command -v zip >/dev/null || { echo 'Info-ZIP is required for Composer release archives; install the zip package on the Ubuntu runner' >&2; exit 1; }
+	@test -n "$$TAG" || { echo 'ci-release: TAG is required, for example make ci-release TAG=v0.0.1' >&2; exit 2; }
+	$(MAKE) --no-print-directory release-prepare
+	$(MAKE) --no-print-directory release-tools
+	$(MAKE) --no-print-directory release-assets
+	cp -R var/release/platform-assets/. var/release/assets/
+	$(MAKE) --no-print-directory json-install-rust-packages
+	$(MAKE) --no-print-directory install-tools TOOLS=go
+	$(MAKE) --no-print-directory release-recipes
+	GIT_AUTHOR_NAME="$$GITHUB_ACTOR" GIT_AUTHOR_EMAIL="$$GITHUB_ACTOR@users.noreply.github.com" GIT_COMMITTER_NAME="$$GITHUB_ACTOR" \
+	GIT_COMMITTER_EMAIL="$$GITHUB_ACTOR@users.noreply.github.com" $(MAKE) --no-print-directory release-go-module
+	$(MAKE) --no-print-directory release-publish
+	$(MAKE) --no-print-directory release-platform-assets
+	$(MAKE) --no-print-directory release-undraft TAG="$$TAG"
 # release-tag tags the commit of the successful CI run RUN; AUTO=1 releases only the version commit of the top version.
 release-tag:
 	RELEASE_MAIN=origin/main $(NODE) $(KIT)/release-run.mjs tag "$$RUN"$(if $(AUTO), --auto)

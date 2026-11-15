@@ -33,21 +33,11 @@ A release is a tag of a commit of `main` ([release procedure](../../AGENTS.md#re
 ~~~sh
 make install-tools TOOLS=npm
 make install-packages
-make release-tag
-make release-prepare
-make release-tools
-make release-tools-path
-make release-assets
-make json-install-rust-packages
-make install-tools TOOLS=go
-make release-recipes
-make release-go-module
-make release-publish
-make release-platform-assets
-make release-undraft TAG="$TAG"
+make ci-tag
+make ci-release
 ~~~
 
-The workflow is the copy of `workflows/release.yml` of `@polyspec/kit`. `make install-tools TOOLS=npm` and `make install-packages` install npm and the package `@polyspec/kit`, whose targets the following steps run. `make release-tools` installs the tools that `config/release.json` needs (npm, the tools of `mise.lock` with the Python build backend, and Rust), and `make release-tools-path` puts `var/tools/bin` and the shims of mise on the `PATH` of the following steps and writes the environment of mise to `GITHUB_ENV`.
+The workflow is the copy of `workflows/release.yml` of `@polyspec/kit`. `make install-tools TOOLS=npm` and `make install-packages` install npm and the package `@polyspec/kit`, whose targets the following steps run. Each job has one run step: the job `tag` runs `make ci-tag`, which runs `make release-tag` and gives `TAG` and `VERSION` to the later jobs, and the job `release` downloads the assets of each platform into `var/release/platform-assets` and runs `make ci-release`, whose recipe runs `make release-prepare`, `make release-tools`, `make release-assets`, merges the assets of each platform into `var/release/assets`, then runs `make json-install-rust-packages`, `make install-tools TOOLS=go`, `make release-recipes`, `make release-go-module`, `make release-publish`, `make release-platform-assets` and `make release-undraft`, and stops at the first failure. `make release-tools` installs the tools that `config/release.json` needs (npm, the tools of `mise.lock` with the Python build backend, and Rust); the Makefile puts `var/tools/bin` and the shims of mise on the `PATH` of its recipes.
 
 1. `make release-tag` requires a completed successful push or dispatch run of `ci` on `main` whose commit is on `origin/main`. Started by that run, the release workflow releases the top `## X.Y.Z` of the change log at the commit of the run when that commit is the version commit, or a later commit whose `## Unreleased` is empty while the version is untagged; `make release-tag` of `@polyspec/kit` decides it: it creates and pushes only the tag `vX.Y.Z` at that commit, because `goModules` of `config/release.json` is empty. The later `make release-go-module` step creates the binding Go module tag at its own commit, with the generated files and static libraries. No current release creates a legacy Go module tag. A version already tagged on the line of that commit releases nothing, and one tagged off it fails the run. It runs no test again.
 2. The version is set by the version-bump commit `Release X.Y.Z`, which sets X.Y.Z in every manifest of `config/release.json` and renames `## Unreleased` of each changelog to `## X.Y.Z`; no make target checks it, and review judges it, as the [release procedure](../../AGENTS.md#release) states.
