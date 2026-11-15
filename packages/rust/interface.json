@@ -1654,7 +1654,8 @@
     {
       "member": "stringify",
       "file": "contracts/core.json",
-      "group": "stringify"
+      "group": "stringify",
+      "result": "text"
     },
     {
       "member": "value.string_value",
@@ -1795,6 +1796,65 @@
       "member": "parse",
       "file": "examples/official.json",
       "group": "cases"
+    },
+    {
+      "member": "stringify",
+      "file": "contracts/core.json",
+      "group": "stringify.parsed",
+      "result": "text"
+    },
+    {
+      "member": "parse",
+      "file": "contracts/core.json",
+      "group": "parse.fixtures"
+    },
+    {
+      "member": "stringify",
+      "file": "contracts/core.json",
+      "group": "stringify.fixtures",
+      "result": "text"
+    },
+    {
+      "member": "stringify",
+      "file": "contracts/core.json",
+      "group": "stringify.official",
+      "result": "text"
+    },
+    {
+      "member": "parse",
+      "file": "contracts/core.json",
+      "group": "parse.arguments"
+    },
+    {
+      "member": "value.string_value",
+      "file": "contracts/core.json",
+      "group": "value.string_value.arguments"
+    },
+    {
+      "member": "ordered_map.insert",
+      "file": "contracts/core.json",
+      "group": "ordered_map.insert.arguments"
+    },
+    {
+      "member": "parse",
+      "file": "contracts/core.json",
+      "group": "parse.api"
+    },
+    {
+      "member": "stringify",
+      "file": "contracts/core.json",
+      "group": "stringify.api",
+      "result": "text"
+    },
+    {
+      "member": "value.items",
+      "file": "contracts/core.json",
+      "group": "value.items.api"
+    },
+    {
+      "member": "value.number",
+      "file": "contracts/core.json",
+      "group": "value.number.api"
     }
   ]
 }

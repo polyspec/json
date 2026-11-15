@@ -7,6 +7,9 @@ use libtest_mimic::{Arguments, Failed, Trial};
 use polyspec_json::{parse, stringify, Error, OrderedMap, ParseOptions, StringifyOptions, Value};
 use serde_json::Value as Json;
 
+/// The suffixes of the groups that hold more cases of a member (contracts/README.md).
+const CORPORA: [&str; 5] = [".parsed", ".fixtures", ".official", ".arguments", ".api"];
+
 const CONTRACT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../contracts/core.json");
 
 fn failed(message: impl Display) -> Failed {
@@ -70,17 +73,23 @@ fn source(value: &Json) -> Result<Vec<u8>, Failed> {
         .collect()
 }
 
-/// The record parse_options of the case: every field is given (G-5).
+/// The record parse_options of the case: every field is given (G-5), or the defaults when the case gives no options.
 fn parse_options(case: &Json) -> Result<ParseOptions, Failed> {
-    let given = field(case, "options")?;
+    let Some(given) = case.get("options") else {
+        return Ok(ParseOptions::default());
+    };
     Ok(ParseOptions {
         max_depth: Some(integer(field(given, "max_depth")?)?),
         reject_duplicates: Some(boolean(field(given, "reject_duplicates")?)?),
     })
 }
 
-/// A json_value of G-5, `{"kind", "value"}`, made by the constructors of the crate.
+/// A json_value of G-5, `{"kind", "value"}`, made by the constructors of the crate, or an instance value of binding
+/// GN-13f.
 fn json_value(value: &Json) -> Result<Value, Failed> {
+    if value.get("new").is_some() {
+        return instance(value);
+    }
     let content = || field(value, "value");
     match text(value, "kind")? {
         "null" => Ok(Value::null()),
@@ -119,12 +128,11 @@ fn ordered_map(pairs: &Json) -> Result<OrderedMap, Failed> {
     Ok(members)
 }
 
-/// The receiver of a method of the value: the factory whose keys the case gives (G-5), or the JSON text `json` of a
-/// case that only this test reads.
+/// The receiver of a method of the value: the instance value under `receiver` (binding GN-13f), or the factory whose
+/// keys the case gives (G-5).
 fn receiver(case: &Json) -> Result<Value, Failed> {
-    if let Some(json) = case.get("json") {
-        let text = json.as_str().ok_or("json is no text")?;
-        return parse(text.as_bytes(), &ParseOptions::default()).map_err(failed);
+    if let Some(given) = case.get("receiver") {
+        return instance(given);
     }
     if let Some(given) = case.get("text") {
         return Ok(Value::string(given.as_str().ok_or("text is no text")?));
@@ -141,13 +149,35 @@ fn receiver(case: &Json) -> Result<Value, Failed> {
     Ok(Value::null())
 }
 
-/// The value of an instance value of binding GN-13f, `{"new": <member id>, "args": {...}}`: the cases name the factory
-/// `value.object` with its members, since a case that gives the receiver by its keys takes the first factory of the
-/// class whose parameters it gives, and the key `units` of `value.get_units` is the parameter of `value.from_units`.
+/// The value of an instance value of binding GN-13f, `{"new": <member id>, "receiver": ..., "args": {...}}`: a factory
+/// of the value with its arguments, the parse of a source, or the member that `value.get` or `value.get_units` finds
+/// on the instance value of its receiver.
 fn instance(given: &Json) -> Result<Value, Failed> {
     let args = field(given, "args")?;
+    let found = |member: Option<&Value>| member.cloned().ok_or_else(|| failed("the receiver has no such member"));
     match text(given, "new")? {
+        "parse" => parse(&source(field(args, "source")?)?, &parse_options(args)?).map_err(failed),
+        "value.string" => Ok(Value::string(text(args, "text")?)),
+        "value.number" => Value::number(text(args, "literal")?).map_err(failed),
+        "value.boolean" => Ok(Value::boolean(boolean(field(args, "value")?)?)),
+        "value.null" => Ok(Value::null()),
+        "value.from_units" => Value::from_units(&integers(args, "units")?).map_err(failed),
+        "value.array" => {
+            let items = field(args, "items")?
+                .as_array()
+                .ok_or("items is no array")?
+                .iter()
+                .map(json_value)
+                .collect::<Result<Vec<_>, _>>()?;
+            Value::array(&items).map_err(failed)
+        }
         "value.object" => Value::object(&ordered_map(field(args, "members")?)?).map_err(failed),
+        "value.get" => found(instance(field(given, "receiver")?)?.get(text(args, "key")?).map_err(failed)?),
+        "value.get_units" => found(
+            instance(field(given, "receiver")?)?
+                .get_units(&integers(args, "units")?)
+                .map_err(failed)?,
+        ),
         other => Err(failed(format!("no instance value of the factory {other}"))),
     }
 }
@@ -211,11 +241,12 @@ fn found(case: &Json, result: Result<Option<&Value>, Error>) -> Result<(), Faile
 }
 
 fn run(group: &str, case: &Json) -> Result<(), Failed> {
-    // A group of the rule corpus, `<member>.parsed`, runs as the member's group with the value of its JSON text.
-    let group = match group.strip_suffix(".parsed") {
-        Some(member) => member,
-        None => group,
-    };
+    // A group `<member>.<corpus>` holds more cases of the member: parsed values, the fixtures, the official examples,
+    // the argument cases and the behaviours of the legacy package tests (contracts/README.md).
+    let group = CORPORA
+        .iter()
+        .find_map(|corpus| group.strip_suffix(corpus))
+        .unwrap_or(group);
     match group {
         "parse" => outcome(
             case,
@@ -227,10 +258,7 @@ fn run(group: &str, case: &Json) -> Result<(), Failed> {
             let options = StringifyOptions {
                 html_safe: Some(html_safe),
             };
-            let value = match case.get("json") {
-                Some(_) => receiver(case)?,
-                None => json_value(field(case, "value")?)?,
-            };
+            let value = json_value(field(case, "value")?)?;
             same(stringify(&value, &options), text(case, "text")?.to_owned())
         }
         "value.string_value" => outcome(case, receiver(case)?.string_value(), |value| {
@@ -262,25 +290,22 @@ fn run(group: &str, case: &Json) -> Result<(), Failed> {
         }
         "value.members" => outcome(case, receiver(case)?.members().map(drop), |()| Ok(())),
         "value.items" => outcome(case, receiver(case)?.items().map(drop), |()| Ok(())),
-        "value.number_literal" => {
-            outcome(
-                case,
-                receiver(case)?.number_literal().map(drop),
-                |()| Ok(()),
-            )
-        }
+        "value.number_literal" => outcome(case, receiver(case)?.number_literal(), |literal| {
+            match case.get("result") {
+                Some(_) => same(literal, text(case, "result")?),
+                None => Ok(()),
+            }
+        }),
         "value.boolean_value" => {
             outcome(case, receiver(case)?.boolean_value().map(drop), |()| Ok(()))
         }
         "value.get" => found(case, receiver(case)?.get(text(case, "key")?)),
         "value.get_units" => {
             // The units are the key here; the receiver is the value of text, json, an instance value or literal.
-            let target = if let Some(given) = case.get("text") {
-                Value::string(given.as_str().ok_or("text is no text")?)
-            } else if case.get("json").is_some() {
-                receiver(case)?
-            } else if let Some(given) = case.get("receiver") {
+            let target = if let Some(given) = case.get("receiver") {
                 instance(given)?
+            } else if let Some(given) = case.get("text") {
+                Value::string(given.as_str().ok_or("text is no text")?)
             } else {
                 Value::number(text(case, "literal")?).map_err(failed)?
             };

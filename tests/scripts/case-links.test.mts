@@ -27,6 +27,9 @@ test('every case that interface.json links has an id and the parameters of its m
     for (const member of list(unit['members']).filter(isObject)) members.set(text(member['id'], 'a member id'), member);
   }
   const findings: string[] = [];
+  // A generated test is named after its member and its case id in the word case of each language, so two cases of one
+  // member with ids of the same words declare one test twice (a PHP or Go compile error).
+  const named = new Map<string, string>();
   for (const link of list(contract['cases']).filter(isObject)) {
     const [id, file, group] = [text(link['member'], 'a row member'), text(link['file'], 'a row file'), text(link['group'], 'a row group')];
     const member = members.get(id);
@@ -42,6 +45,9 @@ test('every case that interface.json links has an id and the parameters of its m
       const name = typeof fields['id'] === 'string' ? fields['id'] : undefined;
       const where = `${file} ${group}[${at}]${name === undefined ? '' : ` (${name})`} of ${id}`;
       if (name === undefined) findings.push(`${where} has no id`);
+      const words = `${id} ${(name ?? '').replace(/[^a-z0-9]/gi, '').toLowerCase()}`;
+      if (name !== undefined && named.has(words)) findings.push(`${where} has the id of ${named.get(words)}`);
+      else named.set(words, where);
       const missing = required.filter((key) => !(key in fields));
       if (missing.length > 0) findings.push(`${where} has no ${missing.join(', ')}`);
     });
