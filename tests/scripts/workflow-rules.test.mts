@@ -39,7 +39,14 @@ function jobTargets(text: string): string[] {
   assert.ok(runtimes.length > 0, 'the runtime job of the pipeline lists its runtimes');
   const jobs = [...source.matchAll(/^ {6}- run: make ci-([\w-]+)(.*)$/gm)].filter(match => match[1] !== 'plan' && match[1] !== 'required');
   assert.ok(jobs.length > 0, 'the jobs of the pipeline run make ci-<job>');
+  const targets = member(readJson('config/ci.json'), 'targets');
+  const names = (value: unknown): string[] => (Array.isArray(value) ? value.map(String) : []);
   return jobs.flatMap(([, job = '', rest = '']) => {
+    // ci-setup --job of kit runs kit-gates-static or kit-gates-runtime-<runtime> with the targets of config/ci.json (kit K1250).
+    const lines = recipe(text, `ci-${job}`);
+    if (lines.some(line => line.includes('ci-setup.mjs --job shared'))) return ['kit-gates-static', ...names(member(targets, 'shared'))];
+    if (lines.some(line => line.includes('ci-setup.mjs --job runtime $(RUNTIME)')))
+      return runtimes.flatMap(runtime => [`kit-gates-runtime-${runtime}`, ...names(member(member(targets, 'runtimes'), runtime))]);
     const name = `CI_${job.toUpperCase().replace(/-/g, '_')}_CHECKS`;
     assert.ok(recipe(text, `ci-${job}`).some(line => line.includes(`$(${name})`)), `the recipe ci-${job} runs the checks $(${name})`);
     const checks = variable(text, name);
@@ -218,7 +225,7 @@ function assertPhpBuild(job: string, lines: string[]): void {
   assert.match(runs[0] ?? '', /^ {6}- run: make ci-assets-php PHP_MINOR=\$\{\{ matrix\.php \}\} RELEASE=\$\{\{ inputs\.release \}\}$/m);
   const build = lines.filter(line => / TARGETS="[^"]*\brelease-php-ext\b/.test(line));
   assert.equal(build.length, 1, 'the recipe ci-assets-php builds the extension once');
-  assert.match(build[0] ?? '', / PHP=php EXPECTED_PHP_MINOR=\$\(PHP_MINOR\)$/, 'the build checks the PHP minor of the job');
+  assert.match(build[0] ?? '', / PHP=php EXPECTED_PHP_MINOR=\$\(PHP_MINOR\)(\s|$)/, 'the build checks the PHP minor of the job');
 }
 
 test('T3.24-1 ASSET-2: each PHP job selects one minor and invokes one generated guarded build', () => {
@@ -364,4 +371,44 @@ test('the pipeline runs the generated tests of every binding target', () => {
     assert.ok(run.includes(target), `a job of the pipeline runs ${target}`);
     assert.ok(suite.includes(target), `CHECK_TARGETS names ${target}`);
   }
+});
+
+// T3.29: the recipes call the installed tools by the interface that their pinned releases define. kit 0.0.113 runs a job of the
+// pipeline with ci-setup --job shared, --job runtime <runtime> or --required and refuses every other mode, so a recipe that
+// passes an older mode stops the job. binding 0.0.7 writes no install-llvm into packages/release.mk: the PHP job provisions
+// the LLVM of config/toolchain.json with a uses: step before its run step on a runner whose image holds no such LLVM (macOS),
+// and the recipe builds with the LLVM that step installed.
+/** The modes that the installed ci-setup of kit accepts, read from its usage error. */
+function kitSetupModes(): string[] {
+  const source = readFileSync(path.join(ROOT, 'node_modules/@polyspec/kit/dist/ci-setup.mjs'), 'utf8');
+  const usage = /unknown CI setup mode \$\{mode\}; use ([^`]*)`/.exec(source)?.[1];
+  assert.ok(usage, 'the installed ci-setup of kit names its modes in its usage error');
+  return [...new Set([...usage.matchAll(/--[\w-]+/g)].map(match => match[0]))];
+}
+
+test('T3.29: every recipe passes ci-setup of kit a mode that the installed kit accepts', () => {
+  const modes = kitSetupModes();
+  const makefile = readFileSync(path.join(ROOT, 'Makefile'), 'utf8');
+  const used = [...makefile.matchAll(/ci-setup\.mjs (--[\w-]+)/g)].map(match => match[1] ?? '');
+  assert.ok(used.length > 0, 'the Makefile calls ci-setup of kit');
+  assert.deepEqual(used.filter(mode => !modes.includes(mode)), [], `ci-setup of kit accepts ${modes.join(', ')}`);
+  for (const [job, call] of [['ci-shared', '--job shared'], ['ci-runtime', '--job runtime $(RUNTIME)'], ['ci-required', '--required']]) {
+    assert.ok(recipe(database(), job ?? '').some(line => line.includes(`ci-setup.mjs ${call}`)), `the recipe ${job} runs ci-setup ${call}`);
+  }
+});
+
+test('T3.29: no recipe makes install-llvm, and the PHP job provisions LLVM on macOS before its run step', () => {
+  const text = database();
+  for (const job of ['ci-bindings', 'ci-assets-php']) {
+    assert.ok(!recipe(text, job).some(line => /\binstall-llvm\b/.test(line)), `the recipe ${job} makes no install-llvm, which binding 0.0.7 no longer writes`);
+  }
+  const steps = assetSteps(assetJob(readFileSync(path.join(ROOT, '.github/workflows/assets.yml'), 'utf8'), 'assets-php'));
+  const llvm = steps.filter(step => /uses: KyleMayes\/install-llvm-action@[0-9a-f]{40}\b/.test(step));
+  const run = steps.findIndex(step => /^ {6}- run: /m.test(step));
+  assert.equal(llvm.length, 1, 'the PHP job provisions LLVM with one uses: step pinned by commit');
+  assert.match(llvm[0] ?? '', /^ {8}if: runner\.os == 'macOS'$/m, 'the step runs on macOS, whose image holds no LLVM of config/toolchain.json');
+  const major = String(member(member(readJson('config/toolchain.json'), 'llvm'), 'version'));
+  assert.match(llvm[0] ?? '', new RegExp(`^ {10}version: '${major}\\.\\d+\\.\\d+'$`, 'm'), `the step installs LLVM ${major} of config/toolchain.json`);
+  assert.ok(steps.indexOf(llvm[0] ?? '') < run, 'the LLVM is provisioned before the run step');
+  assert.ok(recipe(text, 'ci-assets-php').some(line => line.includes('$(if $(LLVM_PATH),LLVM_ROOT=$(LLVM_PATH))')), 'the build reads the LLVM that the step installed');
 });

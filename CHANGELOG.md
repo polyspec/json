@@ -8,6 +8,8 @@
 
 ## 0.0.29
 
+- The CI runs with kit 0.0.113 and binding 0.0.7 (T3.29). `make ci-shared`, `make ci-runtime RUNTIME=<runtime>` and `make ci-required` run `ci-setup --job shared`, `--job runtime <runtime>` and `--required` of kit, which install the tools of the job, run its setup targets, run its gates through `make ci-targets` and judge the pipeline; the targets `kit-ci-setup`, `kit-ci-context-prepare`, `kit-ci-context-cleanup` and `ci-plan-tools` are removed. `make ci-bindings` and `make ci-assets-php` make no `install-llvm`, which binding 0.0.7 no longer writes: the ubuntu-26.04 images hold LLVM 21 at `/usr/lib/llvm-21`, and the macOS job of `assets.yml` installs it with `KyleMayes/install-llvm-action` pinned by commit before its run step, whose `LLVM_PATH` the recipe passes as `LLVM_ROOT`. Before, the CI run of the release commit stopped every kit job with "unknown CI setup mode --setup" and every PHP asset job and the job `bindings` with "No rule to make target 'install-llvm'". Red: `tests/scripts/workflow-rules.test.mts` found the mode `--setup` and the make of `install-llvm`. Green: its 15 tests pass.
+
 - The repository pins binding 0.0.7 (the release asset in `package.json` and `package-lock.json`, the tag v0.0.7 in every dependency line on `polyspec-binding-core`, which `binding scaffold` writes again in the binding crates, and in `Cargo.lock`) (T3.28). Before, it pinned binding 0.0.5.
 
 - The repository pins kit 0.0.113 (the release asset in `package.json` and its integrity in `package-lock.json`), the latest release of the shared tools.

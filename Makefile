@@ -303,7 +303,8 @@ BINDING := $(CURDIR)/node_modules/.bin/binding
 # .github/workflows/ci-pipeline.yml runs them through kit-gates-bindings.
 test-bindings: lint-bindings check-declarations test-binding-crates $(foreach target,$(BINDING_TARGETS),test-binding-$(target))
 # The build script of ext-php-rs runs bindgen, which reads the libclang and the clang of the LLVM of config/toolchain.json:
-# LLVM_ROOT of packages/release.mk, which make install-llvm installs; without that file bindgen finds them itself.
+# LLVM_ROOT of packages/release.mk, an LLVM that the machine provides (binding GN-19i); without that file bindgen finds them
+# itself.
 BINDING_LLVM = $(if $(LLVM_ROOT),LIBCLANG_PATH=$(LLVM_ROOT)/lib CLANG_PATH=$(LLVM_ROOT)/bin/clang)
 # The lint and the tests of the binding crates, after make bindings writes their generated folders.
 lint-bindings: bindings
@@ -402,7 +403,7 @@ bindings-check:
 
 # ---- Release recipes of the bindings: packages/release.mk, which binding release-recipes writes (binding GN-19h) -----------
 # The recipes of the platform assets (release-go-static, release-wheel, release-php-ext, release-npm-platform, release-npm,
-# release-go-module, release-binding-check, release-platform-assets, install-llvm and install-wasm-bindgen) are the file that
+# release-go-module, release-binding-check, release-platform-assets and install-wasm-bindgen) are the file that
 # binding release-recipes writes for the contract; Git ignores it, and make release-recipes writes it again before a release
 # runs a recipe, because no recipe of these targets is written by hand (CK-94). The file reads BINDING_RUN, NODE, NPM and UV,
 # which this Makefile defines before the include; a checkout that has not written the file yet reads none of its targets.
@@ -495,8 +496,8 @@ link-check:
 
 # ---- CI: the gates, the plan and the setup of the jobs of .github/workflows/ci-pipeline.yml ----------------------------------
 .PHONY: kit-gates-static kit-gates-verify kit-gates-runtime-ts kit-gates-runtime-php kit-gates-runtime-python \
-	kit-gates-runtime-go kit-gates-runtime-rust kit-gates-runtime-php-ext kit-gates-bindings kit-ci-plan kit-ci-setup kit-ci-context-prepare \
-	kit-ci-context-cleanup ci-targets
+	kit-gates-runtime-go kit-gates-runtime-rust kit-gates-runtime-php-ext kit-gates-bindings kit-ci-plan \
+	ci-targets
 # The targets of the jobs of the pipeline, which its steps run by name: kit-gates-static in the shared job, kit-gates-verify in
 # the verify job and kit-gates-runtime-<runtime> in the runtime job of each runtime. Together they hold every target of
 # CHECK_TARGETS, each in one of them (tests/scripts/workflow-rules.test.mts).
@@ -516,16 +517,9 @@ kit-gates-runtime-php-ext: lint-php-ext test-php-ext
 # kit-gates-bindings runs in the job bindings, which installs the tools of every target of the contract.
 kit-gates-bindings: lint-bindings check-declarations test-binding-crates test-binding-python test-binding-node test-binding-wasm test-binding-php test-binding-go
 
-# kit-ci-plan writes the jobs, runners and tools of config/ci.json to GITHUB_OUTPUT; kit-ci-setup runs the setup targets that
-# config/ci.json declares for GROUP=shared|runtime and RUNTIME.
+# kit-ci-plan writes the fan-out of the pipeline, the jobs and runners of config/ci.json, to GITHUB_OUTPUT.
 kit-ci-plan:
 	$(NODE) $(KIT)/ci-setup.mjs --plan
-kit-ci-setup:
-	$(NODE) $(KIT)/ci-setup.mjs --setup $(GROUP) $(RUNTIME)
-kit-ci-context-prepare:
-	$(NODE) $(KIT)/ci-setup.mjs --context-prepare $(GROUP) $(RUNTIME)
-kit-ci-context-cleanup:
-	$(NODE) $(KIT)/ci-setup.mjs --context-cleanup $(GROUP) $(RUNTIME)
 
 # ci-targets runs TARGETS past failures and writes the logs, record.json and summary.md into CI_REPORT.
 CI_REPORT ?= var/report/ci-targets
@@ -538,33 +532,19 @@ ci-targets:
 # recipe holds the order and the conditions of the job: the installs and the prerequisites first, each of which stops the job
 # when it fails, then the checks through ci-targets, each to its end, then the cleanup of the CI context whenever its prepare
 # started. The status of the job is that of its checks, or that of the prepare or the cleanup when one of them fails.
-.PHONY: ci-plan ci-plan-tools ci-shared ci-verify ci-runtime ci-bindings ci-required ci-assets-platform ci-assets-php ci-assets-npm
-# The checks of each job, the targets that it runs through ci-targets.
-CI_SHARED_CHECKS := kit-gates-static
+.PHONY: ci-plan ci-shared ci-verify ci-runtime ci-bindings ci-required ci-assets-platform ci-assets-php ci-assets-npm
+# The checks of each job whose recipe runs them itself, the targets that it runs through ci-targets. The jobs shared and
+# runtime are runs of ci-setup of kit (kit K1250): it installs the tools of the job of config/ci.json and runs its setup
+# targets, stopping at the first failure, then prepares the context of the job when config/ci.json declares one, runs
+# kit-gates-static or kit-gates-runtime-<runtime> with the targets that config/ci.json declares for the job through make -k
+# ci-targets, every target to its end, and cleans up the context whenever its preparation ran.
 CI_VERIFY_CHECKS := kit-gates-verify
-CI_RUNTIME_CHECKS = kit-gates-runtime-$(RUNTIME)
 CI_BINDINGS_CHECKS := kit-gates-bindings
-# The job of a CI context runs its checks between make kit-ci-context-prepare and make kit-ci-context-cleanup of its GROUP
-# and RUNTIME, as one shell line: the cleanup runs whenever the prepare started, and the status is that of the checks, or 1
-# when they passed and the cleanup failed. The line names each target itself, so rules-check reaches them (kit K1057).
-# The plan job writes the plan of config/ci.json to GITHUB_OUTPUT: the runner of the other jobs, whether a runtime job runs,
-# and the common tools, which tell the shared job whether it sets PHP up.
+# The plan job writes the plan of config/ci.json to GITHUB_OUTPUT: the runner of the other jobs and whether a runtime job runs.
 ci-plan:
 	$(MAKE) --no-print-directory kit-ci-plan
-# ci-plan-tools installs the tools that the plan of config/ci.json names for a job, as ci-setup --plan of kit prints the plan
-# without GITHUB_OUTPUT: commonTools for the shared job, and installTools of RUNTIME for the job of a runtime.
-CI_PLAN_TOOLS_JS := const plan = JSON.parse(require("node:fs").readFileSync(0, "utf8")); const runtime = process.argv[1]; \
-	const tools = runtime ? plan.runtimes.find(job => job.runtime === runtime)?.installTools : plan.commonTools; \
-	if (tools === undefined) throw new Error(`the plan of config/ci.json has no runtime $${runtime}`); console.log(tools.join(" "));
-ci-plan-tools:
-	tools="$$(env -u GITHUB_OUTPUT $(NODE) $(KIT)/ci-setup.mjs --plan | $(NODE) -e '$(CI_PLAN_TOOLS_JS)' $(RUNTIME))" || exit 1; \
-	if [ -n "$$tools" ]; then $(MAKE) --no-print-directory install-tools TOOLS="$$tools"; \
-	else echo "[ci-plan-tools] the plan of config/ci.json names no tool for $(or $(RUNTIME),the shared job)"; fi
 ci-shared:
-	$(MAKE) --no-print-directory ci-plan-tools RUNTIME=
-	$(MAKE) --no-print-directory kit-ci-setup GROUP=shared RUNTIME=
-	$(MAKE) --no-print-directory kit-ci-context-prepare GROUP=shared RUNTIME= && $(MAKE) --no-print-directory ci-targets TARGETS="$(CI_SHARED_CHECKS)"; \
-	status=$$?; $(MAKE) --no-print-directory kit-ci-context-cleanup GROUP=shared RUNTIME= || { [ $$status -ne 0 ] || status=1; }; exit $$status
+	$(NODE) $(KIT)/ci-setup.mjs --job shared
 ci-verify:
 	$(MAKE) --no-print-directory install-tools TOOLS="go rust php composer python uv"
 	$(MAKE) --no-print-directory json-install-verify
@@ -572,22 +552,18 @@ ci-verify:
 # RUNTIME is a runtime of config/ci.json, which the matrix of the job runtime lists.
 ci-runtime:
 	@[ -n "$(RUNTIME)" ] || { echo "ci-runtime needs RUNTIME, a runtime of config/ci.json: make ci-runtime RUNTIME=php" >&2; exit 2; }
-	$(MAKE) --no-print-directory ci-plan-tools RUNTIME=$(RUNTIME)
-	$(MAKE) --no-print-directory kit-ci-setup GROUP=runtime RUNTIME=$(RUNTIME)
-	$(MAKE) --no-print-directory kit-ci-context-prepare GROUP=runtime RUNTIME=$(RUNTIME) && $(MAKE) --no-print-directory ci-targets TARGETS="$(CI_RUNTIME_CHECKS)"; \
-	status=$$?; $(MAKE) --no-print-directory kit-ci-context-cleanup GROUP=runtime RUNTIME=$(RUNTIME) || { [ $$status -ne 0 ] || status=1; }; exit $$status
-# The job bindings writes packages/release.mk before it installs the LLVM that the build of the PHP extension reads, so the
-# make that installs it reads install-llvm from that file.
+	$(NODE) $(KIT)/ci-setup.mjs --job runtime $(RUNTIME)
+# The job bindings runs on ubuntu-26.04-arm, whose image holds the LLVM of config/toolchain.json at /usr/lib/llvm-<major>, the
+# LLVM_ROOT that packages/release.mk reads for the build of the PHP extension.
 ci-bindings:
 	$(MAKE) --no-print-directory install-tools TOOLS="go php composer python uv"
 	$(MAKE) --no-print-directory json-install-bindings
 	$(MAKE) --no-print-directory release-recipes
-	$(MAKE) --no-print-directory install-llvm
 	$(MAKE) --no-print-directory ci-targets TARGETS="$(CI_BINDINGS_CHECKS)"
 # The judgement of the pipeline, which exists only in CI: RESULTS is the JSON of toJSON(needs). config/ci.json declares
-# runtimes, so the plan selects every job of needs, and each has to succeed; a skipped job fails it (FAIL_SKIPPED=1).
+# runtimes, so the plan selects every job of needs, and each has to succeed; a skipped job fails it.
 ci-required:
-	FAIL_SKIPPED=1 $(NODE) $(KIT)/ci-passed.mjs
+	$(NODE) $(KIT)/ci-setup.mjs --required
 
 # The jobs of .github/workflows/assets.yml. RELEASE=true, which the release workflow passes, runs the release check of binding
 # before the builds. The builds run through ci-targets, each to its end, so one run names every asset that does not build;
@@ -599,13 +575,15 @@ ci-assets-platform:
 	$(MAKE) --no-print-directory install-tools TOOLS="uv python"
 	$(MAKE) --no-print-directory release-recipes
 	$(MAKE) --no-print-directory ci-targets CI_REPORT=$(CI_ASSETS_REPORT) TARGETS="$(CI_RELEASE_CHECK) release-go-static release-wheel release-npm-platform"
-# PHP_MINOR is the PHP minor that setup-php of the job selected; the build checks that the PHP on PATH is that minor.
+# PHP_MINOR is the PHP minor that setup-php of the job selected; the build checks that the PHP on PATH is that minor. The job
+# provisions the LLVM of config/toolchain.json before this recipe (binding GN-19i): the ubuntu-26.04 images hold it at
+# /usr/lib/llvm-<major>, the default LLVM_ROOT of packages/release.mk, and on macOS install-llvm-action installs it and sets
+# LLVM_PATH, which the build takes as LLVM_ROOT.
 ci-assets-php:
 	@[ -n "$(PHP_MINOR)" ] || { echo "ci-assets-php needs PHP_MINOR, the PHP minor of the job: make ci-assets-php PHP_MINOR=8.4" >&2; exit 2; }
 	$(MAKE) --no-print-directory json-install-rust-packages
 	$(MAKE) --no-print-directory release-recipes
-	$(MAKE) --no-print-directory install-llvm
-	$(MAKE) --no-print-directory ci-targets CI_REPORT=$(CI_ASSETS_REPORT) TARGETS="$(CI_RELEASE_CHECK) release-php-ext" PHP=php EXPECTED_PHP_MINOR=$(PHP_MINOR)
+	$(MAKE) --no-print-directory ci-targets CI_REPORT=$(CI_ASSETS_REPORT) TARGETS="$(CI_RELEASE_CHECK) release-php-ext" PHP=php EXPECTED_PHP_MINOR=$(PHP_MINOR) $(if $(LLVM_PATH),LLVM_ROOT=$(LLVM_PATH))
 ci-assets-npm:
 	$(MAKE) --no-print-directory json-install-rust-packages
 	$(MAKE) --no-print-directory release-recipes

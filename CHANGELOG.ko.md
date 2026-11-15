@@ -9,6 +9,8 @@
 
 ## 0.0.29
 
+- CI는 kit 0.0.113과 binding 0.0.7로 돈다(T3.29). `make ci-shared`, `make ci-runtime RUNTIME=<runtime>`, `make ci-required`는 kit의 `ci-setup --job shared`, `--job runtime <runtime>`, `--required`를 실행하며, 이것이 job의 도구를 설치하고 setup target을 실행하고 gate를 `make ci-targets`로 실행하고 pipeline을 판정한다. target `kit-ci-setup`, `kit-ci-context-prepare`, `kit-ci-context-cleanup`, `ci-plan-tools`는 지운다. `make ci-bindings`와 `make ci-assets-php`는 binding 0.0.7이 더는 쓰지 않는 `install-llvm`을 만들지 않는다. ubuntu-26.04 image는 LLVM 21을 `/usr/lib/llvm-21`에 담고, `assets.yml`의 macOS job은 run step 전에 commit으로 고정한 `KyleMayes/install-llvm-action`으로 그것을 설치하며, recipe는 그 `LLVM_PATH`를 `LLVM_ROOT`로 넘긴다. 전에는 release commit의 CI 실행이 모든 kit job을 "unknown CI setup mode --setup"으로, 모든 PHP asset job과 job `bindings`를 "No rule to make target 'install-llvm'"로 멈췄다. Red: `tests/scripts/workflow-rules.test.mts`가 mode `--setup`과 `install-llvm`의 make를 찾았다. Green: 그 시험 15개가 통과한다.
+
 - 저장소는 binding 0.0.7을 고정한다(`package.json`과 `package-lock.json`의 release asset, `binding scaffold`가 바인딩 crate에 다시 쓰는 `polyspec-binding-core`의 모든 의존 줄과 `Cargo.lock`의 tag v0.0.7)(T3.28). 전에는 binding 0.0.5를 고정했다.
 
 - 저장소는 kit 0.0.113을 고정한다(`package.json`의 release asset과 `package-lock.json`의 integrity). 공유 도구의 최신 release다.
