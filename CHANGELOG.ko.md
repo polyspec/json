@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: e0f0063d6f149d01b125e831910e605ff44325f865982b6d608983e7ea475401 -->
+<!-- source-sha256: c40145235251676269c98ba86444dcd568bbbc0020542edadf2bdbac0e6113f3 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,13 +7,15 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.29
+
+- 저장소는 kit 0.0.113을 고정한다(`package.json`의 release asset과 `package-lock.json`의 integrity). 공유 도구의 최신 release다.
+
 - `ci.yml`, `ci-pipeline.yml`, `assets.yml`, `release.yml`의 모든 job은 make 변수만을 인자로 받는 `make ci-<job>` run step 하나를 가지며, Makefile의 recipe가 job의 순서와 조건을 가진다(T3.27). 설치를 먼저 실행하고 하나가 실패하면 job을 멈추며, 이어서 검사나 build를 `make ci-targets`로 각각 끝까지 실행하고, 끝으로 CI context의 prepare가 시작되었다면 언제나 그 정리를 실행한다. job의 로컬 실행은 CI가 하는 호출, 예를 들어 `make ci-runtime RUNTIME=php`나 `make ci-assets-php PHP_MINOR=8.4`와 같다. pipeline에는 `config/ci.json`의 plan을 쓰는 job `plan`이 생겼다. recipe는 plan의 도구를 step 출력 대신 `config/ci.json`에서 읽고, `assets.yml`의 job `platform`, `php`, `npm`은 `assets-platform`, `assets-php`, `assets-npm`이 되었으며, job `required`는 다른 job의 결과를 받아 `make ci-required`를 실행하며, `release.yml`의 job `tag`와 `release`는 `make ci-tag`와 `make ci-release`를 실행한다. 전에는 job이 run step 여러 개, 그 조건, run 줄의 식을 가졌으므로 로컬 실행은 job을 CI처럼 실행할 수 없었다. Red: `tests/scripts/workflow-rules.test.mts`가 `ci-pipeline.yml`의 job `shared`에서 run step 여섯 개를 찾았다.
 
 - Native asset 계약은 독립 non-PHP platform job과 pair마다 선택 runtime 하나, gate를 지정한 build 한 번, 고유 artifact 하나를 갖는 PHP platform/minor matrix를 요구한다(T3.24-1, ASSET-1부터 ASSET-3). Workflow를 이 job들로 분리했고 잘못된 matrix와 runtime 배치 mutation을 포함한 source owner assertion이 통과했다. Native 증명은 남아 있으며 생성 provider gate 공개 전 source assertion으로 native minor 선택을 증명하지 않는다.
 
 - 배포 절차는 `main`에서 성공한 `ci` 실행을 release 시작 조건으로 적고 저장소 version tag와 binding Go 모듈 tag를 구분한다(T3.26-1). Tag push가 release를 시작하거나 `release-tag`가 legacy Go tag를 만든다고 적지 않는다. Release 순서에는 binding recipe, Go 모듈, 플랫폼 asset 단계를 포함한다. 검증: `make item-test ID=T3.26-1`이 commit된 tree에서 두 stale-text 검사와 `make docs-check`를 통과한다.
-
-## 0.0.29
 
 - release는 `packages/php-ext`의 PHP 확장을 PIE가 설치하는 Composer package `polyspec/json`으로 담는다(T3.26). `config/release.json`이 그것을 product `json`, runtime `php-ext`로, `packages/php-ext/composer.json`을 mode `archive`로 선언하므로, `make release-assets`는 `polyspec-json-php-ext-X.Y.Z.zip`과 release의 Composer 저장소 `packages.json`을 쓰고, `make release-candidate-assets VERSION=X.Y.Z`는 tag 없이 commit된 `HEAD`에서 그것들을 만든다. release 0.0.28은 Composer package와 `packages.json`을 담지 않아서 `pie install polyspec/json`이 package를 찾지 못했다. Red: `config/release.json`이 package를 선언하지 않아서 `tests/scripts/registry.test.mts`가 실패했다. Green: 시험이 통과하고, `make release-candidate-assets VERSION=0.0.29`가 zip과 `packages.json`을 쓴다.
 
