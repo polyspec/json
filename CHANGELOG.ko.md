@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 4ddaad5299ff97af14d3a18751890cc6b2599abd0571c491d133bad1e9316b69 -->
+<!-- source-sha256: dee84cd3bb85c9fcace78afbf6700fce8203f5aafa28fe595d4509c0e6906f19 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -8,6 +8,8 @@
 ## Unreleased
 
 ## 0.0.29
+
+- 저장소는 binding 0.0.8을 고정한다(T3.33): `package.json`과 `package-lock.json`의 release asset, `polyspec-binding-core`에 대한 모든 의존 줄과 `Cargo.lock`의 tag v0.0.8. binding 0.0.8은 생성된 Node 시험의 await와 생성된 Go 파일의 gofmt를 고친다.
 
 - 계약 corpus 전체가 Rust 코어와 생성된 다섯 바인딩에서 돈다(T3.30). `contracts/core.json`에 group `parse.fixtures`와 `stringify.fixtures`(`contracts/fixtures`의 파일 98개, 유효한 것은 독립 참조의 compact 텍스트로 다시 쓴다), `stringify.official`(compact 텍스트를 가진 공식 예제 17개), 없던 argument case의 `.arguments` group, `legacy/`의 손으로 쓴 시험의 동작을 담는 `.api`와 `.parsed` group이 생긴다. `packages/rust/interface.json`이 이를 연결하고, `stringify` 행은 텍스트를 비교한다. `tests/scripts/case-corpus.test.mts`는 case가 없는 fixture, 공식 예제, argument case를 실패시킨다. method의 `.parsed` group은 연결하지 않는다, binding 0.0.8이 `parse`가 만드는 수신자(타입 `json_value`를 class `value`로 풀지 않는다)와 `value.get`이 만드는 수신자를 거부하기 때문이며, Rust 시험이 실행한다. 전에는 바인딩이 member group 29개만 실행했고 `stringify`의 텍스트를 비교하지 않았다. 수: 코어의 Rust 시험 368, Node 384, WASM 382, Python 382, PHP 380, Go 362개 시험이 모두 통과한다.
 

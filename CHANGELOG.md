@@ -8,6 +8,8 @@
 
 ## 0.0.29
 
+- The repository pins binding 0.0.8 (T3.33): the release asset in `package.json` and `package-lock.json`, and the tag v0.0.8 in every dependency line on `polyspec-binding-core` and in `Cargo.lock`. binding 0.0.8 fixes the await of the generated Node tests and the gofmt of the generated Go files.
+
 - The whole contract corpus runs against the Rust core and the five generated bindings (T3.30). `contracts/core.json` gains the groups `parse.fixtures` and `stringify.fixtures` (the 98 files of `contracts/fixtures`, each valid one written again as the compact text of the independent reference), `stringify.official` (the 17 official examples with their compact text), `.arguments` groups for the argument cases that it lacked, and `.api` and `.parsed` groups for the behaviours of the hand-written tests of `legacy/`; `packages/rust/interface.json` links them, and its row of `stringify` compares the text. `tests/scripts/case-corpus.test.mts` fails a fixture, an official example or an argument case without its case. The `.parsed` groups of a method stay unlinked, because binding 0.0.8 refuses a receiver made by `parse`, whose type `json_value` it does not resolve to the class `value`, or by `value.get`; the Rust test runs them. Before, the bindings ran only the 29 member groups and compared no text of `stringify`. Counts: the Rust test of the core 368, Node 384, WASM 382, Python 382, PHP 380 and Go 362 tests, all passing.
 
 - The repository pins kit 0.0.114 (T3.31), whose `ci-setup` the rules check follows: `make rules-check` reported 64 findings with kit 0.0.113 and reports none now.

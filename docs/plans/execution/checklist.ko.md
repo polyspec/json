@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: d8d8cdca009fc2c6c86c6918a9afed9a9d8449ed33ed95009f3a413f9b63dbc8 -->
+<!-- source-sha256: 444ce614fadeec26ce07d3bca33668656c10e6c7a836f53d19360651aed54d4a -->
 # 실행 체크리스트
 
 ## Wave 1 — 전체 suite를 실행하는 hosted CI
@@ -152,3 +152,4 @@
 | T3.30 | 계약 corpus 전체가 Rust 코어와 생성된 다섯 바인딩에서 돈다: contracts/core.json은 contracts/fixtures의 파일(parse.fixtures, scripts/reference.mts의 compact 텍스트를 가진 stringify.fixtures), 공식 예제(stringify.official), 없던 argument case(parse.arguments, value.string_value.arguments, ordered_map.insert.arguments), legacy 패키지 시험의 동작(parse.api, stringify.api, value.*.api, value.*.parsed)을 담고, 각각을 packages/rust/interface.json의 cases에 연결한다. stringify 행은 텍스트를 비교한다. binding 0.0.8이 parse(json_value)나 value.get이 만드는 수신자를 거부하는 동안 method의 .parsed group은 연결하지 않고 Rust 시험이 실행한다. 전에는 core.json의 29개 group만 바인딩에서 돌았고, stringify case는 텍스트를 비교하지 않았으며, fixture, argument case, legacy 동작은 legacy 패키지에서만 돌았다. Red: tests/scripts/case-corpus.test.mts가 실패한다, core.json에 fixture group이 없기 때문이다 | contracts/core.json, contracts/README.md(.ko), packages/rust/interface.json, packages/rust/tests/contract.rs, tests/scripts/case-corpus.test.mts, CHANGELOG.md(.ko) | `make test-rust`, `make json-test-scripts TESTS=tests/scripts/case-corpus.test.mts`, `make test-bindings` | [o] |
 | T3.31 | 저장소는 kit 0.0.114를 고정하며, rules check가 그 ci-setup을 따른다: kit 0.0.113에서 make rules-check는 64건을 보고했다. | package.json, package-lock.json, CHANGELOG.md(.ko) | `make rules-check` | [o] |
 | T3.32 | make ci-assets-php는 Makefile의 target 전용 변수로 DYLD_LIBRARY_PATH와 LD_LIBRARY_PATH를 비운 채 돈다: macOS에서 install-llvm-action이 둘을 /usr/lib을 앞에 두고 GITHUB_ENV로 내보내, setup-php의 PHP가 시스템의 libsqlite3를 읽고 status 134로 중단했다. Red: 두 줄이 없으면 tests/scripts/workflow-rules.test.mts가 실패한다 | Makefile, tests/scripts/workflow-rules.test.mts, CHANGELOG.md(.ko) | `make json-test-scripts TESTS=tests/scripts/workflow-rules.test.mts` | [o] |
+| T3.33 | 저장소는 binding 0.0.8을 고정한다: package.json과 package-lock.json의 release asset, polyspec-binding-core에 대한 모든 의존 줄과 Cargo.lock의 tag v0.0.8. binding 0.0.8은 생성된 Node 시험의 await와 생성된 Go 파일의 gofmt를 고친다. | package.json, package-lock.json, packages/*/Cargo.toml, Cargo.lock, CHANGELOG.md(.ko) | `make bindings-check`, `make test-bindings` | [o] |
