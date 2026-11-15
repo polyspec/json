@@ -1,5 +1,5 @@
 <!-- doc-id: json-contract -->
-<!-- source-sha256: 0bba3daee35919ec514dcfca4c4a69fc7a57b376cc2baffada6eaaf2ef60574d -->
+<!-- source-sha256: eb380186c9ffb481cf7f1b9e007f43396ec224b10e0decad95615261307d2ff4 -->
 # JSON 계약
 
 [English](json-contract.md)
@@ -164,6 +164,23 @@ JavaScript의 `compact` 옵션과 PHP의 `compact` 인자는 호환성을 위해
 ## Rust 코어
 
 `packages/rust`의 crate `polyspec-json`이 이 계약의 모든 규칙을 한 번 가집니다. PHP, Python, Node.js, Go, 브라우저의 바인딩은 crate 패키지가 담는 인터페이스 계약 `packages/rust/interface.json`에서 binding이 생성하며 자기 규칙을 갖지 않습니다. [core.json](../../contracts/core.json)은 RQ-026부터 RQ-035까지의 사례를 담고 각 실패를 종류와 category를 가진 `raises`로 적으며, crate는 `tests/contract.rs`에서 그것을 실행합니다.
+
+<a id="native-assets"></a>
+### Native asset job
+
+Workflow는 T3.24-1의 source 계약을 구현한다. ASSET-3에 명시한 native 검증은 남아 있다.
+
+- **ASSET-1** 저장소가 소유한 `assets.yml`은 각 native platform에서 Go 정적 라이브러리, wheel, npm platform package를
+  한 번씩 빌드한다. Linux-x64-gnu는 ubuntu-26.04, linux-arm64-gnu는 ubuntu-26.04-arm, darwin-arm64는 macos-15다.
+  독립 PHP job은 이 platform과 `config/toolchain.json`의 `phpExtension.minors`에 적은 지원 minor의 정확한 곱을
+  누락되거나 반복되는 pair 없이 다룬다(binding GN-19i).
+- **ASSET-2** 각 PHP job은 setup action 하나로 native PHP minor 하나를 선택하고
+  `make release-php-ext PHP=php EXPECTED_PHP_MINOR=${{ matrix.php }}`로 한 번 빌드한다. 그 job의 asset만
+  `assets-php-${{ matrix.platform }}-${{ matrix.php }}`로 올린다. Non-PHP job은 PHP를 빌드하거나 runtime을 선택하지 않는다.
+  서로 다른 artifact 이름은 release가 전체 asset 집합을 검증하기 전에 `assets-*`를 모을 때 모든 platform/minor 결과를 보존한다.
+- **ASSET-3** Workflow source assertion은 matrix coverage와 command 연결만 증명한다. Native minor 선택과 확장 적재는
+  공개된 binding이 생성 expected-minor gate를 제공하고 그 release로 release recipe를 다시 생성하며 native job이
+  통과하기 전까지 미검증이다. 저장소 wrapper로 provider gate를 대신하지 않는다.
 
 <a id="transition"></a>
 ### 이행 기간

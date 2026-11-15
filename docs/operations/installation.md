@@ -43,6 +43,8 @@ pip install "https://github.com/polyspec/json/releases/download/vX.Y.Z/polyspec_
 <a id="release-assets"></a>
 ## Release assets
 
+The asset workflow builds non-PHP assets once on each native platform. Its independent PHP job covers every native platform and supported minor, selects one runtime, and invokes `make release-php-ext PHP=php EXPECTED_PHP_MINOR=${{ matrix.php }}` once. Artifacts `assets-${{ matrix.platform }}` and `assets-php-${{ matrix.platform }}-${{ matrix.php }}` remain distinct when release collects `assets-*`. Source assertions verify this wiring; native selection and full CI remain unverified until the expected-minor gate is published in binding, release recipes are regenerated and the native jobs pass.
+
 A GitHub Release from v0.0.27 carries the assets of the binding packages of each platform: the npm package and its platform packages, the abi3 wheel, and the PHP extension of each platform for each PHP minor that `phpExtension.minors` of `config/toolchain.json` names, from the lower bound of the PHP range of `packages/php-ext/composer.json` ([transition](../spec/json-contract.md#transition)). From v0.0.29 it also carries `polyspec-json-php-ext-X.Y.Z.zip`, the Composer package `polyspec/json` of `packages/php-ext`, and `packages.json`, the Composer repository of the release. PIE installs the extension from that repository and downloads the build of its platform and PHP minor from the same release:
 
 ~~~sh

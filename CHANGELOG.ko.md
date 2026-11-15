@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: d30c7226e944cb6f5aa40d0c89de6c20e15684af6ca05c1b6481ff29906cb58a -->
+<!-- source-sha256: a468e247768727ca83bf6c52d9dc861ba798ae9d8c5e571a06844ee68b06c987 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- Native asset 계약은 독립 non-PHP platform job과 pair마다 선택 runtime 하나, gate를 지정한 build 한 번, 고유 artifact 하나를 갖는 PHP platform/minor matrix를 요구한다(T3.24-1, ASSET-1부터 ASSET-3). Workflow를 이 job들로 분리했고 잘못된 matrix와 runtime 배치 mutation을 포함한 source owner assertion이 통과했다. Native 증명은 남아 있으며 생성 provider gate 공개 전 source assertion으로 native minor 선택을 증명하지 않는다.
 
 - 배포 절차는 `main`에서 성공한 `ci` 실행을 release 시작 조건으로 적고 저장소 version tag와 binding Go 모듈 tag를 구분한다(T3.26-1). Tag push가 release를 시작하거나 `release-tag`가 legacy Go tag를 만든다고 적지 않는다. Release 순서에는 binding recipe, Go 모듈, 플랫폼 asset 단계를 포함한다. 검증: `make item-test ID=T3.26-1`이 commit된 tree에서 두 stale-text 검사와 `make docs-check`를 통과한다.
 

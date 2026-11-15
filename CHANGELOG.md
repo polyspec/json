@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- The native asset contract requires independent non-PHP platform jobs and a PHP platform/minor matrix with one selected runtime, one guarded build and one unique artifact per pair (T3.24-1, ASSET-1 to ASSET-3). The workflow now separates these jobs and source owner assertions pass, including malformed matrix and misplaced runtime mutations. Native proof is pending; source assertions cannot establish native minor selection before the generated provider gate is released.
+
 - The distribution procedure names the successful `ci` run on `main` as the release trigger and separates the repository version tag from the binding Go module tag (T3.26-1). It no longer says that a tag push starts the release or that `release-tag` creates a legacy Go tag. The release sequence includes the binding recipe, Go module and platform asset steps. Verification: `make item-test ID=T3.26-1` passes both stale-text checks and `make docs-check` on the committed tree.
 
 ## 0.0.29

@@ -27,6 +27,8 @@
 <a id="limits"></a>
 ## Verification and distribution limits
 
+T3.24-1 tracks the independent native PHP asset matrix and its source assertions ([native asset jobs](spec/json-contract.md#native-assets)). Native minor selection and the full asset jobs have no proof until the expected-minor provider gate is released, the recipes are regenerated and the native jobs pass.
+
 The previous native macOS and PIE records are not current evidence. A new PIE record will be created only after a local PHAR is available and `make pie-check` passes.
 
 Passing shared cases establishes their recorded acceptance criteria. It does not establish exhaustive input coverage, all declared minimum runtimes, all platforms, or every host encoder integration. See [verification limits](operations/validation.md#limits). Source metadata contains development version strings. A row marked `published` names the release tag and the asset of its GitHub release; `make evidence-check` checks that form.

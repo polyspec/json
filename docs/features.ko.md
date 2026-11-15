@@ -1,5 +1,5 @@
 <!-- doc-id: features -->
-<!-- source-sha256: 3ee24d7244dab0a2e79963e6ab18c6111113924a7303ccaf5c4f7fb53e43dd28 -->
+<!-- source-sha256: 741d27a9377f90d4ddcafe72aab05c357d9b084aa7099fa61ee87648e3d6adb8 -->
 # 기능 상태
 
 [English](features.md)
@@ -27,6 +27,8 @@
 
 <a id="limits"></a>
 ## 검증 및 배포 한계
+
+T3.24-1은 독립 native PHP asset matrix와 source assertion을 추적한다([native asset job](spec/json-contract.ko.md#native-assets)). Expected-minor provider gate가 공개되고 recipe를 다시 생성하며 native job이 통과하기 전까지 native minor 선택과 전체 asset job의 증거는 없다.
 
 이전 네이티브 macOS 및 PIE 기록은 현재 근거가 아닙니다. 로컬 PHAR가 준비되고 `make pie-check`가 통과한 뒤에만 새 PIE 기록을 생성합니다.
 
