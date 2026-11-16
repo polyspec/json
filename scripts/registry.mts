@@ -36,7 +36,8 @@ const PHP_EXTENSION = 'extension={extension}';
 /** The PHP extension that make build-php-ext published: the library that the probe of the verifier and the benchmark load. */
 export const builtExtension = (): string => path.join(ROOT, EXTENSION_BUILD);
 export const COMMANDS: Record<string, Commands> = {
-  js: { command: ['node', '{js}/tests/probe.mjs'], runtime: { node: ['node', '--version'] } },
+  // The binding @polyspec/json of packages/ts, whose generated entry loads the addon that make binding-node-addon puts beside it.
+  js: { prepare: [{ cwd: '{repository}', command: ['make', 'binding-node-addon'] }], command: ['node', '{js}/tests/probe.mjs'], runtime: { node: ['node', '--version'] } },
   rust: {
     env: { CARGO_TARGET_DIR: '{cache}/rust-target', RUSTUP_AUTO_INSTALL: '0' },
     prepare: [

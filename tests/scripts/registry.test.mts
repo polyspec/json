@@ -90,7 +90,8 @@ test('the packages follow the polyspec naming convention and each Cargo package 
   const read = (file: string) => readFileSync(path.join(ROOT, file), 'utf8');
   const name = (file: string) => readJsonFile<{ name: string }>(path.join(ROOT, file), 'package-name.schema.json').name;
   assert.deepEqual(['composer.json', `${php}/composer.json`, `${extension}/composer.json`].map(name), ['polyspec/ordered-json', 'polyspec/ordered-json', 'polyspec/ordered-json-php-ext']);
-  assert.deepEqual(['package.json', `${js}/package.json`].map(name), ['@polyspec/ordered-json', '@polyspec/ordered-json']);
+  // The root js is the binding @polyspec/json (T3.25-1, change-names); the root package.json is that of the development checkout.
+  assert.deepEqual(['package.json', `${js}/package.json`].map(name), ['@polyspec/ordered-json', '@polyspec/json']);
   const cargo = checkJson<{ package: { name: string }; lib: { name: string } }>(parse(read(`${rust}/Cargo.toml`)), 'cargo-manifest.schema.json', `${rust}/Cargo.toml`);
   assert.deepEqual([cargo.package.name, cargo.lib.name], ['polyspec-json', 'polyspec_json']);
   // The module path of the Go package is the repository path followed by its folder (S5 of kit); the legacy package keeps

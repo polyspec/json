@@ -294,8 +294,8 @@ build-rust:
 test-go:
 	$(NODE) $(KIT)/runtime-targets.mjs test --runner go --roots legacy/packages/go -- -count=1 -timeout=0
 # The package tests of the Node binding (T3.25-1) on node --test: @polyspec/json resolves to packages/ts, whose generated entry
-# loads the addon that binding-node-package puts beside it.
-test-js: binding-node-package
+# loads the addon that binding-node-addon puts beside it.
+test-js: binding-node-addon
 	$(NODE) $(KIT)/runtime-targets.mjs test --runner node --roots packages/ts/tests -- --test-timeout=30000 --test-concurrency=1
 test-php:
 	$(NODE) $(KIT)/runtime-targets.mjs test --runner php --roots legacy/packages/php
@@ -371,15 +371,18 @@ test-binding-python: bindings
 BINDING_PLATFORM := $(shell $(NODE) -p 'process.platform + "-" + process.arch + (process.platform === "linux" ? "-gnu" : "")' 2>/dev/null)
 BINDING_ADDON := json.$(BINDING_PLATFORM).node
 WASM_BINDGEN_RELEASE := $(shell sed -n 's/^wasm-bindgen = "=\(.*\)"$$/\1/p' packages/ts/wasm/Cargo.toml)
-binding-node-package: bindings
+# The Node addon of the checkout beside packages/ts/generated/index.cjs, which loads it there: the package tests (make test-js)
+# and the probe of the shared verifier take @polyspec/json from packages/ts.
+binding-node-addon: bindings
+	$(CARGO) build --locked -p polyspec-json-node --features $(call binding_features,packages/ts/Cargo.toml)
+	cp target/debug/libpolyspec_json_node.$(BINDING_DYLIB) packages/ts/generated/$(BINDING_ADDON)
+binding-node-package: binding-node-addon
 	test "$$($(WASM_BINDGEN) --version)" = "wasm-bindgen $(WASM_BINDGEN_RELEASE)"
 	$(CARGO) build --locked -p polyspec-json-wasm --target wasm32-unknown-unknown --features $(call binding_features,packages/ts/wasm/Cargo.toml)
 	$(WASM_BINDGEN) --target web --out-dir packages/ts/wasm/generated --out-name json_wasm target/wasm32-unknown-unknown/debug/polyspec_json_wasm.wasm
-	$(CARGO) build --locked -p polyspec-json-node --features $(call binding_features,packages/ts/Cargo.toml)
 	rm -rf $(BINDING_VAR)/node $(BINDING_VAR)/node-platform
 	mkdir -p $(BINDING_VAR)/node $(BINDING_VAR)/node-platform
 	cp target/debug/libpolyspec_json_node.$(BINDING_DYLIB) $(BINDING_VAR)/node-platform/$(BINDING_ADDON)
-	cp target/debug/libpolyspec_json_node.$(BINDING_DYLIB) packages/ts/generated/$(BINDING_ADDON)
 	$(NODE) -e 'const p = require("./packages/ts/package.json"); require("fs").writeFileSync("$(BINDING_VAR)/node-platform/package.json", JSON.stringify({ name: p.name + "-$(BINDING_PLATFORM)", version: p.version, os: [process.platform], cpu: [process.arch], main: "$(BINDING_ADDON)", files: ["$(BINDING_ADDON)"] }, null, 2) + "\n")'
 	cd $(BINDING_VAR)/node-platform && $(NPM) pack --pack-destination $(BINDING_VAR)/node
 	cd packages/ts && $(NPM) pack --pack-destination $(BINDING_VAR)/node

@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 67d7aa39963705174857a9912a56b78d69eb26301fe2cc7b5ed9091070006019 -->
+<!-- source-sha256: a6c2172c914e06bb530b0638ec538d471a86c475b133eb1155e687811b4f1844 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- `config/implementations.json`의 root `js`는 바인딩 `packages/ts`다(T3.25-1): 공유 verifier는 `make binding-node-addon` 뒤에 probe `packages/ts/tests/probe.mjs`를 돌린다. 이 probe는 legacy 패키지의 probe를 `packages/rust/interface.json`의 change가 적용되는 곳만 바꾼 것이고, 그 target은 Node addon을 빌드해 `packages/ts/generated/index.cjs` 옆에 둔다; `make test-js`와 `make binding-node-package`는 그 target을 쓰고, `benchmarks/js.mjs`는 root에서 `@polyspec/json`을 읽는다. Green: `make verify-js`(공식 예제 17개, 공유 case 416개, 인자 case 25개, 거부가 구현 사이에서 일치), `make test-js`(47), `make lint-ts`, `make typecheck`, `make layout-check`, `make duplication-check`, `make owner-validate`, `make rules-check`, `make json-test-scripts`(75).
 
 - `max_depth`는 정수이고, core가 0보다 작거나 256보다 큰 값을 `depth_limit_out_of_range`로 거부한다(T3.25-1, `change-depth-limit`): `packages/rust/interface.json`이 그것을 `uint`로 선언해서, 바인딩이 core가 보기 전에 -1을 변환에서 `invalid_number`로 거부했다. contract는 그 값에 `depth_limit_out_of_range`를 정한다. crate의 `ParseOptions::max_depth`는 `Option<i64>`이고 `MAX_DEPTH`는 `i64`다; JavaScript의 1.5, `'1'`, `null`처럼 정수가 아닌 값은 바인딩 변환의 kind `invalid_number`를 유지한다. RQ-013은 돌려준 컬렉션이 그 값과 상태를 공유하지 않는다고 정한다(`change-collections`): 바인딩은 접근마다 새 배열이나 `OrderedMap`을 돌려주며 어느 것도 freeze하지 않는다. Red: `packages/rust/tests/api.rs`의 `negative_depth_limit_is_out_of_range`가 컴파일되지 않는다. `max_depth`가 음수를 담지 못하기 때문이다; green: `make test-rust`(424), `make verify-rust`, `make fmt-check`, `make lint-rust`, 다섯 target의 바인딩 시험, `make test-js`(47), `make test-differential-js`(335), `make json-test-scripts`가 통과한다.
 

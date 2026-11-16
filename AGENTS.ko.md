@@ -1,5 +1,5 @@
 <!-- doc-id: development -->
-<!-- source-sha256: 54feaf815689de33f4fec71bedb7dde57b234b1fd4cceac0caba44ded58e78b3 -->
+<!-- source-sha256: ff30a5fabd6b2115ea8bd2b90d82268f90f3d43aca3474b36bb2243ee26705e5 -->
 # Development procedure
 
 [English](AGENTS.md)
@@ -145,7 +145,7 @@
 <a id="package-npm"></a>
 ## 패키지 npm (legacy/packages/js)
 
-- Own: 패키지 `@polyspec/ordered-json`은 `make json-js-check`로 이 패키지만 검사합니다. 이 target은 `make verify-js`(`scripts/verify.mts --only js`)를 실행해 어댑터를 공통 사례와 비교하며 기록을 쓰지 않습니다. 패키지 테스트는 바인딩으로 옮겨졌습니다: `make test-js`는 `packages/ts/tests`의 native node:test 파일을 `@polyspec/json`에 대해 실행하고, `make test-differential-js`는 이 패키지가 지워질 때까지 이 패키지를 바인딩과 비교합니다(T3.25-1).
+- Own: 패키지 `@polyspec/ordered-json`은 `make json-js-check`로 이 패키지만 검사합니다. 이 target은 `make verify-js`(`scripts/verify.mts --only js`)를 실행해 바인딩의 어댑터, 곧 `config/implementations.json`의 root `js`인 `packages/ts/tests/probe.mjs`를 공통 사례와 비교하며(T3.25-1) 기록을 쓰지 않습니다. 패키지 테스트는 바인딩으로 옮겨졌습니다: `make test-js`는 `packages/ts/tests`의 native node:test 파일을 `@polyspec/json`에 대해 실행하고, `make test-differential-js`는 이 패키지가 지워질 때까지 이 패키지를 바인딩과 비교합니다(T3.25-1).
   Enforced by: `make test-js`
 - Own: 패키지는 독립 기대값을 두지 않습니다. 공식 사례와 기대 결과는 저장소 루트에 있으며, 동작을 바꿀 때는 패키지보다 먼저 공통 명세를 고칩니다.
   Enforced by: `make verify-all`

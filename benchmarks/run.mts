@@ -143,8 +143,8 @@ async function main(): Promise<void> {
   validateWorkload(workload.fixtures);
   const files = workload.fixtures.map(entry => path.join(FIXTURES, entry.file));
   const env = { ...process.env, OJ_BENCH_ITERATIONS: String(protocol.iterations), OJ_BENCH_WARMUP: String(protocol.warmup), OJ_BENCH_WARMUP_MS: String(protocol.warmup_ms), OJ_BENCH_SAMPLES: String(protocol.samples) };
-  const rows = await withRun(['php-extension'], async (run) => {
-    await prepare(['php-extension'], run);
+  const rows = await withRun(['js', 'php-extension'], async (run) => {
+    await prepare(['js', 'php-extension'], run);
     const extension = builtExtension();
     if (!existsSync(extension)) throw new Error('the PHP extension of the benchmark was not built');
     // The directory of each implementation is its root in config/implementations.json.

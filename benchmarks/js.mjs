@@ -1,11 +1,13 @@
 import fs from 'node:fs';
 import { performance } from 'node:perf_hooks';
 import { createHash } from 'node:crypto';
-import { pathToFileURL } from 'node:url';
+import { createRequire } from 'node:module';
+import path from 'node:path';
 
-// The package of the JavaScript implementation, which benchmarks/run.mts names by its root in config/implementations.json.
+// The package of the JavaScript implementation, the binding @polyspec/json, which benchmarks/run.mts names by its root in
+// config/implementations.json; its generated entry loads the addon that make binding-node-addon puts beside it.
 if (!process.env.OJ_PACKAGE) throw new Error('OJ_PACKAGE names the directory of the JavaScript package');
-const { parse, stringify } = await import(pathToFileURL(`${process.env.OJ_PACKAGE}/index.js`).href);
+const { parse, stringify } = createRequire(path.join(process.env.OJ_PACKAGE, 'package.json'))('@polyspec/json');
 
 const iterations = Number(process.env.OJ_BENCH_ITERATIONS ?? 1000);
 const warmup = Number(process.env.OJ_BENCH_WARMUP ?? 1000);
