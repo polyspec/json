@@ -58,6 +58,13 @@ test('no recipe runs a pinned tool by name', () => {
   }
 });
 
+test('T3.36: json-lock-update writes both locks online and moves only polyspec-binding-core', () => {
+  const recipe = makefile().split('\n').filter((line, index, all) => line.startsWith('\t') && all.slice(0, index).reverse().find(l => !l.startsWith('\t'))?.startsWith('json-lock-update:'));
+  assert.equal(recipe.length, 3, recipe.join('\n'));
+  assert.match(recipe[1] ?? '', /\$\(ONLINE\) .*npm --prefix "\$\$root" install --package-lock-only --ignore-scripts --no-audit --no-fund$/);
+  assert.match(recipe[2] ?? '', /^\t\$\(ONLINE\) \$\(CARGO\) update -p polyspec-binding-core --precise \$\(BINDING_VERSION\)$/);
+});
+
 test('T2.83-3-1: native runner tool selectors are arguments and bare executable commands still fail', () => {
   assert.doesNotMatch('$(NODE) $(KIT)/run-tests.$(KIT_EXT) go --cwd packages/go -- .', BARE_TOOL_COMMAND);
   for (const command of ['go test .', 'npm ci', 'cargo test --locked', 'echo start; go test .', 'echo start | rustc --version', '$(go version)']) {

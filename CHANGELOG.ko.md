@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: ef5f120016de7a92411ca985b00b06c7e9e5d53e1c11d2e58de89dc9698afdde -->
+<!-- source-sha256: 3adf278643087047806800678ba2201b2b0398072cfa82fd9a676c4b049e3cbc -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- `make json-lock-update`는 manifest가 pin을 바꾼 뒤 `package-lock.json`과 `Cargo.lock`을 다시 쓴다(T3.36): checkout 밖에서 `devEngines`의 npm release로 `npm install --package-lock-only --ignore-scripts --no-audit --no-fund`를, `packages/rust/Cargo.toml`의 tag로 `cargo update -p polyspec-binding-core --precise`를, 둘 다 `$(ONLINE)`으로 실행한다. 이전에는 lock을 쓰는 target이 없었다, `make bootstrap`과 `make install-packages`는 `npm ci`를, `make install`은 `cargo fetch --locked`를 실행하기 때문이다.
 
 ## 0.0.30
 

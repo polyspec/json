@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- `make json-lock-update` writes `package-lock.json` and `Cargo.lock` again after a manifest changes a pin (T3.36): it runs `npm install --package-lock-only --ignore-scripts --no-audit --no-fund` with the npm release of `devEngines` outside the checkout and `cargo update -p polyspec-binding-core --precise` to the tag of `packages/rust/Cargo.toml`, both through `$(ONLINE)`. Before it, no target wrote a lock, since `make bootstrap` and `make install-packages` run `npm ci` and `make install` runs `cargo fetch --locked`.
+
 ## 0.0.30
 
 - The release pins binding 0.0.10 (T3.35): the release asset in `package.json` and `package-lock.json`, the tag v0.0.10 in every dependency line on `polyspec-binding-core` and in `Cargo.lock`, and the version 0.0.30 of the packages. binding 0.0.10 takes a receiver made by `parse` (GN-13f), so `packages/rust/interface.json` links the `.parsed` groups of `contracts/core.json` and the five bindings run them. The cases whose receiver is the member that `value.get` or `value.get_units` finds move to `.chained` groups, which only the Rust test of the core runs, because binding makes a receiver only from a member that returns the class and the result of those members is optional. Counts: the Rust test of the core 368, Node 400, WASM 398, Python 398, PHP 396 and Go 378 tests, all passing.
