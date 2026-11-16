@@ -144,7 +144,7 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
 <a id="package-npm"></a>
 ## Package npm (legacy/packages/js)
 
-- Own: The package `@polyspec/ordered-json` is checked alone by `make json-js-check`, which runs `make verify-js` (`scripts/verify.mts --only js`) and compares its adapter with the shared cases and writes no record. Its package tests are native node:test files that `make test-js` runs.
+- Own: The package `@polyspec/ordered-json` is checked alone by `make json-js-check`, which runs `make verify-js` (`scripts/verify.mts --only js`) and compares its adapter with the shared cases and writes no record. Its package tests moved to the binding: `make test-js` runs the native node:test files of `packages/ts/tests` against `@polyspec/json`, and `make test-differential-js` compares this package with the binding until it is removed (T3.25-1).
   Enforced by: `make test-js`
 - Own: The package keeps no independent goldens: official cases and expected results belong to the repository root, and a behavior change updates the common specification before the package.
   Enforced by: `make verify-all`

@@ -57,7 +57,7 @@ The shared list of the rejection kinds. Every implementation names one of them f
 
 The shared list of the argument kinds. A function of the library that refuses an argument names one of them, the same in every implementation; each binding throws the error class of its host for the case, keeps its own wording and exposes the kind through the accessor of its rejection kinds. A refused argument that is not UTF-8 names `invalid_utf8` of the rejection kinds. The shared verifier reads this list, sends the argument cases of [arguments.json](../../contracts/fixtures/arguments.json) to every implementation and fails on another kind. A kind that cannot arise in a language is stated with it.
 
-- `non_string_key` — an object key that is not a string. It cannot arise in PHP, whose array keys are strings or integers.
+- `non_string_key` — an object key that is a value of another kind than string; a key of a host type that the function does not take is `invalid_argument_type` (`change-argument-types`). It cannot arise in PHP, whose array keys are strings or integers.
 - `wrong_kind` — an accessor that refuses a value of another kind.
 - `invalid_number_literal` — a number constructor given a literal that is another JSON value or holds whitespace; a literal that does not parse names its rejection kind.
 - `depth_limit_out_of_range` — a depth limit that is not an integer from 0 through 256.

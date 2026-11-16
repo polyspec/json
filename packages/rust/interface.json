@@ -1643,6 +1643,26 @@
         "go": "module github.com/polyspec/ordered-json/packages/go"
       },
       "to": "functions"
+    },
+    {
+      "id": "change-argument-types",
+      "rule": "RQ-016",
+      "reason": "RQ-016, design E-2: an argument of a host type that the function does not take is invalid_argument_type in every language; non_string_key is a key that is a value of another kind than string, which only an object key of the library holds",
+      "symbol": "Value.get, Value.object, OrderedMap.insert",
+      "from": {
+        "node": "get(1), Value.object([[1, value]]) and Value.object([[null, value]]) throw TypeError with the kind non_string_key"
+      },
+      "to": "ordered_map.insert"
+    },
+    {
+      "id": "change-messages",
+      "rule": "E-2",
+      "reason": "design E-2: an error names its kind, the contract, and each binding keeps its own wording (docs/spec/json-contract.md#rejection-kinds, #argument-kinds), so the message of an error is no part of the interface",
+      "symbol": "errors",
+      "from": {
+        "node": "the messages of the package, such as Expected object, got array and Use stringify(value) from ordered-json"
+      },
+      "to": "parse_error"
     }
   ],
   "cases": [

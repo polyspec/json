@@ -293,8 +293,10 @@ build-rust:
 # passed (kit K1094, K1106): go -count=1 -timeout=0, one test at a time in node and cargo, and the 30 s test timeout of node.
 test-go:
 	$(NODE) $(KIT)/runtime-targets.mjs test --runner go --roots legacy/packages/go -- -count=1 -timeout=0
-test-js:
-	$(NODE) $(KIT)/runtime-targets.mjs test --runner node --roots legacy/packages/js -- --test-timeout=30000 --test-concurrency=1
+# The package tests of the Node binding (T3.25-1) on node --test: @polyspec/json resolves to packages/ts, whose generated entry
+# loads the addon that binding-node-package puts beside it.
+test-js: binding-node-package
+	$(NODE) $(KIT)/runtime-targets.mjs test --runner node --roots packages/ts/tests -- --test-timeout=30000 --test-concurrency=1
 test-php:
 	$(NODE) $(KIT)/runtime-targets.mjs test --runner php --roots legacy/packages/php
 test-python:
@@ -377,6 +379,7 @@ binding-node-package: bindings
 	rm -rf $(BINDING_VAR)/node $(BINDING_VAR)/node-platform
 	mkdir -p $(BINDING_VAR)/node $(BINDING_VAR)/node-platform
 	cp target/debug/libpolyspec_json_node.$(BINDING_DYLIB) $(BINDING_VAR)/node-platform/$(BINDING_ADDON)
+	cp target/debug/libpolyspec_json_node.$(BINDING_DYLIB) packages/ts/generated/$(BINDING_ADDON)
 	$(NODE) -e 'const p = require("./packages/ts/package.json"); require("fs").writeFileSync("$(BINDING_VAR)/node-platform/package.json", JSON.stringify({ name: p.name + "-$(BINDING_PLATFORM)", version: p.version, os: [process.platform], cpu: [process.arch], main: "$(BINDING_ADDON)", files: ["$(BINDING_ADDON)"] }, null, 2) + "\n")'
 	cd $(BINDING_VAR)/node-platform && $(NPM) pack --pack-destination $(BINDING_VAR)/node
 	cd packages/ts && $(NPM) pack --pack-destination $(BINDING_VAR)/node
@@ -535,14 +538,14 @@ endif
 kit-gates-static: layout-check docs-check rules-check owner-validate rebuild-check language-check duplication-check suppression-check link-check release-coverage evidence-check json-test-scripts typecheck
 	@echo "[kit-gates-static] every shared gate passed"
 kit-gates-verify: verify-all
-kit-gates-runtime-ts: lint-ts test-js
+kit-gates-runtime-ts: lint-ts
 kit-gates-runtime-php: lint-php test-php
 kit-gates-runtime-python: lint-python test-python
 kit-gates-runtime-go: lint-go test-go
 kit-gates-runtime-rust: lint-rust fmt-check test-rust
 kit-gates-runtime-php-ext: lint-php-ext test-php-ext
 # kit-gates-bindings runs in the job bindings, which installs the tools of every target of the contract.
-kit-gates-bindings: lint-bindings check-declarations test-binding-crates test-binding-python test-binding-node test-binding-wasm test-binding-php test-binding-go test-differential-js
+kit-gates-bindings: lint-bindings check-declarations test-binding-crates test-binding-python test-binding-node test-binding-wasm test-binding-php test-binding-go test-differential-js test-js
 
 # kit-ci-plan writes the fan-out of the pipeline, the jobs and runners of config/ci.json, to GITHUB_OUTPUT.
 kit-ci-plan:

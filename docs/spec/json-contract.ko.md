@@ -1,5 +1,5 @@
 <!-- doc-id: json-contract -->
-<!-- source-sha256: ea5da1bd04002c4d837543e9bb975475b360c2e48423444aa94b4a5dc3dfec6e -->
+<!-- source-sha256: da5bff89c3fa1daf76c9dc1f5a59826059aa53390ec7f4da7345b5984c0ba953 -->
 # JSON 계약
 
 [English](json-contract.md)
@@ -58,7 +58,7 @@ JSON 배열은 입력 순서대로 값을 저장합니다. 빈 배열과 빈 객
 
 인자 종류의 공통 목록입니다. 인자를 거부하는 라이브러리 함수는 이 중 하나를 모든 구현에서 같게 알립니다. 각 바인딩은 그 경우에 맞는 host의 오류 class를 던지고, 자기 문구를 유지하며, 거부 종류의 접근자로 종류를 노출합니다. UTF-8이 아닌 인자의 거부는 거부 종류의 `invalid_utf8`을 알립니다. 공통 검증기는 이 목록을 읽고 [arguments.json](../../contracts/fixtures/arguments.json)의 인자 사례를 모든 구현에 보내며 다른 종류에서 실패합니다. 어떤 언어에서 생길 수 없는 종류는 그 언어와 함께 적습니다.
 
-- `non_string_key` — 문자열이 아닌 객체 키. 배열 키가 문자열이나 정수인 PHP에서는 생길 수 없습니다.
+- `non_string_key` — 문자열이 아닌 다른 종류의 값인 객체 키. 함수가 받지 않는 host 타입의 키는 `invalid_argument_type`입니다(`change-argument-types`). 배열 키가 문자열이나 정수인 PHP에서는 생길 수 없습니다.
 - `wrong_kind` — 다른 종류의 값을 거부하는 접근자.
 - `invalid_number_literal` — 다른 JSON 값이거나 공백을 가진 literal을 받은 숫자 생성자. 파싱되지 않는 literal은 그 거부 종류를 알립니다.
 - `depth_limit_out_of_range` — 0부터 256까지의 정수가 아닌 깊이 한도.

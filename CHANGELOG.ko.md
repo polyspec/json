@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 7fb31a2f58d5b825ac21f26a6d91b47bcb1ffb3af66b0d097eca761ab6bbe5fa -->
+<!-- source-sha256: 71d28471edc4f3654eee5abd8b95be00b6063d9e96de71da2eac77abd3a2946b -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- `@polyspec/ordered-json`의 패키지 시험이 바인딩 `@polyspec/json`에서 돈다(T3.25-1): `api.test.mjs`, `errors.test.mjs`, `official.test.mjs`가 `legacy/packages/js/tests`에서 `packages/ts/tests`로 옮겨졌다. `packages/rust/interface.json`의 change가 적용되는 곳만 바뀌었고 각 자리에 그 이름을 적었다. `make test-js`는 job bindings에서 `make binding-node-package` 뒤에 그것들을 돌리며, 그 target이 addon을 `packages/ts/generated/index.cjs` 옆에 둔다. 새 change는 둘이다: `change-argument-types`(host 타입의 키는 `invalid_argument_type`이고, `non_string_key`는 다른 종류의 키 값이다)와 `change-messages`(오류의 message는 interface가 아니며, 시험은 kind를 단언한다). 차이 넷은 change가 없어 binding을 기다리므로 그 단언은 옮기지 않았다: `new Value()`가 `direct_construction` 대신 kind 없는 Error를 던진다; `new ParseError(message, offset)`가 kind `0`으로 성공한다; `items()`가 freeze된 배열이 아니다(RQ-013); -1이나 1.5처럼 정수가 아닌 depth 한도가 `depth_limit_out_of_range` 대신 `invalid_number`다. 바인딩은 `packages/rust/interface.json`이 `max_depth`에 선언한 `uint`를 읽는다. JavaScript에서 생길 수 없는 kind의 시험도 함께 기다린다. contract의 문장이 legacy 패키지를 가리키기 때문이다. Green: `make test-js` 47, `make test-differential-js` 335, `make bindings-check`, `make lint-ts`, `make layout-check`, `make rules-check`, `make json-test-scripts`(75).
 
 - `make test-differential-js`는 legacy 패키지를 지우기 전에 두 JavaScript 구현을 비교한다(T3.25-1, `docs/spec/json-contract.md#transition`의 V-6 (5)): `legacy/packages/js/tests/differential.mjs`는 보충 suite의 `test_parsing` 파일 318개를 바이트로, `examples/official.json`의 source를 `@polyspec/ordered-json`과 설치된 바인딩 패키지 `@polyspec/json`에서 parse하고, 335개 case 각각이 둘에서 같은 compact 직렬화나 같은 byte offset의 같은 kind의 거부를 낸다; 판정이 필요한 차이는 없다. job bindings가 `kit-gates-bindings`에서 이것을 돌리고, `make json-install-bindings`가 suite를 설치한다. Red: 두 구현을 비교한 시험이 없었다; green: 335개 case가 `make lint-ts`, `make layout-check`, `make rules-check`, `make test-js`(48), `make json-test-scripts`(75)와 함께 통과한다.
 
