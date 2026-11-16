@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- `make json-lock-update` passes when only the npm pin changes (T3.41). Its cargo step, now the target `json-cargo-lock-update`, moves `polyspec-binding-core` only when `Cargo.lock` holds another release than the tag of `packages/rust/Cargo.toml`. Before, `cargo update -p polyspec-binding-core --precise 0.0.13` on a lock that already held 0.0.13 read the version as a git revision and failed with `revspec '0.0.13' not found`, after `package-lock.json` had been written, so the kit pin 0.0.115 could not be locked. Red: the new T3.41 test of `tests/scripts/environment.test.mts` fails with that error; green: it passes with the 8 tests of the file and the 15 of `workflow-rules.test.mts`, and `make json-lock-update` exits 0 with `Cargo.lock` unchanged.
+
 - `docs/operations/api.md` states that `Value.string` of the legacy JavaScript package takes a text with an unpaired surrogate, while the generated binding `@polyspec/json` refuses it with `invalid_text` (RQ-026) and makes such a string by `Value.fromUnits(units)` (T3.40). The row "UTF-16 construction" named `Value.string(text)` for JavaScript without saying that it is the legacy package, and a consumer of `@polyspec/json` built its test values with it.
 
 ## 0.0.31

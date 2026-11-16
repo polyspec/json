@@ -3,7 +3,7 @@
 // and mise.toml, whose Node.js, Go and Python are the pins of @polyspec/kit and which the go line of the go.mod names;
 // make install-tools installs the running tools with them, and every target that runs a tool depends on it.
 import assert from 'node:assert/strict';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
@@ -58,11 +58,27 @@ test('no recipe runs a pinned tool by name', () => {
   }
 });
 
+/** The recipe lines of `target` in the Makefile. */
+const recipeOf = (target: string) => makefile().split('\n').filter((line, index, all) => line.startsWith('\t') && all.slice(0, index).reverse().find(l => !l.startsWith('\t'))?.startsWith(`${target}:`));
+
 test('T3.36: json-lock-update writes both locks online and moves only polyspec-binding-core', () => {
-  const recipe = makefile().split('\n').filter((line, index, all) => line.startsWith('\t') && all.slice(0, index).reverse().find(l => !l.startsWith('\t'))?.startsWith('json-lock-update:'));
+  const recipe = recipeOf('json-lock-update');
   assert.equal(recipe.length, 3, recipe.join('\n'));
   assert.match(recipe[1] ?? '', /\$\(ONLINE\) .*npm --prefix "\$\$root" install --package-lock-only --ignore-scripts --no-audit --no-fund$/);
-  assert.match(recipe[2] ?? '', /^\t\$\(ONLINE\) \$\(CARGO\) update -p polyspec-binding-core --precise \$\(BINDING_VERSION\)$/);
+  assert.equal(recipe[2], '\t$(MAKE) --no-print-directory json-cargo-lock-update');
+  const cargo = recipeOf('json-cargo-lock-update');
+  assert.ok(cargo.some(line => line.includes('$(ONLINE) $(CARGO) update -p polyspec-binding-core --precise $(BINDING_VERSION)')), cargo.join('\n'));
+});
+
+// T3.41: when only the npm pin changes, Cargo.lock already holds the binding release of the manifests, and cargo update
+// --precise of a git source then reads the version as a git revision (revspec '0.0.13' not found), so json-lock-update
+// failed after it had written package-lock.json. The cargo step leaves a lock that holds the release as it is, with no
+// network and no git lookup.
+test('T3.41: json-cargo-lock-update leaves a lock that already holds the binding release', () => {
+  const before = read('Cargo.lock');
+  const run = spawnSync('make', ['--no-print-directory', 'json-cargo-lock-update', 'ONLINE=env CARGO_NET_OFFLINE=true'], { cwd: ROOT, encoding: 'utf8', env: { ...process.env, LC_ALL: 'C' } });
+  assert.equal(run.status, 0, run.stdout + run.stderr);
+  assert.equal(read('Cargo.lock'), before);
 });
 
 test('T2.83-3-1: native runner tool selectors are arguments and bare executable commands still fail', () => {

@@ -218,14 +218,21 @@ bootstrap: ## Install package-lock.json with the npm of devEngines before the to
 	cd "$${TMPDIR:-/tmp}" && $(ONLINE) npm_config_cache="$$root/var/bootstrap/npm-cache" "$(BOOTSTRAP_NPM)" exec --yes --package="npm@$$version" -- npm --prefix "$$root" ci --ignore-scripts
 
 # json-lock-update writes package-lock.json and Cargo.lock again after a manifest changes a pin, since every other install
-# follows its lock. npm runs as in bootstrap, the release of devEngines outside the checkout; cargo moves only
-# polyspec-binding-core, to the release BINDING_VERSION, so no other crate of the lock changes.
+# follows its lock. npm runs as in bootstrap, the release of devEngines outside the checkout; json-cargo-lock-update moves
+# only polyspec-binding-core, to the release BINDING_VERSION, so no other crate of the lock changes.
 .PHONY: json-lock-update
 BINDING_VERSION ?= $(shell sed -n 's/.*polyspec-binding-core = .*tag = "v\([0-9.]*\)".*/\1/p' packages/rust/Cargo.toml)
 json-lock-update: ## Write package-lock.json and Cargo.lock again from the manifests; ONLINE
 	root="$$PWD"; version="$$($(BOOTSTRAP_NODE) -p 'require("./package.json").devEngines.packageManager.version')"; \
 	cd "$${TMPDIR:-/tmp}" && $(ONLINE) npm_config_cache="$$root/var/bootstrap/npm-cache" "$(BOOTSTRAP_NPM)" exec --yes --package="npm@$$version" -- npm --prefix "$$root" install --package-lock-only --ignore-scripts --no-audit --no-fund
-	$(ONLINE) $(CARGO) update -p polyspec-binding-core --precise $(BINDING_VERSION)
+	$(MAKE) --no-print-directory json-cargo-lock-update
+# json-cargo-lock-update moves polyspec-binding-core only when Cargo.lock holds another release than BINDING_VERSION: cargo
+# update --precise of a git source reads a version that the lock already holds as a git revision and fails (T3.41).
+.PHONY: json-cargo-lock-update
+json-cargo-lock-update:
+	if grep -A1 '^name = "polyspec-binding-core"$$' Cargo.lock | grep -qx 'version = "$(BINDING_VERSION)"'; then \
+	echo 'json-cargo-lock-update: Cargo.lock holds polyspec-binding-core $(BINDING_VERSION)'; \
+	else $(ONLINE) $(CARGO) update -p polyspec-binding-core --precise $(BINDING_VERSION); fi
 
 .PHONY: install-kit install-tools install-packages install-link kit-install-declared kit-install-symbols toolchain-lock python-venv
 # install-kit installs, in order, the mise, node and npm of mise.toml, the packages of package-lock.json, the other tools of

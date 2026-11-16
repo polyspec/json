@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 796b511fca17c567cb916c404672b70ed70a57861f9f0b762980d17a3098f48a -->
+<!-- source-sha256: 05a15cc5df5daa2b65683d305a57c1d8a71d748e9239b7eedf92ff038ed495f8 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- `make json-lock-update`는 npm pin만 바뀔 때도 통과한다(T3.41). 그 cargo 단계는 이제 target `json-cargo-lock-update`이고, `Cargo.lock`이 `packages/rust/Cargo.toml`의 tag와 다른 release를 가질 때만 `polyspec-binding-core`를 옮긴다. 전에는 이미 0.0.13을 가진 lock에서 `cargo update -p polyspec-binding-core --precise 0.0.13`이 version을 git revision으로 읽어 `revspec '0.0.13' not found`로 실패했고, 그때는 `package-lock.json`이 이미 쓰인 뒤였다. 그래서 kit pin 0.0.115를 lock할 수 없었다. Red: `tests/scripts/environment.test.mts`의 새 T3.41 시험이 그 오류로 실패한다; green: 그것이 그 파일의 시험 8개와 `workflow-rules.test.mts`의 15개와 함께 통과하고, `make json-lock-update`가 `Cargo.lock`을 바꾸지 않고 exit 0이다.
 
 - `docs/operations/api.md`는 legacy JavaScript 패키지의 `Value.string`이 짝 없는 surrogate가 든 text를 받지만, 생성된 바인딩 `@polyspec/json`은 그것을 `invalid_text`로 거부하고(RQ-026) 그런 문자열을 `Value.fromUnits(units)`로 만든다고 적는다(T3.40). "UTF-16 생성" 행은 그것이 legacy 패키지라는 말 없이 JavaScript에 `Value.string(text)`를 적었고, `@polyspec/json`의 소비자가 그것으로 시험 값을 만들었다.
 
