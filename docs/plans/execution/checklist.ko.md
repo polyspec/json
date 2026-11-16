@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: cf2c634ce98a040e68ae7155f07a3eb001a2008b851ba06bcd5cf8575509e629 -->
+<!-- source-sha256: 72301a2a751869ec06393fada0a41a060cbaadf54b09d402fa6232a127d321d7 -->
 # 실행 체크리스트
 
 ## Wave 1 — 전체 suite를 실행하는 hosted CI
@@ -157,3 +157,4 @@
 | T3.35 | 릴리스 0.0.30은 parse가 만드는 수신자를 받는(GN-13f) binding 0.0.10을 고정한다: package.json과 package-lock.json의 release asset, polyspec-binding-core에 대한 모든 의존 줄과 Cargo.lock의 tag v0.0.10, 패키지 버전 0.0.30. packages/rust/interface.json은 binding 0.0.8이 거부하던 contracts/core.json의 .parsed group을 연결해 바인딩이 실행한다. 수신자가 value.get이나 value.get_units가 찾는 member인 case는 .chained group으로 옮기고 Rust 시험만 실행한다, 수신자는 class를 반환하는 member에서만 만들어지기 때문이다. | package.json, package-lock.json, packages/*/Cargo.toml, packages/python/pyproject.toml, packages/ts/package.json, Cargo.lock, contracts/core.json, contracts/README.md(.ko), packages/rust/interface.json, packages/rust/tests/contract.rs, CHANGELOG.md(.ko) | `make bindings-check`, `make test-bindings`, `make test-rust`, `make verify-all` | [o] |
 | T3.36 | `make json-lock-update`는 manifest가 pin을 바꾼 뒤 package-lock.json과 Cargo.lock을 다시 쓴다: devEngines의 npm으로 npm install --package-lock-only --no-audit를, packages/rust/Cargo.toml의 tag로 polyspec-binding-core만 cargo update를, 둘 다 $(ONLINE)으로 실행한다; AGENTS.md는 다운로드하는 target에 이것을 넣는다. | Makefile, tests/scripts/environment.test.mts, AGENTS.md(.ko), CHANGELOG.md(.ko) | `make json-test-scripts` | [o] |
 | T3.37 | contracts/core.json의 case는 key ok를 갖지 않는다: core의 Rust 시험은 case를 raises만으로 판정하고 raises가 없는 case는 member가 반환한다고 말하므로 어떤 시험도 그것을 읽지 않았다; case-corpus.test.mts는 key ok를 가진 case를 실패시킨다. | contracts/core.json, tests/scripts/case-corpus.test.mts, CHANGELOG.md(.ko) | `make json-test-scripts`, `make test-rust` | [o] |
+| T3.38 | 저장소는 binding 0.0.13을 pin한다: package.json과 package-lock.json의 release asset, 그리고 polyspec-binding-core에 대한 모든 의존성 줄과 Cargo.lock의 tag v0.0.13. packages/rust/interface.json의 cases 행은 시험이 읽는 case key(raw, bits, number_literal, size)를 reads에 선언하고, binding 0.0.13의 CK-96은 그것을 받는다. | package.json, package-lock.json, packages/*/Cargo.toml, Cargo.lock, packages/rust/interface.json, CHANGELOG.md(.ko) | `make bindings-check`, `make test-bindings`, `make test-rust` | [o] |

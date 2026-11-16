@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 75de43aa5f86a69a98f9566248f99380bbef64c289780cfb3280a8e33a92e8d0 -->
+<!-- source-sha256: e77a53385500f5bbf2da5761014926c2e625d6363d21e14cc8fe72b668e3a8d6 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- 저장소는 binding 0.0.13을 pin한다(T3.38): `package.json`과 `package-lock.json`의 release asset, 그리고 `polyspec-binding-core`에 대한 모든 의존성 줄과 `Cargo.lock`의 tag v0.0.13. `packages/rust/interface.json`의 `cases` 행은 이 저장소의 시험이 읽는 case key를 `reads`에 선언하고, binding 0.0.13의 CK-96은 그것을 받는다: `value.string`, `value.from_units`, `value.boolean`, `value.null`에는 `raw`, `value.from_float`에는 `bits`와 `number_literal`, `ordered_map.constructor`에는 `size`. `make bindings-check`와 `binding check --release`는 아무것도 보고하지 않고, 생성된 시험이 통과한다: Node 400, WASM 398, Python 398, PHP 396과 Go, core의 Rust 시험 423.
 - `contracts/core.json`의 case에서 key `ok`를 지웠다(T3.37). `parse`와 `value.array`의 case 46개가 `"ok": true`를 가졌지만 어떤 시험도 읽지 않았다: core의 Rust 시험은 case를 key `raises`만으로 판정하고, 그 key가 없는 case는 이미 member가 반환한다고 말한다. `tests/scripts/case-corpus.test.mts`는 key `ok`를 가진 case를 실패시킨다.
 - `make json-lock-update`는 manifest가 pin을 바꾼 뒤 `package-lock.json`과 `Cargo.lock`을 다시 쓴다(T3.36): checkout 밖에서 `devEngines`의 npm release로 `npm install --package-lock-only --ignore-scripts --no-audit --no-fund`를, `packages/rust/Cargo.toml`의 tag로 `cargo update -p polyspec-binding-core --precise`를, 둘 다 `$(ONLINE)`으로 실행한다. 이전에는 lock을 쓰는 target이 없었다, `make bootstrap`과 `make install-packages`는 `npm ci`를, `make install`은 `cargo fetch --locked`를 실행하기 때문이다.
 

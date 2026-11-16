@@ -1675,17 +1675,20 @@
     {
       "member": "value.string",
       "file": "contracts/core.json",
-      "group": "value.string"
+      "group": "value.string",
+      "reads": ["raw"]
     },
     {
       "member": "value.from_units",
       "file": "contracts/core.json",
-      "group": "value.from_units"
+      "group": "value.from_units",
+      "reads": ["raw"]
     },
     {
       "member": "value.from_float",
       "file": "contracts/core.json",
-      "group": "value.from_float"
+      "group": "value.from_float",
+      "reads": ["bits", "number_literal"]
     },
     {
       "member": "value.members",
@@ -1755,12 +1758,14 @@
     {
       "member": "value.boolean",
       "file": "contracts/core.json",
-      "group": "value.boolean"
+      "group": "value.boolean",
+      "reads": ["raw"]
     },
     {
       "member": "value.null",
       "file": "contracts/core.json",
-      "group": "value.null"
+      "group": "value.null",
+      "reads": ["raw"]
     },
     {
       "member": "value.to_string",
@@ -1770,7 +1775,8 @@
     {
       "member": "ordered_map.constructor",
       "file": "contracts/core.json",
-      "group": "ordered_map.constructor"
+      "group": "ordered_map.constructor",
+      "reads": ["size"]
     },
     {
       "member": "ordered_map.get",
