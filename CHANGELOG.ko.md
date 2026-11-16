@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: eaf7bdb841d06ca7914e118fa24fed0f6149d0bb9cd83b1207fa41997802cdd3 -->
+<!-- source-sha256: a94f935b75d4a75df5ed2ac07161e2f239f743a24c15aa154248aefcc62e7dc0 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- 저장소가 binding v0.0.16을 pin한다(T3.47). 도구 `@polyspec/binding`과 모든 crate의 `polyspec-binding-core`이며, orm, crud-ui, hyper가 `polyspec-binding-core` 하나를 함께 쓰는 release다: `binding generate`와 `binding check`는 `--cargo <command>`를 받고(GN-1d) Makefile이 그것을 넘긴다. 생성된 Python crate는 그대로 쓰는 이름만 import한다(B2.418). v0.0.15는 그 crate를 컴파일하지 못했다. 패키지 시험은 정수가 아닌 depth limit에 대해 binding의 kind를 단언한다(B2.412): 다른 타입의 값은 `invalid_argument_type`, 수는 `invalid_number`다.
 
 - `make python-parse-budget`은 배포되는 Python 패키지, 곧 T3.25-2 이후의 바인딩이 parse하는 비용을 재고, Python median이 한도를 넘으면 실패하는 대신 경고한다. 한도는 PHP median의 세 배로 그대로다(T3.25-2). Green: `make python-parse-budget`의 비율은 0.64다.
 

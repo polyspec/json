@@ -74,8 +74,10 @@ test('every refused argument carries its kind', () => {
   for (const key of [1, null, true]) assert.equal(kind(() => insert(key)), 'invalid_argument_type', String(key));
   for (const key of [1, null, undefined]) assert.equal(kind(() => object.get(key)), 'invalid_argument_type');
   for (const maxDepth of [-1, 257]) assert.equal(kind(() => parse('1', {maxDepth}), JsonValueError), 'depth_limit_out_of_range', String(maxDepth));
-  // change-depth-limit: a limit that is no integer is refused by the conversion of the argument.
-  for (const maxDepth of [1.5, '1', null, NaN]) assert.equal(kind(() => parse('1', {maxDepth}), JsonValueError), 'invalid_number', String(maxDepth));
+  // change-depth-limit: a limit that is no integer is refused by the conversion of the argument, a number with invalid_number
+  // and a value of another type with invalid_argument_type.
+  for (const maxDepth of [1.5, NaN]) assert.equal(kind(() => parse('1', {maxDepth}), JsonValueError), 'invalid_number', String(maxDepth));
+  for (const maxDepth of ['1', null]) assert.equal(kind(() => parse('1', {maxDepth})), 'invalid_argument_type', String(maxDepth));
   for (const run of [() => parse(1), () => parse('1', null), () => parse('1', 'options'), () => parse('1', {rejectDuplicates: 1}),
     () => parse([1]), () => Value.string(null), () => Value.boolean('true'), () => Value.array(null), () => Value.array([1]),
     () => Value.object(null), () => insert(Value.string('a'), 1), () => Value.object([1]), () => stringify({})]) {

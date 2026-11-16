@@ -442,9 +442,9 @@ BINDING_PHONY = $(foreach target,$(BINDING_TARGETS),bindings-$(target))
 .PHONY: $(BINDING_PHONY)
 bindings: $(BINDING_PHONY)
 $(BINDING_PHONY):
-	$(NODE) $(BINDING) generate --root $(CURDIR) --target $(@:bindings-%=%)
+	$(NODE) $(BINDING) generate --root $(CURDIR) --target $(@:bindings-%=%) --cargo $(CARGO)
 bindings-check:
-	$(NODE) $(BINDING) check $(CURDIR)/packages/rust/interface.json
+	$(NODE) $(BINDING) check $(CURDIR)/packages/rust/interface.json --cargo $(CARGO)
 
 # ---- Release recipes of the bindings: packages/release.mk, which binding release-recipes writes (binding GN-19h) -----------
 # The recipes of the platform assets (release-go-static, release-wheel, release-php-ext, release-npm-platform, release-npm,

@@ -167,11 +167,17 @@ class ErrorKindCases(unittest.TestCase):
                 self.kind(lambda: parse("1", max_depth=limit), ValueError),
                 "depth_limit_out_of_range",
             )
-        # change-depth-limit: a limit that is no integer is refused by the conversion of the argument.
-        for limit in (1.5, "1", None, True):
+        # change-depth-limit: a limit that is no integer is refused by the conversion of the argument, a number with
+        # invalid_number and a value of another type with invalid_argument_type.
+        for limit in (1.5, float("nan")):
             self.assertEqual(
                 self.kind(lambda: parse("1", max_depth=limit), ValueError),
                 "invalid_number",
+            )
+        for limit in ("1", None, True):
+            self.assertEqual(
+                self.kind(lambda: parse("1", max_depth=limit)),
+                "invalid_argument_type",
             )
         for units in ([0x10000],):
             with self.subTest(units=units):
