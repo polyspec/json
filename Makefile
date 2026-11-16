@@ -323,11 +323,15 @@ test-bindings: lint-bindings check-declarations test-binding-crates $(foreach ta
 # LLVM_ROOT of packages/release.mk, an LLVM that the machine provides (binding GN-19i); without that file bindgen finds them
 # itself.
 BINDING_LLVM = $(if $(LLVM_ROOT),LIBCLANG_PATH=$(LLVM_ROOT)/lib CLANG_PATH=$(LLVM_ROOT)/bin/clang)
+# The build script of ext-php-rs runs again only when the env PHP, PHP_CONFIG or PATH changes, and var/tools/bin/php keeps its
+# path when make install-tools wraps another PHP, so every cargo run that builds the extension passes the php-config beside
+# the binary of $(PHP): a change of the PHP changes PHP_CONFIG and builds the extension for it again (T3.45).
+BINDING_PHP = PHP_CONFIG=$(dir $(shell $(PHP) -r 'echo PHP_BINARY;'))php-config
 # The lint and the tests of the binding crates, after make bindings writes their generated folders.
 lint-bindings: bindings
-	$(BINDING_LLVM) $(CARGO) clippy --locked $(foreach crate,$(BINDING_CRATES),-p $(crate)) --all-targets -- -D warnings
+	$(BINDING_PHP) $(BINDING_LLVM) $(CARGO) clippy --locked $(foreach crate,$(BINDING_CRATES),-p $(crate)) --all-targets -- -D warnings
 test-binding-crates: bindings
-	$(BINDING_LLVM) $(CARGO) test --locked $(foreach crate,$(BINDING_CRATES),-p $(crate))
+	$(BINDING_PHP) $(BINDING_LLVM) $(CARGO) test --locked $(foreach crate,$(BINDING_CRATES),-p $(crate))
 # The TypeScript compiler of package-lock.json checks the generated declarations of the Node binding and of its WASM binding.
 check-declarations: bindings
 	$(NODE) node_modules/typescript/bin/tsc --ignoreConfig --noEmit --strict packages/ts/generated/index.d.ts
@@ -393,7 +397,7 @@ test-binding-wasm: binding-node-package
 # The extension built with the test features against the PHP of PATH, its stub linted, and the generated tests on PHPUnit
 # with the extension loaded; a run without a test or with a skipped test fails.
 test-binding-php: bindings
-	$(BINDING_LLVM) $(CARGO) build --locked -p polyspec-json-php-ext --features $(call binding_features,packages/php-ext/Cargo.toml)
+	$(BINDING_PHP) $(BINDING_LLVM) $(CARGO) build --locked -p polyspec-json-php-ext --features $(call binding_features,packages/php-ext/Cargo.toml)
 	$(PHP) -l packages/php-ext/generated/polyspec_json.stub.php
 	$(PHP) -d extension=$(CURDIR)/target/debug/libpolyspec_json.$(BINDING_DYLIB) $(PHPUNIT) --fail-on-empty-test-suite --fail-on-skipped packages/php-ext/generated/tests
 

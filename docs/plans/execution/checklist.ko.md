@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: 71d764da18f78f1c35932e2688134fdc0f4068ba7c976dea2ea06d9d263fe86f -->
+<!-- source-sha256: 25553c322a4de3bca9790dd9554b7ae19ce0cddb8a557619075040e83a65d7ac -->
 # 실행 체크리스트
 
 ## Wave 1 — 전체 suite를 실행하는 hosted CI
@@ -163,3 +163,4 @@
 | T3.41 | make json-lock-update는 npm pin만 바뀔 때도 통과한다: 그 cargo 단계 json-cargo-lock-update는 Cargo.lock이 packages/rust/Cargo.toml의 tag와 다른 release를 가질 때만 polyspec-binding-core를 옮긴다. git source의 cargo update --precise는 lock이 이미 가진 version을 git revision으로 읽어 package-lock.json을 쓴 뒤 실패했기 때문이다(revspec '0.0.13' not found). Red: tests/scripts/environment.test.mts T3.41이 그 오류로 실패한다 | Makefile, tests/scripts/environment.test.mts, CHANGELOG.md(.ko) | `make json-test-scripts TESTS=tests/scripts/environment.test.mts`, `make json-lock-update` | [o] |
 | T3.42 | 저장소는 kit 0.0.115를 pin한다. 그 packages.json(K1261, kit#50)은 version을 PIE가 release를 찾는 tag v<version>으로 쓰고, pre-packaged-binary 패키지 polyspec/json에는 shasum을 쓰지 않는다. 그 값은 소스 zip을 가리켰지만 PIE는 플랫폼의 zip을 받는다. | package.json, package-lock.json, CHANGELOG.md(.ko) | `make docs-check`, `make rules-check`, `make json-test-scripts`, `make layout-check` | [o] |
 | T3.43 | 릴리스 0.0.32는 T3.40부터 T3.42까지를 담는다: docs/operations/api.md의 Value.string의 legacy 패키지, binding release를 이미 가진 lock에서의 json-lock-update, 그리고 PIE가 그 packages.json으로 PHP 확장을 설치하는 kit 0.0.115; 패키지 버전 0.0.32. | packages/*/Cargo.toml, packages/python/pyproject.toml, packages/ts/package.json, Cargo.lock, CHANGELOG.md(.ko) | `make bindings-check`, `make test-rust`, `make docs-check` | [o] |
+| T3.45 | 바인딩의 PHP 확장은 checkout의 PHP로 다시 빌드된다: lint-bindings, test-binding-crates, test-binding-php는 $(PHP)의 PHP_BINARY 옆 php-config를 PHP_CONFIG로 넘긴다. ext-php-rs의 build script는 env PHP, PHP_CONFIG, PATH가 바뀔 때만 다시 돌고, make install-tools가 다른 PHP를 감싸도 var/tools/bin/php의 경로는 그대로이기 때문이다; PHP 8.5의 확장이 target에 남았고 PHP 8.4는 그것을 거부했다. Red: tests/scripts/environment.test.mts T3.45가 어느 cargo 실행도 PHP_CONFIG를 넘기지 않아 실패한다 | Makefile, tests/scripts/environment.test.mts, CHANGELOG.md(.ko) | `make json-test-scripts`, `make test-binding-php` | [o] |

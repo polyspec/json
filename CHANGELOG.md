@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- The PHP extension of the binding is built again for the PHP of the checkout after `make install-tools` wraps another PHP (T3.45). The build script of ext-php-rs runs again only when the env `PHP`, `PHP_CONFIG` or `PATH` changes, and `var/tools/bin/php` keeps its path, so an extension built for PHP 8.5 (module API 20250925) stayed in `target` and PHP 8.4.27 refused to load it: `make test-binding-php` failed 395 of 396 tests with `Call to undefined function Polyspec\Json\Internal\panicTest()`. `lint-bindings`, `test-binding-crates` and `test-binding-php` now pass `PHP_CONFIG`, the php-config beside the `PHP_BINARY` of `$(PHP)`. Red: the new T3.45 test of `tests/scripts/environment.test.mts`, a dry run of the three targets with a stub PHP, fails because no cargo run passed `PHP_CONFIG`; green: it passes with the 75 tests of `make json-test-scripts`, and `make test-binding-php` builds ext-php-rs again and passes 396 tests on PHP 8.4.27.
+
 ## 0.0.32
 
 - The repository pins kit 0.0.115 (T3.42), whose `packages.json` (K1261, kit#50) lets PIE install the PHP extension: it writes the version as the tag `v<version>`, by which PIE finds the release, and the dist of the pre-packaged-binary package `polyspec/json` carries no `shasum`, which named the source zip while PIE downloads the zip of the platform. `make docs-check`, `make rules-check`, `make json-test-scripts` (74) and `make layout-check` pass.

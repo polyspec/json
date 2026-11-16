@@ -4,7 +4,8 @@
 // make install-tools installs the running tools with them, and every target that runs a tool depends on it.
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { parse } from 'smol-toml';
@@ -79,6 +80,21 @@ test('T3.41: json-cargo-lock-update leaves a lock that already holds the binding
   const run = spawnSync('make', ['--no-print-directory', 'json-cargo-lock-update', 'ONLINE=env CARGO_NET_OFFLINE=true'], { cwd: ROOT, encoding: 'utf8', env: { ...process.env, LC_ALL: 'C' } });
   assert.equal(run.status, 0, run.stdout + run.stderr);
   assert.equal(read('Cargo.lock'), before);
+});
+
+// The build script of ext-php-rs runs again only when the env PHP, PHP_CONFIG or PATH changes, and var/tools/bin/php keeps its
+// path when make install-tools wraps another PHP: an extension of another module API stayed in target, which PHP refused to
+// load (T3.45). Every cargo run that builds the extension passes the php-config beside the binary of $(PHP), so a change of
+// the PHP changes PHP_CONFIG.
+test('T3.45: every cargo run that builds the PHP extension passes the php-config of the PHP of the checkout', () => {
+  const dir = mkdtempSync(path.join(tmpdir(), 't345-'));
+  const php = path.join(dir, 'php');
+  writeFileSync(php, `#!/bin/sh\necho ${dir}/bin/php\n`, { mode: 0o755 });
+  const run = spawnSync('make', ['-n', '--no-print-directory', 'lint-bindings', 'test-binding-crates', 'test-binding-php', `PHP=${php}`], { cwd: ROOT, encoding: 'utf8', env: { ...process.env, LC_ALL: 'C' } });
+  assert.equal(run.status, 0, run.stdout + run.stderr);
+  const builds = run.stdout.split('\n').filter(line => /\/cargo (clippy|test|build) --locked .*-p polyspec-json-php-ext/.test(line));
+  assert.equal(builds.length, 3, run.stdout);
+  for (const line of builds) assert.ok(line.includes(`PHP_CONFIG=${dir}/bin/php-config `), line);
 });
 
 test('T2.83-3-1: native runner tool selectors are arguments and bare executable commands still fail', () => {
