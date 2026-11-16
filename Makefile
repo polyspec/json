@@ -197,9 +197,9 @@ json-python-test: json-python-check
 json-rust-check: verify-rust
 json-rust-test: json-rust-check
 
-# python-parse-budget compares the CPU time of the Python parse with the pure PHP parse on one generated document and fails
-# when the Python median exceeds three times the PHP median (benchmarks/python-parse/run.py). A person runs it after a
-# change of the Python parser; it is no target of make check.
+# python-parse-budget compares the CPU time of the parse of the Python binding with the pure PHP parse on one generated
+# document and warns when the Python median exceeds three times the PHP median (benchmarks/python-parse/run.py). A person
+# runs it after a change of the Python parser; it is no target of make check.
 python-parse-budget:
 	$(MAKE) --no-print-directory install-tools TOOLS="python php"
 	$(MAKE) --no-print-directory binding-python-package

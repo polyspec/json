@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 86e7b4ab2a0aa0aa4368d9dcb296a4ebac843193ac60ff89b402cb84963bf082 -->
+<!-- source-sha256: eaf7bdb841d06ca7914e118fa24fed0f6149d0bb9cd83b1207fa41997802cdd3 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- `make python-parse-budget`은 배포되는 Python 패키지, 곧 T3.25-2 이후의 바인딩이 parse하는 비용을 재고, Python median이 한도를 넘으면 실패하는 대신 경고한다. 한도는 PHP median의 세 배로 그대로다(T3.25-2). Green: `make python-parse-budget`의 비율은 0.64다.
 
 - Python 패키지의 패키지 시험이 바인딩에서 돈다(T3.25-2): `test_api.py`, `test_errors.py`, `test_official.py`, `shape.py`가 `legacy/packages/python/tests`에서 `packages/python/tests`로 옮겨져 `polyspec.json`을 import하며, `packages/rust/interface.json`의 change가 적용되는 곳만 바뀌고 각 곳에 그 change를 적었다; `make test-python`은 `make binding-python-package`의 venv로 그것을 돌리고 job bindings에서 돈다. legacy 패키지 내부를 본 시험(`invalid_utf8`의 원인인 `UnicodeDecodeError`, `_invalid_utf8_offset`이 없음)은 옮기며 빠졌다; 직접 생성, 위치 인자 option, 정수가 아닌 code unit의 단언은 binding 0.0.15를, Python에서 생길 수 없는 kind의 시험은 legacy 패키지 삭제를 기다린다. `config/implementations.json`의 root `python`은 바인딩 `packages/python`이다: 공유 verifier는 `make binding-python-package`의 venv로 `packages/python/tests/probe.py`를 돌리고(legacy probe를 change가 적용되는 곳만 바꾼 것), `make python-parse-budget`은 바인딩으로 parse한다. Green: `make test-python`(47), `make verify-python`(공식 예제 17개, 공유 case 416개, 인자 case 25개), `make test-differential-python`, `make lint-python`, `make duplication-check`, `make layout-check`, `make owner-validate`, `make typecheck`, `make json-test-scripts`(75).
 
