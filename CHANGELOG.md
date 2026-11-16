@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.33
+
 - The package tests of JavaScript and Python assert the kinds that binding v0.0.16 gives where they waited for it (T3.47): a direct construction of `Value` is `direct_construction`, and the constructor of `ParseError` (binding GN-7a) takes a message and a kind of the class and refuses another argument with `invalid_argument_type`. In Python a code unit below 0 is `invalid_number`, where RQ-029 names `invalid_code_unit`, and an option given by position a `TypeError` with no kind, as binding v0.0.16 gives them until binding 0.0.18. Green: `make test-js` (47), `make test-python` (47), `make lint-ts`, `make lint-python`.
 
 - The repository pins binding v0.0.16 (T3.47), the tool `@polyspec/binding` and `polyspec-binding-core` of every crate, the release on which orm, crud-ui and hyper share one `polyspec-binding-core`: `binding generate` and `binding check` take `--cargo <command>` (GN-1d), which the Makefile passes, and the generated Python crate imports only the names that it writes bare (B2.418), where v0.0.15 failed to compile it. The package tests assert the kinds of the binding for a depth limit that is no integer (B2.412): a value of another type is `invalid_argument_type`, a number `invalid_number`.

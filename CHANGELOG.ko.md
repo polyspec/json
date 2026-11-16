@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 5e33092c0fee2f3847d759aa4a7622432b92373f960464671c6f62da523ebd5e -->
+<!-- source-sha256: 1a274b98c4f387580cf906cdb6b1afb61fc4bffe7dbae0fad3e7d2f32eaddfa5 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+## 0.0.33
 
 - JavaScript와 Python의 패키지 시험이 binding v0.0.16을 기다리던 곳에서 그것이 내는 kind를 단언한다(T3.47): `Value`의 직접 생성은 `direct_construction`이고, `ParseError`의 생성자(binding GN-7a)는 message와 그 class의 kind를 받고 다른 인자를 `invalid_argument_type`으로 거부한다. Python에서 0보다 작은 code unit은 `invalid_number`(RQ-029는 `invalid_code_unit`)이고 위치로 준 option은 kind 없는 `TypeError`다. binding 0.0.18까지 binding v0.0.16이 내는 대로다. Green: `make test-js`(47), `make test-python`(47), `make lint-ts`, `make lint-python`.
 
