@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: a9b10ee913bc3e89b3b7702546e9d110cdbba9836e12df2fec4a1c10bb7eafab -->
+<!-- source-sha256: e2ea2c41f45ced21f6f365266798a2ee56c9157afe1498807233ce08d0874004 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- 저장소는 K1266부터 K1273까지를 담은 kit 0.0.116을 pin한다(T3.46). `make install-packages`, `make docs-check`, `make rules-check`, `make json-test-scripts`(75), `make layout-check`가 통과한다.
 
 - 바인딩의 PHP 확장은 `make install-tools`가 다른 PHP를 감싼 뒤 checkout의 PHP로 다시 빌드된다(T3.45). ext-php-rs의 build script는 env `PHP`, `PHP_CONFIG`, `PATH`가 바뀔 때만 다시 돌고 `var/tools/bin/php`는 경로가 그대로라서, PHP 8.5(module API 20250925)로 빌드한 확장이 `target`에 남았고 PHP 8.4.27은 그것을 load하지 않았다: `make test-binding-php`가 396개 중 395개를 `Call to undefined function Polyspec\Json\Internal\panicTest()`로 실패했다. 이제 `lint-bindings`, `test-binding-crates`, `test-binding-php`는 `$(PHP)`의 `PHP_BINARY` 옆 php-config를 `PHP_CONFIG`로 넘긴다. Red: `tests/scripts/environment.test.mts`의 새 T3.45 시험(가짜 PHP로 세 target을 dry run)이 어느 cargo 실행도 `PHP_CONFIG`를 넘기지 않아 실패한다; green: 그것이 `make json-test-scripts`의 시험 75개와 함께 통과하고, `make test-binding-php`가 ext-php-rs를 다시 빌드해 PHP 8.4.27에서 396개를 통과한다.
 
