@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 1bcbb1d1496c454d43b5b8618609c984b1cc2246995dd7f7434765abd8268ef3 -->
+<!-- source-sha256: 67db403fed765725db5511133efe0af26b043e4354e3ea919f5e33357131266d -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+## 0.0.32
 
 - 저장소는 kit 0.0.115를 pin한다(T3.42). 그 `packages.json`(K1261, kit#50)은 PIE가 PHP 확장을 설치하게 한다: version을 PIE가 release를 찾는 tag `v<version>`으로 쓰고, pre-packaged-binary 패키지 `polyspec/json`의 dist에는 `shasum`이 없다. 그 값은 소스 zip을 가리켰지만 PIE는 플랫폼의 zip을 받는다. `make docs-check`, `make rules-check`, `make json-test-scripts`(74), `make layout-check`가 통과한다.
 
