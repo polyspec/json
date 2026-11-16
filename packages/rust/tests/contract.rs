@@ -86,7 +86,12 @@ fn parse_options(case: &Json) -> Result<ParseOptions, Failed> {
         return Ok(ParseOptions::default());
     };
     Ok(ParseOptions {
-        max_depth: Some(integer(field(given, "max_depth")?)?),
+        max_depth: Some({
+            let limit = field(given, "max_depth")?;
+            limit
+                .as_i64()
+                .ok_or_else(|| failed(format!("{limit} is no integer")))?
+        }),
         reject_duplicates: Some(boolean(field(given, "reject_duplicates")?)?),
     })
 }

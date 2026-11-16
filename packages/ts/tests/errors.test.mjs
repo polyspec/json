@@ -1,8 +1,8 @@
 // Requirements: RQ-005, RQ-025. Every error that the binding @polyspec/json throws names its kind on `kind`: a ParseError the
 // rejection kinds of the JSON contract, a JsonTypeError or JsonValueError the argument kinds (change-errors). Each kind has an
 // accepting and a refusing site. The test of the legacy package with no change beyond the changes of
-// packages/rust/interface.json, each named where it applies (T3.25-1); the sites of direct_construction, the kind of a depth
-// limit that is no integer and the test of the kinds that cannot arise in JavaScript wait for binding.
+// packages/rust/interface.json, each named where it applies (T3.25-1); the sites of direct_construction and the test of the
+// kinds that cannot arise in JavaScript wait for binding.
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {JsonTypeError, JsonValueError, OrderedMap, ParseError, Value, parse, stringify} from '@polyspec/json';
@@ -73,7 +73,9 @@ test('every refused argument carries its kind', () => {
   // change-argument-types: a key of a host type that the function does not take.
   for (const key of [1, null, true]) assert.equal(kind(() => insert(key)), 'invalid_argument_type', String(key));
   for (const key of [1, null, undefined]) assert.equal(kind(() => object.get(key)), 'invalid_argument_type');
-  assert.equal(kind(() => parse('1', {maxDepth: 257}), JsonValueError), 'depth_limit_out_of_range');
+  for (const maxDepth of [-1, 257]) assert.equal(kind(() => parse('1', {maxDepth}), JsonValueError), 'depth_limit_out_of_range', String(maxDepth));
+  // change-depth-limit: a limit that is no integer is refused by the conversion of the argument.
+  for (const maxDepth of [1.5, '1', null, NaN]) assert.equal(kind(() => parse('1', {maxDepth}), JsonValueError), 'invalid_number', String(maxDepth));
   for (const run of [() => parse(1), () => parse('1', null), () => parse('1', 'options'), () => parse('1', {rejectDuplicates: 1}),
     () => parse([1]), () => Value.string(null), () => Value.boolean('true'), () => Value.array(null), () => Value.array([1]),
     () => Value.object(null), () => insert(Value.string('a'), 1), () => Value.object([1]), () => stringify({})]) {

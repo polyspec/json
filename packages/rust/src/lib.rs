@@ -31,7 +31,7 @@ pub mod fault {
 const _: () = assert!(usize::BITS <= u64::BITS);
 
 /// The largest nesting depth of parsing, the default of `max_depth` (RQ-006, RQ-035).
-pub const MAX_DEPTH: u64 = 256;
+pub const MAX_DEPTH: i64 = 256;
 /// The default of [`ParseOptions::reject_duplicates`] (RQ-035).
 pub const DEFAULT_REJECT_DUPLICATES: bool = false;
 /// The default of [`StringifyOptions::html_safe`] (RQ-031).

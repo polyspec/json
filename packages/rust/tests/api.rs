@@ -19,12 +19,28 @@ fn depth_argument_is_bounded() {
     let error = parse(
         b"1",
         &ParseOptions {
-            max_depth: Some(u64::MAX),
+            max_depth: Some(i64::MAX),
             ..options
         },
     )
     .unwrap_err();
     assert_eq!(error.kind(), "depth_limit_out_of_range");
+}
+
+// Requirements: RQ-006, RQ-035. A negative limit is no integer from 0 through 256, which the core refuses as it refuses one
+// above 256 (T3.25-1): the binding gives the core the integer that the language passes.
+#[test]
+fn negative_depth_limit_is_out_of_range() {
+    for limit in [-1, i64::MIN] {
+        let options = ParseOptions {
+            max_depth: Some(limit),
+            ..ParseOptions::default()
+        };
+        assert_eq!(
+            parse(b"1", &options).unwrap_err(),
+            Error::DepthLimitOutOfRange
+        );
+    }
 }
 
 // Requirements: RQ-006

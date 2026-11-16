@@ -11,7 +11,7 @@ use crate::{
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct ParseOptions {
     /// The nesting limit, an integer from 0 through [`MAX_DEPTH`]; [`MAX_DEPTH`] by default (RQ-006).
-    pub max_depth: Option<u64>,
+    pub max_depth: Option<i64>,
     /// Refuses a repeated decoded object key; [`DEFAULT_REJECT_DUPLICATES`] by default (RQ-017).
     pub reject_duplicates: Option<bool>,
 }
@@ -66,12 +66,12 @@ impl Reject {
 ///
 /// # Errors
 ///
-/// [`Error::DepthLimitOutOfRange`] for a `max_depth` above [`MAX_DEPTH`], [`Error::InvalidUtf8`] for bytes that are not
+/// [`Error::DepthLimitOutOfRange`] for a `max_depth` below 0 or above [`MAX_DEPTH`], [`Error::InvalidUtf8`] for bytes that are not
 /// UTF-8, and the rejection of the grammar at the first byte that makes the text invalid (RQ-004).
 pub fn parse(source: &[u8], options: &ParseOptions) -> Result<Value, Error> {
     let max_depth = match options.max_depth {
-        None => MAX_DEPTH,
-        Some(limit) if limit <= MAX_DEPTH => limit,
+        None => MAX_DEPTH.unsigned_abs(),
+        Some(limit @ 0..=MAX_DEPTH) => limit.unsigned_abs(),
         Some(_) => return Err(Error::DepthLimitOutOfRange),
     };
     let reject_duplicates = match options.reject_duplicates {

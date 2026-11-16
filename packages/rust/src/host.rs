@@ -170,7 +170,7 @@ fn resolve(host: &mut dyn HostValues, value: HostValue) -> Result<Resolved, Fail
 
 /// [`Error::MaximumDepthExceeded`] when one more open container would be deeper than [`MAX_DEPTH`] (RQ-006).
 fn deeper(open: &[Open]) -> Result<(), Failure<Error>> {
-    if count(open.len()) >= MAX_DEPTH {
+    if count(open.len()) >= MAX_DEPTH.unsigned_abs() {
         return Err(Failure::Kind(Error::MaximumDepthExceeded { offset: None }));
     }
     Ok(())

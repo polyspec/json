@@ -1,5 +1,5 @@
 <!-- doc-id: json-contract -->
-<!-- source-sha256: da5bff89c3fa1daf76c9dc1f5a59826059aa53390ec7f4da7345b5984c0ba953 -->
+<!-- source-sha256: 38c398b75627d1372bf0cfb5997cb7f7558523e1d44565fe5dc7ea3c4a4fb8a6 -->
 # JSON 계약
 
 [English](json-contract.md)
@@ -61,7 +61,7 @@ JSON 배열은 입력 순서대로 값을 저장합니다. 빈 배열과 빈 객
 - `non_string_key` — 문자열이 아닌 다른 종류의 값인 객체 키. 함수가 받지 않는 host 타입의 키는 `invalid_argument_type`입니다(`change-argument-types`). 배열 키가 문자열이나 정수인 PHP에서는 생길 수 없습니다.
 - `wrong_kind` — 다른 종류의 값을 거부하는 접근자.
 - `invalid_number_literal` — 다른 JSON 값이거나 공백을 가진 literal을 받은 숫자 생성자. 파싱되지 않는 literal은 그 거부 종류를 알립니다.
-- `depth_limit_out_of_range` — 0부터 256까지의 정수가 아닌 깊이 한도.
+- `depth_limit_out_of_range` — 0보다 작거나 256보다 큰 정수인 깊이 한도로, core가 거부합니다. 정수가 아닌 값은 바인딩의 인자 변환이 거부합니다(`change-depth-limit`).
 - `invalid_argument_type` — 함수가 받지 않는 타입의 인자. 라이브러리가 만들지 않은 값(Go의 nil 또는 영값 `Value`)을 포함합니다. compiler가 타입을 검사하는 Rust에서는 생길 수 없습니다. PHP에서는 선언된 매개변수 타입이 라이브러리 실행 전에 host 타입을 거부하므로, 배열 원소처럼 signature가 타입을 선언할 수 없는 곳에서만 생깁니다.
 - `invalid_code_unit` — 0부터 65535까지의 정수가 아닌 UTF-16 코드 단위([RQ-029](#requirements)). [이행 기간](#transition)의 언어 패키지에서는 코드 단위가 `uint16`인 Go와 코드 단위를 문자열로만 받는 JavaScript에서 생길 수 없습니다.
 - `host_serialization_refused` — 값을 다시 쓰게 될 언어의 표준 JSON 인터페이스([RQ-020](#requirements), [RQ-034](#requirements)). 코어와 그 바인딩에서 생기며, 계약 바이트를 쓰는 Rust serde와 `MarshalJSON`이 그 바이트를 쓰는 [이행 기간](#transition)의 Go 패키지에서는 생길 수 없습니다.
@@ -126,7 +126,7 @@ JavaScript의 `compact` 옵션과 PHP의 `compact` 인자는 호환성을 위해
 - **RQ-010** 숫자 token은 적힌 그대로 보존되며, NaN과 Infinity는 거부합니다.
 - **RQ-011** 직렬화는 각 객체 키를 한 번만 내보내며, 그 출력을 다시 파싱하면 같은 출력이 나옵니다.
 - **RQ-012** 값은 라이브러리에서만 만들어집니다. 호출자는 파서나 생성자를 거치지 않은 값을 만들 수 없습니다.
-- **RQ-013** 호출자에게 돌려준 컬렉션은 변경할 수 없습니다.
+- **RQ-013** 호출자에게 돌려준 컬렉션은 그 값과 상태를 공유하지 않습니다: 그것을 바꿔도 값은 그대로입니다(`change-collections`).
 - **RQ-014** 종류의 접근자는 그 종류의 값을 돌려주며, 다른 종류에 대한 접근은 잘못된 종류의 접근으로 보고됩니다.
 - **RQ-015** 생성자는 인자를 검증하고, 파싱의 문법, 깊이와 중복 키 규칙을 적용합니다.
 - **RQ-016** 객체 키는 문자열이며, 순서 있는 map은 문자열이 아닌 키를 거부합니다.

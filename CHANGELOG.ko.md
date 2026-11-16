@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 71d28471edc4f3654eee5abd8b95be00b6063d9e96de71da2eac77abd3a2946b -->
+<!-- source-sha256: 67d7aa39963705174857a9912a56b78d69eb26301fe2cc7b5ed9091070006019 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- `max_depth`는 정수이고, core가 0보다 작거나 256보다 큰 값을 `depth_limit_out_of_range`로 거부한다(T3.25-1, `change-depth-limit`): `packages/rust/interface.json`이 그것을 `uint`로 선언해서, 바인딩이 core가 보기 전에 -1을 변환에서 `invalid_number`로 거부했다. contract는 그 값에 `depth_limit_out_of_range`를 정한다. crate의 `ParseOptions::max_depth`는 `Option<i64>`이고 `MAX_DEPTH`는 `i64`다; JavaScript의 1.5, `'1'`, `null`처럼 정수가 아닌 값은 바인딩 변환의 kind `invalid_number`를 유지한다. RQ-013은 돌려준 컬렉션이 그 값과 상태를 공유하지 않는다고 정한다(`change-collections`): 바인딩은 접근마다 새 배열이나 `OrderedMap`을 돌려주며 어느 것도 freeze하지 않는다. Red: `packages/rust/tests/api.rs`의 `negative_depth_limit_is_out_of_range`가 컴파일되지 않는다. `max_depth`가 음수를 담지 못하기 때문이다; green: `make test-rust`(424), `make verify-rust`, `make fmt-check`, `make lint-rust`, 다섯 target의 바인딩 시험, `make test-js`(47), `make test-differential-js`(335), `make json-test-scripts`가 통과한다.
 
 - `@polyspec/ordered-json`의 패키지 시험이 바인딩 `@polyspec/json`에서 돈다(T3.25-1): `api.test.mjs`, `errors.test.mjs`, `official.test.mjs`가 `legacy/packages/js/tests`에서 `packages/ts/tests`로 옮겨졌다. `packages/rust/interface.json`의 change가 적용되는 곳만 바뀌었고 각 자리에 그 이름을 적었다. `make test-js`는 job bindings에서 `make binding-node-package` 뒤에 그것들을 돌리며, 그 target이 addon을 `packages/ts/generated/index.cjs` 옆에 둔다. 새 change는 둘이다: `change-argument-types`(host 타입의 키는 `invalid_argument_type`이고, `non_string_key`는 다른 종류의 키 값이다)와 `change-messages`(오류의 message는 interface가 아니며, 시험은 kind를 단언한다). 차이 넷은 change가 없어 binding을 기다리므로 그 단언은 옮기지 않았다: `new Value()`가 `direct_construction` 대신 kind 없는 Error를 던진다; `new ParseError(message, offset)`가 kind `0`으로 성공한다; `items()`가 freeze된 배열이 아니다(RQ-013); -1이나 1.5처럼 정수가 아닌 depth 한도가 `depth_limit_out_of_range` 대신 `invalid_number`다. 바인딩은 `packages/rust/interface.json`이 `max_depth`에 선언한 `uint`를 읽는다. JavaScript에서 생길 수 없는 kind의 시험도 함께 기다린다. contract의 문장이 legacy 패키지를 가리키기 때문이다. Green: `make test-js` 47, `make test-differential-js` 335, `make bindings-check`, `make lint-ts`, `make layout-check`, `make rules-check`, `make json-test-scripts`(75).
 

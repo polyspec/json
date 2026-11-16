@@ -60,7 +60,7 @@ The shared list of the argument kinds. A function of the library that refuses an
 - `non_string_key` — an object key that is a value of another kind than string; a key of a host type that the function does not take is `invalid_argument_type` (`change-argument-types`). It cannot arise in PHP, whose array keys are strings or integers.
 - `wrong_kind` — an accessor that refuses a value of another kind.
 - `invalid_number_literal` — a number constructor given a literal that is another JSON value or holds whitespace; a literal that does not parse names its rejection kind.
-- `depth_limit_out_of_range` — a depth limit that is not an integer from 0 through 256.
+- `depth_limit_out_of_range` — a depth limit that is an integer below 0 or above 256, which the core refuses; a value that is no integer is refused by the conversion of the argument of the binding (`change-depth-limit`).
 - `invalid_argument_type` — an argument of a type that the function does not take, a value that the library did not make included (a Go nil or zero `Value`). It cannot arise in Rust, whose types the compiler checks; in PHP the declared parameter types refuse a host type before the library runs, so it arises there only where a signature cannot declare the type, as for the elements of an array.
 - `invalid_code_unit` — a UTF-16 code unit that is not an integer from 0 through 65535 ([RQ-029](#requirements)). In the language packages of the [transition](#transition) it cannot arise in Go, whose code units are `uint16`, or in JavaScript, which takes code units only as a string.
 - `host_serialization_refused` — the standard JSON interface of a language that would rewrite a value ([RQ-020](#requirements), [RQ-034](#requirements)). It arises in the core and its bindings; it cannot arise in Rust serde, which writes the contract bytes, or in the Go package of the [transition](#transition), whose `MarshalJSON` writes them.
@@ -125,7 +125,7 @@ Each requirement is one testable statement of this contract.
 - **RQ-010** Number tokens are retained exactly as written, and NaN and Infinity are rejected.
 - **RQ-011** Serialization emits each object key once, and parsing its output again reproduces the same output.
 - **RQ-012** Values come only from the library: a caller cannot build a value that bypasses the parser or the constructors.
-- **RQ-013** A collection returned to the caller is immutable.
+- **RQ-013** A collection returned to the caller shares no state with its value: a change of it leaves the value as it was (`change-collections`).
 - **RQ-014** An accessor of a kind returns that kind's value, and an access of another kind is reported as a wrong-kind access.
 - **RQ-015** Constructors validate their arguments and apply the grammar, depth and duplicate-key rules of parsing.
 - **RQ-016** Object keys are strings, and an ordered map rejects a key that is not a string.

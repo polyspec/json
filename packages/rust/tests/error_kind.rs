@@ -16,7 +16,7 @@ fn cases() -> Vec<(Error, Site, Site)> {
     fn with(source: &[u8], options: ParseOptions) -> Result<(), Error> {
         parse(source, &options).map(drop)
     }
-    fn depth(limit: u64) -> ParseOptions {
+    fn depth(limit: i64) -> ParseOptions {
         ParseOptions {
             max_depth: Some(limit),
             ..ParseOptions::default()

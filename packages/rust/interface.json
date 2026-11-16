@@ -339,7 +339,7 @@
           ],
           "kind": "constant",
           "visibility": "public",
-          "type": "uint",
+          "type": "int",
           "value": 256,
           "core": "polyspec_json::MAX_DEPTH"
         }
@@ -1359,7 +1359,7 @@
             "max",
             "depth"
           ],
-          "type": "uint",
+          "type": "int",
           "default": {
             "const": "max_depth"
           },
@@ -1653,6 +1653,26 @@
         "node": "get(1), Value.object([[1, value]]) and Value.object([[null, value]]) throw TypeError with the kind non_string_key"
       },
       "to": "ordered_map.insert"
+    },
+    {
+      "id": "change-depth-limit",
+      "rule": "RQ-035",
+      "reason": "RQ-006, RQ-035: max_depth is an integer, and the core refuses one below 0 or above 256 with depth_limit_out_of_range; a value that is no integer is refused by the conversion of the argument of the binding with its kind, as every argument of a type of the contract is",
+      "symbol": "ParseOptions.max_depth",
+      "from": {
+        "node": "maxDepth -1, 1.5, '1', null and NaN throw RangeError with the kind depth_limit_out_of_range"
+      },
+      "to": "parse_options"
+    },
+    {
+      "id": "change-collections",
+      "rule": "RQ-013",
+      "reason": "RQ-013: a collection that a value returns shares no state with it; the binding returns a new array or OrderedMap for each access, so a change of it leaves the value as it was, and no collection is frozen",
+      "symbol": "Value.items, Value.members",
+      "from": {
+        "node": "readonly items: readonly Value[] and readonly keys: readonly Value[] are frozen arrays"
+      },
+      "to": "value.items"
     },
     {
       "id": "change-messages",

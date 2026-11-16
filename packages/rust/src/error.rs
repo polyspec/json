@@ -42,7 +42,7 @@ pub enum Error {
     WrongKind,
     /// `Value::number` of a literal that is a JSON value of another kind or holds whitespace (RQ-015).
     InvalidNumberLiteral,
-    /// A `max_depth` above [`crate::MAX_DEPTH`] (RQ-035).
+    /// A `max_depth` below 0 or above [`crate::MAX_DEPTH`] (RQ-035).
     DepthLimitOutOfRange,
     /// A UTF-16 code unit above 65535 (RQ-029).
     InvalidCodeUnit,
@@ -145,7 +145,7 @@ impl Error {
             Self::NonStringKey => "object key must be a string",
             Self::WrongKind => "the value is of another kind",
             Self::InvalidNumberLiteral => "expected a number literal without whitespace",
-            Self::DepthLimitOutOfRange => "max_depth exceeds 256",
+            Self::DepthLimitOutOfRange => "max_depth is no integer from 0 through 256",
             Self::InvalidCodeUnit => "a UTF-16 code unit exceeds 65535",
             Self::UnpairedSurrogate => "the string holds an unpaired surrogate",
             Self::NonFiniteNumber => "a JSON number is finite",

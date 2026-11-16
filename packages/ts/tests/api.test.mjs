@@ -1,7 +1,7 @@
 // Package tests for the JavaScript value API of the binding @polyspec/json, run by node:test (make test-js). They are the tests
 // of the legacy package @polyspec/ordered-json with no change beyond the changes of packages/rust/interface.json, each named
-// where it applies (docs/spec/json-contract.md#transition, T3.25-1). The assertions of a direct construction of Value and of
-// the frozen items of RQ-013 wait for binding, as does the kind of a depth limit that is no integer.
+// where it applies (docs/spec/json-contract.md#transition, T3.25-1). The assertion of a direct construction of Value waits
+// for the binding 0.0.15.
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {JsonTypeError, JsonValueError, MAX_DEPTH, OrderedMap, ParseError, Value, parse, stringify} from '@polyspec/json';
@@ -28,10 +28,17 @@ test('values_come_only_from_the_library', () => {
 
 // Requirements: RQ-013
 test('returned_collections_are_immutable', () => {
+  // change-collections: an accessor returns a new collection for each access, so a change of it leaves the value as it was.
+  const array = parse('[1,2]');
+  const items = array.items();
+  items[0] = parse('9');
+  items.push(parse('3'));
+  assert.deepEqual(array.items().map(item => item.numberLiteral()), ['1', '2']);
   const value = parse('{"a":1,"b":2}');
   const members = value.members();
   members.insert(Value.string('c'), Value.null());
   assert.equal(value.members().size, 2, 'members returns a fresh map for each access');
+  assert.equal(stringify(array), '[1,2]');
 });
 
 // Requirements: RQ-014
@@ -80,7 +87,11 @@ test('root_keeps_surrounding_text', () => {
 test('depth_argument_is_bounded', () => {
   // change-parse-source, change-messages: parse takes a text or its bytes.
   assert.throws(() => parse(123), {name: 'JsonTypeError', kind: 'invalid_argument_type'});
-  assert.throws(() => parse('[]', {maxDepth: MAX_DEPTH + 1}), {name: 'JsonValueError', kind: 'depth_limit_out_of_range'});
+  for (const maxDepth of [-1, MAX_DEPTH + 1]) {
+    assert.throws(() => parse('[]', {maxDepth}), {name: 'JsonValueError', kind: 'depth_limit_out_of_range'});
+  }
+  // change-depth-limit: a limit that is no integer is refused by the conversion of the argument.
+  assert.throws(() => parse('[]', {maxDepth: 1.5}), {name: 'JsonValueError', kind: 'invalid_number'});
 });
 
 // Requirements: RQ-006
