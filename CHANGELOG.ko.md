@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 4d2501e2490d2e261386be1defd483fe3561af59034c4a3cce6cb9ef67a2d6f3 -->
+<!-- source-sha256: e2f0423fbe36c9fa6bf5e950da20c4a3a1d8e0e50cdc2b35546c4290197b81f3 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+## 0.0.34
 
 - 저장소가 binding v0.0.17을 pin한다(T3.51). 도구 `@polyspec/binding`과 모든 crate의 `polyspec-binding-core`이며 template의 release다. 그래서 json과 template의 crate를 함께 담은 Cargo workspace가 `polyspec-binding-core` 하나를 빌드한다; v0.0.17의 `binding scaffold`는 tree의 파일을 바꾸지 않고 쓴다. Green: `make bindings-check`, `make lint-bindings`, 다섯 target의 바인딩 시험, `make test-rust`, `make test-js`, `make test-python`, 두 differential 시험, `make verify-js`, `make verify-python`, `make verify-rust`, `make verify-go`, `make verify-php`, `make verify-php-extension`, `make json-test-scripts`, `make docs-check`.
 
