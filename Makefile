@@ -62,7 +62,7 @@ unexport CARGO_TARGET_DIR
 # .github/workflows/ci-pipeline.yml run as the prerequisites of their kit-gates-* target (a target is in one job). verify-all
 # writes the aggregate record into var/records.
 CHECK_TARGETS := suppression-check link-check rules-check rebuild-check language-check duplication-check layout-check owner-validate release-coverage docs-check evidence-check verify-all lint-rust lint-go lint-php lint-php-ext test-php-ext lint-python json-test-scripts typecheck lint-ts test-js fmt-check test-rust test-go test-php test-python \
-	lint-bindings check-declarations test-binding-crates test-binding-python test-binding-node test-binding-wasm test-binding-php test-binding-go test-differential-js test-differential-python test-differential-php
+	lint-bindings check-declarations test-binding-crates test-binding-python test-binding-node test-binding-wasm test-binding-php test-binding-go test-differential-js test-differential-python test-differential-php test-differential-go
 
 .PHONY: check fmt-check json-test-scripts typecheck json-install-php json-install-python verify-all verify-js verify-rust verify-go verify-php verify-php-extension verify-python evidence-check pie-check \
 	benchmark benchmark-check benchmark-host python-parse-budget install json-install json-install-rust \
@@ -414,6 +414,13 @@ test-differential-python: binding-python-package
 	$(UV) pip install -q --python legacy/packages/python/.venv/bin/python --offline --no-index --no-deps --reinstall $(BINDING_VAR)/wheels/*.whl
 	JSON_TEST_SUITE=$(abspath $(JSON_TEST_SUITE)) legacy/packages/python/.venv/bin/python -I legacy/packages/python/tests/differential.py
 
+# The differential test of the legacy Go package and the binding (docs/spec/json-contract.md#transition, V-6 (5)): the module
+# legacy/packages/go/differential requires both from the checkout and parses the files of the supplementary suite and the
+# official examples in each (T3.25-4).
+test-differential-go: binding-go-library
+	@[ -n "$(JSON_TEST_SUITE)" ] || { echo "test-differential-go needs the supplementary suite: make json-install-suite" >&2; exit 2; }
+	cd legacy/packages/go/differential && JSON_TEST_SUITE=$(abspath $(JSON_TEST_SUITE)) $(BINDING_GO_ENV) $(GO) test -count=1 -v ./...
+
 # The differential test of the legacy PHP implementations and the binding (docs/spec/json-contract.md#transition, V-6 (5)):
 # the binding extension and the legacy API, of the pure PHP library and then of the legacy extension, which registers the
 # same API, parse the files of the supplementary suite and the official examples alike (T3.25-3).
@@ -442,8 +449,10 @@ test-binding-php: binding-php-ext-library
 # and GOTOOLCHAIN=local is exported above.
 BINDING_GO_FEATURES = $(call binding_features,packages/go/internal/ffi/Cargo.toml)
 BINDING_GO_ENV = CGO_LDFLAGS=-L$(CURDIR)/target/debug GOWORK=off GOFLAGS=-tags=$(subst -,_,$(shell echo '$(BINDING_GO_FEATURES)' | sed 's/\([^,]*\)/polyspec_\1/g'))
-test-binding-go: bindings
+# The library of the Go binding, built with the test features that the tags of BINDING_GO_ENV name.
+binding-go-library: bindings-go
 	$(CARGO) build --locked -p polyspec-json-go --features $(BINDING_GO_FEATURES)
+test-binding-go: binding-go-library
 	test -z "$$(cd packages/go && $(GOFMT) -l .)"
 	cd packages/go && $(BINDING_GO_ENV) $(GO) vet ./...
 	cd packages/go && $(BINDING_GO_ENV) $(GO) test -count=1 ./...
@@ -572,7 +581,7 @@ kit-gates-runtime-go: lint-go test-go
 kit-gates-runtime-rust: lint-rust fmt-check test-rust
 kit-gates-runtime-php-ext: lint-php-ext test-php-ext
 # kit-gates-bindings runs in the job bindings, which installs the tools of every target of the contract.
-kit-gates-bindings: lint-bindings check-declarations test-binding-crates test-binding-python test-binding-node test-binding-wasm test-binding-php test-binding-go test-differential-js test-differential-python test-differential-php test-js test-python
+kit-gates-bindings: lint-bindings check-declarations test-binding-crates test-binding-python test-binding-node test-binding-wasm test-binding-php test-binding-go test-differential-js test-differential-python test-differential-php test-differential-go test-js test-python
 
 # kit-ci-plan writes the fan-out of the pipeline, the jobs and runners of config/ci.json, to GITHUB_OUTPUT.
 kit-ci-plan:
