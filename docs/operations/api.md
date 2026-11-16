@@ -90,7 +90,7 @@ PHP returns an associative array of `Value` objects. Object construction accepts
 
 The kind names are the enumeration `Kind` of every implementation: `Object`, `Array`, `String`, `Number`, `Boolean` and `Null`, with the values `object`, `array`, `string`, `number`, `boolean` and `null`. Rust has the enum `Kind`, Go the constants `ObjectKind` to `NullKind` of `Kind`, JavaScript the enum `Kind`, Python the `StrEnum` `Kind` and PHP the backed enum `Kind`. `value.kind` is a `Kind` in Rust and Go, its string value in JavaScript, a member of `Kind` (which is its string) in Python, and `$value->kind()` is the string, which `Kind::from()` turns into the enum.
 
-JavaScript can construct a string from existing UTF-16 text. Go exposes UTF-16 units as a slice, Rust as a `Vec<u64>` that the core checks against 65535; PHP and Python take an iterable of integer code units, and Python returns the units as a list. Array access returns immutable data or independent copies.
+JavaScript can construct a string from existing UTF-16 text. That is the package `@polyspec/ordered-json` of the [transition](../spec/json-contract.md#transition): the generated binding `@polyspec/json` refuses a text with an unpaired surrogate in `Value.string` with `invalid_text` ([RQ-026](../spec/json-contract.md#requirements)) and makes such a string from its code units with `Value.fromUnits(units)`. Go exposes UTF-16 units as a slice, Rust as a `Vec<u64>` that the core checks against 65535; PHP and Python take an iterable of integer code units, and Python returns the units as a list. Array access returns immutable data or independent copies.
 
 <a id="php"></a>
 ## PHP backends

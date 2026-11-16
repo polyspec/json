@@ -1,5 +1,5 @@
 <!-- doc-id: api -->
-<!-- source-sha256: a24caff1632750dcbe4031aef7980617364a7b9c0a5f0660d11fcee6542e0a5b -->
+<!-- source-sha256: efe7d5a4bc72353b3e9bb2bd538186560220e137a78f02251b7c046561547d16 -->
 # API 계약
 
 [English](api.md)
@@ -91,7 +91,7 @@ PHP는 `Value` 객체의 연관배열을 반환합니다. 객체 생성자는 �
 
 종류 이름은 모든 구현의 열거형 `Kind`입니다: `Object`, `Array`, `String`, `Number`, `Boolean`, `Null`이며 값은 `object`, `array`, `string`, `number`, `boolean`, `null`입니다. Rust는 enum `Kind`, Go는 `Kind`의 상수 `ObjectKind`부터 `NullKind`, JavaScript는 enum `Kind`, Python은 `StrEnum` `Kind`, PHP는 backed enum `Kind`를 가집니다. `value.kind`는 Rust와 Go에서 `Kind`, JavaScript에서 그 문자열 값, Python에서 `Kind`의 멤버(곧 문자열)이며, `$value->kind()`는 문자열이고 `Kind::from()`이 이를 enum으로 바꿉니다.
 
-JavaScript는 기존 UTF-16 텍스트로 문자열을 생성할 수 있습니다. Go는 UTF-16 단위를 슬라이스로, Rust는 코어가 65535와 비교하는 `Vec<u64>`로 제공하며 PHP와 Python은 정수 코드 단위의 iterable을 받고 Python은 단위를 list로 돌려줍니다. 배열 조회는 불변 데이터 또는 독립적인 복사본을 반환합니다.
+JavaScript는 기존 UTF-16 텍스트로 문자열을 생성할 수 있습니다. 이것은 [전환](../spec/json-contract.ko.md#transition)의 패키지 `@polyspec/ordered-json`의 동작입니다. 생성된 바인딩 `@polyspec/json`은 `Value.string`에서 짝 없는 surrogate가 든 text를 `invalid_text`로 거부하고([RQ-026](../spec/json-contract.ko.md#requirements)), 그런 문자열은 code unit으로 `Value.fromUnits(units)`가 만듭니다. Go는 UTF-16 단위를 슬라이스로, Rust는 코어가 65535와 비교하는 `Vec<u64>`로 제공하며 PHP와 Python은 정수 코드 단위의 iterable을 받고 Python은 단위를 list로 돌려줍니다. 배열 조회는 불변 데이터 또는 독립적인 복사본을 반환합니다.
 
 <a id="php"></a>
 ## PHP backend

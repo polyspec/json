@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- `docs/operations/api.md` states that `Value.string` of the legacy JavaScript package takes a text with an unpaired surrogate, while the generated binding `@polyspec/json` refuses it with `invalid_text` (RQ-026) and makes such a string by `Value.fromUnits(units)` (T3.40). The row "UTF-16 construction" named `Value.string(text)` for JavaScript without saying that it is the legacy package, and a consumer of `@polyspec/json` built its test values with it.
+
 ## 0.0.31
 
 - The repository pins binding 0.0.13 (T3.38): the release asset in `package.json` and `package-lock.json`, and the tag v0.0.13 in every dependency line on `polyspec-binding-core` and in `Cargo.lock`. The `cases` rows of `packages/rust/interface.json` declare in `reads` the case keys that the tests of this repository read, which CK-96 of binding 0.0.13 accepts: `raw` for `value.string`, `value.from_units`, `value.boolean` and `value.null`, `bits` and `number_literal` for `value.from_float`, and `size` for `ordered_map.constructor`. `make bindings-check` and `binding check --release` report nothing; the generated tests pass: Node 400, WASM 398, Python 398, PHP 396 and Go, and the Rust test of the core 423.

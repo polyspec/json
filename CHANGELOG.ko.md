@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 475ebd340f2b141ed05543e67c03c44d65aee5bfe09a92e7f0615936e107ed05 -->
+<!-- source-sha256: 796b511fca17c567cb916c404672b70ed70a57861f9f0b762980d17a3098f48a -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- `docs/operations/api.md`는 legacy JavaScript 패키지의 `Value.string`이 짝 없는 surrogate가 든 text를 받지만, 생성된 바인딩 `@polyspec/json`은 그것을 `invalid_text`로 거부하고(RQ-026) 그런 문자열을 `Value.fromUnits(units)`로 만든다고 적는다(T3.40). "UTF-16 생성" 행은 그것이 legacy 패키지라는 말 없이 JavaScript에 `Value.string(text)`를 적었고, `@polyspec/json`의 소비자가 그것으로 시험 값을 만들었다.
 
 ## 0.0.31
 
