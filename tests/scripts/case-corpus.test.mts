@@ -122,3 +122,10 @@ test('a source of a fixture case is text only where the bytes are UTF-8 without 
   });
   assert.deepEqual(findings.map((kase) => kase['id']), []);
 });
+
+test('T3.37: no case of contracts/core.json has the key ok, since a case without raises already states that the member returns', () => {
+  const findings = Object.keys(isObject(core) ? core : {}).flatMap((name) =>
+    group(name).filter((kase) => 'ok' in kase).map((kase) => `${name} ${String(kase['id'])} has the key ok`),
+  );
+  assert.deepEqual(findings, []);
+});

@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- The cases of `contracts/core.json` no longer hold the key `ok` (T3.37). 46 cases of `parse` and `value.array` held `"ok": true`, which no test read: the Rust test of the core judges a case by its key `raises` alone, and a case without it already states that the member returns. `tests/scripts/case-corpus.test.mts` fails a case with the key `ok`.
 - `make json-lock-update` writes `package-lock.json` and `Cargo.lock` again after a manifest changes a pin (T3.36): it runs `npm install --package-lock-only --ignore-scripts --no-audit --no-fund` with the npm release of `devEngines` outside the checkout and `cargo update -p polyspec-binding-core --precise` to the tag of `packages/rust/Cargo.toml`, both through `$(ONLINE)`. Before it, no target wrote a lock, since `make bootstrap` and `make install-packages` run `npm ci` and `make install` runs `cargo fetch --locked`.
 
 ## 0.0.30

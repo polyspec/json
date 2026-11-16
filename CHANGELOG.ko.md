@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 3adf278643087047806800678ba2201b2b0398072cfa82fd9a676c4b049e3cbc -->
+<!-- source-sha256: 75de43aa5f86a69a98f9566248f99380bbef64c289780cfb3280a8e33a92e8d0 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- `contracts/core.json`의 case에서 key `ok`를 지웠다(T3.37). `parse`와 `value.array`의 case 46개가 `"ok": true`를 가졌지만 어떤 시험도 읽지 않았다: core의 Rust 시험은 case를 key `raises`만으로 판정하고, 그 key가 없는 case는 이미 member가 반환한다고 말한다. `tests/scripts/case-corpus.test.mts`는 key `ok`를 가진 case를 실패시킨다.
 - `make json-lock-update`는 manifest가 pin을 바꾼 뒤 `package-lock.json`과 `Cargo.lock`을 다시 쓴다(T3.36): checkout 밖에서 `devEngines`의 npm release로 `npm install --package-lock-only --ignore-scripts --no-audit --no-fund`를, `packages/rust/Cargo.toml`의 tag로 `cargo update -p polyspec-binding-core --precise`를, 둘 다 `$(ONLINE)`으로 실행한다. 이전에는 lock을 쓰는 target이 없었다, `make bootstrap`과 `make install-packages`는 `npm ci`를, `make install`은 `cargo fetch --locked`를 실행하기 때문이다.
 
 ## 0.0.30

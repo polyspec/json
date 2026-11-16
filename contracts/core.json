@@ -8,8 +8,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "nest_257",
@@ -36,8 +35,7 @@
    "options": {
     "max_depth": 0,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "max_depth_0_container",
@@ -82,8 +80,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "max_depth_257",
@@ -125,8 +122,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "offset_counts_bytes",
@@ -2166,8 +2162,7 @@
       }
      ]
     }
-   ],
-   "ok": true
+   ]
   },
   {
    "id": "array_past_limit",
@@ -6282,8 +6277,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "valid_container_depth_limit",
@@ -6292,8 +6286,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "valid_controls_escaped",
@@ -6302,8 +6295,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "valid_decimal",
@@ -6312,8 +6304,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "valid_duplicates",
@@ -6322,8 +6313,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "valid_empty_array",
@@ -6332,8 +6322,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "valid_empty_object",
@@ -6342,8 +6331,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "valid_empty_string",
@@ -6352,8 +6340,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "valid_escaped_keys",
@@ -6362,8 +6349,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "valid_escaped_solidus",
@@ -6372,8 +6358,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "valid_escapes",
@@ -6382,8 +6367,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "valid_exponent",
@@ -6392,8 +6376,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "valid_false",
@@ -6402,8 +6385,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "valid_huge_exponent",
@@ -6412,8 +6394,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "valid_huge_integer",
@@ -6422,8 +6403,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "valid_integer",
@@ -6432,8 +6412,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "valid_line_separators",
@@ -6442,8 +6421,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "valid_lone_high_surrogate",
@@ -6452,8 +6430,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "valid_lone_low_surrogate",
@@ -6462,8 +6439,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "valid_mixed_array",
@@ -6472,8 +6448,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "valid_mixed_surrogates",
@@ -6482,8 +6457,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "valid_negative_zero",
@@ -6492,8 +6466,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "valid_nested_order",
@@ -6502,8 +6475,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "valid_noncharacters",
@@ -6512,8 +6484,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "valid_null",
@@ -6522,8 +6493,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "valid_numeric_keys",
@@ -6532,8 +6502,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "valid_prototype_keys",
@@ -6542,8 +6511,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "valid_scalar_whitespace",
@@ -6552,8 +6520,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "valid_surrogate_key",
@@ -6562,8 +6529,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "valid_surrogate_pair",
@@ -6572,8 +6538,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "valid_tiny_exponent",
@@ -6582,8 +6547,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "valid_true",
@@ -6592,8 +6556,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "valid_unicode",
@@ -6602,8 +6565,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "valid_whitespace",
@@ -6612,8 +6574,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "valid_zero",
@@ -6622,8 +6583,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "invalid_array_double_comma",
@@ -8516,8 +8476,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "depth_far_above_maximum",
@@ -8700,8 +8659,7 @@
    "options": {
     "max_depth": 1,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "offset_after_multibyte",
@@ -8946,8 +8904,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "kind_raw_tab",
@@ -9134,8 +9091,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "utf8_accepted_bytes",
@@ -9146,8 +9102,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": false
-   },
-   "ok": true
+   }
   },
   {
    "id": "strict_duplicate",
@@ -9228,8 +9183,7 @@
    "options": {
     "max_depth": 256,
     "reject_duplicates": true
-   },
-   "ok": true
+   }
   },
   {
    "id": "strict_utf8_first",
