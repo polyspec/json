@@ -4,7 +4,8 @@
       "**/*.test.{ts,mts,cts,mjs,cjs,js}",
       "scripts/**/*.{ts,mts,cts,mjs,cjs,js}",
       "benchmarks/**/*.{ts,mts,cts,mjs,cjs,js}",
-      "legacy/packages/js/tests/probe.mjs"
+      "legacy/packages/js/tests/probe.mjs",
+      "legacy/packages/js/tests/differential.mjs"
     ]
   },
   "ignoreBinaries": [

@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: e2ea2c41f45ced21f6f365266798a2ee56c9157afe1498807233ce08d0874004 -->
+<!-- source-sha256: 7fb31a2f58d5b825ac21f26a6d91b47bcb1ffb3af66b0d097eca761ab6bbe5fa -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- `make test-differential-js`는 legacy 패키지를 지우기 전에 두 JavaScript 구현을 비교한다(T3.25-1, `docs/spec/json-contract.md#transition`의 V-6 (5)): `legacy/packages/js/tests/differential.mjs`는 보충 suite의 `test_parsing` 파일 318개를 바이트로, `examples/official.json`의 source를 `@polyspec/ordered-json`과 설치된 바인딩 패키지 `@polyspec/json`에서 parse하고, 335개 case 각각이 둘에서 같은 compact 직렬화나 같은 byte offset의 같은 kind의 거부를 낸다; 판정이 필요한 차이는 없다. job bindings가 `kit-gates-bindings`에서 이것을 돌리고, `make json-install-bindings`가 suite를 설치한다. Red: 두 구현을 비교한 시험이 없었다; green: 335개 case가 `make lint-ts`, `make layout-check`, `make rules-check`, `make test-js`(48), `make json-test-scripts`(75)와 함께 통과한다.
 
 - 저장소는 K1266부터 K1273까지를 담은 kit 0.0.116을 pin한다(T3.46). `make install-packages`, `make docs-check`, `make rules-check`, `make json-test-scripts`(75), `make layout-check`가 통과한다.
 

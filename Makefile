@@ -62,7 +62,7 @@ unexport CARGO_TARGET_DIR
 # .github/workflows/ci-pipeline.yml run as the prerequisites of their kit-gates-* target (a target is in one job). verify-all
 # writes the aggregate record into var/records.
 CHECK_TARGETS := suppression-check link-check rules-check rebuild-check language-check duplication-check layout-check owner-validate release-coverage docs-check evidence-check verify-all lint-rust lint-go lint-php lint-php-ext test-php-ext lint-python json-test-scripts typecheck lint-ts test-js fmt-check test-rust test-go test-php test-python \
-	lint-bindings check-declarations test-binding-crates test-binding-python test-binding-node test-binding-wasm test-binding-php test-binding-go
+	lint-bindings check-declarations test-binding-crates test-binding-python test-binding-node test-binding-wasm test-binding-php test-binding-go test-differential-js
 
 .PHONY: check fmt-check json-test-scripts typecheck json-install-php json-install-python verify-all verify-js verify-rust verify-go verify-php verify-php-extension verify-python evidence-check pie-check \
 	benchmark benchmark-check benchmark-host python-parse-budget install json-install json-install-rust \
@@ -340,7 +340,7 @@ check-declarations: bindings
 # The tools of the job bindings beyond those of make install-tools: maturin and the wasm-bindgen CLI of mise.toml at the
 # digests of mise.lock, the crates of Cargo.lock, and PHPUnit of legacy/packages/php/composer.lock (json-install-php), which
 # runs the generated tests of the PHP extension until the legacy PHP package is removed.
-json-install-bindings: json-install-rust-packages json-install-php
+json-install-bindings: json-install-rust-packages json-install-php json-install-suite
 	$(ONLINE) $(KIT_TOOLS)/bin/mise install --locked github:PyO3/maturin github:wasm-bindgen/wasm-bindgen
 MATURIN := $(KIT_TOOLS)/mise/shims/maturin
 WASM_BINDGEN := $(KIT_TOOLS)/mise/shims/wasm-bindgen
@@ -387,6 +387,12 @@ binding-node-package: bindings
 test-binding-node: binding-node-package
 	cp packages/ts/generated/tests/generated.test.mjs $(BINDING_VAR)/node/generated.test.mjs
 	cd $(BINDING_VAR)/node && $(NODE) --test generated.test.mjs
+
+# The differential test of the two JavaScript implementations (docs/spec/json-contract.md#transition, V-6 (5)): the legacy
+# package and the installed binding package parse the files of the supplementary suite and the official examples alike.
+test-differential-js: binding-node-package
+	@[ -n "$(JSON_TEST_SUITE)" ] || { echo "test-differential-js needs the supplementary suite: make json-install-suite" >&2; exit 2; }
+	JSON_BINDING_NODE=$(BINDING_VAR)/node JSON_TEST_SUITE=$(abspath $(JSON_TEST_SUITE)) $(NODE) --test legacy/packages/js/tests/differential.mjs
 
 # The generated tests of the WASM binding through the subpath ./wasm of the installed package (binding P-5); --expose-gc
 # serves the generated tests that collect instances (binding GN-18a).
@@ -536,7 +542,7 @@ kit-gates-runtime-go: lint-go test-go
 kit-gates-runtime-rust: lint-rust fmt-check test-rust
 kit-gates-runtime-php-ext: lint-php-ext test-php-ext
 # kit-gates-bindings runs in the job bindings, which installs the tools of every target of the contract.
-kit-gates-bindings: lint-bindings check-declarations test-binding-crates test-binding-python test-binding-node test-binding-wasm test-binding-php test-binding-go
+kit-gates-bindings: lint-bindings check-declarations test-binding-crates test-binding-python test-binding-node test-binding-wasm test-binding-php test-binding-go test-differential-js
 
 # kit-ci-plan writes the fan-out of the pipeline, the jobs and runners of config/ci.json, to GITHUB_OUTPUT.
 kit-ci-plan:
