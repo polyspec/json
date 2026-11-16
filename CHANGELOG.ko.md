@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: e77a53385500f5bbf2da5761014926c2e625d6363d21e14cc8fe72b668e3a8d6 -->
+<!-- source-sha256: 475ebd340f2b141ed05543e67c03c44d65aee5bfe09a92e7f0615936e107ed05 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+## 0.0.31
 
 - 저장소는 binding 0.0.13을 pin한다(T3.38): `package.json`과 `package-lock.json`의 release asset, 그리고 `polyspec-binding-core`에 대한 모든 의존성 줄과 `Cargo.lock`의 tag v0.0.13. `packages/rust/interface.json`의 `cases` 행은 이 저장소의 시험이 읽는 case key를 `reads`에 선언하고, binding 0.0.13의 CK-96은 그것을 받는다: `value.string`, `value.from_units`, `value.boolean`, `value.null`에는 `raw`, `value.from_float`에는 `bits`와 `number_literal`, `ordered_map.constructor`에는 `size`. `make bindings-check`와 `binding check --release`는 아무것도 보고하지 않고, 생성된 시험이 통과한다: Node 400, WASM 398, Python 398, PHP 396과 Go, core의 Rust 시험 423.
 - `contracts/core.json`의 case에서 key `ok`를 지웠다(T3.37). `parse`와 `value.array`의 case 46개가 `"ok": true`를 가졌지만 어떤 시험도 읽지 않았다: core의 Rust 시험은 case를 key `raises`만으로 판정하고, 그 key가 없는 case는 이미 member가 반환한다고 말한다. `tests/scripts/case-corpus.test.mts`는 key `ok`를 가진 case를 실패시킨다.

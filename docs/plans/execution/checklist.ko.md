@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: 72301a2a751869ec06393fada0a41a060cbaadf54b09d402fa6232a127d321d7 -->
+<!-- source-sha256: b4d07c32dbdb6f09ae6636f3a0cbc767d579130ea3c6f3879afeb996d721f39b -->
 # 실행 체크리스트
 
 ## Wave 1 — 전체 suite를 실행하는 hosted CI
@@ -158,3 +158,4 @@
 | T3.36 | `make json-lock-update`는 manifest가 pin을 바꾼 뒤 package-lock.json과 Cargo.lock을 다시 쓴다: devEngines의 npm으로 npm install --package-lock-only --no-audit를, packages/rust/Cargo.toml의 tag로 polyspec-binding-core만 cargo update를, 둘 다 $(ONLINE)으로 실행한다; AGENTS.md는 다운로드하는 target에 이것을 넣는다. | Makefile, tests/scripts/environment.test.mts, AGENTS.md(.ko), CHANGELOG.md(.ko) | `make json-test-scripts` | [o] |
 | T3.37 | contracts/core.json의 case는 key ok를 갖지 않는다: core의 Rust 시험은 case를 raises만으로 판정하고 raises가 없는 case는 member가 반환한다고 말하므로 어떤 시험도 그것을 읽지 않았다; case-corpus.test.mts는 key ok를 가진 case를 실패시킨다. | contracts/core.json, tests/scripts/case-corpus.test.mts, CHANGELOG.md(.ko) | `make json-test-scripts`, `make test-rust` | [o] |
 | T3.38 | 저장소는 binding 0.0.13을 pin한다: package.json과 package-lock.json의 release asset, 그리고 polyspec-binding-core에 대한 모든 의존성 줄과 Cargo.lock의 tag v0.0.13. packages/rust/interface.json의 cases 행은 시험이 읽는 case key(raw, bits, number_literal, size)를 reads에 선언하고, binding 0.0.13의 CK-96은 그것을 받는다. | package.json, package-lock.json, packages/*/Cargo.toml, Cargo.lock, packages/rust/interface.json, CHANGELOG.md(.ko) | `make bindings-check`, `make test-bindings`, `make test-rust` | [o] |
+| T3.39 | 릴리스 0.0.31은 T3.36부터 T3.38까지를 담는다: make json-lock-update, key ok가 없는 case, binding 0.0.13과 reads에 선언한 cases 행의 case key; 패키지 버전 0.0.31. | packages/*/Cargo.toml, packages/python/pyproject.toml, packages/ts/package.json, Cargo.lock, CHANGELOG.md(.ko) | `make bindings-check`, `make test-bindings`, `make test-rust` | [o] |

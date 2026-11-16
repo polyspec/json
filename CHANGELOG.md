@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.31
+
 - The repository pins binding 0.0.13 (T3.38): the release asset in `package.json` and `package-lock.json`, and the tag v0.0.13 in every dependency line on `polyspec-binding-core` and in `Cargo.lock`. The `cases` rows of `packages/rust/interface.json` declare in `reads` the case keys that the tests of this repository read, which CK-96 of binding 0.0.13 accepts: `raw` for `value.string`, `value.from_units`, `value.boolean` and `value.null`, `bits` and `number_literal` for `value.from_float`, and `size` for `ordered_map.constructor`. `make bindings-check` and `binding check --release` report nothing; the generated tests pass: Node 400, WASM 398, Python 398, PHP 396 and Go, and the Rust test of the core 423.
 - The cases of `contracts/core.json` no longer hold the key `ok` (T3.37). 46 cases of `parse` and `value.array` held `"ok": true`, which no test read: the Rust test of the core judges a case by its key `raises` alone, and a case without it already states that the member returns. `tests/scripts/case-corpus.test.mts` fails a case with the key `ok`.
 - `make json-lock-update` writes `package-lock.json` and `Cargo.lock` again after a manifest changes a pin (T3.36): it runs `npm install --package-lock-only --ignore-scripts --no-audit --no-fund` with the npm release of `devEngines` outside the checkout and `cargo update -p polyspec-binding-core --precise` to the tag of `packages/rust/Cargo.toml`, both through `$(ONLINE)`. Before it, no target wrote a lock, since `make bootstrap` and `make install-packages` run `npm ci` and `make install` runs `cargo fetch --locked`.
