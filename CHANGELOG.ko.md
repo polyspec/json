@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 05a15cc5df5daa2b65683d305a57c1d8a71d748e9239b7eedf92ff038ed495f8 -->
+<!-- source-sha256: 1bcbb1d1496c454d43b5b8618609c984b1cc2246995dd7f7434765abd8268ef3 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- 저장소는 kit 0.0.115를 pin한다(T3.42). 그 `packages.json`(K1261, kit#50)은 PIE가 PHP 확장을 설치하게 한다: version을 PIE가 release를 찾는 tag `v<version>`으로 쓰고, pre-packaged-binary 패키지 `polyspec/json`의 dist에는 `shasum`이 없다. 그 값은 소스 zip을 가리켰지만 PIE는 플랫폼의 zip을 받는다. `make docs-check`, `make rules-check`, `make json-test-scripts`(74), `make layout-check`가 통과한다.
 
 - `make json-lock-update`는 npm pin만 바뀔 때도 통과한다(T3.41). 그 cargo 단계는 이제 target `json-cargo-lock-update`이고, `Cargo.lock`이 `packages/rust/Cargo.toml`의 tag와 다른 release를 가질 때만 `polyspec-binding-core`를 옮긴다. 전에는 이미 0.0.13을 가진 lock에서 `cargo update -p polyspec-binding-core --precise 0.0.13`이 version을 git revision으로 읽어 `revspec '0.0.13' not found`로 실패했고, 그때는 `package-lock.json`이 이미 쓰인 뒤였다. 그래서 kit pin 0.0.115를 lock할 수 없었다. Red: `tests/scripts/environment.test.mts`의 새 T3.41 시험이 그 오류로 실패한다; green: 그것이 그 파일의 시험 8개와 `workflow-rules.test.mts`의 15개와 함께 통과하고, `make json-lock-update`가 `Cargo.lock`을 바꾸지 않고 exit 0이다.
 

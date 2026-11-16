@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: 89ebf999ac3065b09768dbb8cadbe570d4f5556f2ae81aeb401da7ff5dd663f7 -->
+<!-- source-sha256: 573721a83d902344d873606cddbb6c61d469a0409399815957edb2389494f00c -->
 # 실행 체크리스트
 
 ## Wave 1 — 전체 suite를 실행하는 hosted CI
@@ -161,3 +161,4 @@
 | T3.39 | 릴리스 0.0.31은 T3.36부터 T3.38까지를 담는다: make json-lock-update, key ok가 없는 case, binding 0.0.13과 reads에 선언한 cases 행의 case key; 패키지 버전 0.0.31. | packages/*/Cargo.toml, packages/python/pyproject.toml, packages/ts/package.json, Cargo.lock, CHANGELOG.md(.ko) | `make bindings-check`, `make test-bindings`, `make test-rust` | [o] |
 | T3.40 | docs/operations/api.md는 legacy JavaScript 패키지의 Value.string이 짝 없는 surrogate가 든 text를 받지만 생성된 바인딩 @polyspec/json은 그것을 invalid_text로 거부하고(RQ-026) Value.fromUnits로 만든다고 적는다; UTF-16 생성 행은 legacy 패키지라는 말 없이 Value.string(text)를 적었고, @polyspec/json의 소비자가 그것으로 시험 값을 만들었다. | docs/operations/api.md(.ko), CHANGELOG.md(.ko) | `make docs-check` | [o] |
 | T3.41 | make json-lock-update는 npm pin만 바뀔 때도 통과한다: 그 cargo 단계 json-cargo-lock-update는 Cargo.lock이 packages/rust/Cargo.toml의 tag와 다른 release를 가질 때만 polyspec-binding-core를 옮긴다. git source의 cargo update --precise는 lock이 이미 가진 version을 git revision으로 읽어 package-lock.json을 쓴 뒤 실패했기 때문이다(revspec '0.0.13' not found). Red: tests/scripts/environment.test.mts T3.41이 그 오류로 실패한다 | Makefile, tests/scripts/environment.test.mts, CHANGELOG.md(.ko) | `make json-test-scripts TESTS=tests/scripts/environment.test.mts`, `make json-lock-update` | [o] |
+| T3.42 | 저장소는 kit 0.0.115를 pin한다. 그 packages.json(K1261, kit#50)은 version을 PIE가 release를 찾는 tag v<version>으로 쓰고, pre-packaged-binary 패키지 polyspec/json에는 shasum을 쓰지 않는다. 그 값은 소스 zip을 가리켰지만 PIE는 플랫폼의 zip을 받는다. | package.json, package-lock.json, CHANGELOG.md(.ko) | `make docs-check`, `make rules-check`, `make json-test-scripts`, `make layout-check` | [o] |
