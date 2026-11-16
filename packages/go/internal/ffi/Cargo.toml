@@ -19,7 +19,7 @@ codec-test = []
 
 [dependencies]
 polyspec-json = { path = "../../../rust" }
-polyspec-binding-core = { git = "https://github.com/polyspec/binding.git", tag = "v0.0.16", features = ["construct", "lock"] }
+polyspec-binding-core = { git = "https://github.com/polyspec/binding.git", tag = "v0.0.17", features = ["construct", "lock"] }
 
 
 [lints]

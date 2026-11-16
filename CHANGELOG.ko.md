@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: ecc2f37d7fa72d2545415a0c82d571d712e199b794ae074b7479fbb645f0e1a0 -->
+<!-- source-sha256: 4d2501e2490d2e261386be1defd483fe3561af59034c4a3cce6cb9ef67a2d6f3 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- 저장소가 binding v0.0.17을 pin한다(T3.51). 도구 `@polyspec/binding`과 모든 crate의 `polyspec-binding-core`이며 template의 release다. 그래서 json과 template의 crate를 함께 담은 Cargo workspace가 `polyspec-binding-core` 하나를 빌드한다; v0.0.17의 `binding scaffold`는 tree의 파일을 바꾸지 않고 쓴다. Green: `make bindings-check`, `make lint-bindings`, 다섯 target의 바인딩 시험, `make test-rust`, `make test-js`, `make test-python`, 두 differential 시험, `make verify-js`, `make verify-python`, `make verify-rust`, `make verify-go`, `make verify-php`, `make verify-php-extension`, `make json-test-scripts`, `make docs-check`.
 
 - RQ-029와 kind `invalid_code_unit`이 code unit의 두 층을 적는다(T3.50, `change-code-units`): code unit은 계약의 부호 없는 정수(`{"list": "uint"}`)이므로, 바인딩의 인자 변환이 부호 없는 정수가 아닌 값을 먼저 거부한다. 수는 `invalid_number`로, 다른 타입의 값은 `invalid_argument_type`으로 거부하고, core는 65535보다 큰 부호 없는 정수를 `invalid_code_unit`으로 거부한다. Python의 패키지 시험은 `from_units`와 `get_units`에 대해 두 층을 단언한다. 전에는 -1의 kind를 binding 0.0.18이 바꿀 것으로 단언했다. Red: RQ-029가 0부터 65535 밖의 모든 값에 `invalid_code_unit`을 정했다; green: `make bindings-check`, `make test-python`, `make lint-python`, `make docs-check`.
 

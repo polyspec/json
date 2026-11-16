@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- The repository pins binding v0.0.17 (T3.51), the tool `@polyspec/binding` and `polyspec-binding-core` of every crate, the release of template, so a Cargo workspace that holds the crates of json and of template builds one `polyspec-binding-core`; `binding scaffold` of v0.0.17 writes the files of the tree unchanged. Green: `make bindings-check`, `make lint-bindings`, the binding tests of the five targets, `make test-rust`, `make test-js`, `make test-python`, both differential tests, `make verify-js`, `make verify-python`, `make verify-rust`, `make verify-go`, `make verify-php`, `make verify-php-extension`, `make json-test-scripts` and `make docs-check`.
+
 - RQ-029 and the kind `invalid_code_unit` state the two layers of a code unit (T3.50, `change-code-units`): a code unit is an unsigned integer of the contract (`{"list": "uint"}`), so the conversion of the argument of a binding refuses a value that is no unsigned integer first, a number with `invalid_number` and a value of another type with `invalid_argument_type`, and the core refuses an unsigned integer above 65535 with `invalid_code_unit`. The package tests of Python assert both layers for `from_units` and `get_units`, where they asserted the kind of -1 as one that binding 0.0.18 would change. Red: RQ-029 named `invalid_code_unit` for every value outside 0 through 65535; green: `make bindings-check`, `make test-python`, `make lint-python`, `make docs-check`.
 
 ## 0.0.33
