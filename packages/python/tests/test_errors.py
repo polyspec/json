@@ -3,9 +3,8 @@
 Requirements: RQ-005, RQ-025. Every error that the binding raises names its kind on `kind`: a ParseError the rejection
 kinds of the JSON contract, a JSONTypeError or JSONValueError the argument kinds (change-errors). Each kind has an accepting
 and a refusing site. The test of the legacy package with no change beyond the changes of packages/rust/interface.json, each
-named where it applies (T3.25-2). A code unit below 0 and an option given by position are refused as the binding v0.0.16
-refuses them until the binding 0.0.18; the test of the kinds that cannot arise in Python waits for the removal of
-the legacy package.
+named where it applies (T3.25-2). An option given by position is refused as the binding v0.0.16 refuses it until the
+binding 0.0.18; the test of the kinds that cannot arise in Python waits for the removal of the legacy package.
 """
 
 import json
@@ -180,15 +179,22 @@ class ErrorKindCases(unittest.TestCase):
                 self.kind(lambda: parse("1", max_depth=limit)),
                 "invalid_argument_type",
             )
-        for units in ([0x10000],):
+        # change-code-units: a code unit is an unsigned integer of the contract. The conversion of the argument refuses a
+        # number that is no unsigned integer with invalid_number and a value of another type with invalid_argument_type;
+        # the core refuses an unsigned integer above 65535 with invalid_code_unit.
+        for units, error_class, kind in (
+            ([0x10000], ValueError, "invalid_code_unit"),
+            ([-1], ValueError, "invalid_number"),
+            ([1.0], ValueError, "invalid_number"),
+            (["a"], TypeError, "invalid_argument_type"),
+            ([True], TypeError, "invalid_argument_type"),
+        ):
             with self.subTest(units=units):
                 self.assertEqual(
-                    self.kind(lambda: Value.from_units(units), ValueError),
-                    "invalid_code_unit",
+                    self.kind(lambda: Value.from_units(units), error_class), kind
                 )
                 self.assertEqual(
-                    self.kind(lambda: obj.get_units(units), ValueError),
-                    "invalid_code_unit",
+                    self.kind(lambda: obj.get_units(units), error_class), kind
                 )
         for run in (
             lambda: parse(1),
@@ -216,11 +222,8 @@ class ErrorKindCases(unittest.TestCase):
                 self.assertEqual(
                     self.kind(lambda: ParseError(*args)), "invalid_argument_type"
                 )
-        # The binding v0.0.16 refuses a code unit below 0 with invalid_number, where RQ-029 names invalid_code_unit, and an
-        # option given by position with a TypeError of Python with no kind; binding 0.0.18 changes both.
-        self.assertEqual(
-            self.kind(lambda: Value.from_units([-1]), ValueError), "invalid_number"
-        )
+        # The binding v0.0.16 refuses an option given by position with a TypeError of Python with no kind; binding 0.0.18
+        # changes it.
         with self.assertRaises(TypeError) as caught:
             parse("1", "options")
         self.assertNotIsInstance(getattr(caught.exception, "kind", None), str)

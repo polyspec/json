@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: c26f1ed788d26deadefc3af2b7f1bafb2c2c64b54932bef60f48f865c93c8f25 -->
+<!-- source-sha256: ecc2f37d7fa72d2545415a0c82d571d712e199b794ae074b7479fbb645f0e1a0 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- RQ-029와 kind `invalid_code_unit`이 code unit의 두 층을 적는다(T3.50, `change-code-units`): code unit은 계약의 부호 없는 정수(`{"list": "uint"}`)이므로, 바인딩의 인자 변환이 부호 없는 정수가 아닌 값을 먼저 거부한다. 수는 `invalid_number`로, 다른 타입의 값은 `invalid_argument_type`으로 거부하고, core는 65535보다 큰 부호 없는 정수를 `invalid_code_unit`으로 거부한다. Python의 패키지 시험은 `from_units`와 `get_units`에 대해 두 층을 단언한다. 전에는 -1의 kind를 binding 0.0.18이 바꿀 것으로 단언했다. Red: RQ-029가 0부터 65535 밖의 모든 값에 `invalid_code_unit`을 정했다; green: `make bindings-check`, `make test-python`, `make lint-python`, `make docs-check`.
 
 ## 0.0.33
 

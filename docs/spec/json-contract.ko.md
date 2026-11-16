@@ -1,5 +1,5 @@
 <!-- doc-id: json-contract -->
-<!-- source-sha256: 38c398b75627d1372bf0cfb5997cb7f7558523e1d44565fe5dc7ea3c4a4fb8a6 -->
+<!-- source-sha256: 91bc49c6ab1ac0de9e94532bd1c30815eeaa833e2579e369ad5f5b001fcfdffc -->
 # JSON 계약
 
 [English](json-contract.md)
@@ -63,7 +63,7 @@ JSON 배열은 입력 순서대로 값을 저장합니다. 빈 배열과 빈 객
 - `invalid_number_literal` — 다른 JSON 값이거나 공백을 가진 literal을 받은 숫자 생성자. 파싱되지 않는 literal은 그 거부 종류를 알립니다.
 - `depth_limit_out_of_range` — 0보다 작거나 256보다 큰 정수인 깊이 한도로, core가 거부합니다. 정수가 아닌 값은 바인딩의 인자 변환이 거부합니다(`change-depth-limit`).
 - `invalid_argument_type` — 함수가 받지 않는 타입의 인자. 라이브러리가 만들지 않은 값(Go의 nil 또는 영값 `Value`)을 포함합니다. compiler가 타입을 검사하는 Rust에서는 생길 수 없습니다. PHP에서는 선언된 매개변수 타입이 라이브러리 실행 전에 host 타입을 거부하므로, 배열 원소처럼 signature가 타입을 선언할 수 없는 곳에서만 생깁니다.
-- `invalid_code_unit` — 0부터 65535까지의 정수가 아닌 UTF-16 코드 단위([RQ-029](#requirements)). [이행 기간](#transition)의 언어 패키지에서는 코드 단위가 `uint16`인 Go와 코드 단위를 문자열로만 받는 JavaScript에서 생길 수 없습니다.
+- `invalid_code_unit` — 65535보다 큰 부호 없는 정수인 UTF-16 코드 단위로, core가 거부합니다([RQ-029](#requirements)); 부호 없는 정수가 아닌 값은 바인딩의 인자 변환이 거부합니다(`change-code-units`). [이행 기간](#transition)의 언어 패키지에서는 코드 단위가 `uint16`인 Go와 코드 단위를 문자열로만 받는 JavaScript에서 생길 수 없습니다.
 - `host_serialization_refused` — 값을 다시 쓰게 될 언어의 표준 JSON 인터페이스([RQ-020](#requirements), [RQ-034](#requirements)). 코어와 그 바인딩에서 생기며, 계약 바이트를 쓰는 Rust serde와 `MarshalJSON`이 그 바이트를 쓰는 [이행 기간](#transition)의 Go 패키지에서는 생길 수 없습니다.
 - `direct_construction` — 라이브러리 밖에서 호출한 라이브러리 생성자: JavaScript와 Python의 `Value` 생성자, 이 목록 밖의 메시지나 종류를 받은 오류 생성자. 값과 오류의 필드를 비공개로 두는 Rust와 Go에서는 생길 수 없습니다.
 - `unpaired_surrogate` — 이스케이프한 짝 없는 surrogate가 든 문자열의 유니코드 텍스트. 어떤 유니코드 텍스트도 그것을 담지 못합니다([RQ-027](#requirements)). 코어와 그 바인딩에서 생기며, [이행 기간](#transition)의 언어 패키지(JavaScript, Go, PHP, Python)에서는 생길 수 없습니다.
@@ -141,7 +141,7 @@ JavaScript의 `compact` 옵션과 PHP의 `compact` 인자는 호환성을 위해
 - **RQ-026** 코어는 UTF-8 바이트를 파싱하고 모든 위치는 바이트로 셉니다. 바인딩은 언어 텍스트의 UTF-8 인코딩을 코어에 넘깁니다. 짝 없는 surrogate가 든 언어 텍스트에는 그 인코딩이 없으므로 바인딩이 코어를 실행하기 전에 `invalid_text`로 거부합니다([RFC 8259](https://www.rfc-editor.org/rfc/rfc8259) 8.1절: 시스템 사이에 주고받는 JSON 텍스트는 UTF-8입니다).
 - **RQ-027** `string_value`는 문자열의 유니코드 텍스트를 돌려주고, 문자열에 이스케이프한 짝 없는 surrogate가 있으면 `unpaired_surrogate`로 실패합니다. `string_units`는 모든 문자열의 UTF-16 코드 단위를 돌려주며 짝 없는 surrogate도 담습니다. `string_text`는 문자열의 유니코드 텍스트를 돌려주고, 이스케이프한 짝 없는 surrogate가 있는 문자열에는 부재를 돌려주므로, 한 번의 호출로 텍스트와 코드 단위만 담을 수 있는 문자열을 구별합니다.
 - **RQ-028** 문자열 생성자는 텍스트를 UTF-8로 쓰고 [RFC 8259](https://www.rfc-editor.org/rfc/rfc8259) 7절이 요구하는 것만 이스케이프합니다: `"`와 `\`는 `\"`와 `\\`, U+0008, U+0009, U+000A, U+000C, U+000D는 `\b`, `\t`, `\n`, `\f`, `\r`, 그 밖의 U+0000~U+001F는 `\u00`과 소문자 16진수 두 자리. 코드 단위 생성자는 같게 쓰고 짝 없는 surrogate를 `\u`와 소문자 16진수 네 자리로 씁니다. U+2028과 U+2029를 포함한 그 밖의 모든 문자는 그대로 쓰며, ECMAScript `JSON.stringify`가 쓰는 것과 같습니다(ECMA-262 QuoteJSONString).
-- **RQ-029** 코드 단위 생성자와 코드 단위 조회는 0부터 65535까지의 정수를 받고 그 밖의 값은 `invalid_code_unit`으로 거부합니다.
+- **RQ-029** 코드 단위 생성자와 코드 단위 조회는 코드 단위를 받으며, 각 코드 단위는 0부터 65535까지의 정수입니다. 코드 단위는 계약의 부호 없는 정수(`{"list": "uint"}`)이므로, 바인딩의 인자 변환이 먼저 부호 없는 정수가 아닌 값을 거부합니다. 수는 `invalid_number`로, 다른 타입의 값은 `invalid_argument_type`으로 거부합니다; core는 65535보다 큰 부호 없는 정수를 `invalid_code_unit`으로 거부합니다(`change-code-units`).
 - **RQ-030** binary64 실수의 숫자 생성자는 ECMAScript `Number::toString`(ECMA-262, 기수 10)이 쓰는 토큰을 씁니다: 같은 실수로 읽히는 가장 짧은 숫자열, `-0`은 `0`, 지수 -7부터 20까지는 자리 표기, 그 밖은 `e+`/`e-` 표기. NaN, 양의 무한대, 음의 무한대는 `non_finite_number`로 거부합니다. `number_text`는 같은 텍스트를 돌려주며, 다른 polyspec 라이브러리가 쓰는 유일한 실수→텍스트 함수입니다.
 - **RQ-031** 직렬화 옵션 `html_safe`(기본값 false)는 키를 포함한 모든 문자열 토큰의 `<`, `>`, `&`, U+2028, U+2029를 `\u003c`, `\u003e`, `\u0026`, `\u2028`, `\u2029`로 써서 텍스트가 HTML `script` 요소 안에 있을 수 있게 합니다. 출력의 다른 부분은 바뀌지 않습니다. 이 문자들은 JSON 텍스트에서 문자열 안에만 있으므로 옵션은 문자열 토큰만 바꿉니다.
 - **RQ-032** 종류별 접근자(`members`, `items`, `string_units`, `string_value`, `string_text`, `number_literal`, `boolean_value`)와 member 조회(`get`, `get_units`)는 다른 종류의 값에서 `wrong_kind`로 실패합니다. 객체의 조회는 객체에 없는 이름에서만 부재를 돌려줍니다.

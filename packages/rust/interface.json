@@ -1675,6 +1675,16 @@
       "to": "value.items"
     },
     {
+      "id": "change-code-units",
+      "rule": "RQ-029",
+      "reason": "RQ-029, GN-12a: a code unit is an unsigned integer of the contract ({\"list\": \"uint\"}), so the conversion of the argument of the binding refuses a value that is no unsigned integer, a number with invalid_number and a value of another type with invalid_argument_type, and the core refuses only an unsigned integer above 65535 with invalid_code_unit",
+      "symbol": "Value.from_units, Value.get_units, OrderedMap.get_units",
+      "from": {
+        "python": "Value.from_units([-1]), Value.from_units([\"a\"]) and Value.from_units([1.0]) raise ValueError with the kind invalid_code_unit"
+      },
+      "to": "value.from_units"
+    },
+    {
       "id": "change-messages",
       "rule": "E-2",
       "reason": "design E-2: an error names its kind, the contract, and each binding keeps its own wording (docs/spec/json-contract.md#rejection-kinds, #argument-kinds), so the message of an error is no part of the interface",
