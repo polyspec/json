@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: a6c2172c914e06bb530b0638ec538d471a86c475b133eb1155e687811b4f1844 -->
+<!-- source-sha256: 84c3a92826970cb028c0a55266043c3ee34c5db837d0c51ea28a682898521a9d -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- `make test-differential-python`이 legacy 패키지 `polyspec.ordered_json`과 바인딩 `polyspec.json`을 비교한다(T3.25-2, V-6 (5)): 보충 suite의 `test_parsing`의 모든 파일(바이트)과 모든 공식 예제가 둘에서 같은 compact 직렬화를 내거나, 같은 byte offset에서 같은 kind로 거부된다. `make binding-python-package`는 `make test-binding-python`이 시험한 wheel을 빌드해 설치하고, 이 시험은 그것을 legacy 패키지의 venv에 설치한다. 그 venv는 이제 `make json-install-bindings`가 설치한다; 이 target은 job bindings에서 돈다. Red: 두 구현을 비교한 시험이 없었다; green: `make test-differential-python`(파일 318개, 예제 17개, 차이 없음), `make test-binding-python`, `make test-python`, `make lint-python`, `make json-test-scripts`가 통과한다.
 
 - `config/implementations.json`의 root `js`는 바인딩 `packages/ts`다(T3.25-1): 공유 verifier는 `make binding-node-addon` 뒤에 probe `packages/ts/tests/probe.mjs`를 돌린다. 이 probe는 legacy 패키지의 probe를 `packages/rust/interface.json`의 change가 적용되는 곳만 바꾼 것이고, 그 target은 Node addon을 빌드해 `packages/ts/generated/index.cjs` 옆에 둔다; `make test-js`와 `make binding-node-package`는 그 target을 쓰고, `benchmarks/js.mjs`는 root에서 `@polyspec/json`을 읽는다. Green: `make verify-js`(공식 예제 17개, 공유 case 416개, 인자 case 25개, 거부가 구현 사이에서 일치), `make test-js`(47), `make lint-ts`, `make typecheck`, `make layout-check`, `make duplication-check`, `make owner-validate`, `make rules-check`, `make json-test-scripts`(75).
 

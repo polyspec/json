@@ -62,7 +62,7 @@ unexport CARGO_TARGET_DIR
 # .github/workflows/ci-pipeline.yml run as the prerequisites of their kit-gates-* target (a target is in one job). verify-all
 # writes the aggregate record into var/records.
 CHECK_TARGETS := suppression-check link-check rules-check rebuild-check language-check duplication-check layout-check owner-validate release-coverage docs-check evidence-check verify-all lint-rust lint-go lint-php lint-php-ext test-php-ext lint-python json-test-scripts typecheck lint-ts test-js fmt-check test-rust test-go test-php test-python \
-	lint-bindings check-declarations test-binding-crates test-binding-python test-binding-node test-binding-wasm test-binding-php test-binding-go test-differential-js
+	lint-bindings check-declarations test-binding-crates test-binding-python test-binding-node test-binding-wasm test-binding-php test-binding-go test-differential-js test-differential-python
 
 .PHONY: check fmt-check json-test-scripts typecheck json-install-php json-install-python verify-all verify-js verify-rust verify-go verify-php verify-php-extension verify-python evidence-check pie-check \
 	benchmark benchmark-check benchmark-host python-parse-budget install json-install json-install-rust \
@@ -342,7 +342,7 @@ check-declarations: bindings
 # The tools of the job bindings beyond those of make install-tools: maturin and the wasm-bindgen CLI of mise.toml at the
 # digests of mise.lock, the crates of Cargo.lock, and PHPUnit of legacy/packages/php/composer.lock (json-install-php), which
 # runs the generated tests of the PHP extension until the legacy PHP package is removed.
-json-install-bindings: json-install-rust-packages json-install-php json-install-suite
+json-install-bindings: json-install-rust-packages json-install-php json-install-python json-install-suite
 	$(ONLINE) $(KIT_TOOLS)/bin/mise install --locked github:PyO3/maturin github:wasm-bindgen/wasm-bindgen
 MATURIN := $(KIT_TOOLS)/mise/shims/maturin
 WASM_BINDGEN := $(KIT_TOOLS)/mise/shims/wasm-bindgen
@@ -357,11 +357,13 @@ binding_features = $(shell sed -n '/^\[features\]/,/^\[/s/^\([a-z][a-z0-9-]*\) =
 
 # The wheel that maturin builds for the Python of mise.toml, installed into a virtual environment without an index, and
 # the generated tests on unittest, which fails a run that ran no test.
-test-binding-python: bindings
+# The wheel of the Python binding, built with the test features, installed in the venv $(BINDING_VAR)/venv.
+binding-python-package: bindings
 	$(PYTHON) -m venv --clear $(BINDING_VAR)/venv
 	rm -rf $(BINDING_VAR)/wheels
 	cd packages/python && $(MATURIN) build --locked --interpreter $(BINDING_VAR)/venv/bin/python --features $(call binding_features,packages/python/Cargo.toml) --out $(BINDING_VAR)/wheels
 	$(BINDING_VAR)/venv/bin/python -m pip install -q --no-index --force-reinstall $(BINDING_VAR)/wheels/*.whl
+test-binding-python: binding-python-package
 	cd $(BINDING_VAR) && venv/bin/python -m unittest discover -s $(CURDIR)/packages/python/generated/tests -t $(CURDIR)/packages/python/generated/tests
 
 # The npm package with the addon of this platform and the WASM module, packed and installed into var/bindings/node as a
@@ -399,6 +401,13 @@ test-binding-node: binding-node-package
 test-differential-js: binding-node-package
 	@[ -n "$(JSON_TEST_SUITE)" ] || { echo "test-differential-js needs the supplementary suite: make json-install-suite" >&2; exit 2; }
 	JSON_BINDING_NODE=$(BINDING_VAR)/node JSON_TEST_SUITE=$(abspath $(JSON_TEST_SUITE)) $(NODE) --test legacy/packages/js/tests/differential.mjs
+
+# The differential test of the two Python implementations (docs/spec/json-contract.md#transition, V-6 (5)): the legacy package
+# and the binding, whose wheel is installed in the venv of the legacy package (make json-install-python), parse the files of the supplementary suite and the official examples alike.
+test-differential-python: binding-python-package
+	@[ -n "$(JSON_TEST_SUITE)" ] || { echo "test-differential-python needs the supplementary suite: make json-install-suite" >&2; exit 2; }
+	$(UV) pip install -q --python legacy/packages/python/.venv/bin/python --offline --no-index --no-deps --reinstall $(BINDING_VAR)/wheels/*.whl
+	JSON_TEST_SUITE=$(abspath $(JSON_TEST_SUITE)) legacy/packages/python/.venv/bin/python -I legacy/packages/python/tests/differential.py
 
 # The generated tests of the WASM binding through the subpath ./wasm of the installed package (binding P-5); --expose-gc
 # serves the generated tests that collect instances (binding GN-18a).
@@ -548,7 +557,7 @@ kit-gates-runtime-go: lint-go test-go
 kit-gates-runtime-rust: lint-rust fmt-check test-rust
 kit-gates-runtime-php-ext: lint-php-ext test-php-ext
 # kit-gates-bindings runs in the job bindings, which installs the tools of every target of the contract.
-kit-gates-bindings: lint-bindings check-declarations test-binding-crates test-binding-python test-binding-node test-binding-wasm test-binding-php test-binding-go test-differential-js test-js
+kit-gates-bindings: lint-bindings check-declarations test-binding-crates test-binding-python test-binding-node test-binding-wasm test-binding-php test-binding-go test-differential-js test-differential-python test-js
 
 # kit-ci-plan writes the fan-out of the pipeline, the jobs and runners of config/ci.json, to GITHUB_OUTPUT.
 kit-ci-plan:
