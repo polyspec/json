@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: 3cb8d7ed66ea6490aff8e8e957b14186e05054dc9cf2a8bf4413968e81916fb2 -->
+<!-- source-sha256: a54a3dfc491b51337d7615e350638fd9baaeff725e863189daa8946231cb3bd3 -->
 # 실행 체크리스트
 
 ## Wave 1 — 전체 suite를 실행하는 hosted CI
@@ -164,5 +164,5 @@
 | T3.42 | 저장소는 kit 0.0.115를 pin한다. 그 packages.json(K1261, kit#50)은 version을 PIE가 release를 찾는 tag v<version>으로 쓰고, pre-packaged-binary 패키지 polyspec/json에는 shasum을 쓰지 않는다. 그 값은 소스 zip을 가리켰지만 PIE는 플랫폼의 zip을 받는다. | package.json, package-lock.json, CHANGELOG.md(.ko) | `make docs-check`, `make rules-check`, `make json-test-scripts`, `make layout-check` | [o] |
 | T3.43 | 릴리스 0.0.32는 T3.40부터 T3.42까지를 담는다: docs/operations/api.md의 Value.string의 legacy 패키지, binding release를 이미 가진 lock에서의 json-lock-update, 그리고 PIE가 그 packages.json으로 PHP 확장을 설치하는 kit 0.0.115; 패키지 버전 0.0.32. | packages/*/Cargo.toml, packages/python/pyproject.toml, packages/ts/package.json, Cargo.lock, CHANGELOG.md(.ko) | `make bindings-check`, `make test-rust`, `make docs-check` | [o] |
 | T3.45 | 바인딩의 PHP 확장은 checkout의 PHP로 다시 빌드된다: lint-bindings, test-binding-crates, test-binding-php는 $(PHP)의 PHP_BINARY 옆 php-config를 PHP_CONFIG로 넘긴다. ext-php-rs의 build script는 env PHP, PHP_CONFIG, PATH가 바뀔 때만 다시 돌고, make install-tools가 다른 PHP를 감싸도 var/tools/bin/php의 경로는 그대로이기 때문이다; PHP 8.5의 확장이 target에 남았고 PHP 8.4는 그것을 거부했다. Red: tests/scripts/environment.test.mts T3.45가 어느 cargo 실행도 PHP_CONFIG를 넘기지 않아 실패한다 | Makefile, tests/scripts/environment.test.mts, CHANGELOG.md(.ko) | `make json-test-scripts`, `make test-binding-php`; 증거: 598760a의 CI run 43841836667 | [o] |
-| T3.46 | 저장소는 K1266부터 K1273까지를 담은 kit 0.0.116을 pin한다 | package.json, package-lock.json, CHANGELOG.md(.ko) | `make install-packages`, `make docs-check`, `make rules-check`, `make json-test-scripts`, `make layout-check` | [v] |
+| T3.46 | 저장소는 K1266부터 K1273까지를 담은 kit 0.0.116을 pin한다 | package.json, package-lock.json, CHANGELOG.md(.ko) | `make install-packages`, `make docs-check`, `make rules-check`, `make json-test-scripts`, `make layout-check`; 증거: 6b16dd7의 CI run 43858672315 | [o] |
 | T3.25-1 | JavaScript(T3.25): make test-differential-js가 legacy 패키지 @polyspec/ordered-json과 바인딩 패키지 @polyspec/json을 보충 suite의 test_parsing 파일과 공식 예제로 비교하고, 모든 case가 둘에서 같은 결과를 낸다; 이어서 legacy/packages/js의 패키지 시험이 packages/rust/interface.json의 changes 밖의 변경 없이 바인딩에서 통과하고, make test-js와 config/implementations.json의 root js가 바인딩을 쓰며, legacy/packages/js는 따로 된 변경으로 지워진다(V-6 (5)). Red: 두 구현을 비교한 시험이 없었다 | legacy/packages/js/tests/differential.mjs, legacy/packages/js/tests, Makefile, knip.json, config/implementations.json, CHANGELOG.md(.ko) | `make test-differential-js`, `make test-js`, `make json-test-scripts`; 그 commit의 CI run의 job bindings | [~] |
