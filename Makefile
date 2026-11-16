@@ -62,7 +62,7 @@ unexport CARGO_TARGET_DIR
 # .github/workflows/ci-pipeline.yml run as the prerequisites of their kit-gates-* target (a target is in one job). verify-all
 # writes the aggregate record into var/records.
 CHECK_TARGETS := suppression-check link-check rules-check rebuild-check language-check duplication-check layout-check owner-validate release-coverage docs-check evidence-check verify-all lint-rust lint-go lint-php lint-php-ext test-php-ext lint-python json-test-scripts typecheck lint-ts test-js fmt-check test-rust test-go test-php test-python \
-	lint-bindings check-declarations test-binding-crates test-binding-python test-binding-node test-binding-wasm test-binding-php test-binding-go test-differential-js test-differential-python
+	lint-bindings check-declarations test-binding-crates test-binding-python test-binding-node test-binding-wasm test-binding-php test-binding-go test-differential-js test-differential-python test-differential-php
 
 .PHONY: check fmt-check json-test-scripts typecheck json-install-php json-install-python verify-all verify-js verify-rust verify-go verify-php verify-php-extension verify-python evidence-check pie-check \
 	benchmark benchmark-check benchmark-host python-parse-budget install json-install json-install-rust \
@@ -414,6 +414,14 @@ test-differential-python: binding-python-package
 	$(UV) pip install -q --python legacy/packages/python/.venv/bin/python --offline --no-index --no-deps --reinstall $(BINDING_VAR)/wheels/*.whl
 	JSON_TEST_SUITE=$(abspath $(JSON_TEST_SUITE)) legacy/packages/python/.venv/bin/python -I legacy/packages/python/tests/differential.py
 
+# The differential test of the legacy PHP implementations and the binding (docs/spec/json-contract.md#transition, V-6 (5)):
+# the binding extension and the legacy API, of the pure PHP library and then of the legacy extension, which registers the
+# same API, parse the files of the supplementary suite and the official examples alike (T3.25-3).
+test-differential-php: binding-php-ext-library build-php-ext
+	@[ -n "$(JSON_TEST_SUITE)" ] || { echo "test-differential-php needs the supplementary suite: make json-install-suite" >&2; exit 2; }
+	JSON_TEST_SUITE=$(abspath $(JSON_TEST_SUITE)) $(PHP) -n -d extension=$(CURDIR)/target/debug/libpolyspec_json.$(BINDING_DYLIB) -d auto_prepend_file=$(CURDIR)/legacy/packages/php/vendor/autoload.php legacy/packages/php/tests/differential.php
+	JSON_TEST_SUITE=$(abspath $(JSON_TEST_SUITE)) $(PHP) -n -d extension=$(CURDIR)/target/debug/libpolyspec_json.$(BINDING_DYLIB) -d extension=$(CURDIR)/var/php-ext/polyspec_ordered_json.so legacy/packages/php/tests/differential.php
+
 # The generated tests of the WASM binding through the subpath ./wasm of the installed package (binding P-5); --expose-gc
 # serves the generated tests that collect instances (binding GN-18a).
 test-binding-wasm: binding-node-package
@@ -422,8 +430,10 @@ test-binding-wasm: binding-node-package
 
 # The extension built with the test features against the PHP of PATH, its stub linted, and the generated tests on PHPUnit
 # with the extension loaded; a run without a test or with a skipped test fails.
-test-binding-php: bindings
+# The library of the PHP extension of the binding, built with the test features for the PHP of the checkout.
+binding-php-ext-library: bindings-php
 	$(BINDING_PHP) $(BINDING_LLVM) $(CARGO) build --locked -p polyspec-json-php-ext --features $(call binding_features,packages/php-ext/Cargo.toml)
+test-binding-php: binding-php-ext-library
 	$(PHP) -l packages/php-ext/generated/polyspec_json.stub.php
 	$(PHP) -d extension=$(CURDIR)/target/debug/libpolyspec_json.$(BINDING_DYLIB) $(PHPUNIT) --fail-on-empty-test-suite --fail-on-skipped packages/php-ext/generated/tests
 
@@ -562,7 +572,7 @@ kit-gates-runtime-go: lint-go test-go
 kit-gates-runtime-rust: lint-rust fmt-check test-rust
 kit-gates-runtime-php-ext: lint-php-ext test-php-ext
 # kit-gates-bindings runs in the job bindings, which installs the tools of every target of the contract.
-kit-gates-bindings: lint-bindings check-declarations test-binding-crates test-binding-python test-binding-node test-binding-wasm test-binding-php test-binding-go test-differential-js test-differential-python test-js test-python
+kit-gates-bindings: lint-bindings check-declarations test-binding-crates test-binding-python test-binding-node test-binding-wasm test-binding-php test-binding-go test-differential-js test-differential-python test-differential-php test-js test-python
 
 # kit-ci-plan writes the fan-out of the pipeline, the jobs and runners of config/ci.json, to GITHUB_OUTPUT.
 kit-ci-plan:

@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- `make test-differential-php` compares the legacy API `Polyspec\OrderedJson`, of the pure PHP library and of the legacy extension, with the binding extension `Polyspec\Json` (T3.25-3, V-6 (5)): every file of `test_parsing` of the supplementary suite and every official example gives the same compact serialization, or a rejection of the same kind at the same byte offset, in both. `make binding-php-ext-library` builds the library of the binding extension that `make test-binding-php` tests; the target runs in the job bindings. Red: no test compared the implementations; green: `make test-differential-php` (318 files and 17 examples, no difference, with each legacy implementation), `make test-binding-php`, `make lint-php` and `make json-test-scripts` pass.
+
 ## 0.0.34
 
 - The repository pins binding v0.0.17 (T3.51), the tool `@polyspec/binding` and `polyspec-binding-core` of every crate, the release of template, so a Cargo workspace that holds the crates of json and of template builds one `polyspec-binding-core`; `binding scaffold` of v0.0.17 writes the files of the tree unchanged. Green: `make bindings-check`, `make lint-bindings`, the binding tests of the five targets, `make test-rust`, `make test-js`, `make test-python`, both differential tests, `make verify-js`, `make verify-python`, `make verify-rust`, `make verify-go`, `make verify-php`, `make verify-php-extension`, `make json-test-scripts` and `make docs-check`.

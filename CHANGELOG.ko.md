@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: e2f0423fbe36c9fa6bf5e950da20c4a3a1d8e0e50cdc2b35546c4290197b81f3 -->
+<!-- source-sha256: 053bb43f2d1605f7513e11d07a24879b86c0c0a2d16d0ffed8d4502bd352b8a7 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- `make test-differential-php`가 순수 PHP 라이브러리와 legacy 확장의 legacy API `Polyspec\OrderedJson`을 바인딩 확장 `Polyspec\Json`과 비교한다(T3.25-3, V-6 (5)): 보충 suite의 `test_parsing`의 모든 파일과 모든 공식 예제가 둘에서 같은 compact 직렬화를 내거나, 같은 byte offset에서 같은 kind로 거부된다. `make binding-php-ext-library`는 `make test-binding-php`가 시험하는 바인딩 확장의 library를 빌드한다; 이 target은 job bindings에서 돈다. Red: 구현들을 비교한 시험이 없었다; green: `make test-differential-php`(각 legacy 구현에서 파일 318개, 예제 17개, 차이 없음), `make test-binding-php`, `make lint-php`, `make json-test-scripts`가 통과한다.
 
 ## 0.0.34
 
