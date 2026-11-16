@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 1a274b98c4f387580cf906cdb6b1afb61fc4bffe7dbae0fad3e7d2f32eaddfa5 -->
+<!-- source-sha256: c26f1ed788d26deadefc3af2b7f1bafb2c2c64b54932bef60f48f865c93c8f25 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -8,6 +8,8 @@
 ## Unreleased
 
 ## 0.0.33
+
+- 릴리스 0.0.33의 CI가 통과한다(T3.49; run 43897375991이 job 셋에서 실패했다): 공유 verifier의 python prepare가 wheel을 빌드하므로 job verify와 bindings가 이제 저장소가 pin하는 kit 0.0.117의 TOOLS selector(K1278)로 maturin을 설치한다; 바인딩의 패키지 target(`binding-python-package`, `binding-node-addon`, `binding-node-package`)은 자기 target만 생성하므로, js prepare가 `packages/ts/generated/index.cjs` 옆에 둔 Node addon을 python prepare가 더는 지우지 않는다; `knip.json`이 `packages/ts`를 workspace로 선언해서, knip은 그 시험의 `@polyspec/json` import를 생성 entry 없이 패키지 자신으로 푼다. Red: `tests/scripts/environment.test.mts`의 T3.49 시험, kit 0.0.116에서의 `make install-tools TOOLS=maturin`, 생성 entry 없는 knip이 실패했다; green: `make json-test-scripts`, `make lint-ts`, `make typecheck`, 모든 구현의 공유 verifier가 통과한다.
 
 - JavaScript와 Python의 패키지 시험이 binding v0.0.16을 기다리던 곳에서 그것이 내는 kind를 단언한다(T3.47): `Value`의 직접 생성은 `direct_construction`이고, `ParseError`의 생성자(binding GN-7a)는 message와 그 class의 kind를 받고 다른 인자를 `invalid_argument_type`으로 거부한다. Python에서 0보다 작은 code unit은 `invalid_number`(RQ-029는 `invalid_code_unit`)이고 위치로 준 option은 kind 없는 `TypeError`다. binding 0.0.18까지 binding v0.0.16이 내는 대로다. Green: `make test-js`(47), `make test-python`(47), `make lint-ts`, `make lint-python`.
 

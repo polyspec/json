@@ -1,20 +1,29 @@
+// The knip configuration of json, which make lint-ts runs from the root (knip reads this file by its own discovery).
+// The workspace "." holds the tests, the scripts and the benchmarks, which node and make start by their paths, and the
+// differential test of the legacy JavaScript package. The workspace packages/ts is the binding @polyspec/json: its tests
+// and the probe of the shared verifier import the package by its own name, which Node resolves by the exports of
+// packages/ts/package.json (a self-reference). knip resolves that import as the package of the workspace itself only when
+// packages/ts is a workspace; as a file of the root it resolves it through the generated entries, which a checkout without
+// make bindings lacks, and reports @polyspec/json as an unlisted dependency (CI run 43897375991, the job runtime ts, T3.49).
+// The binaries are the programs that the scripts start from PATH: go and make. The ignored dependencies are the packages
+// that the root names by the tarball URL of their release and that no import reaches: @polyspec/kit and @polyspec/binding,
+// whose commands make starts, and @napi-rs/cli.
 {
-  "node": {
-    "entry": [
-      "**/*.test.{ts,mts,cts,mjs,cjs,js}",
-      "scripts/**/*.{ts,mts,cts,mjs,cjs,js}",
-      "benchmarks/**/*.{ts,mts,cts,mjs,cjs,js}",
-      "packages/ts/tests/probe.mjs",
-      "legacy/packages/js/tests/differential.mjs"
-    ]
-  },
-  "ignoreBinaries": [
-    "go",
-    "make"
-  ],
-  "ignoreDependencies": [
-    "@polyspec/kit",
-    "@polyspec/binding",
-    "@napi-rs/cli"
-  ]
+  "workspaces": {
+    ".": {
+      "node": {
+        "entry": [
+          "**/*.test.{ts,mts,cts,mjs,cjs,js}",
+          "scripts/**/*.{ts,mts,cts,mjs,cjs,js}",
+          "benchmarks/**/*.{ts,mts,cts,mjs,cjs,js}",
+          "legacy/packages/js/tests/differential.mjs"
+        ]
+      },
+      "ignoreBinaries": ["go", "make"],
+      "ignoreDependencies": ["@polyspec/kit", "@polyspec/binding", "@napi-rs/cli"]
+    },
+    "packages/ts": {
+      "entry": ["tests/*.test.mjs", "tests/probe.mjs"]
+    }
+  }
 }

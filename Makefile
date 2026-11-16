@@ -342,11 +342,11 @@ check-declarations: bindings
 	$(NODE) node_modules/typescript/bin/tsc --ignoreConfig --noEmit --strict packages/ts/generated/index.d.ts
 	$(NODE) node_modules/typescript/bin/tsc --ignoreConfig --noEmit --strict packages/ts/wasm/generated/index.d.ts
 
-# The tools of the job bindings beyond those of make install-tools: maturin and the wasm-bindgen CLI of mise.toml at the
+# The tools of the job bindings beyond those of make install-tools: the wasm-bindgen CLI of mise.toml at the
 # digests of mise.lock, the crates of Cargo.lock, and PHPUnit of legacy/packages/php/composer.lock (json-install-php), which
 # runs the generated tests of the PHP extension until the legacy PHP package is removed.
 json-install-bindings: json-install-rust-packages json-install-php json-install-python json-install-suite
-	$(ONLINE) $(KIT_TOOLS)/bin/mise install --locked github:PyO3/maturin github:wasm-bindgen/wasm-bindgen
+	$(ONLINE) $(KIT_TOOLS)/bin/mise install --locked github:wasm-bindgen/wasm-bindgen
 MATURIN := $(KIT_TOOLS)/mise/shims/maturin
 WASM_BINDGEN := $(KIT_TOOLS)/mise/shims/wasm-bindgen
 GOFMT := $(KIT_TOOLS)/mise/shims/gofmt
@@ -361,7 +361,7 @@ binding_features = $(shell sed -n '/^\[features\]/,/^\[/s/^\([a-z][a-z0-9-]*\) =
 # The wheel that maturin builds for the Python of mise.toml, installed into a virtual environment without an index, and
 # the generated tests on unittest, which fails a run that ran no test.
 # The wheel of the Python binding, built with the test features, installed in the venv $(BINDING_VAR)/venv.
-binding-python-package: bindings
+binding-python-package: bindings-python
 	$(PYTHON) -m venv --clear $(BINDING_VAR)/venv
 	rm -rf $(BINDING_VAR)/wheels
 	cd packages/python && $(MATURIN) build --locked --interpreter $(BINDING_VAR)/venv/bin/python --features $(call binding_features,packages/python/Cargo.toml) --out $(BINDING_VAR)/wheels
@@ -377,11 +377,13 @@ BINDING_PLATFORM := $(shell $(NODE) -p 'process.platform + "-" + process.arch + 
 BINDING_ADDON := json.$(BINDING_PLATFORM).node
 WASM_BINDGEN_RELEASE := $(shell sed -n 's/^wasm-bindgen = "=\(.*\)"$$/\1/p' packages/ts/wasm/Cargo.toml)
 # The Node addon of the checkout beside packages/ts/generated/index.cjs, which loads it there: the package tests (make test-js)
-# and the probe of the shared verifier take @polyspec/json from packages/ts.
-binding-node-addon: bindings
+# and the probe of the shared verifier take @polyspec/json from packages/ts. A package target generates only its own target:
+# the generation of the node target writes packages/ts/generated again, so a generation of it after this build deletes the
+# addon (T3.49).
+binding-node-addon: bindings-node
 	$(CARGO) build --locked -p polyspec-json-node --features $(call binding_features,packages/ts/Cargo.toml)
 	cp target/debug/libpolyspec_json_node.$(BINDING_DYLIB) packages/ts/generated/$(BINDING_ADDON)
-binding-node-package: binding-node-addon
+binding-node-package: binding-node-addon bindings-wasm
 	test "$$($(WASM_BINDGEN) --version)" = "wasm-bindgen $(WASM_BINDGEN_RELEASE)"
 	$(CARGO) build --locked -p polyspec-json-wasm --target wasm32-unknown-unknown --features $(call binding_features,packages/ts/wasm/Cargo.toml)
 	$(WASM_BINDGEN) --target web --out-dir packages/ts/wasm/generated --out-name json_wasm target/wasm32-unknown-unknown/debug/polyspec_json_wasm.wasm
@@ -591,7 +593,7 @@ ci-plan:
 ci-shared:
 	$(NODE) $(KIT)/ci-setup.mjs --job shared
 ci-verify:
-	$(MAKE) --no-print-directory install-tools TOOLS="go rust php composer python uv"
+	$(MAKE) --no-print-directory install-tools TOOLS="go rust php composer python uv maturin"
 	$(MAKE) --no-print-directory json-install-verify
 	$(MAKE) --no-print-directory ci-targets TARGETS="$(CI_VERIFY_CHECKS)"
 # RUNTIME is a runtime of config/ci.json, which the matrix of the job runtime lists.
@@ -601,7 +603,7 @@ ci-runtime:
 # The job bindings runs on ubuntu-26.04-arm, whose image holds the LLVM of config/toolchain.json at /usr/lib/llvm-<major>, the
 # LLVM_ROOT that packages/release.mk reads for the build of the PHP extension.
 ci-bindings:
-	$(MAKE) --no-print-directory install-tools TOOLS="go php composer python uv"
+	$(MAKE) --no-print-directory install-tools TOOLS="go php composer python uv maturin"
 	$(MAKE) --no-print-directory json-install-bindings
 	$(MAKE) --no-print-directory release-recipes
 	$(MAKE) --no-print-directory ci-targets TARGETS="$(CI_BINDINGS_CHECKS)"

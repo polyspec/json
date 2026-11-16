@@ -97,6 +97,29 @@ test('T3.45: every cargo run that builds the PHP extension passes the php-config
   for (const line of builds) assert.ok(line.includes(`PHP_CONFIG=${dir}/bin/php-config `), line);
 });
 
+// The shared verifier prepares each implementation in turn in one checkout: the prepare of python ran make bindings, whose
+// generation of the node target writes packages/ts/generated again and so deleted the Node addon that the prepare of js had
+// put there (CI run 43897375991). A package target generates only its own target (T3.49).
+test('T3.49: a package target of a binding generates only its own target', () => {
+  for (const [target, generated] of [['binding-python-package', ['python']], ['binding-node-addon', ['node']], ['binding-node-package', ['node', 'wasm']]] as const) {
+    const run = spawnSync('make', ['-n', '--no-print-directory', target], { cwd: ROOT, encoding: 'utf8', env: { ...process.env, LC_ALL: 'C' } });
+    assert.equal(run.status, 0, run.stdout + run.stderr);
+    const targets = [...run.stdout.matchAll(/ generate --root \S+ --target (\w+)/g)].map(match => match[1] ?? "").sort((a, b) => a.localeCompare(b));
+    assert.deepEqual(targets, [...generated], target);
+  }
+});
+
+// The prepare of python of the shared verifier builds the wheel with maturin, which the job verify did not install (CI run
+// 43897375991: var/tools/mise/shims/maturin: not found). Every CI group that builds the wheel installs maturin through the
+// TOOLS selector of kit 0.0.117 (K1278) (T3.49).
+test('T3.49: the CI groups that build the Python wheel install maturin', () => {
+  for (const group of ['ci-verify', 'ci-bindings']) {
+    const run = spawnSync('make', ['-n', '--no-print-directory', group], { cwd: ROOT, encoding: 'utf8', env: { ...process.env, LC_ALL: 'C' } });
+    const tools = /install-tools TOOLS="([^"]*)"/.exec(run.stdout)?.[1]?.split(' ') ?? [];
+    assert.ok(tools.includes('maturin'), `${group}: ${tools.join(' ')}`);
+  }
+});
+
 test('T2.83-3-1: native runner tool selectors are arguments and bare executable commands still fail', () => {
   assert.doesNotMatch('$(NODE) $(KIT)/run-tests.$(KIT_EXT) go --cwd packages/go -- .', BARE_TOOL_COMMAND);
   for (const command of ['go test .', 'npm ci', 'cargo test --locked', 'echo start; go test .', 'echo start | rustc --version', '$(go version)']) {
