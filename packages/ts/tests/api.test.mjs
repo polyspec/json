@@ -1,7 +1,6 @@
 // Package tests for the JavaScript value API of the binding @polyspec/json, run by node:test (make test-js). They are the tests
 // of the legacy package @polyspec/ordered-json with no change beyond the changes of packages/rust/interface.json, each named
-// where it applies (docs/spec/json-contract.md#transition, T3.25-1). The assertion of a direct construction of Value waits
-// for the binding 0.0.15.
+// where it applies (docs/spec/json-contract.md#transition, T3.25-1).
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {JsonTypeError, JsonValueError, MAX_DEPTH, OrderedMap, ParseError, Value, parse, stringify} from '@polyspec/json';
@@ -21,6 +20,7 @@ const names = value => [...value.members()].map(([key]) => key.stringValue());
 // Requirements: RQ-012
 test('values_come_only_from_the_library', () => {
   // change-errors, change-messages: a refused argument is a JsonTypeError with its kind.
+  assert.throws(() => new Value(), {name: 'JsonTypeError', kind: 'direct_construction'});
   assert.throws(() => stringify({kind: 'array'}), {name: 'JsonTypeError', kind: 'invalid_argument_type'});
   assert.throws(() => stringify(null), {name: 'JsonTypeError', kind: 'invalid_argument_type'});
   assert.equal(stringify(parse('[1]')), '[1]');

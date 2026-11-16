@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: a94f935b75d4a75df5ed2ac07161e2f239f743a24c15aa154248aefcc62e7dc0 -->
+<!-- source-sha256: 5e33092c0fee2f3847d759aa4a7622432b92373f960464671c6f62da523ebd5e -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- JavaScript와 Python의 패키지 시험이 binding v0.0.16을 기다리던 곳에서 그것이 내는 kind를 단언한다(T3.47): `Value`의 직접 생성은 `direct_construction`이고, `ParseError`의 생성자(binding GN-7a)는 message와 그 class의 kind를 받고 다른 인자를 `invalid_argument_type`으로 거부한다. Python에서 0보다 작은 code unit은 `invalid_number`(RQ-029는 `invalid_code_unit`)이고 위치로 준 option은 kind 없는 `TypeError`다. binding 0.0.18까지 binding v0.0.16이 내는 대로다. Green: `make test-js`(47), `make test-python`(47), `make lint-ts`, `make lint-python`.
 
 - 저장소가 binding v0.0.16을 pin한다(T3.47). 도구 `@polyspec/binding`과 모든 crate의 `polyspec-binding-core`이며, orm, crud-ui, hyper가 `polyspec-binding-core` 하나를 함께 쓰는 release다: `binding generate`와 `binding check`는 `--cargo <command>`를 받고(GN-1d) Makefile이 그것을 넘긴다. 생성된 Python crate는 그대로 쓰는 이름만 import한다(B2.418). v0.0.15는 그 crate를 컴파일하지 못했다. 패키지 시험은 정수가 아닌 depth limit에 대해 binding의 kind를 단언한다(B2.412): 다른 타입의 값은 `invalid_argument_type`, 수는 `invalid_number`다.
 

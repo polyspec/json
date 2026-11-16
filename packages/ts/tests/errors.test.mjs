@@ -1,8 +1,8 @@
 // Requirements: RQ-005, RQ-025. Every error that the binding @polyspec/json throws names its kind on `kind`: a ParseError the
 // rejection kinds of the JSON contract, a JsonTypeError or JsonValueError the argument kinds (change-errors). Each kind has an
 // accepting and a refusing site. The test of the legacy package with no change beyond the changes of
-// packages/rust/interface.json, each named where it applies (T3.25-1); the sites of direct_construction and the test of the
-// kinds that cannot arise in JavaScript wait for binding.
+// packages/rust/interface.json, each named where it applies (T3.25-1); the test of the kinds that cannot arise in JavaScript
+// waits for the removal of the legacy package.
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {JsonTypeError, JsonValueError, OrderedMap, ParseError, Value, parse, stringify} from '@polyspec/json';
@@ -45,6 +45,7 @@ const cases = [
   ['depth_limit_out_of_range', JsonValueError, () => parse('1', {maxDepth: 256}), () => parse('1', {maxDepth: 257})],
   ['invalid_argument_type', JsonTypeError, () => Value.string('a'), () => Value.string(1)],
   ['host_serialization_refused', JsonTypeError, () => stringify(parse('1')), () => JSON.stringify(parse('1'))],
+  ['direct_construction', JsonTypeError, () => Value.null(), () => new Value()],
 ];
 
 test('every kind has an accepting and a refusing site', () => {
@@ -84,4 +85,12 @@ test('every refused argument carries its kind', () => {
     assert.equal(kind(run), 'invalid_argument_type', String(run));
   }
   assert.equal(kind(() => JSON.stringify({nested: [parse('1')]})), 'host_serialization_refused');
+  // A ParseError is constructed directly (binding GN-7a): its constructor takes a message and a kind of the class, and
+  // refuses another argument with invalid_argument_type.
+  const made = new ParseError('m', 'expected_value');
+  assert.ok(made instanceof ParseError);
+  assert.equal(made.kind, 'expected_value');
+  for (const args of [['m', 'not_a_kind'], ['m', 'invalid_argument_type'], ['m', 1], []]) {
+    assert.equal(kind(() => new ParseError(...args)), 'invalid_argument_type', JSON.stringify(args));
+  }
 });

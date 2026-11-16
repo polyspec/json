@@ -3,9 +3,9 @@
 Requirements: RQ-005, RQ-025. Every error that the binding raises names its kind on `kind`: a ParseError the rejection
 kinds of the JSON contract, a JSONTypeError or JSONValueError the argument kinds (change-errors). Each kind has an accepting
 and a refusing site. The test of the legacy package with no change beyond the changes of packages/rust/interface.json, each
-named where it applies (T3.25-2); the sites of direct_construction, of a positional option and of a code unit that is no
-integer wait for the binding 0.0.15, and the test of the kinds that cannot arise in Python for the removal of the legacy
-package.
+named where it applies (T3.25-2). A code unit below 0 and an option given by position are refused as the binding v0.0.16
+refuses them until the binding 0.0.18; the test of the kinds that cannot arise in Python waits for the removal of
+the legacy package.
 """
 
 import json
@@ -113,6 +113,7 @@ CASES = [
     ),
     # change-host-hooks: Python has no hook, and json.dumps refuses a value with its own error, so the kind
     # host_serialization_refused cannot arise in Python.
+    ("direct_construction", TypeError, lambda: Value.null(), lambda: Value()),
 ]
 
 
@@ -207,6 +208,22 @@ class ErrorKindCases(unittest.TestCase):
         # change-host-hooks: json.dumps refuses a value that a native structure embeds with its own error.
         with self.assertRaises(TypeError):
             json.dumps({"nested": [parse("1")]})
+        # A ParseError is constructed directly (binding GN-7a): its constructor takes a message and a kind of the class,
+        # and refuses another argument with invalid_argument_type.
+        self.assertEqual(ParseError("m", "expected_value").kind, "expected_value")
+        for args in (("m", "not_a_kind"), ("m", "invalid_argument_type"), ("m", 1)):
+            with self.subTest(args=args):
+                self.assertEqual(
+                    self.kind(lambda: ParseError(*args)), "invalid_argument_type"
+                )
+        # The binding v0.0.16 refuses a code unit below 0 with invalid_number, where RQ-029 names invalid_code_unit, and an
+        # option given by position with a TypeError of Python with no kind; binding 0.0.18 changes both.
+        self.assertEqual(
+            self.kind(lambda: Value.from_units([-1]), ValueError), "invalid_number"
+        )
+        with self.assertRaises(TypeError) as caught:
+            parse("1", "options")
+        self.assertNotIsInstance(getattr(caught.exception, "kind", None), str)
 
 
 if __name__ == "__main__":

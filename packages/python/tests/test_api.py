@@ -2,8 +2,7 @@
 
 Every case of the shared standard runs here, and the package cases cover the API of this binding alone. The binding is
 installed into the venv of make binding-python-package, whose interpreter make test-python runs. The tests of the legacy
-package with no change beyond the changes of packages/rust/interface.json, each named where it applies (T3.25-2); the
-assertions of a direct construction of Value wait for the binding 0.0.15.
+package with no change beyond the changes of packages/rust/interface.json, each named where it applies (T3.25-2).
 """
 
 import json
@@ -146,6 +145,10 @@ class StandardCases(unittest.TestCase):
 
     # Requirements: RQ-012
     def test_values_come_only_from_the_library(self):
+        # change-errors: a refused construction is a JSONTypeError with its kind.
+        with self.assertRaises(TypeError) as caught:
+            Value()
+        self.assertEqual(caught.exception.kind, "direct_construction")
         with self.assertRaises(TypeError):
             stringify({"a": 1})
 
