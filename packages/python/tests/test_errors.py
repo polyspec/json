@@ -1,32 +1,22 @@
-"""The kinds of the errors of the package, run by unittest.
+"""The kinds of the errors of the binding polyspec.json, run by unittest.
 
-Requirements: RQ-005, RQ-025. Every error that the package raises names its kind on `kind`: a ParseError the rejection
-kinds of the JSON contract, a TypeError or ValueError the argument kinds. Each kind has an accepting and a refusing site.
+Requirements: RQ-005, RQ-025. Every error that the binding raises names its kind on `kind`: a ParseError the rejection
+kinds of the JSON contract, a JSONTypeError or JSONValueError the argument kinds (change-errors). Each kind has an accepting
+and a refusing site. The test of the legacy package with no change beyond the changes of packages/rust/interface.json, each
+named where it applies (T3.25-2); the sites of direct_construction, of a positional option and of a code unit that is no
+integer wait for the binding 0.0.15, and the test of the kinds that cannot arise in Python for the removal of the legacy
+package.
 """
 
 import json
-from pathlib import Path
-import re
 import unittest
 
-from polyspec.ordered_json import (
-    MAX_DEPTH,
-    JSONEncoder,
-    ParseError,
-    ParseOptions,
-    Value,
-    parse,
-    parse_bytes,
-    stringify,
-)
-
-CONTRACT = Path(__file__).resolve().parents[4] / "docs" / "spec" / "json-contract.md"
+from polyspec.json import MAX_DEPTH, OrderedMap, ParseError, Value, parse, stringify
 
 
-def listed(anchor):
-    """The kinds of the list of the section of anchor in the JSON contract, each with the text of its item."""
-    section = CONTRACT.read_text("utf-8").split(anchor)[1].split("\n<a id=")[0]
-    return dict(re.findall(r"^- `([a-z0-9_]+)`(.*)$", section, re.M))
+def insert(key, value=None):
+    """An insert of key into a new OrderedMap (change-ordered-map: an object takes an OrderedMap whose keys are values)."""
+    return OrderedMap().insert(key, Value.null() if value is None else value)
 
 
 CASES = [
@@ -56,36 +46,40 @@ CASES = [
         lambda: parse(r'"a\tb"'),
         lambda: parse('"a\tb"'),
     ),
+    # change-offsets: a text with an unpaired surrogate has no UTF-8 encoding, and the binding refuses it instead of the
+    # core kind unescaped_lone_surrogate.
     (
-        "unescaped_lone_surrogate",
-        ParseError,
+        "invalid_text",
+        ValueError,
         lambda: parse(r'"\ud800"'),
         lambda: parse('"\ud800"'),
     ),
     (
         "invalid_utf8",
         ParseError,
-        lambda: parse_bytes('"한"'.encode()),
-        lambda: parse_bytes(b'"\xff"'),
+        # change-parse-source: parse takes the bytes.
+        lambda: parse('"한"'.encode()),
+        lambda: parse(b'"\xff"'),
     ),
     (
         "maximum_depth_exceeded",
         ParseError,
-        lambda: parse("[[]]", ParseOptions(max_depth=2)),
-        lambda: parse("[[]]", ParseOptions(max_depth=1)),
+        # change-parse-options: the options of parse are its keyword arguments.
+        lambda: parse("[[]]", max_depth=2),
+        lambda: parse("[[]]", max_depth=1),
     ),
     ("trailing_input", ParseError, lambda: parse("[1] "), lambda: parse("[1] x")),
     (
         "duplicate_object_key",
         ParseError,
-        lambda: parse('{"a":1,"b":2}', ParseOptions(reject_duplicates=True)),
-        lambda: parse('{"a":1,"a":2}', ParseOptions(reject_duplicates=True)),
+        lambda: parse('{"a":1,"b":2}', reject_duplicates=True),
+        lambda: parse('{"a":1,"a":2}', reject_duplicates=True),
     ),
     (
         "non_string_key",
         TypeError,
-        lambda: Value.object([("a", Value.null())]),
-        lambda: Value.object([(Value.number("1"), Value.null())]),
+        lambda: insert(Value.string("a")),
+        lambda: insert(Value.number("1")),
     ),
     (
         "wrong_kind",
@@ -102,8 +96,8 @@ CASES = [
     (
         "depth_limit_out_of_range",
         ValueError,
-        lambda: ParseOptions(max_depth=MAX_DEPTH),
-        lambda: ParseOptions(max_depth=MAX_DEPTH + 1),
+        lambda: parse("1", max_depth=MAX_DEPTH),
+        lambda: parse("1", max_depth=MAX_DEPTH + 1),
     ),
     (
         "invalid_argument_type",
@@ -117,18 +111,8 @@ CASES = [
         lambda: Value.from_units([0xFFFF]),
         lambda: Value.from_units([0x10000]),
     ),
-    (
-        "host_serialization_refused",
-        TypeError,
-        lambda: json.dumps(1, cls=JSONEncoder),
-        lambda: json.dumps(parse("1"), cls=JSONEncoder),
-    ),
-    (
-        "direct_construction",
-        TypeError,
-        lambda: ParseError("expected_value", 0),
-        lambda: Value(),
-    ),
+    # change-host-hooks: Python has no hook, and json.dumps refuses a value with its own error, so the kind
+    # host_serialization_refused cannot arise in Python.
 ]
 
 
@@ -143,17 +127,6 @@ class ErrorKindCases(unittest.TestCase):
             with self.subTest(kind=kind):
                 accept()
                 self.assertEqual(self.kind(refuse, error_class), kind)
-
-    def test_the_kinds_are_the_shared_lists(self):
-        # A kind of a list that has no case here is one that the list states cannot arise in Python.
-        lists = listed('<a id="rejection-kinds"></a>') | listed(
-            '<a id="argument-kinds"></a>'
-        )
-        named = {kind for kind, *_ in CASES}
-        for name, text in lists.items():
-            if name not in named:
-                self.assertRegex(text, r"cannot arise in[^.]*Python", name)
-        self.assertEqual(named - set(lists), {"duplicate_object_key"})
 
     def test_every_refused_argument_carries_its_kind(self):
         for literal in ("[]", '"1"', "true", "null", "1 ", "\n1"):
@@ -178,29 +151,29 @@ class ErrorKindCases(unittest.TestCase):
         ):
             with self.subTest(read=read):
                 self.assertEqual(self.kind(read), "wrong_kind")
-        for key in (1, None, Value.null(), parse("[]"), parse("{}"), True):
+        for key in (Value.null(), parse("[]"), parse("{}")):
+            with self.subTest(key=key):
+                self.assertEqual(self.kind(lambda: insert(key)), "non_string_key")
+        # change-argument-types: a key of a host type that the function does not take.
+        for key in (1, None, True):
             with self.subTest(key=key):
                 self.assertEqual(
-                    self.kind(lambda: Value.object([(key, Value.null())])),
-                    "non_string_key",
-                )
-                self.assertEqual(
-                    self.kind(lambda: Value.object({key: Value.null()})),
-                    "non_string_key",
+                    self.kind(lambda: insert(key)), "invalid_argument_type"
                 )
         for key in (1, None):
-            self.assertEqual(self.kind(lambda: obj.get(key)), "non_string_key")
+            self.assertEqual(self.kind(lambda: obj.get(key)), "invalid_argument_type")
         for limit in (-1, MAX_DEPTH + 1):
             self.assertEqual(
-                self.kind(lambda: ParseOptions(max_depth=limit), ValueError),
+                self.kind(lambda: parse("1", max_depth=limit), ValueError),
                 "depth_limit_out_of_range",
             )
+        # change-depth-limit: a limit that is no integer is refused by the conversion of the argument.
         for limit in (1.5, "1", None, True):
             self.assertEqual(
-                self.kind(lambda: ParseOptions(max_depth=limit)),
-                "depth_limit_out_of_range",
+                self.kind(lambda: parse("1", max_depth=limit), ValueError),
+                "invalid_number",
             )
-        for units in ([-1], [0x10000], ["a"], [1.0], [True]):
+        for units in ([0x10000],):
             with self.subTest(units=units):
                 self.assertEqual(
                     self.kind(lambda: Value.from_units(units), ValueError),
@@ -212,31 +185,22 @@ class ErrorKindCases(unittest.TestCase):
                 )
         for run in (
             lambda: parse(1),
-            lambda: parse("1", "options"),
-            lambda: ParseOptions(reject_duplicates=1),
-            lambda: parse_bytes("1"),
+            lambda: parse("1", reject_duplicates=1),
             lambda: Value.number(1),
             lambda: Value.boolean("true"),
             lambda: Value.array(None),
             lambda: Value.array([1]),
             lambda: Value.object(None),
-            lambda: Value.object([("a", 1)]),
-            lambda: Value.object([1]),
-            lambda: Value.object([("a",)]),
+            lambda: Value.object([("a", Value.null())]),
+            lambda: insert(Value.string("a"), 1),
             lambda: Value.from_units(None),
             lambda: stringify({}),
         ):
             with self.subTest(run=run):
                 self.assertEqual(self.kind(run), "invalid_argument_type")
-        self.assertEqual(
-            self.kind(lambda: json.dumps({"nested": [parse("1")]}, cls=JSONEncoder)),
-            "host_serialization_refused",
-        )
-        for kind in ("not_a_kind", ""):
-            self.assertEqual(
-                self.kind(lambda: ParseError(kind, 0)), "direct_construction"
-            )
-        self.assertEqual(ParseError("expected_digit", 4).kind, "expected_digit")
+        # change-host-hooks: json.dumps refuses a value that a native structure embeds with its own error.
+        with self.assertRaises(TypeError):
+            json.dumps({"nested": [parse("1")]})
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 <!-- doc-id: development -->
-<!-- source-sha256: ff30a5fabd6b2115ea8bd2b90d82268f90f3d43aca3474b36bb2243ee26705e5 -->
+<!-- source-sha256: 456b3b9b33b3a9c98cdfda74c1e8badc569171eaba41ca3222655d788c8e97cd -->
 # Development procedure
 
 [English](AGENTS.md)
@@ -211,7 +211,7 @@
 
 - Own: 패키지는 `make json-python-check`로 이 패키지만 검사하며, 이 target은 `make verify-python`을 실행합니다. `make lint-python`(`ruff.toml`을 쓰는 ruff와 `legacy/packages/python/vulture_whitelist.py`를 쓰는 vulture)이 lint합니다. `make install-packages`가 `legacy/packages/python/.venv`에 editable로 설치하며, 테스트가 이를 씁니다.
   Enforced by: `make lint-python`
-- Own: 패키지 테스트는 `legacy/packages/python/tests`의 unittest 테스트이며, `make test-python`이 실행합니다.
+- Own: 패키지 테스트는 바인딩으로 옮겨졌고, `make test-python`이 실행하는 `packages/python/tests`의 unittest 테스트입니다(T3.25-2); `legacy/packages/python/tests`에는 공유 verifier의 probe와 differential 시험이 남습니다.
   Enforced by: `make test-python`
 - Own: 패키지의 변경은 [CHANGELOG.ko.md](CHANGELOG.ko.md)의 이 패키지 절에 적습니다.
   Enforced by: `make docs-check`

@@ -108,8 +108,8 @@ json-install-php:
 
 # json-install-python makes legacy/packages/python/.venv from the Python of mise.toml (python-venv of kit) and installs the package
 # into it, non-editable, with the uv of mise.toml. make install-link then makes the installed package folder a link to
-# legacy/packages/python/src/polyspec/ordered_json (kit K765), so the tests import the sources of the checkout; make test-python runs the
-# Python tests with its interpreter.
+# legacy/packages/python/src/polyspec/ordered_json (kit K765), so the differential test (make test-differential-python) imports the sources of the checkout with its
+# interpreter.
 json-install-python:
 	$(MAKE) --no-print-directory python-venv DIR=legacy/packages/python/.venv
 	$(ONLINE) $(UV) pip install --python legacy/packages/python/.venv/bin/python --link-mode copy --no-deps legacy/packages/python
@@ -202,6 +202,7 @@ json-rust-test: json-rust-check
 # change of the Python parser; it is no target of make check.
 python-parse-budget:
 	$(MAKE) --no-print-directory install-tools TOOLS="python php"
+	$(MAKE) --no-print-directory binding-python-package
 	$(PYTHON) benchmarks/python-parse/run.py
 
 # ---- The recipes of the bootstrap and the installs, which run the utilities of the installed kit --------------------------
@@ -299,8 +300,10 @@ test-js: binding-node-addon
 	$(NODE) $(KIT)/runtime-targets.mjs test --runner node --roots packages/ts/tests -- --test-timeout=30000 --test-concurrency=1
 test-php:
 	$(NODE) $(KIT)/runtime-targets.mjs test --runner php --roots legacy/packages/php
-test-python:
-	PYTHONUNBUFFERED=1 NO_COLOR=1 PYTHON_COLORS=0 $(NODE) $(KIT)/runtime-targets.mjs test --runner python --roots legacy/packages/python --venv .venv
+# test-python runs the package tests of packages/python/tests against the binding polyspec.json, installed in the venv of
+# binding-python-package (T3.25-2).
+test-python: binding-python-package
+	PYTHONUNBUFFERED=1 NO_COLOR=1 PYTHON_COLORS=0 $(NODE) $(KIT)/runtime-targets.mjs test --runner python --roots packages/python --venv ../../var/bindings/venv
 test-rust:
 	$(NODE) $(KIT)/runtime-targets.mjs test --runner cargo --roots packages/rust -- -p polyspec-json -- --test-threads=1
 
@@ -552,12 +555,12 @@ kit-gates-static: layout-check docs-check rules-check owner-validate rebuild-che
 kit-gates-verify: verify-all
 kit-gates-runtime-ts: lint-ts
 kit-gates-runtime-php: lint-php test-php
-kit-gates-runtime-python: lint-python test-python
+kit-gates-runtime-python: lint-python
 kit-gates-runtime-go: lint-go test-go
 kit-gates-runtime-rust: lint-rust fmt-check test-rust
 kit-gates-runtime-php-ext: lint-php-ext test-php-ext
 # kit-gates-bindings runs in the job bindings, which installs the tools of every target of the contract.
-kit-gates-bindings: lint-bindings check-declarations test-binding-crates test-binding-python test-binding-node test-binding-wasm test-binding-php test-binding-go test-differential-js test-differential-python test-js
+kit-gates-bindings: lint-bindings check-declarations test-binding-crates test-binding-python test-binding-node test-binding-wasm test-binding-php test-binding-go test-differential-js test-differential-python test-js test-python
 
 # kit-ci-plan writes the fan-out of the pipeline, the jobs and runners of config/ci.json, to GITHUB_OUTPUT.
 kit-ci-plan:

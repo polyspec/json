@@ -69,9 +69,10 @@ export const COMMANDS: Record<string, Commands> = {
     artifacts: ['{php-extension}/src/modules/polyspec_ordered_json.so'],
   },
   python: {
-    // The virtual environment of make json-install-python, into which the package is installed.
-    command: ['{python}/.venv/bin/python', '{python}/tests/probe.py'],
-    runtime: { python: ['{python}/.venv/bin/python', '-c', 'import platform; print(platform.python_version())'] },
+    // The binding polyspec.json of packages/python, installed by make binding-python-package into its virtual environment.
+    prepare: [{ cwd: '{repository}', command: ['make', 'binding-python-package'] }],
+    command: ['{repository}/var/bindings/venv/bin/python', '{python}/tests/probe.py'],
+    runtime: { python: ['{repository}/var/bindings/venv/bin/python', '-c', 'import platform; print(platform.python_version())'] },
   },
 };
 

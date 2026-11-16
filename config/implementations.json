@@ -35,9 +35,9 @@
     {
       "name": "python",
       "roots": [
-        "legacy/packages/python"
+        "packages/python"
       ],
-      "command": "legacy/packages/python/.venv/bin/python"
+      "command": "var/bindings/venv/bin/python"
     }
   ]
 }

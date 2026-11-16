@@ -1,20 +1,21 @@
-"""The official examples of examples/official.json (requirement RQ-022), run by unittest.
+"""The official examples of examples/official.json (requirement RQ-022), run by unittest against the binding polyspec.json.
 
 Each case is the test method test_<id>. A case parses its input
 and compares the source text, the compact serialization and the value tree with the expected results, then the tree of the
-reparsed serialization and of the value rebuilt through the factories (docs/spec/json-contract.md#acceptance).
+reparsed serialization and of the value rebuilt through the factories (docs/spec/json-contract.md#acceptance). The test
+of the legacy package with no change beyond change-names (T3.25-2).
 """
 
 import json
 import unittest
 from pathlib import Path
 
-from polyspec.ordered_json import parse, stringify
+from polyspec.json import parse, stringify
 
 from .shape import rebuild, tree
 
 OFFICIAL = json.loads(
-    (Path(__file__).resolve().parents[4] / "examples/official.json").read_text(
+    (Path(__file__).resolve().parents[3] / "examples/official.json").read_text(
         encoding="utf-8"
     )
 )

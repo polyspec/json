@@ -210,7 +210,7 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
 
 - Own: The package is checked alone by `make json-python-check`, which runs `make verify-python`, and linted by `make lint-python` (ruff with `ruff.toml`, and vulture with `legacy/packages/python/vulture_whitelist.py`). `make install-packages` installs it editable into `legacy/packages/python/.venv`, which its tests use.
   Enforced by: `make lint-python`
-- Own: Its package tests are the unittest tests of `legacy/packages/python/tests` that `make test-python` runs.
+- Own: Its package tests moved to the binding, the unittest tests of `packages/python/tests` that `make test-python` runs (T3.25-2); `legacy/packages/python/tests` keeps the probe of the shared verifier and the differential test.
   Enforced by: `make test-python`
 - Own: The changes of the package are listed in its section of [CHANGELOG.md](CHANGELOG.md).
   Enforced by: `make docs-check`

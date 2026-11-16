@@ -3,31 +3,26 @@
 
 Reads a document path on each input line and answers one JSON line per
 document. No test cases or expectations live here; the common verifier
-supplies the documents.
+supplies the documents. The probe of the binding polyspec.json, the probe of
+the legacy package with no change beyond the changes of
+packages/rust/interface.json, each named where it applies (T3.25-2).
 """
 
 import json
 import sys
 from pathlib import Path
 
-from polyspec.ordered_json import (
-    ParseError,
-    ParseOptions,
-    Value,
-    parse,
-    parse_bytes,
-    stringify,
-)
+from polyspec.json import OrderedMap, ParseError, Value, parse, stringify
 from shape import rebuild, tree
 
 # The calls of an argument request {"call": call, "argument": argument} of the shared verifier.
 CALLS = {
     "number": lambda argument: Value.number(argument.string_value()),
-    "max_depth": lambda argument: parse(
-        "1", ParseOptions(max_depth=int(argument.number_literal()))
-    ),
+    # change-parse-options: the options of parse are its keyword arguments.
+    "max_depth": lambda argument: parse("1", max_depth=int(argument.number_literal())),
     "string_value": lambda argument: argument.string_value(),
-    "object_key": lambda argument: Value.object([(argument, Value.null())]),
+    # change-ordered-map: an object takes an OrderedMap whose keys are values.
+    "object_key": lambda argument: OrderedMap().insert(argument, Value.null()),
 }
 
 
@@ -47,8 +42,9 @@ for line in sys.stdin:
         print(json.dumps(call(line.rstrip("\r\n"))), flush=True)
         continue
     data = Path(line.rstrip("\r\n")).read_bytes()
+    # change-parse-source: parse takes the bytes.
     try:
-        value = parse_bytes(data)
+        value = parse(data)
     except ParseError as error:
         print(
             json.dumps(
@@ -63,7 +59,7 @@ for line in sys.stdin:
         )
         continue
     serialized = stringify(value)
-    roundtrip = parse_bytes(serialized.encode("utf-8"))
+    roundtrip = parse(serialized.encode("utf-8"))
     factory = stringify(Value.string('quote " slash \\ line\n 한 🌍'))
     print(
         json.dumps(
@@ -71,7 +67,8 @@ for line in sys.stdin:
                 "ok": True,
                 "raw": value.raw,
                 "serialized": serialized,
-                "compact": value.compact(),
+                # change-stringify: stringify is the one serializer.
+                "compact": stringify(value),
                 "tree": tree(value),
                 "roundtrip": stringify(roundtrip),
                 "roundtrip_tree": tree(roundtrip),
