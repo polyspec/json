@@ -29,7 +29,7 @@
 
 T3.24-1 tracks the independent native PHP asset matrix and its source assertions ([native asset jobs](spec/json-contract.md#native-assets)). Native minor selection and the full asset jobs have no proof until the expected-minor provider gate is released, the recipes are regenerated and the native jobs pass.
 
-The previous native macOS and PIE records are not current evidence. The PIE package of the binding installs a pre-packaged binary of a published release, so no local PIE check exists; a later row (T3.25-5) checks the PIE install against the published release.
+The previous native macOS and PIE records are not current evidence. The PIE package of the binding installs a pre-packaged binary of a published release, so no check of a checkout builds it. `make release-pie-check` (T3.25-5), which `make ci-release` runs after `release-undraft`, downloads the package of the published release with PIE (`pie download`, which writes nothing into the PHP of the machine), checks the version of that extension and runs the probe of the shared verifier with it. It checks the one PHP minor and platform of the release job (PHP 8.4 on Linux x86_64), and it runs after the release is public, so its failure reports a published release and does not stop it.
 
 Passing shared cases establishes their recorded acceptance criteria. It does not establish exhaustive input coverage, all declared minimum runtimes, all platforms, or every host encoder integration. See [verification limits](operations/validation.md#limits). Source metadata contains development version strings. A row marked `published` names the release tag and the asset of its GitHub release; `make evidence-check` checks that form.
 

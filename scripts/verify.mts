@@ -17,7 +17,7 @@ import { reference, Rejected, type Accepted } from './reference.mts';
 import { AGGREGATE_RECORD, externalPins, inputIssues, manifestDifferences, packageRevisions, sourceManifest, supplementaryManifest, writeRecord, type Manifest, type Supplementary } from './records.mts';
 import { parseJson } from './json.mts';
 import { present } from './present.mts';
-import { Failures, IMPLEMENTATIONS, ROOT, argumentCases, officialCases, endGroup, fixturePaths, prepare, probeCommands, runtimeVersions, withRun, type Argv, type Call, type Run } from './registry.mts';
+import { Failures, IMPLEMENTATIONS, REGISTRY, ROOT, argumentCases, extensionRegistry, officialCases, endGroup, fixturePaths, prepare, probeCommands, runtimeVersions, withRun, type Argv, type Call, type Run } from './registry.mts';
 
 /** The text that every probe builds through its string factory, compact. */
 const FACTORY_STRING = '"quote \\" slash \\\\ line\\n \\ud55c \\ud83c\\udf0d"';
@@ -342,11 +342,11 @@ export async function verifyProbes(commands: Record<string, Argv>, suite?: strin
 }
 
 /** Builds the selected implementations in `run` and verifies their probes; Failures names every failure of both steps. */
-export async function verify(selected: string[], run: Run, suite?: string, warnings: { implementation: string; message: string }[] = []) {
+export async function verify(selected: string[], run: Run, suite?: string, warnings: { implementation: string; message: string }[] = [], registry = REGISTRY) {
   const failures: string[] = [];
   const failed = new Set<string>();
   try {
-    warnings.push(...await prepare(selected, run));
+    warnings.push(...await prepare(selected, run, registry));
   } catch (error) {
     if (!(error instanceof Failures)) throw error;
     failures.push(...error.failures);
@@ -358,7 +358,7 @@ export async function verify(selected: string[], run: Run, suite?: string, warni
   let verified;
   if (built.length) {
     try {
-      verified = await verifyProbes(probeCommands(built, run), suite);
+      verified = await verifyProbes(probeCommands(built, run, registry), suite);
     } catch (error) {
       if (!(error instanceof Failures)) throw error;
       failures.push(...error.failures);
@@ -409,7 +409,8 @@ async function record(suite: string | undefined): Promise<void> {
 }
 
 async function main(): Promise<number> {
-  const { values } = parseArgs({ options: { only: { type: 'string', multiple: true }, suite: { type: 'string' }, record: { type: 'boolean' } } });
+  const { values } = parseArgs({ options: { only: { type: 'string', multiple: true }, suite: { type: 'string' }, record: { type: 'boolean' }, 'php-extension': { type: 'string' } } });
+  const extension = values['php-extension'];
   const suite = values.suite === undefined ? undefined : path.resolve(values.suite);
   if (suite !== undefined && !existsSync(path.join(suite, 'test_parsing'))) {
     console.error(`the supplementary suite ${values.suite} has no test_parsing/; ${SUITE_FIX}`);
@@ -424,9 +425,19 @@ async function main(): Promise<number> {
     console.error('--record verifies every implementation; it takes no --only');
     return 2;
   }
+  // --php-extension loads a given extension, that of a published release, so it writes no record of the checkout.
+  if (extension !== undefined && values.record) {
+    console.error('--php-extension verifies the extension of a release; it takes no --record');
+    return 2;
+  }
+  if (extension !== undefined && !existsSync(extension)) {
+    console.error(`the PHP extension ${extension} does not exist`);
+    return 2;
+  }
+  const registry = extension === undefined ? REGISTRY : extensionRegistry(path.resolve(extension));
   try {
     if (values.record) await record(suite);
-    else await withRun(run => verify(values.only ?? IMPLEMENTATIONS, run, suite));
+    else await withRun(run => verify(values.only ?? IMPLEMENTATIONS, run, suite, [], registry));
   } catch (error) {
     if (!(error instanceof Failures)) throw error;
     console.error(`verification failed with ${error.failures.length} failures${values.record ? '; no record was written' : ''}:`);

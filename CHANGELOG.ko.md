@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: d3aac832241f6b83c24e9c221edec778fc43ab030948c847465e52b35698e899 -->
+<!-- source-sha256: 44d970486552a1d500e8b82dc733dac3fa1f7819b911956922cdc7fe48e86a73 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- release가 자기 PIE 패키지를 검사한다(T3.25-5): `release-undraft` 뒤에 `make ci-release`가 `make release-pie-check`를 실행하고, 이것은 `mise.toml`의 PIE로 그 tag의 `polyspec/json`을 내려받아(`pie download`, 기계의 PHP에 아무것도 쓰지 않는다) 그 확장의 version을 확인하고 그 확장으로 공유 verifier의 probe를 돈다(`scripts/verify.mts --only php --php-extension <file>`). release job의 PHP minor와 platform 하나, Linux x86_64의 PHP 8.4를, release가 공개된 뒤에 검사한다. macOS arm64, PHP 8.4에서 v0.0.35에 대해 통과한다.
 
 ## 0.0.35
 

@@ -1,5 +1,5 @@
 <!-- doc-id: repositories -->
-<!-- source-sha256: e96f03012e4b91958c5ba262ad9e74420551cf2fc05cd36a6a6b0601d502fa63 -->
+<!-- source-sha256: 300c48206ec7df521230833341412f1e1757eb8c8e41fde79af20023b41291e3 -->
 # 저장소 계약
 
 [English](repositories.md)
@@ -41,7 +41,7 @@
 <a id="php-extension"></a>
 ## PHP 확장 패키지
 
-PHP 패키지는 `packages/php-ext`의 PIE 패키지 `polyspec/json`이며 확장 이름은 `polyspec_json`입니다. 이 패키지는 release의 pre-packaged binary를 설치하므로(`download-url-method` `pre-packaged-binary`) checkout은 PIE 패키지를 빌드하지 않으며, 뒤의 행(T3.25-5)이 공개된 release에 대해 `pie install`을 검사합니다. legacy 패키지 `polyspec/ordered-json`과 `polyspec/ordered-json-php-ext`는 마지막 release를 유지합니다. [PIE 유지보수 계약](https://github.com/php/pie/blob/1.4.10/docs/extension-maintainers.md)에 패키지 메타데이터와 설치 동작이 정의되어 있습니다.
+PHP 패키지는 `packages/php-ext`의 PIE 패키지 `polyspec/json`이며 확장 이름은 `polyspec_json`입니다. 이 패키지는 release의 pre-packaged binary를 설치하므로(`download-url-method` `pre-packaged-binary`) checkout은 PIE 패키지를 빌드하지 않으며, `make release-pie-check`(T3.25-5)가 공개된 release의 패키지를 검사합니다([검증](validation.ko.md)). legacy 패키지 `polyspec/ordered-json`과 `polyspec/ordered-json-php-ext`는 마지막 release를 유지합니다. [PIE 유지보수 계약](https://github.com/php/pie/blob/1.4.10/docs/extension-maintainers.md)에 패키지 메타데이터와 설치 동작이 정의되어 있습니다.
 
 <a id="state"></a>
 ## 구현 상태

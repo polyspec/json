@@ -6,7 +6,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import { checkJson, parseJson, readJsonFile } from '../../scripts/json.mts';
-import { COMMANDS, REGISTRY, ROOT, commandsOf, pathOf, loadRegistry, prepare, probeCommands, runStreamed, runtimeVersions, withRun, type Commands } from '../../scripts/registry.mts';
+import { COMMANDS, REGISTRY, ROOT, commandsOf, extensionRegistry, pathOf, loadRegistry, prepare, probeCommands, runStreamed, runtimeVersions, withRun, type Commands } from '../../scripts/registry.mts';
 import { parse } from 'smol-toml';
 import { checkout, known } from './checkout.mts';
 
@@ -121,4 +121,16 @@ test('the release declares the PHP extension as the Composer package that PIE in
   const release = tracked('config/release.json');
   assert.deepEqual(member(release, 'packages'), [{ kind: 'composer', directory: 'packages/php-ext', name, product: library, runtime: 'php-ext' }], 'config/release.json declares the Composer package of packages/php-ext');
   assert.equal(member(member(release, 'manifests'), 'packages/php-ext/composer.json'), 'archive', 'config/release.json releases packages/php-ext/composer.json as the manifest of its archive');
+});
+
+// T3.25-5: the release check loads the extension that PIE downloaded, so its registry builds nothing for PHP and names
+// that file; the other implementations keep their commands.
+test('T3.25-5: the registry of a given PHP extension loads that file and builds nothing for PHP', () => {
+  const registry = extensionRegistry('/release/polyspec_json.so');
+  const php = commandsOf('php', registry);
+  assert.equal(php.prepare, undefined);
+  assert.deepEqual(php.command.slice(0, 4), ['php', '-n', '-d', 'extension=/release/polyspec_json.so']);
+  assert.deepEqual(php.command.at(-1), commandsOf('php').command.at(-1));
+  assert.deepEqual(commandsOf('rust', registry), commandsOf('rust'));
+  assert.deepEqual(registry.roots, REGISTRY.roots);
 });

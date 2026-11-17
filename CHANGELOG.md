@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- A release checks its PIE package (T3.25-5): after `release-undraft`, `make ci-release` runs `make release-pie-check`, which downloads `polyspec/json` of the tag with the PIE of `mise.toml` (`pie download`, which writes nothing into the PHP of the machine), checks the version of that extension and runs the probe of the shared verifier with it (`scripts/verify.mts --only php --php-extension <file>`). It checks the one PHP minor and platform of the release job, PHP 8.4 on Linux x86_64, after the release is public. Against v0.0.35 on macOS arm64 with PHP 8.4 it passes.
+
 ## 0.0.35
 
 - The test of T3.54 derives the build tags of the Go binding from the inputs of the generator, the library of `packages/rust/interface.json` and the features of `packages/go/internal/ffi/Cargo.toml`: it read the generated Go tests, which Git ignores and the job shared does not write, so CI run 43993922998 failed it (HR-85).

@@ -411,3 +411,19 @@ test('T3.29: no recipe makes install-llvm, and the PHP job provisions LLVM on ma
     assert.match(readFileSync(path.join(ROOT, 'Makefile'), 'utf8'), new RegExp(`^ci-assets-php: ${name} :=$`, 'm'), `the recipe ci-assets-php runs with ${name} empty, which install-llvm-action exports`);
   }
 });
+
+// T3.25-5: PIE installs the pre-packaged binary of a published release, so only the release can check it: after
+// release-undraft, ci-release downloads polyspec/json of the tag with the PIE of mise.toml (pie download, which writes
+// nothing into the PHP of the machine) and runs the probe of the shared verifier with that extension.
+test('T3.25-5: the release checks the PIE package of the published release after release-undraft', () => {
+  const text = database();
+  const release = recipe(text, 'ci-release').filter(line => line.includes('$(MAKE)'));
+  assert.match(release.at(-2) ?? '', / release-undraft /, release.join('\n'));
+  assert.match(release.at(-1) ?? '', / release-pie-check TAG="\$\$TAG"$/, release.join('\n'));
+  const check = recipe(text, 'release-pie-check').join('\n');
+  assert.match(check, /mise install --locked http:pie/);
+  assert.match(check, /repository:add composer .*\/releases\/download\/\$\$TAG\/packages\.json/);
+  assert.match(check, / download .*:\$\$\{TAG#v\}/);
+  assert.doesNotMatch(check, /\binstall polyspec|pie\S* install\b/, 'the check installs nothing into the PHP of the machine');
+  assert.match(check, /scripts\/verify\.mts --only php --php-extension /);
+});

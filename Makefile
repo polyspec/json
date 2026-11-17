@@ -680,6 +680,27 @@ ci-release:
 	$(MAKE) --no-print-directory release-publish
 	$(MAKE) --no-print-directory release-platform-assets
 	$(MAKE) --no-print-directory release-undraft TAG="$$TAG"
+	$(MAKE) --no-print-directory release-pie-check TAG="$$TAG"
+# release-pie-check checks the PIE package of the published release TAG (T3.25-5): PIE installs the pre-packaged binary of a
+# release and builds nothing, so no checkout can check it. The PIE of mise.toml reads packages.json of the release and
+# downloads the binary of the PHP that runs it into var/release/pie/<tag> (pie download, which writes nothing into the PHP
+# of the machine); the recipe checks the version of that extension and runs the probe of the shared verifier with it. In the
+# release it checks the one PHP and platform of its job, after the release is public.
+.PHONY: release-pie-check
+PIE_WORK = $(CURDIR)/var/release/pie/$$TAG
+PIE_RUN = PIE_WORKING_DIRECTORY="$(PIE_WORK)" $(ONLINE) $(PHP) "$$($(KIT_TOOLS)/bin/mise where http:pie)/pie"
+release-pie-check:
+	@test -n "$$TAG" || { echo 'release-pie-check: TAG is required, for example make release-pie-check TAG=v0.0.35' >&2; exit 2; }
+	$(ONLINE) $(KIT_TOOLS)/bin/mise install --locked http:pie
+	mkdir -p "$(PIE_WORK)"
+	$(PIE_RUN) repository:add composer "$$($(NODE) -p 'require("./config/release.json").repositoryUrl')/releases/download/$$TAG/packages.json" --no-interaction --no-ansi
+	$(PIE_RUN) download "$$($(NODE) -p 'require("./config/release.json").packages[0].name'):$${TAG#v}" --no-interaction --no-ansi
+	@set -e; extension="$$(find "$(PIE_WORK)" -name 'polyspec_json.so')"; \
+	test -f "$$extension" || { echo "release-pie-check: PIE downloaded no one polyspec_json.so into $(PIE_WORK): $$extension" >&2; exit 1; }; \
+	version="$$($(PHP) -n -d "extension=$$extension" -r 'echo phpversion("polyspec_json");')"; \
+	test "$$version" = "$${TAG#v}" || { echo "release-pie-check: the extension of $$TAG reports the version $$version" >&2; exit 1; }; \
+	echo "release-pie-check: $$extension, version $$version"; \
+	$(NODE) scripts/verify.mts --only php --php-extension "$$extension"
 # release-tag tags the commit of the successful CI run RUN; AUTO=1 releases only the version commit of the top version.
 release-tag:
 	RELEASE_MAIN=origin/main $(NODE) $(KIT)/release-run.mjs tag "$$RUN"$(if $(AUTO), --auto)

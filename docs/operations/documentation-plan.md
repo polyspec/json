@@ -43,7 +43,7 @@ After a proposal is approved, update the specification and remove the proposal d
 
 The Korean file's `source-sha256` comment records the English revision reviewed for that translation. Update it only after reviewing the translation. Matching hashes do not prove translation accuracy. The checker does not verify external website availability or prose meaning; those require review against code and test results.
 
-`make check` runs the verifier tests, every registered JSON implementation, and the evidence check with `--records` (`make verify-all`), which also rejects an aggregate record of the checkout (`var/records`) whose source hashes differ from the current sources. The PIE install of the binding extension is checked against the published release (T3.25-5). Hosted CI runs these checks: `.github/workflows/ci.yml` runs the full suite on every pushed commit of `main` and every pull request ([hosted CI](validation.md#ci)).
+`make check` runs the verifier tests, every registered JSON implementation, and the evidence check with `--records` (`make verify-all`), which also rejects an aggregate record of the checkout (`var/records`) whose source hashes differ from the current sources. The PIE package of the binding extension is checked against the published release by `make release-pie-check` (T3.25-5, [validation](validation.md)). Hosted CI runs these checks: `.github/workflows/ci.yml` runs the full suite on every pushed commit of `main` and every pull request ([hosted CI](validation.md#ci)).
 
 <a id="records"></a>
 ## Technical records

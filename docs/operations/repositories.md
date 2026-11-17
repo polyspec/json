@@ -40,7 +40,7 @@ For a shared contract change, update the verifier, affected implementations, and
 <a id="php-extension"></a>
 ## PHP extension package
 
-The PHP package is the PIE package `polyspec/json` of `packages/php-ext`, extension name `polyspec_json`, which installs the pre-packaged binary of a release (`download-url-method` `pre-packaged-binary`), so a checkout builds no PIE package; a later row (T3.25-5) checks `pie install` against the published release. The legacy packages `polyspec/ordered-json` and `polyspec/ordered-json-php-ext` keep their last release. The [PIE maintainer contract](https://github.com/php/pie/blob/1.4.10/docs/extension-maintainers.md) defines package metadata and install behavior.
+The PHP package is the PIE package `polyspec/json` of `packages/php-ext`, extension name `polyspec_json`, which installs the pre-packaged binary of a release (`download-url-method` `pre-packaged-binary`), so a checkout builds no PIE package; `make release-pie-check` (T3.25-5) checks the package of the published release ([validation](validation.md)). The legacy packages `polyspec/ordered-json` and `polyspec/ordered-json-php-ext` keep their last release. The [PIE maintainer contract](https://github.com/php/pie/blob/1.4.10/docs/extension-maintainers.md) defines package metadata and install behavior.
 
 <a id="state"></a>
 ## Implementation state

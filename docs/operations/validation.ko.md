@@ -1,5 +1,5 @@
 <!-- doc-id: validation -->
-<!-- source-sha256: a100998d69e781127fa83b1fb19d16790307c6a44d66f36812931e2875c9efe8 -->
+<!-- source-sha256: 7282cffd9487b7f85ee8fbf8ece0f50dcdc2d88c807a4a50a776ceba34fa38b7 -->
 # 검증
 
 [English](validation.md)
@@ -21,7 +21,7 @@ make check
 <a id="records"></a>
 ## 기록
 
-commit의 근거는 그것을 검증하는 실행입니다. `make verify-all`은 통합 기록 `var/records/verification.json`을 씁니다. Git은 `var/`를 무시하므로 어떤 기록도 커밋하지 않습니다. 기록은 `benchmarks/results.json`을 뺀 모든 추적 파일을 해시하므로, 커밋된 기록은 다음 commit에서 오래된 기록이 되고 변경마다 로컬 기계에서 전체 실행을 강요합니다. `--records`가 있으면 `make verify-all` 마지막의 근거 검사는 같은 체크아웃의 통합 기록을 현재 소스와 대조합니다. 바인딩의 PIE 패키지는 공개된 release의 pre-packaged binary를 설치하므로 checkout에서는 PIE 검사를 실행하지 않으며, 뒤의 행(T3.25-5)이 공개된 release에 대해 `pie install`을 검사합니다.
+commit의 근거는 그것을 검증하는 실행입니다. `make verify-all`은 통합 기록 `var/records/verification.json`을 씁니다. Git은 `var/`를 무시하므로 어떤 기록도 커밋하지 않습니다. 기록은 `benchmarks/results.json`을 뺀 모든 추적 파일을 해시하므로, 커밋된 기록은 다음 commit에서 오래된 기록이 되고 변경마다 로컬 기계에서 전체 실행을 강요합니다. `--records`가 있으면 `make verify-all` 마지막의 근거 검사는 같은 체크아웃의 통합 기록을 현재 소스와 대조합니다. 바인딩의 PIE 패키지는 공개된 release의 pre-packaged binary를 설치하므로 checkout의 검사는 그것을 빌드하지 않습니다. `make ci-release`가 `release-undraft` 뒤에 실행하는 `make release-pie-check`(T3.25-5)는 공개된 release의 패키지를 PIE로 내려받아(`pie download`, 기계의 PHP에 아무것도 쓰지 않습니다) 그 확장의 version을 확인하고 그 확장으로 공유 verifier의 probe를 실행합니다. 이 검사는 release job의 PHP minor와 platform 하나(Linux x86_64의 PHP 8.4)만 검사하며 release가 공개된 뒤에 실행되므로, 실패는 이미 공개된 release를 보고할 뿐 막지 않습니다. 사람은 같은 target을 공개된 tag에 대해 `make release-pie-check TAG=vX.Y.Z`로 실행합니다.
 
 통합 기록에는 소스 해시, 패키지 파일 기록, 실제 런타임 버전, 실행 중인 Node.js release, 사례 수, 결과, 빌드 경고, 추가 입력 개정본이 포함됩니다. PHP 버전과 확장 버전은 별도 필드입니다. 입력이 변경되면 현재 검증 근거로 유효하지 않습니다. 실행 중 변경과 불완전한 구현 결과는 거부합니다. 이 기록은 게시 근거가 아닙니다. 모든 기록과 보고서(`var/records/verification.json`, `benchmarks/results.json`, 실패한 benchmark의 검토용 사본)는 Git이 무시하고 어떤 manifest도 읽지 않는 `var/`의 파일에 끝까지 쓴 뒤 그 경로 위로 이름을 바꾸므로, 읽는 쪽은 이전 파일이나 새 파일을 보며 파일의 일부를 보지 않습니다.
 

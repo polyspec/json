@@ -1,5 +1,5 @@
 <!-- doc-id: features -->
-<!-- source-sha256: 3a161940954b3d6ea045bf515fdb2a37f1ee3eac34f18d84a4d48195c4db9e4b -->
+<!-- source-sha256: 599197ed2c297eafd57322926b000631a65e06e44e087124cd9ce0aa0791f7b7 -->
 # 기능 상태
 
 [English](features.md)
@@ -30,7 +30,7 @@
 
 T3.24-1은 독립 native PHP asset matrix와 source assertion을 추적한다([native asset job](spec/json-contract.ko.md#native-assets)). Expected-minor provider gate가 공개되고 recipe를 다시 생성하며 native job이 통과하기 전까지 native minor 선택과 전체 asset job의 증거는 없다.
 
-이전 네이티브 macOS 및 PIE 기록은 현재 근거가 아닙니다. 바인딩의 PIE 패키지는 공개된 release의 pre-packaged binary를 설치하므로 로컬 PIE 검사는 없습니다; 뒤의 행(T3.25-5)이 공개된 release에 대해 PIE 설치를 검사합니다.
+이전 네이티브 macOS 및 PIE 기록은 현재 근거가 아닙니다. 바인딩의 PIE 패키지는 공개된 release의 pre-packaged binary를 설치하므로 checkout의 검사는 그것을 빌드하지 않습니다. `make ci-release`가 `release-undraft` 뒤에 실행하는 `make release-pie-check`(T3.25-5)는 공개된 release의 패키지를 PIE로 내려받아(`pie download`, 기계의 PHP에 아무것도 쓰지 않습니다) 그 확장의 version을 확인하고 그 확장으로 공유 verifier의 probe를 실행합니다. 이 검사는 release job의 PHP minor와 platform 하나(Linux x86_64의 PHP 8.4)만 검사하며 release가 공개된 뒤에 실행되므로, 실패는 이미 공개된 release를 보고할 뿐 막지 않습니다.
 
 공통 사례 통과는 기록된 인수 기준에 대한 검증입니다. 모든 입력, 선언한 최소 런타임 전체, 모든 플랫폼, 모든 호스트 인코더 연동을 검증한 결과는 아닙니다. [검증 한계](operations/validation.ko.md#limits)를 확인합니다. 소스 메타데이터에는 개발 버전 문자열이 있습니다. `published`로 표시한 행은 GitHub release의 tag와 asset 이름을 적으며, 그 형식은 `make evidence-check`가 검사합니다.
 

@@ -110,6 +110,17 @@ export function loadRegistry(root = ROOT, commands = COMMANDS): Registry {
 }
 
 export const REGISTRY = loadRegistry();
+
+/**
+ * The registry whose PHP probe loads the extension `file` and builds nothing: the release check loads the extension that
+ * PIE downloaded from the published release (make release-pie-check, T3.25-5). The other implementations keep their commands.
+ */
+export function extensionRegistry(file: string, registry = REGISTRY): Registry {
+  const { prepare: _built, ...php } = commandsOf('php', registry);
+  const [program, ...rest] = php.command;
+  const command: Argv = [program, ...rest.map(argument => (argument === PHP_EXTENSION ? `extension=${file}` : argument))];
+  return { roots: registry.roots, commands: { ...registry.commands, php: { ...php, command } } };
+}
 export const IMPLEMENTATIONS = Object.keys(REGISTRY.roots);
 
 /** The absolute directory of each implementation of `registry` in the checkout `root`. */
