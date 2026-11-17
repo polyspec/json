@@ -7,6 +7,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- Go module의 release는 그 tag를 push한다(T3.66): `ci-release`는 tag 전에 Go module을 rehearse하고(`rehearse-go-module`), `release-go-module` 뒤에 `release-go-module-push TAG=…`를 돌려 tag `packages/go/vX.Y.Z`가 remote에 닿게 한다. release 0.0.37은 그 tag를 runner 안에만 만들었다(run 44079838426). `tests/scripts/workflow-rules.test.mts`의 `ci-release` 순서 시험이 그 step을 지킨다.
+
 ## 0.0.37
 
 - json이 binding v0.0.21을 pin한다(T3.65): `package.json`은 `polyspec-binding-0.0.21.tgz`를 받고(release의 sha256 ccbf9625는 그 asset의 것), `package-lock.json`은 그 integrity를 가지며, `Cargo.lock`과 바인딩의 모든 `Cargo.toml`은 tag `v0.0.21`을 이름하고, `binding scaffold`와 `binding release-recipes`가 scaffold된 파일을 다시 썼다. 이 lane에는 아직 `packages/go`의 Go module이 없다. scaffold가 `// indirect` 줄과 함께 쓰는 go.mod와 go.sum은 손으로 쓴 Go 시험의 이동(T3.25-6)과 함께 온다.

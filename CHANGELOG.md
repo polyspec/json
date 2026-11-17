@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- The release of a Go module pushes its tag (T3.66): `ci-release` rehearses the Go module before its tag (`rehearse-go-module`) and runs `release-go-module-push TAG=…` after `release-go-module`, so the tag `packages/go/vX.Y.Z` reaches the remote; release 0.0.37 made it only in the runner (run 44079838426), and the test of the order of `ci-release` in `tests/scripts/workflow-rules.test.mts` keeps the step.
+
 ## 0.0.37
 
 - json pins binding v0.0.21 (T3.65): `package.json` fetches `polyspec-binding-0.0.21.tgz` (the sha256 of the release, ccbf9625, is that of the asset), `package-lock.json` holds its integrity, `Cargo.lock` and every `Cargo.toml` of the bindings name the tag `v0.0.21`, and `binding scaffold` and `binding release-recipes` wrote the scaffolded files again. This lane has no Go module of `packages/go` yet: its go.mod, which the scaffold writes with `// indirect` lines, and go.sum come with the move of the hand-written Go tests (T3.25-6).
