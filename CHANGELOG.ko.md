@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 8a8782e737744264c5908b6480b2a4d1647e54e4a7d18b9ac75291fa264c0ad7 -->
+<!-- source-sha256: b89e1bcba92640c38600eba426f34bad556b00e6d233b29766bd87ecdf89a90c -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -8,6 +8,7 @@
 ## Unreleased
 
 - `config/implementations.json`의 root go가 바인딩 모듈 `packages/go`입니다(T3.25): 공유 verifier의 probe와 benchmark 프로그램이 `legacy/packages/go/internal`에서 `packages/go/tests/probe`와 `packages/go/tests/benchmark`로 옮겨져 `github.com/polyspec/json/packages/go`를 import하며, `packages/rust/interface.json`의 change가 적용되는 곳만 바뀌었습니다. `make verify-go`는 `make binding-go-library`를 실행하고 `CGO_LDFLAGS`와 `GOWORK=off`로 probe를 빌드합니다. `make binding-go-library`의 library는 debug 빌드이고 이것은 T3.53과 T3.59의 결함이므로, `make benchmark`의 go 행은 새 `make binding-go-release-library`의 release static library를 링크합니다. [API 계약](docs/operations/api.ko.md)의 Go 열은 바인딩의 API입니다. legacy 패키지의 패키지 테스트는 패키지가 삭제될 때까지 `legacy/packages/go`에 남고 `make test-go`가 그것을 실행합니다: `make lint-go`는 그 테스트가 없는 legacy module을 거부하고(`deadcode: no main packages`), `make duplication-check`는 바인딩의 테스트 옆에 있는 그 사본을 거부합니다. `benchmarks/results.json`은 baseline을 다시 측정할 때까지 legacy 패키지의 go 행을 유지합니다.
+
 ## 0.0.36
 
 - `make release-candidate-assets`가 VERSION 없이 돈다(T3.61): json의 recipe가 kit v0.0.120이 받는 호출(K1286)을 거부해 tag 없는 release 검사를 돌릴 수 없었다; VERSION은 주어졌을 때만 넘긴다.
