@@ -28,7 +28,7 @@ The parser accepts JSON objects, arrays, strings, numbers, booleans, and null at
 
 The maximum number of nested containers is 256. The caller can lower the limit to an integer from 0 through 256. A limit of 0 accepts scalar roots and rejects containers. The parser validates every input occurrence, including values subsequently replaced by a duplicate key.
 
-The text input of JavaScript and Python, whose strings can hold an unpaired UTF-16 surrogate, rejects a literal one with `unescaped_lone_surrogate` at its offset before the grammar is read, because such text has no UTF-8 encoding, as byte input is checked for UTF-8 first. Escaped unpaired surrogates are accepted as described below. [RFC 8259](https://www.rfc-editor.org/rfc/rfc8259) defines the JSON grammar and permits implementation limits.
+A text of JavaScript or Python, whose strings can hold an unpaired UTF-16 surrogate, has no UTF-8 encoding when it holds one, so the binding refuses it with `invalid_text` before the core runs and the text never reaches the grammar ([RQ-008](#requirements), [RQ-026](#requirements)): the refusal of a text is of the boundary of the binding, and the kinds of the rejection list are of the core, which reads bytes and checks byte input for UTF-8 first. Escaped unpaired surrogates are accepted as described below. [RFC 8259](https://www.rfc-editor.org/rfc/rfc8259) defines the JSON grammar and permits implementation limits.
 
 <a id="rejection-kinds"></a>
 ### Rejection kinds
@@ -50,7 +50,7 @@ The shared list of the rejection kinds. Every implementation names one of them f
 - `maximum_depth_exceeded`
 - `trailing_input`
 
-`unescaped_lone_surrogate` arises only in the language packages of the [transition](#transition): the core reads bytes, and a binding refuses a language text with an unpaired surrogate before the core runs ([RQ-026](#requirements)).
+`unescaped_lone_surrogate` arises only in the JavaScript and Python packages of the [transition](#transition), whose text input rejects a literal unpaired surrogate with it at its offset: the core, which reads bytes, and the bindings of every target never give it, because a binding refuses a language text with an unpaired surrogate with `invalid_text` before the core runs ([RQ-026](#requirements)), and the strings of PHP and Go are bytes.
 
 <a id="argument-kinds"></a>
 ### Argument kinds
@@ -90,7 +90,7 @@ Serialization is idempotent for every accepted value: parsing the serialized out
 
 `raw` returns the original source span for inspection. The root span includes surrounding whitespace. It can contain overwritten keys and is not the serialized representation of the map.
 
-The JavaScript `compact` option and PHP `compact` argument are accepted for compatibility; both values select the same compact output. JavaScript `JSON.stringify(Value)` and PHP `json_encode(Value)` fail and direct the caller to the library serializer. Go implements `MarshalJSON`; the standard encoder may change HTML escapes or whitespace.
+JavaScript `JSON.stringify(Value)` and PHP `json_encode(Value)` fail and direct the caller to the library serializer. Go implements `MarshalJSON`; the standard encoder may change HTML escapes or whitespace.
 
 <a id="construction"></a>
 ## Construction

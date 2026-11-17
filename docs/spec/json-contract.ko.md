@@ -1,5 +1,5 @@
 <!-- doc-id: json-contract -->
-<!-- source-sha256: 864d9916ea7619beb3a1b602efc263876e7f3174c80baa24273ddfe846047ec4 -->
+<!-- source-sha256: 03d2052054d4e76b340e17a1daebad79f96a0811dcc68f71cf1f524cae83be68 -->
 # JSON 계약
 
 [English](json-contract.md)
@@ -29,7 +29,7 @@ JSON 배열은 입력 순서대로 값을 저장합니다. 빈 배열과 빈 객
 
 컨테이너 중첩 한도는 256입니다. 호출자는 한도를 0부터 256까지의 정수로 낮출 수 있습니다. 한도 0은 스칼라 루트를 허용하고 컨테이너를 거부합니다. 파서는 나중에 중복 키로 교체되는 값도 포함하여 모든 입력을 검사합니다.
 
-문자열이 단독 UTF-16 surrogate를 담을 수 있는 JavaScript와 Python의 텍스트 입력은 문법을 읽기 전에 이스케이프하지 않은 단독 surrogate를 그 위치에서 `unescaped_lone_surrogate`로 거부합니다. 그런 텍스트에는 UTF-8 인코딩이 없기 때문이며, 바이트 입력을 먼저 UTF-8로 검사하는 것과 같습니다. 이스케이프된 단독 surrogate는 아래 규칙으로 허용합니다. [RFC 8259](https://www.rfc-editor.org/rfc/rfc8259)는 JSON 문법을 정의하며 구현별 한도를 허용합니다.
+문자열이 단독 UTF-16 surrogate를 담을 수 있는 JavaScript와 Python의 텍스트는 그것을 담으면 UTF-8 인코딩이 없으므로, 바인딩이 코어가 실행되기 전에 `invalid_text`로 거부하고 그 텍스트는 문법에 닿지 않습니다([RQ-008](#requirements), [RQ-026](#requirements)). 텍스트의 거부는 바인딩의 경계에 속하고, 거부 목록의 kind는 코어에 속합니다. 코어는 바이트를 읽고 바이트 입력을 먼저 UTF-8로 검사합니다. 이스케이프된 단독 surrogate는 아래 규칙으로 허용합니다. [RFC 8259](https://www.rfc-editor.org/rfc/rfc8259)는 JSON 문법을 정의하며 구현별 한도를 허용합니다.
 
 <a id="rejection-kinds"></a>
 ### 거부 종류
@@ -51,7 +51,7 @@ JSON 배열은 입력 순서대로 값을 저장합니다. 빈 배열과 빈 객
 - `maximum_depth_exceeded`
 - `trailing_input`
 
-`unescaped_lone_surrogate`는 [이행 기간](#transition)의 언어 패키지에서만 생깁니다. 코어는 바이트를 읽고, 바인딩은 짝 없는 surrogate가 든 언어 텍스트를 코어가 실행되기 전에 거부합니다([RQ-026](#requirements)).
+`unescaped_lone_surrogate`는 [이행 기간](#transition)의 JavaScript와 Python 패키지에서만 생기며, 그 텍스트 입력이 이스케이프하지 않은 단독 surrogate를 그 위치에서 이 kind로 거부합니다. 바이트를 읽는 코어와 모든 target의 바인딩은 이 kind를 내지 않습니다. 바인딩은 짝 없는 surrogate가 든 언어 텍스트를 코어가 실행되기 전에 `invalid_text`로 거부하고([RQ-026](#requirements)), PHP와 Go의 문자열은 바이트이기 때문입니다.
 
 <a id="argument-kinds"></a>
 ### 인자 종류
@@ -91,7 +91,7 @@ PHP는 일반 객체 키를 UTF-8 배열 키로 저장합니다. 키에 포함�
 
 `raw`는 조회용 입력 원문 범위를 반환합니다. 루트 범위에는 앞뒤 공백이 포함됩니다. 교체된 키가 포함될 수 있으며 연관배열의 직렬화 결과가 아닙니다.
 
-JavaScript의 `compact` 옵션과 PHP의 `compact` 인자는 호환성을 위해 허용하며 어느 값이든 같은 compact 출력을 선택합니다. JavaScript의 `JSON.stringify(Value)`와 PHP의 `json_encode(Value)`는 실패하고 라이브러리 직렬화를 사용하도록 안내합니다. Go는 `MarshalJSON`을 구현하며 표준 인코더가 HTML 이스케이프나 공백을 변경할 수 있습니다.
+JavaScript의 `JSON.stringify(Value)`와 PHP의 `json_encode(Value)`는 실패하고 라이브러리 직렬화를 사용하도록 안내합니다. Go는 `MarshalJSON`을 구현하며 표준 인코더가 HTML 이스케이프나 공백을 변경할 수 있습니다.
 
 <a id="construction"></a>
 ## 생성

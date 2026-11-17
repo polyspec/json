@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: c18ae3e8ef5fc7a554afc98993670cef682efca6eda50fd09560f2d04139bcb4 -->
+<!-- source-sha256: 745b142feea90464c927774559e90fb03d4cf6b931dd927972112c3b5a47ab50 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- JSON 계약이 짝 없는 surrogate가 든 텍스트의 거부를 바인딩이 하는 대로 적는다: 코어가 실행되기 전에 바인딩의 경계에서 `invalid_text`로 거부한다; `unescaped_lone_surrogate`는 legacy JavaScript와 Python 패키지만 내며 T3.58이 그 둘과 함께 retire한다. JavaScript의 `compact` 옵션과 PHP의 `compact` 인자에 대한 문장을 지운다: 모든 target에서 `stringify`의 옵션은 `htmlSafe` 하나다(`index.d.ts`, PHP stub, `_native.pyi`, `zz_generated_json.go`).
 
 - 설치와 API 문서가 JavaScript와 Python의 바인딩 패키지를 적는다(T3.57): v0.0.25 뒤의 release가 싣지 않는 legacy `@polyspec/ordered-json`과 `polyspec_ordered_json` 대신 `@polyspec/json`과 그 platform 패키지, `polyspec-json`(`polyspec.json`)이다. release의 asset으로 하는 설치는 macOS arm64에서 v0.0.35로 실측한 것이다: npm 12는 `.npmrc`의 `allow-remote=root`가 필요하고 소비자가 platform 패키지를 optionalDependencies에 적는다; pip은 platform의 wheel URL을 받는다; PIE는 release의 `packages.json`을 읽는다. Linux asset, npm 11, `pie install` 자체는 돌리지 않았고 그렇게 적었다.
 
