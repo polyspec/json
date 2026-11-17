@@ -1177,8 +1177,8 @@ checksum = "f6b464fbc74e149a392436b17d523f769e057cb6877f6a5c4618bc6f11800548"
 
 [[package]]
 name = "polyspec-binding-core"
-version = "0.0.20"
-source = "git+https://github.com/polyspec/binding.git?tag=v0.0.20#06dfc6accfee6b272f96b32f12c8e7fb6182d59b"
+version = "0.0.21"
+source = "git+https://github.com/polyspec/binding.git?tag=v0.0.21#253ce88906757a7a74b46245538d1af943b03736"
 dependencies = [
  "indexmap",
  "libc",
