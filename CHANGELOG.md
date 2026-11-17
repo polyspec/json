@@ -7,6 +7,11 @@
 ## Unreleased
 
 - The root go of `config/implementations.json` is the binding module `packages/go` (T3.25): the probe of the shared verifier and the benchmark program moved from `legacy/packages/go/internal` to `packages/go/tests/probe` and `packages/go/tests/benchmark` and import `github.com/polyspec/json/packages/go`, changed only where a change of `packages/rust/interface.json` applies. `make verify-go` runs `make binding-go-library` and builds the probe with `CGO_LDFLAGS` and `GOWORK=off`; the go row of `make benchmark` links the release static library of the new `make binding-go-release-library`, since the library of `make binding-go-library` is a debug build, the defect of T3.53 and T3.59. The Go column of the [API contract](docs/operations/api.md) is the API of the binding. The package tests of the legacy package stay in `legacy/packages/go`, where `make test-go` runs them, until the package is removed: `make lint-go` refuses the legacy module without them (`deadcode: no main packages`), and `make duplication-check` refuses their copies beside the tests of the binding. `benchmarks/results.json` keeps the go rows of the legacy package until a baseline is measured again.
+## 0.0.36
+
+- `make release-candidate-assets` runs with no VERSION (T3.61): the recipe of json refused the call that kit v0.0.120 takes (K1286), so the release check without a tag could not run; it passes VERSION only when one is given.
+
+- This release is built on binding v0.0.20: every crate of json takes `polyspec-binding-core` at the tag v0.0.20. A Cargo workspace or a program that holds json 0.0.36 beside a library that is built on binding v0.0.17 holds two `polyspec-binding-core`, so a consumer whose other libraries are on binding v0.0.17 stays on json v0.0.34 until they move to one binding release together.
 
 - json pins kit v0.0.120 (T3.61): `make release-candidate-assets` with no VERSION builds the candidate of the version that the change log of HEAD records (K1286), the release check without a tag.
 

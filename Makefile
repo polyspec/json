@@ -737,10 +737,11 @@ release-tag-output:
 release-assets:
 	@test -n "$$TAG" || { echo 'release-assets: TAG is required, for example make release-assets TAG=v0.0.1' >&2; exit 2; }
 	RELEASE_ASSETS=var/release/assets $(ONLINE) $(NODE) $(KIT)/release.mjs assets "$$TAG"
-# release-candidate-assets builds the same files from the committed HEAD at VERSION, without a tag, into var/release/assets.
+# release-candidate-assets builds the same files from the committed HEAD, without a tag, into var/release/assets: at the
+# version that the change log of HEAD records, the first section ## X.Y.Z (kit K1286), or at VERSION when one is given. It
+# is the release check without a tag, which a person runs at a version commit before its push (T3.61).
 release-candidate-assets:
-	@test -n "$(VERSION)" || { echo 'release-candidate-assets: VERSION is required, for example make release-candidate-assets VERSION=0.0.1' >&2; exit 2; }
-	RELEASE_ASSETS=var/release/assets $(NODE) $(KIT)/release.mjs candidate-assets "$(VERSION)"
+	RELEASE_ASSETS=var/release/assets $(NODE) $(KIT)/release.mjs candidate-assets$(if $(VERSION), "$(VERSION)")
 release-publish:
 	RELEASE_ASSETS=var/release/assets RELEASE_RECORDS=var/release $(NODE) $(KIT)/release.mjs publish "$$TAG"
 release-undraft:
