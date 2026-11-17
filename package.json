@@ -34,7 +34,7 @@
     "@humanwhocodes/momoa": "3.3.13",
     "@napi-rs/cli": "3.10.12",
     "@polyspec/binding": "https://github.com/polyspec/binding/releases/download/v0.0.17/polyspec-binding-0.0.17.tgz",
-    "@polyspec/kit": "https://github.com/polyspec/kit/releases/download/v0.0.117/polyspec-kit-0.0.117.tgz",
+    "@polyspec/kit": "https://github.com/polyspec/kit/releases/download/v0.0.119/polyspec-kit-0.0.119.tgz",
     "@types/mdast": "4.0.4",
     "@types/node": "26.6.5",
     "ajv": "8.20.0",

@@ -56,7 +56,6 @@
         "verify-rust",
         "verify-go",
         "verify-php",
-        "verify-php-extension",
         "verify-python"
       ]
     },
@@ -66,7 +65,6 @@
         "scripts/json.mts",
         "scripts/present.mts",
         "scripts/schema/*.schema.json",
-        "scripts/check-pie.mts",
         ".gitignore",
         "Makefile",
         "tsconfig.json"
@@ -113,8 +111,6 @@
         "composer.json",
         "composer.lock",
         "legacy/packages/js/package.json",
-        "legacy/packages/php/composer.json",
-        "legacy/packages/php-ext/composer.json",
         "packages/rust/Cargo.toml",
         "legacy/packages/go/go.mod",
         "legacy/packages/python/pyproject.toml",
@@ -219,21 +215,12 @@
     },
     {
       "paths": [
-        "legacy/packages/php/**"
+        "packages/php-ext/tests/**",
+        "packages/php-ext/phpunit.xml"
       ],
       "targets": [
         "verify-php",
-        "verify-php-extension",
         "test-php"
-      ]
-    },
-    {
-      "paths": [
-        "legacy/packages/php-ext/**"
-      ],
-      "targets": [
-        "verify-php-extension",
-        "test-php-ext"
       ]
     },
     {
@@ -351,15 +338,6 @@
       ],
       "targets": [
         "lint-rust",
-        "duplication-check"
-      ]
-    },
-    {
-      "paths": [
-        "legacy/packages/php-ext/**"
-      ],
-      "targets": [
-        "lint-php-ext",
         "duplication-check"
       ]
     },

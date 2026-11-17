@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: aa1a3d5300a7c7bd9a90d4891d61089c1e661392e6b8f659f367025ffd720501 -->
+<!-- source-sha256: cf5465c1d000ebbe83a6cabc33ab8e04223385a684a8fe8241cc1ff7b5fa755b -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- json의 PHP 패키지는 `packages/php-ext`의 바인딩 확장이다(T3.25-3, V-6 (5)): `make test-differential-php`가 두 legacy 패키지 모두와 차이가 없음을 보인 뒤(CI run 43977986876) `legacy/packages/php`와 `legacy/packages/php-ext`를 지운다. 패키지 시험 `ValueApiTest`, `ErrorKindTest`, `OfficialTest`와 공유 verifier의 probe는 `packages/php-ext/tests`에서 바인딩으로 돌며, `packages/rust/interface.json`의 change가 적용되는 곳만 바뀌었다; `make test-php`가 개발 manifest `composer.json`의 PHPUnit으로 그것들을 돌리고, `lint-php`는 job bindings에서 돈다. runtime job `php`와 `php-ext`, `make pie-check`, `make test-php-ext`, `make lint-php-ext`, `make build-php-ext`는 지워진다; 바인딩의 PIE 설치는 T3.25-5가 공개된 release에서 검사한다. AGENTS는 S10이 json에 대상이 없다고 적고(`Refines S10: No object`, kit 0.0.119, K1284), `make layout-check`가 type library인 Composer 패키지를 거부해 그것을 지킨다. `make python-parse-budget`는 이제 같은 core 위에서 Python 바인딩의 변환 층을 PHP 바인딩의 변환 층과 비교하며 둘 다 release build다; 첫 측정은 비율 7.85(Python 0.425 s, PHP 0.054 s, load average 25)로 경고였다.
 
 - `make test-differential-go`가 checkout의 둘을 require하는 module `legacy/packages/go/differential`에서 legacy 패키지 `orderedjson`을 `packages/go`의 바인딩 `json`과 비교한다(T3.25-4, V-6 (5)): 보충 suite의 `test_parsing`의 모든 파일과 모든 공식 예제가 둘에서 같은 compact 직렬화를 내거나, 같은 byte offset에서 같은 kind로 거부된다. `make binding-go-library`는 `make test-binding-go`가 시험하는 Go 바인딩의 library를 빌드한다; 이 target은 job bindings에서 돌고, `config/release.json`은 이 module을 release하지 않는 것으로 둔다. Red: 구현들을 비교한 시험이 없었다; green: `make test-differential-go`(파일 318개와 예제 17개, text 132개와 거부 203개, 차이 없음), `make test-binding-go`, `make test-go`, `make lint-go`, `make json-test-scripts`가 통과한다.
 

@@ -1,8 +1,8 @@
 // Runs the equal-workload performance comparison of every implementation (make benchmark, make benchmark-check) and writes
 // benchmarks/results.json. Each implementation measures the inputs of benchmarks/workload.json with its own harness
 // (benchmarks/js.mjs, benchmarks/php.php, internal/benchmark of the Go package, examples/benchmark.rs of the Rust package), which prints one
-// tab-separated row for each input and mode. The PHP extension is built in a copy in the run directory, and cargo builds into
-// the run directory too, so no build output of the checkout or of another run decides the result.
+// tab-separated row for each input and mode. The PHP rows load the release library of the binding extension, which make
+// benchmark builds first (T3.25-3), and cargo builds the Rust harness into the run directory, so no build output of another run decides it.
 //
 //   node benchmarks/run.mts [--iterations <n>] [--warmup <n>] [--samples <n>] [--check | --update-baseline]
 import { execFileSync, spawnSync } from 'node:child_process';
@@ -14,7 +14,7 @@ import { isDeepStrictEqual, parseArgs } from 'node:util';
 import { parseJson, readJsonFile } from '../scripts/json.mts';
 import { present } from '../scripts/present.mts';
 import { writeRecord } from '../scripts/records.mts';
-import { ROOT, builtExtension, pathOf, prepare, repositoryPaths, withRun, type Argv } from '../scripts/registry.mts';
+import { ROOT, releaseExtension, pathOf, prepare, repositoryPaths, withRun, type Argv } from '../scripts/registry.mts';
 
 type Protocol = { warmup: number; warmup_ms: number; iterations: number; samples: number; median_tolerance: number; p95_tolerance: number };
 type Entry = { file: string; input_bytes: number; sha256: string } & Record<(typeof COUNTS)[number] | 'max_depth', number>;
@@ -25,7 +25,7 @@ const FIXTURES = path.join(ROOT, 'benchmarks/fixtures');
 const RESULTS = path.join(ROOT, 'benchmarks/results.json');
 const CURRENT = path.join(ROOT, '.cache/benchmark.current.json');
 // The rows whose output must be the same document in every implementation of ordered-json.
-const ORDERED = new Set(['js:ordered-json', 'go:ordered-json', 'php:custom', 'php-extension:extension', 'rust:ordered-json']);
+const ORDERED = new Set(['js:ordered-json', 'go:ordered-json', 'php:extension', 'rust:ordered-json']);
 
 /** What a document contains: each kind of node, every node and the deepest level. An object key is a string node of its own. */
 export function structure(node: unknown, depth = 0): Record<(typeof COUNTS)[number] | 'max_depth', number> {
@@ -76,7 +76,7 @@ function version([program, ...args]: Argv): string {
 const environment = () => ({
   system: os.type(), release: os.release(), machine: os.machine(),
   node: version(['node', '--version']), go: version(['go', 'version']), php: version(['php', '-n', '-v']), rust: version(['rustc', '--version']),
-  cargo: version(['cargo', '--version']), phpize: version(['phpize', '--version']), php_config: version(['php-config', '--version']),
+  cargo: version(['cargo', '--version']), php_config: version(['php-config', '--version']),
   rust_profile: 'release', php_ini: '-n',
 });
 
@@ -143,19 +143,19 @@ async function main(): Promise<void> {
   validateWorkload(workload.fixtures);
   const files = workload.fixtures.map(entry => path.join(FIXTURES, entry.file));
   const env = { ...process.env, OJ_BENCH_ITERATIONS: String(protocol.iterations), OJ_BENCH_WARMUP: String(protocol.warmup), OJ_BENCH_WARMUP_MS: String(protocol.warmup_ms), OJ_BENCH_SAMPLES: String(protocol.samples) };
-  const rows = await withRun(['js', 'php-extension'], async (run) => {
-    await prepare(['js', 'php-extension'], run);
-    const extension = builtExtension();
-    if (!existsSync(extension)) throw new Error('the PHP extension of the benchmark was not built');
+  const rows = await withRun(async (run) => {
+    await prepare(['js'], run);
+    // The release library of the binding extension Polyspec\Json, which make benchmark builds first (T3.25-3).
+    const extension = releaseExtension();
+    if (!existsSync(extension)) throw new Error('the PHP extension of the benchmark was not built: make binding-php-ext-release-library');
     // The directory of each implementation is its root in config/implementations.json.
     const packages = repositoryPaths();
     const php = env;
     const commands: [string, string, Argv, NodeJS.ProcessEnv][] = [
       ['js', ROOT, ['node', 'benchmarks/js.mjs', ...files], { ...env, OJ_PACKAGE: packages.js }],
       ['go', pathOf(packages, 'go'), ['go', 'run', './internal/benchmark', ...files], env],
-      ['php', ROOT, ['php', '-n', '-d', `auto_prepend_file=${path.join(pathOf(packages, 'php'), 'vendor/autoload.php')}`, 'benchmarks/php.php', 'custom', ...files], php],
       ['php-native', ROOT, ['php', '-n', 'benchmarks/php.php', 'native-json', ...files], php],
-      ['php-extension', ROOT, ['php', '-n', '-d', `extension=${extension}`, 'benchmarks/php.php', 'extension', ...files], php],
+      ['php', ROOT, ['php', '-n', '-d', `extension=${extension}`, 'benchmarks/php.php', 'extension', ...files], php],
       ['rust', ROOT, ['cargo', 'run', '--locked', '--release', '--quiet', '--manifest-path', path.join(pathOf(packages, 'rust'), 'Cargo.toml'), '--example', 'benchmark', '--', ...files], { ...env, CARGO_TARGET_DIR: path.join(run.cache, 'rust-target') }],
     ];
     return commands.flatMap(([label, cwd, command, environment]) => measure(label, command, cwd, environment));
@@ -164,7 +164,7 @@ async function main(): Promise<void> {
   for (const row of rows.filter(item => ORDERED.has(item.implementation))) digests.set(row.file, (digests.get(row.file) ?? new Set()).add(row.sha256));
   const inconsistent = [...digests].filter(([, set]) => set.size !== 1);
   if (inconsistent.length) throw new Error(`the implementations of ordered-json wrote different outputs: ${inconsistent.map(([file, set]) => `${file} ${[...set].join(' ')}`).join('; ')}`);
-  const expected = ['js:ordered-json', 'js:native-json', 'go:ordered-json', 'go:native-json', 'php:custom', 'php-native:native-json', 'php-extension:extension', 'rust:ordered-json', 'rust:native-json'];
+  const expected = ['js:ordered-json', 'js:native-json', 'go:ordered-json', 'go:native-json', 'php-native:native-json', 'php:extension', 'rust:ordered-json', 'rust:native-json'];
   if (!isDeepStrictEqual([...new Set(rows.map(row => row.implementation))].sort(), [...expected].sort()) || rows.length !== expected.length * files.length) {
     throw new Error(`the benchmark rows are incomplete or repeated: expected ${expected.length * files.length}, got ${rows.length}`);
   }

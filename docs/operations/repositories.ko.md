@@ -1,5 +1,5 @@
 <!-- doc-id: repositories -->
-<!-- source-sha256: 958d9d06e94f2bf1b26077cad1f0486694e43b53afb383be862fbc663ae5ed67 -->
+<!-- source-sha256: e96f03012e4b91958c5ba262ad9e74420551cf2fc05cd36a6a6b0601d502fa63 -->
 # 저장소 계약
 
 [English](repositories.md)
@@ -15,11 +15,10 @@
 | javascript | legacy/packages/js | JavaScript |
 | rust | packages/rust | Rust |
 | go | legacy/packages/go | Go |
-| php | legacy/packages/php | 순수 PHP와 PHP Value API |
-| php-extension | legacy/packages/php-ext | 네이티브 PHP 확장 |
+| php | packages/php-ext | 바인딩 확장 `Polyspec\Json` |
 | python | legacy/packages/python | Python |
 
-저장소는 공통 계약과 모든 구현체에 하나의 리비전을 사용합니다. 구현 디렉터리에는 중첩 Git 저장소를 두지 않습니다. 순수 PHP와 확장은 패키지 메타데이터와 빌드 절차를 별도로 유지하지만, 소스 변경은 같은 저장소 리비전에서 검토하고 검사합니다. 네이티브 구현은 같은 리비전의 PHP Value API와 함께 검사합니다.
+저장소는 공통 계약과 모든 구현체에 하나의 리비전을 사용합니다. 구현 디렉터리에는 중첩 Git 저장소를 두지 않습니다. PHP 패키지는 같은 리비전의 Rust core에서 빌드하는 `packages/php-ext`의 바인딩 확장입니다(T3.25-3).
 
 <a id="verification"></a>
 ## 공통 검증
@@ -42,11 +41,7 @@
 <a id="php-extension"></a>
 ## PHP 확장 패키지
 
-PHP 라이브러리는 `polyspec/ordered-json` Composer 패키지를 사용합니다. 확장은 별도 PIE 패키지 `polyspec/ordered-json-php-ext`, `php-ext` 유형, `polyspec_ordered_json` 확장 이름, `src` 빌드 경로를 사용합니다. 설정은 단독 확장 빌드를 기본으로 활성화합니다. PHP 라이브러리는 테스트 의존성이며 네이티브 빌드나 PIE 패키지 의존성이 아닙니다.
-
-macOS의 configure는 명시된 `MACOSX_DEPLOYMENT_TARGET`을 유지하며 값이 없으면 현재 C 컴파일러의 배포 대상에서 구합니다. 확장은 로드 가능한 번들이므로 Libtool의 `LT_MULTI_MODULE` 옵션으로 불필요한 동적 라이브러리 단일 모듈 플래그 검사를 제외합니다. 최신 macOS 대상에는 동적 심볼 조회를 사용합니다. 일반 빌드와 PIE 빌드는 오래된 `-single_module` 및 `-undefined suppress` 경고 없이 완료해야 합니다.
-
-PIE 호환성을 기록하기 전에 PIE 패키지 인식, 로컬 PIE 빌드, PIE 빌드 산출물에 대한 공통 JSON 검사가 성공해야 합니다. 로컬 빌드는 Packagist 게시, 릴리스된 버전, Windows 바이너리 제공, 사용자 PHP 설정에 설치했다는 근거가 아닙니다. [PIE 유지보수 계약](https://github.com/php/pie/blob/1.4.10/docs/extension-maintainers.md)에 패키지 메타데이터와 빌드 동작이 정의되어 있습니다.
+PHP 패키지는 `packages/php-ext`의 PIE 패키지 `polyspec/json`이며 확장 이름은 `polyspec_json`입니다. 이 패키지는 release의 pre-packaged binary를 설치하므로(`download-url-method` `pre-packaged-binary`) checkout은 PIE 패키지를 빌드하지 않으며, 뒤의 행(T3.25-5)이 공개된 release에 대해 `pie install`을 검사합니다. legacy 패키지 `polyspec/ordered-json`과 `polyspec/ordered-json-php-ext`는 마지막 release를 유지합니다. [PIE 유지보수 계약](https://github.com/php/pie/blob/1.4.10/docs/extension-maintainers.md)에 패키지 메타데이터와 설치 동작이 정의되어 있습니다.
 
 <a id="state"></a>
 ## 구현 상태

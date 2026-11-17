@@ -4,7 +4,7 @@
 // each implementation, runs its probe on the shared cases and reads its runtime versions with the commands below. A command
 // names the directory of an implementation as {<name>} and the cache of the run as {cache}.
 import { execFileSync, spawn } from 'node:child_process';
-import { copyFileSync, existsSync, lstatSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import readline from 'node:readline';
@@ -23,18 +23,16 @@ export type Commands = {
   prepare?: Step[];
   runtime: Record<string, Argv>;
   env?: Record<string, string>;
-  /** The repository is copied into the run before its build, so a build never cleans files of the checkout. */
-  buildInCopy?: boolean;
-  dependencies?: string[];
-  artifacts?: string[];
 };
 
-// The library that make build-php-ext (kit, S10) publishes, relative to the repository.
-const EXTENSION_BUILD = 'var/php-ext/polyspec_ordered_json.so';
+// The library of the binding extension that make binding-php-ext-library builds, relative to the repository (T3.25-3).
+const EXTENSION_BUILD = `target/debug/libpolyspec_json.${process.platform === 'darwin' ? 'dylib' : 'so'}`;
 const PHP_EXTENSION = 'extension={extension}';
 
-/** The PHP extension that make build-php-ext published: the library that the probe of the verifier and the benchmark load. */
+/** The binding extension that make binding-php-ext-library built: the library that the probe of the verifier loads. */
 export const builtExtension = (): string => path.join(ROOT, EXTENSION_BUILD);
+/** The release library of the binding extension that make binding-php-ext-release-library built, which the benchmarks load. */
+export const releaseExtension = (): string => path.join(ROOT, EXTENSION_BUILD.replace('target/debug/', 'target/release/'));
 export const COMMANDS: Record<string, Commands> = {
   // The binding @polyspec/json of packages/ts, whose generated entry loads the addon that make binding-node-addon puts beside it.
   js: { prepare: [{ cwd: '{repository}', command: ['make', 'binding-node-addon'] }], command: ['node', '{js}/tests/probe.mjs'], runtime: { node: ['node', '--version'] } },
@@ -53,20 +51,11 @@ export const COMMANDS: Record<string, Commands> = {
     command: ['{cache}/go-probe'],
     runtime: { go: ['go', 'version'] },
   },
-  php: { command: ['php', '-n', '-d', 'auto_prepend_file={php}/vendor/autoload.php', '{php}/tests/probe.php'], runtime: { php: ['php', '-n', '-r', 'echo PHP_VERSION;'] } },
-  'php-extension': {
-    dependencies: ['php'],
-    buildInCopy: true,
-    // The build of kit publishes the library; the copy of the package serves the PIE check, which builds in it.
-    prepare: [{ cwd: '{repository}', command: ['make', 'build-php-ext'] }],
+  // The binding extension Polyspec\Json of packages/php-ext, the library that make binding-php-ext-library builds (T3.25-3).
+  php: {
+    prepare: [{ cwd: '{repository}', command: ['make', 'binding-php-ext-library'] }],
     command: ['php', '-n', '-d', PHP_EXTENSION, '{php}/tests/probe.php'],
-    runtime: {
-      php: ['php', '-n', '-r', 'echo PHP_VERSION;'],
-      // The extension reports the version of its package: the version of composer.json is the one source (config.m4 defines it).
-      extension_version: ['php', '-n', '-d', PHP_EXTENSION, '-r',
-        "$package = json_decode(file_get_contents('{php-extension}/composer.json'), true, 8, JSON_THROW_ON_ERROR)['version']; $native = phpversion('polyspec_ordered_json'); if ($native !== $package) { fwrite(STDERR, \"phpversion('polyspec_ordered_json') \" . var_export($native, true) . \" differs from the version \" . $package . \" of composer.json\\n\"); exit(1); } echo $native;"],
-    },
-    artifacts: ['{php-extension}/src/modules/polyspec_ordered_json.so'],
+    runtime: { php: ['php', '-n', '-r', 'echo PHP_VERSION;'] },
   },
   python: {
     // The binding polyspec.json of packages/python, installed by make binding-python-package into its virtual environment.
@@ -116,10 +105,6 @@ export function loadRegistry(root = ROOT, commands = COMMANDS): Registry {
   const names = Object.keys(roots).sort();
   if (JSON.stringify(names) !== JSON.stringify(Object.keys(commands).sort())) {
     throw new Error(`${DECLARATION} declares ${JSON.stringify(names)}, but the verifier has commands for ${JSON.stringify(Object.keys(commands).sort())}`);
-  }
-  for (const [name, entry] of Object.entries(commands)) {
-    const unknown = (entry.dependencies ?? []).filter(dependency => !(dependency in roots));
-    if (unknown.length) throw new Error(`${name} depends on the unknown implementations ${unknown.join(', ')}`);
   }
   return { roots, commands };
 }
@@ -182,29 +167,15 @@ function expand(value: string, variables: Record<string, string>): string {
 const expandArgv = ([program, ...args]: Argv, variables: Record<string, string>): Argv =>
   [expand(program, variables), ...args.map(argument => expand(argument, variables))];
 
-/**
- * One verification run: its temporary root, the directories that its commands use, the cache of its built probes and the
- * PHP extension its probe loads (make build-php-ext publishes var/php-ext/polyspec_ordered_json.so; the PIE check names the
- * module that PIE built).
- */
-export type Run = { root: string; paths: Record<string, string>; cache: string; extension?: string };
+/** One verification run: its temporary root, the directories that its commands use and the cache of its built probes. */
+export type Run = { root: string; paths: Record<string, string>; cache: string };
 
-/**
- * Runs `body` in a run directory of its own, removed when the run ends. A repository whose implementation declares
- * buildInCopy is copied there first (the tracked files; a symbolic link fails, since the copy must hold the bytes of the
- * checkout) and its commands use the copy.
- */
-export async function withRun<T>(selected: string[], body: (run: Run) => Promise<T>, root = ROOT, registry = REGISTRY): Promise<T> {
+/** Runs `body` in a run directory of its own, removed when the run ends. */
+export async function withRun<T>(body: (run: Run) => Promise<T>, root = ROOT, registry = REGISTRY): Promise<T> {
   const directory = mkdtempSync(path.join(tmpdir(), 'json-run-'));
   console.log(`run directory: ${directory}`);
   try {
     const paths = repositoryPaths(root, registry);
-    for (const name of selected) {
-      if (!commandsOf(name, registry).buildInCopy) continue;
-      const copy = path.join(directory, pathOf(registry.roots, name));
-      copySources(pathOf(paths, name), copy);
-      paths[name] = copy;
-    }
     const cache = path.join(directory, 'cache');
     mkdirSync(cache);
     return await body({ root: directory, paths, cache });
@@ -213,24 +184,12 @@ export async function withRun<T>(selected: string[], body: (run: Run) => Promise
   }
 }
 
-/** Copies the tracked files of `source` to `target`; a symbolic link fails. */
-export function copySources(source: string, target: string): void {
-  const names = trackedFiles(source);
-  for (const name of names) {
-    const from = path.join(source, name);
-    if (lstatSync(from).isSymbolicLink()) throw new Error(`a build source is a symbolic link: ${from}`);
-    mkdirSync(path.dirname(path.join(target, name)), { recursive: true });
-    copyFileSync(from, path.join(target, name));
-  }
-  console.log(`copied ${names.length} source files from ${source} to ${target}`);
-}
-
-/** The variables of the commands of a run: the directory of each implementation, the cache, the repository and the extension. */
-const variablesOf = (run: Pick<Run, 'paths' | 'cache' | 'extension'>): Record<string, string> =>
-  ({ ...run.paths, cache: run.cache, repository: ROOT, extension: run.extension ?? builtExtension() });
+/** The variables of the commands of a run: the directory of each implementation, the cache, the repository and the binding extension. */
+const variablesOf = (run: Pick<Run, 'paths' | 'cache'>): Record<string, string> =>
+  ({ ...run.paths, cache: run.cache, repository: ROOT, extension: builtExtension() });
 
 /** The environment of the commands of `name`: the caller's, with the variables that the implementation declares. */
-function environmentOf(name: string, run: Pick<Run, 'paths' | 'cache' | 'extension'>, registry = REGISTRY): NodeJS.ProcessEnv {
+function environmentOf(name: string, run: Pick<Run, 'paths' | 'cache'>, registry = REGISTRY): NodeJS.ProcessEnv {
   const declared = commandsOf(name, registry).env ?? {};
   return { ...process.env, ...Object.fromEntries(Object.entries(declared).map(([key, value]) => [key, expand(value, variablesOf(run))])) };
 }
@@ -297,15 +256,13 @@ export class Failures extends Error {
  * Runs the prepare steps of each selected implementation. A failed step ends the build of its implementation only; the
  * others build to their end, and Failures then names every failure. Returns the warning lines of the builds.
  */
-export async function prepare(selected: string[], run: Pick<Run, 'paths' | 'cache' | 'extension'>, registry = REGISTRY): Promise<{ implementation: string; message: string }[]> {
+export async function prepare(selected: string[], run: Pick<Run, 'paths' | 'cache'>, registry = REGISTRY): Promise<{ implementation: string; message: string }[]> {
   const variables = variablesOf(run);
   const warnings: { implementation: string; message: string }[] = [];
   const failures: string[] = [];
   const failed = new Set<string>();
   for (const name of selected) {
-    for (const dependency of [name, ...(commandsOf(name, registry).dependencies ?? [])]) {
-      if (!existsSync(pathOf(run.paths, dependency))) throw new Error(`the package directory of ${dependency} does not exist: ${run.paths[dependency]}`);
-    }
+    if (!existsSync(pathOf(run.paths, name))) throw new Error(`the package directory of ${name} does not exist: ${run.paths[name]}`);
   }
   for (const name of selected) {
     const steps = commandsOf(name, registry).prepare ?? [];
@@ -333,18 +290,14 @@ export async function prepare(selected: string[], run: Pick<Run, 'paths' | 'cach
 }
 
 /** The probe command of each selected implementation in the run. */
-export const probeCommands = (selected: string[], run: Pick<Run, 'paths' | 'cache' | 'extension'>, registry = REGISTRY): Record<string, Argv> =>
+export const probeCommands = (selected: string[], run: Pick<Run, 'paths' | 'cache'>, registry = REGISTRY): Record<string, Argv> =>
   Object.fromEntries(selected.map(name => [name, expandArgv(commandsOf(name, registry).command, variablesOf(run))]));
-
-/** The files that the build of `name` leaves behind, as its commands declare them. */
-export const artifactPaths = (name: string, run: Pick<Run, 'paths' | 'cache' | 'extension'>, registry = REGISTRY): string[] =>
-  (commandsOf(name, registry).artifacts ?? []).map(value => expand(value, variablesOf(run)));
 
 /**
  * The runtime versions of every selected implementation, each command run in the directory of its implementation, whose pin
  * files select the toolchain; Failures names every command that failed or printed nothing, after all ran.
  */
-export function runtimeVersions(selected: string[], run: Pick<Run, 'paths' | 'cache' | 'extension'>, registry = REGISTRY): Record<string, Record<string, string>> {
+export function runtimeVersions(selected: string[], run: Pick<Run, 'paths' | 'cache'>, registry = REGISTRY): Record<string, Record<string, string>> {
   const result: Record<string, Record<string, string>> = {};
   const failures: string[] = [];
   const failed = new Set<string>();

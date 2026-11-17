@@ -1,5 +1,5 @@
 <!-- doc-id: performance-benchmarks -->
-<!-- source-sha256: 6fdc2f715f43cfa53918823da36b4be4273215d67aa4639dd6add5ac51700fab -->
+<!-- source-sha256: 2f66055abd574a19e9670476eb12a3554609a7c9bea4b16d35d1b52a96bbf4d8 -->
 # 성능 벤치마크
 
 `run.mts`는 모든 런타임에서 같은 입력 문서, 워밍업 횟수, 반복 횟수,
@@ -14,8 +14,11 @@ fingerprint와 Git 작업 트리 상태를 `benchmarks/results.json`에 저장�
 
 Rust 표준 라이브러리에는 JSON 파서가 없으므로 네이티브 비교 기준은
 사실상 표준인 `serde_json`입니다. JavaScript, Go, PHP는 각 런타임의
-네이티브 JSON API를 사용합니다. PHP는 순수 PHP 구현과 네이티브 확장도
-별도로 측정합니다.
+네이티브 JSON API를 사용합니다. PHP는 ext-json과 바인딩 확장
+`Polyspec\Json`을 측정하며, `make benchmark`가 먼저
+`make binding-php-ext-release-library`로 그 release library를 빌드합니다
+(T3.25-3). `results.json`의 PHP 행은 다음 측정 전까지 legacy 구현의
+값입니다.
 
 네이티브 측정값은 동등한 동작이라고 주장하는 값이 아니라 별도의 기준값입니다.
 일반적인 네이티브 API는 객체 순서나 정확한 숫자 토큰을 보존하지 않습니다.
@@ -61,9 +64,10 @@ node benchmarks/run.mts --iterations 10000 --warmup 1000 --samples 9
 ## Python parse 비율
 
 `make python-parse-budget`(`python-parse/run.py`)는 member 여덟 개짜리 평평한 객체 50,000개를 생성한 문서 하나(6.15 MB)를
-Python 패키지와 순수 PHP 패키지로 각자의 process에서 번갈아 세 번씩 parse합니다. 각 process는 자기 parse의 CPU 시간을
+Python 바인딩과 PHP 바인딩으로 각자의 process에서 번갈아 세 번씩 parse합니다. 두 바인딩은 같은 core로 parse하므로 이 비율은
+같은 core 위에서 Python 변환 층과 PHP 변환 층을 비교하며, 둘 다 같은 feature의 release build입니다(T3.25-3). 각 process는 자기 parse의 CPU 시간을
 보고하므로 기계의 부하는 양쪽을 똑같이 느리게 하며, wall-clock 예산은 없습니다. 검사는 모든 실행, 두 중앙값과 그 비율을
-출력하고, Python 중앙값이 PHP 중앙값의 세 배를 넘으면 실패합니다. `make check`의 target이 아니며, Python parser를 바꾼 뒤
+출력하고, Python 중앙값이 PHP 중앙값의 세 배를 넘으면 경고하며 실패하지 않습니다. `make check`의 target이 아니며, Python 바인딩을 바꾼 뒤
 사람이 실행합니다.
 
 <a id="host-cost"></a>

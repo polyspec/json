@@ -38,6 +38,14 @@ rules:
   - id: layout-root-folders
     paths: ["*", "!packages", "!contracts", "!docs", "!scripts", "!tests", "!examples", "!benchmarks", "!config", "!.github", "!.githooks", "!.kit", "!.mise", "!.claude", "!legacy"]
 
-  # The stub of the legacy PHP extension stays beside its C sources until the package is removed (plan V-6 (5)).
   - id: php-ext-stub-place
-    paths: ["**/*.stub.php", "!packages/php-ext/src/*.stub.php", "!legacy/packages/php-ext/src/*.stub.php"]
+    paths: ["**/*.stub.php", "!packages/php-ext/src/*.stub.php"]
+
+  # S10 has no object in json (AGENTS.md, Refines S10): the PHP package of json is the binding extension of packages/php-ext,
+  # which implements no PHP library, so a Composer package of type library is refused (T3.25-3).
+  - id: layout-no-php-library
+    kind: file_content_forbidden
+    level: error
+    paths: ["**/composer.json", "!vendor/**", "!**/vendor/**", "!node_modules/**"]
+    pattern: '"type"\s*:\s*"library"'
+    message: "S10 has no object in json: its PHP package is the binding extension of packages/php-ext; a PHP library needs S10 and its checks again"

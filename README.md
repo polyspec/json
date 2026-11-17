@@ -5,9 +5,9 @@
 
 JSON libraries for JavaScript, Rust, Go, PHP, and Python. Objects use associative maps that preserve document key order at every depth. Repeated keys retain the first position and the last value.
 
-Standard JSON APIs do not provide one portable behavior for object ordering, duplicate keys, number token spelling, or object/array representation. These differences can change data when JSON moves between JavaScript, Rust, Go, PHP, the PHP extension, and Python. json defines one lossless value model and applies the same parser, serializer, ordering rules, and repeated-round-trip behavior to all six implementations. In particular, empty objects (`{}`) and empty arrays (`[]`) remain distinct.
+Standard JSON APIs do not provide one portable behavior for object ordering, duplicate keys, number token spelling, or object/array representation. These differences can change data when JSON moves between JavaScript, Rust, Go, PHP, and Python. json defines one lossless value model and applies the same parser, serializer, ordering rules, and repeated-round-trip behavior to all five implementations. In particular, empty objects (`{}`) and empty arrays (`[]`) remain distinct.
 
-This repository is the single source repository for the common specification, official examples, expected results, verifier, and all six implementation packages. The language directories are independent packages and build targets inside this repository; they share one revision without sharing language-specific APIs.
+This repository is the single source repository for the common specification, official examples, expected results, verifier, and all five implementation packages. The language directories are independent packages and build targets inside this repository; they share one revision without sharing language-specific APIs.
 
 <a id="start"></a>
 ## Start
@@ -53,14 +53,13 @@ pip install "https://github.com/polyspec/json/releases/download/vX.Y.Z/polyspec_
 | JavaScript | JavaScript and TypeScript declarations | `legacy/packages/js/` |
 | Rust | Rust crate | `packages/rust/` |
 | Go | Go package | `legacy/packages/go/` |
-| PHP | Pure PHP and the Value API | `legacy/packages/php/` |
-| PHP extension | Native PHP extension with PIE metadata | `legacy/packages/php-ext/` |
+| PHP | The binding extension `Polyspec\Json`, PIE package `polyspec/json` | `packages/php-ext/` |
 | Python | Python package `polyspec-ordered-json`, import `polyspec.ordered_json` | `legacy/packages/python/` |
 
 <a id="verification"></a>
 ## Verification
 
-All implementations use the same [official examples](examples/README.md) and shared expectations. Each implementation package provides its own build target, and the root `make check` verifies all six packages in the current checkout.
+All implementations use the same [official examples](examples/README.md) and shared expectations. Each implementation package provides its own build target, and the root `make check` verifies all five packages in the current checkout.
 
 ~~~sh
 make check

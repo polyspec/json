@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""The parse ratio of the Python package against the pure PHP package (make python-parse-budget), a performance check that
-a person runs; it is no unit test and no target of make check.
+"""The parse ratio of the Python binding against the PHP binding (make python-parse-budget), a performance check that a
+person runs; it is no unit test and no target of make check. Both bindings parse with the same core, so the ratio compares
+the conversion layer of Python with that of PHP over the same core (T3.25-3), each a release build with the same features.
 
 Both parse one generated document of 50,000 flat objects of eight members each (6.15 MB) in their own process, interleaved
 Python, PHP, Python, PHP, three runs each. Each process measures the CPU time of its own parse (time.process_time in Python,
 getrusage in PHP), so the load of the machine slows both sides alike and no wall-clock budget exists. The check prints every
-run, both medians and their ratio, and fails when the Python median exceeds three times the PHP median."""
+run, both medians and their ratio, and warns when the Python median exceeds three times the PHP median; it never fails."""
 
 from pathlib import Path
 import json
@@ -20,8 +21,14 @@ RUNS = 3
 ROWS = 50000
 PYTHON_RUN = Path(__file__).with_name("parse.py")
 PHP_RUN = Path(__file__).with_name("parse.php")
-# The implementations of config/implementations.json, the one declaration of their folders and of the interpreter of the Python
-# binding (the venv of make binding-python-package).
+# The release library of the binding extension that make binding-php-ext-release-library builds.
+PHP_EXTENSION = (
+    ROOT
+    / "target/release"
+    / ("libpolyspec_json.dylib" if sys.platform == "darwin" else "libpolyspec_json.so")
+)
+# The implementations of config/implementations.json, the one declaration of the interpreter of the Python binding (the venv
+# of make binding-python-package).
 IMPLEMENTATIONS = {
     item["name"]: item
     for item in json.loads((ROOT / "config/implementations.json").read_text())[
@@ -63,8 +70,9 @@ def main():
         php = [
             "php",
             "-n",
+            "-d",
+            f"extension={PHP_EXTENSION}",
             str(PHP_RUN),
-            str(ROOT / IMPLEMENTATIONS["php"]["roots"][0]),
             str(path),
             str(ROWS),
         ]
@@ -79,8 +87,8 @@ def main():
     print(
         f"median CPU: python {medians['python']:.3f} s, php {medians['php']:.3f} s; ratio {ratio:.2f} (limit {RATIO:.1f})"
     )
-    # A ratio above the limit is a warning, no failure: the budget measures the parse of the published Python package, the
-    # binding since T3.25-2, and a change of the reason of the limit is a row of its own.
+    # A ratio above the limit is a warning, no failure: the budget compares the conversion layers of the Python and the PHP
+    # bindings over the same core since T3.25-3, and a change of the reason of the limit is a row of its own.
     if ratio > RATIO:
         print(
             f"WARNING: the Python parse takes {ratio:.2f} times the PHP parse, more than {RATIO:.1f}",

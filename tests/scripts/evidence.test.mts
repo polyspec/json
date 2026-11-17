@@ -1,21 +1,21 @@
 // The evidence check, on synthetic checkouts: the feature rows and their states, the published assets, the state words outside
-// the Implementation cell, and the verification and PIE records against the current sources.
+// the Implementation cell, and the verification record against the current sources.
 import assert from 'node:assert/strict';
 import { readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import test, { type TestContext } from 'node:test';
 import { checkEvidence, featureRows } from '../../scripts/check-evidence.mts';
-import { AGGREGATE_RECORD, PIE_RECORD, sha256, sourceManifest, writeRecord } from '../../scripts/records.mts';
+import { AGGREGATE_RECORD, sha256, sourceManifest, writeRecord } from '../../scripts/records.mts';
 import { ARGUMENTS, FIXTURES, IMPLEMENTATIONS, OFFICIAL, REGISTRY } from '../../scripts/registry.mts';
 import { createRecord } from '../../scripts/verify.mts';
 import { readJsonFile } from '../../scripts/json.mts';
-import { checkout, known } from './checkout.mts';
+import { checkout } from './checkout.mts';
 
 const HEADER = '| ID | Feature | Implementation | Verification | Evidence | Distribution | Specification |\n| --- | --- | --- | --- | --- | --- | --- |\n';
 const ROW = '| F-ORDER | Order | implemented | shared-suite | [result](operations/validation.md#records) | source-only | [contract](../README.md#contract) |\n';
 const SOURCE = `${REGISTRY.roots.js}/index.js`;
 const SUPPLEMENTARY = { project: 'nst/JSONTestSuite', revision: 'a'.repeat(40), cases: 1, inputs_sha256: sha256('supplementary inputs') };
-const VERSIONS = Object.fromEntries(IMPLEMENTATIONS.map(name => [name, name === 'php-extension' ? { php: 'synthetic', extension_version: 'synthetic' } : { version: 'synthetic' }]));
+const VERSIONS = Object.fromEntries(IMPLEMENTATIONS.map(name => [name, { version: 'synthetic' }]));
 
 /** A checkout with one feature, one official example, one fixture and the record of a complete verification. */
 function evidence(context: TestContext, { before = '', after = '' } = {}) {
@@ -111,37 +111,21 @@ test('the records are the output of the run in var/records, not committed files'
   fails(`${AGGREGATE_RECORD} does not exist`);
 });
 
-test('the record names every implementation and the extension version apart from PHP', (context) => {
+test('the record names every implementation', (context) => {
   const { root, fails } = evidence(context);
   const record = readJsonFile<{ implementations: Record<string, { runtime?: Record<string, string> }> }>(path.join(root, AGGREGATE_RECORD), 'verification-record.schema.json');
-  delete known(known(record.implementations['php-extension'], 'the result of php-extension').runtime, 'the runtime of php-extension').extension_version;
-  writeRecord(path.join(root, AGGREGATE_RECORD), record, root);
-  fails('names the PHP release and the extension version separately');
-  delete record.implementations['php-extension'];
+  delete record.implementations.php;
   writeRecord(path.join(root, AGGREGATE_RECORD), record, root);
   fails('not every implementation');
 });
 
-test('the supplementary inputs and the PIE tool of a record are the pinned ones', (context) => {
+test('the supplementary inputs of a record are the pinned ones', (context) => {
   const { root, record, fails } = evidence(context);
   const aggregate = record(1);
   writeRecord(path.join(root, AGGREGATE_RECORD), aggregate, root);
   assert.deepEqual(checkEvidence(root, true).errors, []);
   writeRecord(path.join(root, AGGREGATE_RECORD), { ...aggregate, supplementary: { ...SUPPLEMENTARY, revision: 'b'.repeat(40) } }, root);
   fails('the supplementary inputs differ from the pin');
-  writeRecord(path.join(root, AGGREGATE_RECORD), aggregate, root);
-  const pie = {
-    schema_version: 1, scope: 'pie-build', status: 'passed', checked_at: aggregate.checked_at, sources: aggregate.sources, packages: aggregate.packages,
-    pie: { version: 'PIE synthetic', phar_sha256: sha256('pie tool') }, package: 'polyspec/ordered-json-php-ext:*@dev',
-    commands: [{ arguments: ['build'], exit_code: 0 }], artifact: { path: `${REGISTRY.roots['php-extension']}/src/modules/polyspec_ordered_json.so` },
-    cases: aggregate.cases, implementations: { 'php-extension': { status: 'passed', cases: aggregate.cases.total, runtime: VERSIONS['php-extension'] } }, supplementary: aggregate.supplementary,
-  };
-  writeRecord(path.join(root, PIE_RECORD), pie, root);
-  assert.deepEqual(checkEvidence(root, true).errors, []);
-  writeRecord(path.join(root, PIE_RECORD), { ...pie, pie: { ...pie.pie, phar_sha256: sha256('other tool') } }, root);
-  fails('the PIE of the record differs from the pin');
-  writeRecord(path.join(root, PIE_RECORD), { ...pie, artifact: { path: pie.artifact.path, sha256: 'a'.repeat(64) } }, root);
-  fails('a linked module has no reproducible hash');
 });
 
 test('a report holds no local home-directory path', (context) => {

@@ -14,11 +14,10 @@ The repository owns the JSON specification, official inputs and expected results
 | javascript | legacy/packages/js | JavaScript |
 | rust | packages/rust | Rust |
 | go | legacy/packages/go | Go |
-| php | legacy/packages/php | Pure PHP and the PHP Value API |
-| php-extension | legacy/packages/php-ext | Native PHP extension |
+| php | packages/php-ext | The binding extension `Polyspec\Json` |
 | python | legacy/packages/python | Python |
 
-The repository records one revision for the common contract and all implementations. The implementation directories do not contain nested Git repositories. Pure PHP and the extension retain separate package metadata and build processes, but their source changes are reviewed and verified in the same repository revision. The native implementation is tested against the PHP Value API in that same revision.
+The repository records one revision for the common contract and all implementations. The implementation directories do not contain nested Git repositories. The PHP package is the binding extension of `packages/php-ext`, built from the Rust core of the same revision (T3.25-3).
 
 <a id="verification"></a>
 ## Shared verification
@@ -41,11 +40,7 @@ For a shared contract change, update the verifier, affected implementations, and
 <a id="php-extension"></a>
 ## PHP extension package
 
-The PHP library uses Composer package `polyspec/ordered-json`. The extension uses the distinct PIE package `polyspec/ordered-json-php-ext`, type `php-ext`, extension name `polyspec_ordered_json`, and build path `src`. Its configuration enables a standalone extension build by default. The PHP library is a test dependency, not a native build or PIE package dependency.
-
-On macOS, configure preserves an explicit `MACOSX_DEPLOYMENT_TARGET` or obtains the missing value from the active C compiler's deployment target. The extension is a loadable bundle; configure uses Libtool's `LT_MULTI_MODULE` option to omit the unnecessary dynamic-library single-module flag check. Modern macOS targets use dynamic symbol lookup. Ordinary and PIE builds must complete without the obsolete `-single_module` and `-undefined suppress` warnings.
-
-PIE package recognition, a local PIE build, and the shared JSON check against the PIE-built artifact must succeed before recording PIE compatibility. A local build does not establish Packagist publication, a released version, Windows binary availability, or installation into a user's PHP configuration. The [PIE maintainer contract](https://github.com/php/pie/blob/1.4.10/docs/extension-maintainers.md) defines package metadata and build behavior.
+The PHP package is the PIE package `polyspec/json` of `packages/php-ext`, extension name `polyspec_json`, which installs the pre-packaged binary of a release (`download-url-method` `pre-packaged-binary`), so a checkout builds no PIE package; a later row (T3.25-5) checks `pie install` against the published release. The legacy packages `polyspec/ordered-json` and `polyspec/ordered-json-php-ext` keep their last release. The [PIE maintainer contract](https://github.com/php/pie/blob/1.4.10/docs/extension-maintainers.md) defines package metadata and install behavior.
 
 <a id="state"></a>
 ## Implementation state

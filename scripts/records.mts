@@ -1,8 +1,8 @@
-// The records of a run: make verify-all writes the aggregate record and make pie-check the PIE record into var/records, which
-// Git ignores. A record is the evidence of the run that wrote it, and CI uploads both in the report of its run; a committed
+// The records of a run: make verify-all writes the aggregate record into var/records, which Git ignores. A record is the
+// evidence of the run that wrote it, and CI uploads it in the report of its run; a committed
 // record would hash every tracked file and go stale with the next commit, so no record is committed. A record names the
-// sources it checked (the tracked files with their sha256), the revision of each package and the external inputs: the PIE
-// PHAR and the supplementary suite, which mise.toml declares and mise.lock pins, and the facts of the suite archive that
+// sources it checked (the tracked files with their sha256), the revision of each package and the external input: the
+// supplementary suite, which mise.toml declares and mise.lock pins, and the facts of the suite archive that
 // external-inputs.json states.
 import { createHash } from 'node:crypto';
 import { mkdirSync, mkdtempSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
@@ -12,7 +12,6 @@ import { checkJson, readJsonFile } from './json.mts';
 import { REGISTRY, ROOT, trackedFiles } from './registry.mts';
 
 export const AGGREGATE_RECORD = 'var/records/verification.json';
-export const PIE_RECORD = 'var/records/pie-verification.json';
 // A record is evidence about the sources, not one of them.
 const NOT_SOURCES = new Set(['benchmarks/results.json']);
 
@@ -74,7 +73,6 @@ export function writeRecord(file: string, record: unknown, root = ROOT): void {
 }
 
 export type Pins = {
-  pie: { release: string; phar_sha256: string };
   supplementary: { project: string; revision: string; cases: number; inputs_sha256: string };
 };
 export type Supplementary = { project: string; revision: string; cases: number; inputs_sha256: string };
@@ -88,21 +86,18 @@ function miseHttpTool(root: string, name: string): { version: string; checksum: 
 }
 
 /**
- * The identity of each external input that a record may name: the PIE release and the sha256 of its PHAR and the revision of
- * the supplementary suite come from the http tools of mise.toml, which mise.lock pins; the case count and the digest of the
+ * The identity of the external input that a record may name: the revision of the supplementary suite comes from the http
+ * tool of mise.toml, which mise.lock pins; the case count and the digest of the
  * inputs of that archive come from external-inputs.json.
  */
 export function externalPins(root = ROOT): Pins {
   const { supplementary } = readJsonFile<{ supplementary: { cases: number; inputs_sha256: string } }>(path.join(root, 'external-inputs.json'), 'external-inputs.schema.json');
-  const pie = miseHttpTool(root, 'http:pie');
   return {
-    pie: { release: pie.version, phar_sha256: pie.checksum },
     supplementary: { project: 'nst/JSONTestSuite', revision: miseHttpTool(root, 'http:jsontestsuite').version, ...supplementary },
   };
 }
 
-/** The PIE PHAR and the supplementary suite that mise installed (make install-tools). */
-export const installedPie = (root = ROOT): string => path.join(root, 'var/tools/mise/installs/http-pie', externalPins(root).pie.release, 'pie');
+/** The supplementary suite that mise installed (make install-tools). */
 export const installedSuite = (root = ROOT): string => path.join(root, 'var/tools/mise/installs/http-jsontestsuite', externalPins(root).supplementary.revision);
 
 /** The supplementary suite in the folder `suite`, of the declared `revision`: its project, revision, case count and the digest of its inputs. */
@@ -119,12 +114,11 @@ export function supplementaryManifest(suite: string, revision = externalPins().s
 }
 
 /**
- * How the PIE PHAR hash and the supplementary manifest differ from the pins, one message per field with the expected and the
+ * How the supplementary manifest differs from the pins, one message per field with the expected and the
  * actual value. A check compares them before any work, so no run is spent on inputs that the evidence check refuses.
  */
-export function inputIssues(pins: Pick<Pins, 'supplementary'> & Partial<Pick<Pins, 'pie'>>, { pie, supplementary }: { pie?: string; supplementary?: Supplementary }): string[] {
+export function inputIssues(pins: Pins, { supplementary }: { supplementary?: Supplementary }): string[] {
   const issues: string[] = [];
-  if (pie !== undefined && pins.pie && pie !== pins.pie.phar_sha256) issues.push(`PIE PHAR phar_sha256: expected ${pins.pie.phar_sha256} (PIE ${pins.pie.release}), actual ${pie}`);
   if (supplementary !== undefined) {
     for (const field of ['project', 'revision', 'cases', 'inputs_sha256'] as const) {
       if (supplementary[field] !== pins.supplementary[field]) issues.push(`JSONTestSuite ${field}: expected ${pins.supplementary[field]}, actual ${supplementary[field]}`);

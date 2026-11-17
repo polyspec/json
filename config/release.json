@@ -27,12 +27,10 @@
   },
   "notReleased": {
     "Cargo.toml": "the root Cargo workspace; the crate is released by packages/rust/Cargo.toml",
-    "composer.json": "the manifest of the development checkout, which loads the legacy PHP package for the lints; the legacy packages keep their last release (docs/spec/json-contract.md#transition)",
+    "composer.json": "the development manifest of the checkout, which installs PHPUnit for the PHP tests; the PHP package of json is the binding extension of packages/php-ext (T3.25-3)",
     "legacy/packages/go/differential/go.mod": "the module of the differential test of the legacy Go package and the binding (make test-differential-go), which is removed with the legacy package (docs/spec/json-contract.md#transition)",
     "legacy/packages/go/go.mod": "the legacy language package of the transition, which is no release target until it is removed (docs/spec/json-contract.md#transition)",
     "legacy/packages/js/package.json": "the legacy language package of the transition, which is no release target until it is removed (docs/spec/json-contract.md#transition)",
-    "legacy/packages/php-ext/composer.json": "the legacy language package of the transition, which is no release target until it is removed (docs/spec/json-contract.md#transition)",
-    "legacy/packages/php/composer.json": "the legacy language package of the transition, which is no release target until it is removed (docs/spec/json-contract.md#transition)",
     "legacy/packages/python/pyproject.toml": "the legacy language package of the transition, which is no release target until it is removed (docs/spec/json-contract.md#transition)",
     "package.json": "the private manifest of the development checkout, which names the legacy JavaScript package; the legacy packages keep their last release (docs/spec/json-contract.md#transition)",
     "packages/go/go.mod": "the Go module of the bindings, which make release-go-module of packages/release.mk releases with binding release-go-module: it tags a commit of its own that carries the generated files and the static libraries (binding GN-19f), so the tag of the release names no Go module"

@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
-// The library is whatever the run loaded: the Composer autoloader of the package (auto_prepend_file) or the extension.
+// The modes: native-json measures ext-json, and extension the binding extension Polyspec\Json, which the run loads with
+// -d extension (T3.25-3).
 
-use Polyspec\OrderedJson\Value;
+use function Polyspec\Json\parse;
+use function Polyspec\Json\stringify;
 
 $iterations = (int)($_SERVER['OJ_BENCH_ITERATIONS'] ?? 1000);
 $warmup = (int)($_SERVER['OJ_BENCH_WARMUP'] ?? 1000);
@@ -53,10 +55,10 @@ foreach ($files as $file) {
     }
     $parseFn = $mode === 'native-json'
         ? static fn() => json_decode($source, false, 512, JSON_THROW_ON_ERROR)
-        : static fn() => Value::parse($source, 256);
+        : static fn() => parse($source, 256);
     $stringifyFn = $mode === 'native-json'
         ? static fn($value) => json_encode($value, JSON_THROW_ON_ERROR)
-        : static fn($value) => $value->compact();
+        : static fn($value) => stringify($value);
     [$parseStats] = $measure(function () use ($parseFn, &$sink) {
         $sink = $parseFn();
         return $sink;

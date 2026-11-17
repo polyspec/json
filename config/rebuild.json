@@ -16,7 +16,7 @@
     },
     "benchmarks/python-parse/parse.php": {
       "kind": "policy",
-      "reason": "the PHP side of the parse-ratio budget of benchmarks/python-parse/run.py: one parse of the generated document, printing its CPU seconds; a rule of this repository that bounds the Python parser against the pure PHP parser"
+      "reason": "the PHP side of the parse-ratio budget of benchmarks/python-parse/run.py: one parse of the generated document with the binding extension, printing its CPU seconds; a rule of this repository that compares the conversion layer of the Python binding with that of the PHP binding over the same core"
     },
     "benchmarks/python-parse/parse.py": {
       "kind": "policy",
@@ -38,10 +38,6 @@
       "kind": "record",
       "record": "docs/rebuild/json-js.md"
     },
-    "legacy/packages/php/src/Value.php": {
-      "kind": "record",
-      "record": "docs/rebuild/json-php.md"
-    },
     "legacy/packages/python/src/polyspec/ordered_json/__init__.py": {
       "kind": "record",
       "record": "docs/rebuild/json-python.md"
@@ -53,10 +49,6 @@
     "scripts/check-evidence.mts": {
       "kind": "ecosystem",
       "tool": "mdast-util-from-markdown"
-    },
-    "scripts/check-pie.mts": {
-      "kind": "ecosystem",
-      "tool": "PIE"
     },
     "scripts/json.mts": {
       "kind": "ecosystem",

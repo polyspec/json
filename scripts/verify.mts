@@ -401,7 +401,7 @@ async function record(suite: string | undefined): Promise<void> {
   const issues = inputIssues(externalPins(), supplementary ? { supplementary } : {});
   if (issues.length) throw new Failures(issues.map(issue => `external input differs from its pin: ${issue}`));
   const warnings: { implementation: string; message: string }[] = [];
-  const { results, counts, versions } = await withRun(IMPLEMENTATIONS, async run => ({ ...await verify(IMPLEMENTATIONS, run, suite, warnings), versions: runtimeVersions(IMPLEMENTATIONS, run) }));
+  const { results, counts, versions } = await withRun(async run => ({ ...await verify(IMPLEMENTATIONS, run, suite, warnings), versions: runtimeVersions(IMPLEMENTATIONS, run) }));
   if (suite !== undefined && !isDeepStrictEqual(supplementaryManifest(suite), supplementary)) throw new Error('the supplementary inputs changed during verification; no record was written');
   writeRecord(path.join(ROOT, AGGREGATE_RECORD), createRecord(ROOT, before, results, counts, versions, supplementary, warnings));
   console.log(`Saved ${AGGREGATE_RECORD}`);
@@ -426,7 +426,7 @@ async function main(): Promise<number> {
   }
   try {
     if (values.record) await record(suite);
-    else await withRun(values.only ?? IMPLEMENTATIONS, run => verify(values.only ?? IMPLEMENTATIONS, run, suite));
+    else await withRun(run => verify(values.only ?? IMPLEMENTATIONS, run, suite));
   } catch (error) {
     if (!(error instanceof Failures)) throw error;
     console.error(`verification failed with ${error.failures.length} failures${values.record ? '; no record was written' : ''}:`);

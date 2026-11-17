@@ -14,8 +14,8 @@ import { toString } from 'mdast-util-to-string';
 import { gfm } from 'micromark-extension-gfm';
 import { readJsonFile } from './json.mts';
 import { present } from './present.mts';
-import { AGGREGATE_RECORD, PIE_RECORD, externalPins, manifestDifferences, packageRevisions, sourceManifest, type Manifest } from './records.mts';
-import { IMPLEMENTATIONS, ROOT, argumentCases, artifactPaths, fixturePaths, officialCases, repositoryPaths, trackedFiles } from './registry.mts';
+import { AGGREGATE_RECORD, externalPins, manifestDifferences, packageRevisions, sourceManifest, type Manifest } from './records.mts';
+import { IMPLEMENTATIONS, ROOT, argumentCases, fixturePaths, officialCases, trackedFiles } from './registry.mts';
 
 const PRIVATE_PATH = /\/(?:Users|home)\/[^/\s"<>]+\//;
 const STATES = ['implemented', 'partial', 'planned'];
@@ -142,8 +142,6 @@ type Implementation = { status?: string; cases?: number; runtime?: Record<string
 /** The aggregate record of make verify-all: every implementation passed every shared case of the current sources. */
 /** The aggregate record of make verify-all, scripts/schema/verification-record.schema.json. */
 type VerificationRecord = { schema_version?: number; status?: string; checked_at?: string; sources?: Manifest; cases: Counts; implementations: Record<string, Implementation>; packages?: unknown; supplementary?: unknown };
-/** The PIE record of make pie-check, scripts/schema/pie-record.schema.json. */
-type PieRecord = { schema_version?: number; scope?: string; status?: string; checked_at?: string; sources?: Manifest; packages?: unknown; package?: string; pie: { phar_sha256?: string; version?: string }; artifact?: Record<string, string>; commands: { arguments: string[]; exit_code: number }[]; cases: Counts; implementations: Record<string, Implementation>; supplementary?: unknown };
 /** benchmarks/results.json as evidence, scripts/schema/benchmark-evidence.schema.json. */
 type BenchmarkRecord = { schema_version?: number; source?: Record<string, unknown>; protocol?: unknown; fixtures?: unknown; comparison?: { status?: string } };
 
@@ -161,28 +159,7 @@ function checkVerification(root: string, record: VerificationRecord): void {
   for (const [name, result] of Object.entries(record.implementations)) {
     if (result.status !== 'passed' || result.cases !== record.cases.total || !result.runtime || !Object.keys(result.runtime).length) throw new Error(`the result of ${name} is incomplete: ${JSON.stringify(result)}`);
   }
-  const native = record.implementations['php-extension']?.runtime ?? {};
-  if ('php-extension' in record.implementations && (!native.extension_version || !native.php)) throw new Error('the verification record names the PHP release and the extension version separately');
   if (!isDeepStrictEqual(record.packages, packageRevisions(root))) throw new Error('the package revisions of the verification record differ from the current sources');
-  checkSupplementary(root, record, record.cases);
-}
-
-/** The PIE record of make pie-check: PIE built the extension, and its module passed every shared case of the current sources. */
-function checkPieVerification(root: string, record: PieRecord): void {
-  if (record.schema_version !== 1 || record.scope !== 'pie-build' || record.status !== 'passed' || Number.isNaN(Date.parse(record.checked_at ?? ''))) throw new Error('the PIE record is not a passed pie-build record of schema 1 with its time');
-  checkSources(root, record.sources, 'the PIE record', 'make pie-check');
-  if (!isDeepStrictEqual(record.packages, packageRevisions(root))) throw new Error('the package revisions of the PIE record differ from the current sources');
-  if (record.package !== 'polyspec/ordered-json-php-ext:*@dev') throw new Error(`the PIE record builds ${record.package}, not polyspec/ordered-json-php-ext:*@dev`);
-  const { pie } = externalPins(root);
-  if (record.pie.phar_sha256 !== pie.phar_sha256 || !String(record.pie.version).includes(pie.release)) throw new Error('the PIE of the record differs from the pin in external-inputs.json');
-  const declared = artifactPaths('php-extension', { paths: repositoryPaths(root), cache: '' }).map(file => path.relative(root, file));
-  if (!isDeepStrictEqual(record.artifact, { path: declared[0] }) || declared.length !== 1) throw new Error(`the PIE record names the artifact ${JSON.stringify(record.artifact)}, not only the path ${declared[0]} that the registry declares; a linked module has no reproducible hash`);
-  if (record.commands.some(command => command.exit_code !== 0) || !record.commands.some(command => command.arguments[0] === 'build')) throw new Error('the PIE record holds no successful PIE build');
-  checkCounts(root, record.cases, 'the PIE record');
-  const native = record.implementations['php-extension'];
-  if (!isDeepStrictEqual(Object.keys(record.implementations), ['php-extension']) || native?.status !== 'passed' || native.cases !== record.cases.total || !native.runtime?.php || !native.runtime.extension_version) {
-    throw new Error('the module that PIE built must pass every shared case, with the PHP release and the extension version');
-  }
   checkSupplementary(root, record, record.cases);
 }
 
@@ -214,13 +191,6 @@ export function checkEvidence(root: string, records: boolean): { errors: string[
     if (verifications.includes('benchmark')) checkBenchmark(root, readJsonFile<BenchmarkRecord>(path.join(root, 'benchmarks/results.json'), 'benchmark-evidence.schema.json'));
   } catch (error) {
     errors.push(`docs/features.md: ${error instanceof Error ? error.message : String(error)}`);
-  }
-  if (records && existsSync(path.join(root, PIE_RECORD))) {
-    try {
-      checkPieVerification(root, readJsonFile<PieRecord>(path.join(root, PIE_RECORD), 'pie-record.schema.json'));
-    } catch (error) {
-      errors.push(`${PIE_RECORD}: ${error instanceof Error ? error.message : String(error)}`);
-    }
   }
   for (const report of trackedFiles(root).filter(file => file.startsWith('docs/') && file.endsWith('.json'))) {
     const body = readFileSync(path.join(root, report), 'utf8');

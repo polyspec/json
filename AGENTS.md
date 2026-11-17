@@ -46,22 +46,22 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
 
 - Own: Development runs unit tests only: the native test of a changed package, or a tool test with `make json-test-scripts TESTS=<file>`. `make verify-<language>` builds one implementation and sends the shared cases to its probe, and writes no record.
   Enforced by: none, judged at review.
-- Own: The full suite (`make check`) and the end-to-end checks (`make pie-check`, `make owner-check`, the adapter suites and the supplementary suite) run in hosted CI on every pull request and every push to `main`. No rule requires a local run before a commit or a push, and no rule runs a broader check after each correction.
+- Own: The full suite (`make check`) and the end-to-end checks (`make owner-check`, the adapter suites and the supplementary suite) run in hosted CI on every pull request and every push to `main`. No rule requires a local run before a commit or a push, and no rule runs a broader check after each correction.
   Enforced by: `make ci-targets`
 - Own: Every commit runs the commit-msg hook of `.githooks`, which refuses a message with the footer or the identity of an AI tool, because a commit message names no tool and no author but the person who commits. `make hooks` points `core.hooksPath` at `.githooks`, makes the hook executable and declares the merge drivers of the changelogs and the checklists; a checkout runs it once after its first install.
   Enforced by: none, judged at review: the hooks of a checkout are its local Git configuration, which no CI job sees; `make hooks-check` names a checkout that lacks them.
 - Own: Every tracked path is owned by a rule of [config/owner-checks.json](config/owner-checks.json). `make owner-validate` fails while a path matches no rule, a glob matches no path or an owner does not exist. A new file is mapped in the same commit.
   Enforced by: `make layout-check`
-- Own: A target that reads a record of another target names that target as its prerequisite, so it reads only the record of its own tree: `make verify-all` checks the PIE record of `make pie-check` and runs it first, and `pie-check` is no target of `CHECK_TARGETS` of its own.
+- Own: A target that reads a record of another target names that target as its prerequisite, so it reads only the record of its own tree: `make evidence-check` reads no record of another target, and `make verify-all` writes and checks its own aggregate record in one run.
   Enforced by: `make json-test-scripts`
 - Own: Each target of `CHECK_TARGETS` in the Makefile is a prerequisite of the target of exactly one job of `.github/workflows/ci-pipeline.yml` (`kit-gates-static`, `kit-gates-verify`, `kit-gates-bindings`, `kit-gates-runtime-<runtime>`), which the recipe `ci-<job>` of the job runs by name through `make ci-targets`, past failures, and the job uploads its report.
   Enforced by: `make json-test-scripts`
-- Own: Every job of a workflow that CI runs (`ci.yml`, `ci-pipeline.yml`, `assets.yml`, `release.yml`) has exactly one `run:` step, `make ci-<job>` with make variables as its only arguments, and the recipe `ci-<job>` of the Makefile holds the order and the conditions of the job: its installs and prerequisites first, each of which stops the job when it fails, then its checks through `make ci-targets`, each to its end, then the cleanup of the CI context whenever its prepare started. A matrix value or an input of the called workflow is passed as `NAME=${{ matrix.key }}` or `NAME=${{ inputs.key }}`, and no other expression appears in a run line, except `RESULTS='${{ toJSON(needs) }}'` of the judgement job `required`, which reads the results of the other jobs and exists only in CI. Every other step is a `uses:` step that provisions the runner or carries a result, and only a `uses:` step has an `if:` condition. The fan-out of a matrix may still come from an output of the job `plan`, since it is no content of a job, while the recipe reads the tools of the plan from `config/ci.json` itself. The reason: a job whose order, conditions and arguments are in YAML runs only on a runner of GitHub, so a local run cannot be the same run as CI; with the content in the recipe, a local run is the call that CI makes, such as `make ci-runtime RUNTIME=php`.
+- Own: Every job of a workflow that CI runs (`ci.yml`, `ci-pipeline.yml`, `assets.yml`, `release.yml`) has exactly one `run:` step, `make ci-<job>` with make variables as its only arguments, and the recipe `ci-<job>` of the Makefile holds the order and the conditions of the job: its installs and prerequisites first, each of which stops the job when it fails, then its checks through `make ci-targets`, each to its end, then the cleanup of the CI context whenever its prepare started. A matrix value or an input of the called workflow is passed as `NAME=${{ matrix.key }}` or `NAME=${{ inputs.key }}`, and no other expression appears in a run line, except `RESULTS='${{ toJSON(needs) }}'` of the judgement job `required`, which reads the results of the other jobs and exists only in CI. Every other step is a `uses:` step that provisions the runner or carries a result, and only a `uses:` step has an `if:` condition. The fan-out of a matrix may still come from an output of the job `plan`, since it is no content of a job, while the recipe reads the tools of the plan from `config/ci.json` itself. The reason: a job whose order, conditions and arguments are in YAML runs only on a runner of GitHub, so a local run cannot be the same run as CI; with the content in the recipe, a local run is the call that CI makes, such as `make ci-runtime RUNTIME=go`.
   Enforced by: `make json-test-scripts`
 - Own: The lint of each language passes: `make lint-rust` (clippy with `-D warnings`), `make lint-go` (golangci-lint with `.golangci.yml`, and deadcode), `make lint-php` (phpcs with `phpcs.xml.dist`, and PHPStan) and `make lint-python` (ruff with `ruff.toml`, and vulture).
   Enforced by: `make ci-targets`
-- Own: The PHP extension is rebuilt when its native code changes. A result from an old binary or a prior run is never taken as verification of changed code.
-  Enforced by: `make test-php-ext`
+- Own: The PHP extension of the binding is rebuilt when its native code changes: `make test-php` and `make test-binding-php` build it first through `make binding-php-ext-library`. A result from an old binary or a prior run is never taken as verification of changed code.
+  Enforced by: `make test-binding-php`
 - Own: A verification result or a source hash is never edited to make a check pass. A record of `var/records/` is written by the run that verifies it and is not committed.
   Enforced by: `make layout-check`
 
@@ -70,7 +70,7 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
 
 - Own: [config/implementations.json](config/implementations.json) declares the implementations, which is the one source of the language set of this repository, with the directory of each. A new language is added in `config/implementations.json`, in the commands of `scripts/registry.mts` and in a package directory, without changing the shared JSON comparison algorithm.
   Enforced by: `make json-test-scripts`
-- Own: Each implementation runs its own package tests with the native runner of its language: `make test-js`, `make test-rust`, `make test-go`, `make test-php`, `make test-php-ext` and `make test-python`.
+- Own: Each implementation runs its own package tests with the native runner of its language: `make test-js`, `make test-rust`, `make test-go`, `make test-php` and `make test-python`; the package tests of PHP and Python run against the binding (T3.25-2, T3.25-3).
   Enforced by: `make ci-targets`
 - Own: An API that only one package provides is tested in that package. Shared cases exercise the JSON contract and cannot reach a language-specific API.
   Enforced by: none, judged at review: the shared cases reach only the JSON contract.
@@ -182,27 +182,17 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
   Enforced by: `make docs-check`
 
 <a id="package-php"></a>
-## Package php (legacy/packages/php)
+## Package php (packages/php-ext)
 
-- Own: The Composer package is linted by `make lint-php` (phpcs and PHPStan).
+- Refines S10: No object: json has no PHP library after the removal of legacy/packages/php (T3.25-3); its PHP package is the binding extension of packages/php-ext, which implements no library.
+  Enforced by: `make layout-check`
+- Own: The PHP of the checkout, the package tests and the benchmarks, is linted by `make lint-php` (phpcs and PHPStan), in the job bindings.
   Enforced by: `make lint-php`
-- Own: The Composer package is checked alone by `make json-php-check`, which runs `make verify-php`.
-  Enforced by: none, judged at review: no workflow, Git hook or Claude Code hook runs this target.
-- Own: Its `composer.lock` is locked to the platform `8.4.1` and requires PHP `>=8.4`, and is re-locked with `composer update --lock` when its manifest changes.
-  Enforced by: none, judged at review.
-- Own: Its package tests are the PHPUnit tests of `legacy/packages/php/tests` that `make test-php` runs, installed by `make install`.
+- Own: Its package tests are the PHPUnit tests of `packages/php-ext/tests` that `make test-php` runs against the binding extension, with the PHPUnit that `make json-install-php` installs from the development manifest `composer.json` (T3.25-3).
   Enforced by: `make test-php`
+- Own: The probe of the shared verifier is `packages/php-ext/tests/probe.php`, which `make verify-php` runs with the binding extension loaded.
+  Enforced by: `make verify-all`
 - Own: The changes of the package are listed in its section of [CHANGELOG.md](CHANGELOG.md).
-  Enforced by: `make docs-check`
-
-<a id="package-php-ext"></a>
-## Package php-ext (legacy/packages/php-ext)
-
-- Own: The extension is checked alone by `make json-php-ext-check`, which runs `make verify-php-extension`. `make build-php-ext` of kit (S10) builds `var/php-ext/polyspec_ordered_json.so` from the stub and its tracked arginfo header (`make php-ext-arginfo` writes it), and `make verify-php-extension` and `make test-php-ext` load it.
-  Enforced by: `make test-php-ext`
-- Own: Its `composer.lock` is locked to the platform `8.4.1` and requires PHP `>=8.4`, the same as the PHP package, and is re-locked with `composer update --lock` when its manifest changes.
-  Enforced by: none, judged at review.
-- Own: The changes of the extension are listed in its section of [CHANGELOG.md](CHANGELOG.md).
   Enforced by: `make docs-check`
 
 <a id="package-python"></a>

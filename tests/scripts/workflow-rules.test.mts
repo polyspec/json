@@ -67,12 +67,6 @@ test('every target of the full suite runs in exactly one job of the pipeline', (
 // verify-all reads the PIE record of make pie-check, which holds the sources of the tree that it checked; a record of an earlier
 // tree is stale. So verify-all names pie-check as its prerequisite and reads only the record of its own tree, and pie-check is
 // no target of its own in the full suite.
-test('verify-all writes the PIE record that it reads before it reads it', () => {
-  const text = database();
-  assert.ok(prerequisites(text, 'verify-all').includes('pie-check'), 'verify-all names pie-check as its prerequisite');
-  assert.ok(!variable(text, 'CHECK_TARGETS').includes('pie-check'), 'pie-check runs inside verify-all, not as a target of its own');
-});
-
 /** The recipe lines of the make target `target` in the make database `text`, as make prints them, variables unexpanded. */
 function recipe(text: string, target: string): string[] {
   // A target-specific variable (`target: NAME :=`) is a line of its own in the database, which is no rule line.

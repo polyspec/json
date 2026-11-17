@@ -1,28 +1,17 @@
 {
-  "name": "polyspec/ordered-json",
-  "version": "0.0.25",
-  "description": "JSON document order at every depth, with optional native parser",
-  "type": "library",
+  "name": "polyspec/json-development",
+  "description": "The development manifest of the json checkout: PHPUnit and the autoloader of the PHP tests and benchmarks; the PHP package of json is the binding extension of packages/php-ext",
+  "type": "project",
   "license": "MIT",
   "require": {
-    "php": ">=8.4",
-    "ext-json": "*",
-    "ext-pcre": "*"
+    "php": ">=8.4"
   },
-  "suggest": {
-    "ext-polyspec_ordered_json": "Native backend from the polyspec/ordered-json-php-ext PIE package"
-  },
-  "autoload": {
-    "psr-4": {
-      "Polyspec\\OrderedJson\\": "legacy/packages/php/src/"
-    },
-    "files": [
-      "legacy/packages/php/src/OrderedJson.php"
-    ]
+  "require-dev": {
+    "phpunit/phpunit": "13.4.5"
   },
   "autoload-dev": {
     "psr-4": {
-      "Polyspec\\OrderedJson\\Tests\\": "legacy/packages/php/tests/"
+      "Polyspec\\Json\\Tests\\": "packages/php-ext/tests/"
     }
   },
   "config": {

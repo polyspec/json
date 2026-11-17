@@ -23,13 +23,7 @@
     {
       "name": "php",
       "roots": [
-        "legacy/packages/php"
-      ]
-    },
-    {
-      "name": "php-extension",
-      "roots": [
-        "legacy/packages/php-ext"
+        "packages/php-ext"
       ]
     },
     {

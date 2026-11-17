@@ -1,4 +1,0 @@
-ARG_ENABLE("polyspec-ordered-json", "polyspec_ordered_json native JSON parser", "no");
-if (PHP_POLYSPEC_ORDERED_JSON != "no") {
-    EXTENSION("polyspec_ordered_json", "ordered_json.c hydrate.c");
-}

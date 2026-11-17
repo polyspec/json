@@ -6,8 +6,7 @@
     "go",
     "php",
     "python",
-    "rust",
-    "c"
+    "rust"
   ],
   "minLines": 6,
   "ignorePatterns": [
@@ -21,11 +20,5 @@
     "(?m)^from [\\w.]+ import \\([^)]*\\)$",
     "(?m)^(pub )?use [^;]+;$",
     "(?m)^#include [<\"][^>\"\\n]*[>\"]$"
-  ],
-  "exclude": [
-    {
-      "glob": "legacy/packages/php-ext/src/polyspec_*.stub.php",
-      "reason": "ecosystem: the S10 stub declares the library under the same names and signatures"
-    }
   ]
 }

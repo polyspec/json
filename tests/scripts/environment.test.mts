@@ -62,11 +62,13 @@ test('no recipe runs a pinned tool by name', () => {
 /** The recipe lines of `target` in the Makefile. */
 const recipeOf = (target: string) => makefile().split('\n').filter((line, index, all) => line.startsWith('\t') && all.slice(0, index).reverse().find(l => !l.startsWith('\t'))?.startsWith(`${target}:`));
 
-test('T3.36: json-lock-update writes both locks online and moves only polyspec-binding-core', () => {
+// T3.25-3: the development manifest composer.json holds PHPUnit, so json-lock-update resolves composer.lock too, with Composer.
+test('T3.36: json-lock-update writes the locks online and moves only polyspec-binding-core', () => {
   const recipe = recipeOf('json-lock-update');
-  assert.equal(recipe.length, 3, recipe.join('\n'));
+  assert.equal(recipe.length, 4, recipe.join('\n'));
   assert.match(recipe[1] ?? '', /\$\(ONLINE\) .*npm --prefix "\$\$root" install --package-lock-only --ignore-scripts --no-audit --no-fund$/);
-  assert.equal(recipe[2], '\t$(MAKE) --no-print-directory json-cargo-lock-update');
+  assert.equal(recipe[2], '\t$(ONLINE) $(COMPOSER) update --no-install --no-interaction --no-progress');
+  assert.equal(recipe[3], '\t$(MAKE) --no-print-directory json-cargo-lock-update');
   const cargo = recipeOf('json-cargo-lock-update');
   assert.ok(cargo.some(line => line.includes('$(ONLINE) $(CARGO) update -p polyspec-binding-core --precise $(BINDING_VERSION)')), cargo.join('\n'));
 });

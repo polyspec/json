@@ -11,9 +11,8 @@
 | JavaScript | Node.js >= 20, ESM | `@polyspec/ordered-json` | [package.json](https://github.com/polyspec/json/blob/main/packages/js/package.json) |
 | Rust | Rust >= 1.71, edition 2021 | `polyspec-json` | [Cargo.toml](https://github.com/polyspec/json/blob/main/packages/rust/Cargo.toml) |
 | Go | Go >= 1.22 | `github.com/polyspec/ordered-json/packages/go` module, `orderedjson` package | [go.mod](https://github.com/polyspec/json/blob/main/packages/go/go.mod) |
-| PHP | PHP >= 8.2, JSON and PCRE extensions | `polyspec/ordered-json`, `Polyspec\OrderedJson` namespace | [composer.json](https://github.com/polyspec/json/blob/main/packages/php/composer.json) |
+| PHP | PHP >= 8.4 and PIE | the binding extension `polyspec_json` of the PIE package `polyspec/json`, `Polyspec\Json` namespace | [composer.json](https://github.com/polyspec/json/blob/main/packages/php-ext/composer.json) |
 | Python | Python >= 3.14 | `polyspec-ordered-json`, `polyspec.ordered_json` import | [pyproject.toml](https://github.com/polyspec/json/blob/main/packages/python/pyproject.toml) |
-| Native PHP | Matching PHP development headers, C compiler, phpize, make | `polyspec_ordered_json` extension | [extension source](https://github.com/polyspec/json/blob/main/packages/php-ext/src/ordered_json.c) |
 | Repository checks | The pinned Python, Node.js, Rust, Go and npm releases, Git, make, PHP above | `make install`, `make check` | [verification](validation.md) |
 
 The repository checks run with the exact releases that tracked files pin: Rust in `rust-toolchain.toml`, Node.js, Go and Python at the pins of `@polyspec/kit` in `mise.toml`, with Composer, uv and the tools of the lints and the dependency review, each locked by its digests in `mise.lock` (the `go` line of `legacy/packages/go/go.mod` names the same Go exactly), PHP by its minor release in `.php-version`, and npm at the version of `devEngines.packageManager` in `package.json`, with the digest of its tarball in `mise.lock`. A new checkout first runs `make bootstrap`, which installs `package-lock.json`, `@polyspec/kit` included, with the npm release of `devEngines.packageManager`, run by `npm exec` outside the checkout, because the bootstrap of `make install-tools TOOLS=npm` is a file of the installed kit and an npm of another release refuses the checkout (`EBADDEVENGINES`). It then runs `make install-tools TOOLS=npm`, which installs mise, the Node.js of `mise.toml` and that npm into `var/tools`, and `make install-packages`, which installs `package-lock.json` with it, the package `@polyspec/kit` of the shared tools included. `make install` then installs that Rust toolchain with rustup, and the tools of `mise.lock` with `mise install --locked` into `var/tools/mise` of the checkout (`make install-tools`, which runs the installer of `@polyspec/kit`), which Git ignores and whose shims the Makefile puts first on `PATH`; no tool of the machine is used or changed. `make install-tools` installs every tool at its declaration, every target that runs a tool depends on it, and it fails with the expected and the actual version of each tool that differs. `GOTOOLCHAIN=local` and `RUSTUP_AUTO_INSTALL=0` keep go and rustup from downloading or installing another toolchain during a run, and every cargo command uses `--locked`.
@@ -33,7 +32,7 @@ The clone contains every implementation package. Use the package directory or a 
 - JavaScript: import from `legacy/packages/js/index.js`. TypeScript declarations are in `legacy/packages/js/index.d.ts`.
 - Rust: set a local Cargo dependency with `path` pointing to `packages/rust/`.
 - Go: use a local `replace` for module `github.com/polyspec/ordered-json/packages/go` pointing to `legacy/packages/go/`.
-- PHP: use `legacy/packages/php/` as a Composer path repository; Composer loads its classes by PSR-4 and its functions by `files`.
+- PHP: install the binding extension with PIE, `pie install polyspec/json`, which takes the pre-packaged binary of a release for the PHP minor and platform ([native PHP](#native-php)).
 - Python: install the wheel asset of a release with pip, or put `legacy/packages/python/src` on the import path.
 
 ~~~sh
@@ -79,25 +78,24 @@ composer install
 
 Composer reads both zips. It does not install `polyspec/ordered-json-php-ext`, a package of the type `php-ext`; PIE builds and installs it ([native PHP](#native-php)).
 
-The packages of this repository depend on no other package, so the repository has no npm workspaces and no private development manifest: the root `package.json` and `composer.json` declare the same packages as `legacy/packages/js/` and `legacy/packages/php/` for an install from a checkout, with the same `version` and no `repositories`. A consumer installs a release outside a checkout with its package manager: npm installs the release tarball `polyspec-ordered-json-X.Y.Z.tgz`, and Composer requires the PHP packages from the release zips of an artifact repository.
+The packages of this repository depend on no other package, so the repository has no npm workspaces. The root `package.json` declares the same package as `legacy/packages/js/` for an install from a checkout, with the same `version` and no `repositories`, and the root `composer.json` is the private development manifest `polyspec/json-development`, which installs PHPUnit for the PHP tests (T3.25-3). A consumer installs a release outside a checkout with its package manager: npm installs the release tarball `polyspec-ordered-json-X.Y.Z.tgz`, and Composer requires the PHP packages from the release zips of an artifact repository.
 
 <a id="native-php"></a>
 ## Native PHP
 
-Build against the PHP runtime that will load the extension, from the repository root:
+A consumer installs the binding extension with PIE, which takes the pre-packaged binary that the release built for the PHP minor, the platform and the thread-safety configuration of the PHP that runs it:
 
 ~~~sh
-make build-php-ext
+pie install polyspec/json
 ~~~
 
-`make build-php-ext`, which runs the extension utility of kit, builds the extension in a copy of `legacy/packages/php-ext` with phpize, after checking that the arginfo header, which `make php-ext-arginfo` writes from the stub, is that of the stub, and publishes `var/php-ext/polyspec_ordered_json.so`. A consumer builds and installs it with PIE (`polyspec/ordered-json-php-ext`). To load the module:
+From a checkout, build the library of the extension against the PHP on `PATH`, from the repository root, and load it:
 
 ~~~sh
-php -n -d extension="$PWD/var/php-ext/polyspec_ordered_json.so" script.php
+make binding-php-ext-library
+php -n -d extension="$PWD/target/debug/libpolyspec_json.dylib" script.php
 ~~~
 
-`script.php` is any PHP script that uses the extension. `php -n` ignores php.ini; required built-in JSON and PCRE support must still be available. The source includes `config.w32`, but Windows and ZTS builds have not been verified. PIE requires its build tools, including `pkg-config`; on macOS the Homebrew package is `pkgconf`. See the [PIE artifact check](validation.md#pie) for the reproducible PIE build and shared verification procedure.
-
-On macOS, configure preserves an explicit `MACOSX_DEPLOYMENT_TARGET` or derives the missing value from the active C compiler, including target flags in `CFLAGS`. The loadable bundle uses dynamic symbol lookup for modern targets and omits the unused dynamic-library single-module flag check.
+`script.php` is any PHP script that uses the extension; on Linux the library is `libpolyspec_json.so`. `make binding-php-ext-library` builds with the test features of the binding, as the tests load it; `make binding-php-ext-release-library` builds the release library under `target/release`. Windows and ZTS builds have not been verified.
 
 The common PHP API and backend selection rules are defined in the [API contract](api.md#php). Rebuild the module after native source or PHP build configuration changes.

@@ -2,7 +2,7 @@
 # docs/spec/utilities-and-recipes.md). .github/workflows/ci.yml holds the triggers and the concurrency and calls it as its job
 # kit, so one push runs one workflow: plan first, then the shared, verify, runtime and bindings jobs in parallel, then required.
 # A job holds no content of its own: its one run step is make ci-<job> with make variables as its only arguments, the call
-# that a local run of the job makes (make ci-runtime RUNTIME=php), and the recipe of the Makefile holds the order and the
+# that a local run of the job makes (make ci-runtime RUNTIME=go), and the recipe of the Makefile holds the order and the
 # conditions of the job (tests/scripts/workflow-rules.test.mts). The other steps provision the runner or upload the report.
 # The runtime matrix lists the runtimes of config/ci.json, so rules-check reaches the targets of each (kit K1057).
 name: ci-pipeline
@@ -84,16 +84,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        runtime: [go, php, php-ext, python, rust, ts]
+        runtime: [go, python, rust, ts]
     runs-on: ${{ needs.plan.outputs.runner }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
-        if: ${{ matrix.runtime == 'php' || matrix.runtime == 'php-ext' }}
-        with:
-          php-version-file: .php-version
-          tools: none
-          coverage: none
       - uses: ./.github/actions/kit-bootstrap
       - run: make ci-runtime RUNTIME=${{ matrix.runtime }}
       # actions/upload-artifact v7.0.1: the report of make ci-targets, var/report/ci-targets.

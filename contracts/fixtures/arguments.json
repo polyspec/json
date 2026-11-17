@@ -1,9 +1,7 @@
 {
   "schema": 1,
   "comment": "The argument cases of the shared verifier (docs/spec/json-contract.md#argument-kinds): each sends the request {\"call\": call, \"argument\": argument} to every probe, which applies the function of the call to the argument and replies {\"ok\": true} or {\"ok\": false, \"kind\": kind}. number: the number constructor of the argument text. max_depth: the depth-limited parse of the document 1 with the argument as the limit. string_value: the string accessor of the argument value. object_key: an object built from the argument value as its key and null as its value. absent names the implementations where a call cannot be written, as the specification states for the kind of its refusal.",
-  "absent": {
-    "object_key": ["php", "php-extension"]
-  },
+  "absent": {},
   "cases": [
     {"name": "number-literal", "call": "number", "argument": "-0.5e3", "kind": null},
     {"name": "number-leading-whitespace", "call": "number", "argument": " 1", "kind": "invalid_number_literal"},

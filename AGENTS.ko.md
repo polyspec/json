@@ -1,5 +1,5 @@
 <!-- doc-id: development -->
-<!-- source-sha256: 456b3b9b33b3a9c98cdfda74c1e8badc569171eaba41ca3222655d788c8e97cd -->
+<!-- source-sha256: f46023738ac666506dfebd64d22a6a9ec4482cc52f89b51d4bf92502d0c587c0 -->
 # Development procedure
 
 [English](AGENTS.md)
@@ -47,22 +47,22 @@
 
 - Own: 개발 중에는 unit test만 실행합니다. 바뀐 패키지의 native test나, `make json-test-scripts TESTS=<file>`의 tool test를 실행합니다. `make verify-<language>`는 한 구현을 빌드하고 공통 사례를 그 probe에 보내며, 기록을 쓰지 않습니다.
   Enforced by: none, review에서 판단합니다.
-- Own: 전체 suite(`make check`)와 end-to-end 검사(`make pie-check`, `make owner-check`, adapter suite, 보충 suite)는 모든 pull request와 `main`에 대한 모든 push마다 hosted CI가 실행합니다. commit이나 push 전 로컬 실행을 요구하는 규칙은 없으며, 수정할 때마다 더 넓은 검사를 다시 실행하라는 규칙도 없습니다.
+- Own: 전체 suite(`make check`)와 end-to-end 검사(`make owner-check`, adapter suite, 보충 suite)는 모든 pull request와 `main`에 대한 모든 push마다 hosted CI가 실행합니다. commit이나 push 전 로컬 실행을 요구하는 규칙은 없으며, 수정할 때마다 더 넓은 검사를 다시 실행하라는 규칙도 없습니다.
   Enforced by: `make ci-targets`
 - Own: 모든 commit은 `.githooks`의 commit-msg hook을 실행하며, 이 hook은 AI 도구의 footer나 identity를 담은 message를 거부합니다. commit message는 commit하는 사람 외에 어떤 도구나 작성자도 적지 않기 때문입니다. `make hooks`는 `core.hooksPath`를 `.githooks`로 지정하고, hook을 실행 가능하게 만들며, changelog와 checklist의 merge driver를 선언합니다. checkout은 첫 설치 뒤에 그것을 한 번 실행합니다.
   Enforced by: none, review에서 판단합니다. checkout의 hook은 CI job이 보지 못하는 그 checkout의 로컬 Git 설정이며, `make hooks-check`는 hook이 없는 checkout을 알려 줍니다.
 - Own: 모든 추적 경로는 [config/owner-checks.json](config/owner-checks.json)의 규칙이 소유합니다. `make owner-validate`는 어떤 규칙도 맞지 않는 경로, 어떤 path도 맞지 않는 glob, 존재하지 않는 owner가 있으면 실패합니다. 새 파일은 같은 commit에서 매핑합니다.
   Enforced by: `make layout-check`
-- Own: 다른 target의 기록을 읽는 target은 그 target을 prerequisite로 적어 자기 tree의 기록만 읽습니다. `make verify-all`은 `make pie-check`의 PIE 기록을 검사하므로 그것을 먼저 실행하고, `pie-check`는 `CHECK_TARGETS`의 독립 target이 아닙니다.
+- Own: 다른 target의 기록을 읽는 target은 그 target을 prerequisite로 적어 자기 tree의 기록만 읽습니다. `make evidence-check`는 다른 target의 기록을 읽지 않고, `make verify-all`은 한 실행에서 자기 통합 기록을 쓰고 검사합니다.
   Enforced by: `make json-test-scripts`
 - Own: Makefile의 `CHECK_TARGETS`의 각 target은 `.github/workflows/ci-pipeline.yml`의 정확히 한 job의 target(`kit-gates-static`, `kit-gates-verify`, `kit-gates-bindings`, `kit-gates-runtime-<runtime>`)의 prerequisite이며, 그 job의 recipe `ci-<job>`은 이 target을 이름으로 `make ci-targets`로 실패 뒤에도 끝까지 실행하고, job은 보고서를 업로드합니다.
   Enforced by: `make json-test-scripts`
-- Own: CI가 실행하는 workflow(`ci.yml`, `ci-pipeline.yml`, `assets.yml`, `release.yml`)의 모든 job은 정확히 하나의 `run:` step을 가지며, 그 step은 make 변수만을 인자로 받는 `make ci-<job>`입니다. Makefile의 recipe `ci-<job>`이 job의 순서와 조건을 가집니다. 설치와 prerequisite을 먼저 실행하고 그 각각이 실패하면 job을 멈추며, 이어서 검사를 `make ci-targets`로 각각 끝까지 실행하고, 끝으로 CI context의 prepare가 시작되었다면 언제나 그 정리를 실행합니다. matrix 값이나 호출된 workflow의 input은 `NAME=${{ matrix.key }}` 또는 `NAME=${{ inputs.key }}`로 넘기며, run 줄에는 다른 식이 없습니다. 예외는 판정 job `required`의 `RESULTS='${{ toJSON(needs) }}'`이며, 이 job은 다른 job의 결과를 읽고 CI에만 있습니다. 다른 step은 모두 runner를 준비하거나 결과를 옮기는 `uses:` step이며, `if:` 조건은 `uses:` step에만 있습니다. matrix의 fan-out은 job의 내용이 아니므로 job `plan`의 출력에서 올 수 있으며, recipe는 plan의 도구를 `config/ci.json`에서 직접 읽습니다. 이유: 순서, 조건, 인자를 YAML에 둔 job은 GitHub의 runner에서만 실행되므로 로컬 실행이 CI와 같은 실행일 수 없습니다. 내용이 recipe에 있으면 로컬 실행은 CI가 하는 호출, 예를 들어 `make ci-runtime RUNTIME=php`와 같습니다.
+- Own: CI가 실행하는 workflow(`ci.yml`, `ci-pipeline.yml`, `assets.yml`, `release.yml`)의 모든 job은 정확히 하나의 `run:` step을 가지며, 그 step은 make 변수만을 인자로 받는 `make ci-<job>`입니다. Makefile의 recipe `ci-<job>`이 job의 순서와 조건을 가집니다. 설치와 prerequisite을 먼저 실행하고 그 각각이 실패하면 job을 멈추며, 이어서 검사를 `make ci-targets`로 각각 끝까지 실행하고, 끝으로 CI context의 prepare가 시작되었다면 언제나 그 정리를 실행합니다. matrix 값이나 호출된 workflow의 input은 `NAME=${{ matrix.key }}` 또는 `NAME=${{ inputs.key }}`로 넘기며, run 줄에는 다른 식이 없습니다. 예외는 판정 job `required`의 `RESULTS='${{ toJSON(needs) }}'`이며, 이 job은 다른 job의 결과를 읽고 CI에만 있습니다. 다른 step은 모두 runner를 준비하거나 결과를 옮기는 `uses:` step이며, `if:` 조건은 `uses:` step에만 있습니다. matrix의 fan-out은 job의 내용이 아니므로 job `plan`의 출력에서 올 수 있으며, recipe는 plan의 도구를 `config/ci.json`에서 직접 읽습니다. 이유: 순서, 조건, 인자를 YAML에 둔 job은 GitHub의 runner에서만 실행되므로 로컬 실행이 CI와 같은 실행일 수 없습니다. 내용이 recipe에 있으면 로컬 실행은 CI가 하는 호출, 예를 들어 `make ci-runtime RUNTIME=go`와 같습니다.
   Enforced by: `make json-test-scripts`
 - Own: 각 언어의 lint가 통과합니다: `make lint-rust`(`-D warnings`의 clippy), `make lint-go`(`.golangci.yml`의 golangci-lint와 deadcode), `make lint-php`(`phpcs.xml.dist`의 phpcs와 PHPStan), `make lint-python`(`ruff.toml`의 ruff와 vulture).
   Enforced by: `make ci-targets`
-- Own: PHP extension은 native 코드가 바뀌면 다시 빌드합니다. 오래된 binary나 이전 실행의 결과를 바뀐 코드의 검증으로 취급하지 않습니다.
-  Enforced by: `make test-php-ext`
+- Own: 바인딩의 PHP extension은 native 코드가 바뀌면 다시 빌드합니다: `make test-php`와 `make test-binding-php`가 `make binding-php-ext-library`로 먼저 빌드합니다. 오래된 binary나 이전 실행의 결과를 바뀐 코드의 검증으로 취급하지 않습니다.
+  Enforced by: `make test-binding-php`
 - Own: 검증 결과나 source hash를 검사를 통과시키려고 편집하지 않습니다. `var/records/`의 기록은 그것을 검증한 실행이 쓰며 commit하지 않습니다.
   Enforced by: `make layout-check`
 
@@ -71,7 +71,7 @@
 
 - Own: [config/implementations.json](config/implementations.json)은 구현을 선언하며, 이 저장소의 언어 집합에 대한 단일 출처입니다. 각 구현의 디렉터리도 여기에 적습니다. 새 언어는 공통 JSON 비교 알고리즘을 바꾸지 않고 `config/implementations.json`, `scripts/registry.mts`의 명령, 패키지 디렉터리에 추가합니다.
   Enforced by: `make json-test-scripts`
-- Own: 각 구현은 자기 언어의 native runner로 자기 패키지 테스트를 실행합니다: `make test-js`, `make test-rust`, `make test-go`, `make test-php`, `make test-php-ext`, `make test-python`.
+- Own: 각 구현은 자기 언어의 native runner로 자기 패키지 테스트를 실행합니다: `make test-js`, `make test-rust`, `make test-go`, `make test-php`, `make test-python`; PHP와 Python의 패키지 테스트는 바인딩에서 실행합니다(T3.25-2, T3.25-3).
   Enforced by: `make ci-targets`
 - Own: 한 패키지만 제공하는 API는 그 패키지에서 테스트합니다. 공통 사례는 JSON 계약을 검사하며 언어별 API에 닿을 수 없습니다.
   Enforced by: none, 검토에서 판단합니다. 공통 사례는 JSON 계약에만 닿습니다.
@@ -183,27 +183,17 @@
   Enforced by: `make docs-check`
 
 <a id="package-php"></a>
-## 패키지 php (legacy/packages/php)
+## 패키지 php (packages/php-ext)
 
-- Own: Composer 패키지는 `make lint-php`(phpcs와 PHPStan)가 lint합니다.
+- Refines S10: No object: legacy/packages/php를 지운 뒤 json에는 PHP library가 없습니다(T3.25-3). json의 PHP 패키지는 packages/php-ext의 바인딩 확장이며, 이 확장은 library를 구현하지 않습니다.
+  Enforced by: `make layout-check`
+- Own: checkout의 PHP, 곧 패키지 테스트와 benchmark는 job bindings에서 `make lint-php`(phpcs와 PHPStan)가 lint합니다.
   Enforced by: `make lint-php`
-- Own: Composer 패키지는 `make json-php-check`로 이 패키지만 검사하며, 이 target은 `make verify-php`를 실행합니다.
-  Enforced by: none, 검토에서 판단합니다: workflow, Git hook, Claude Code hook 어디도 이 target을 실행하지 않습니다.
-- Own: `composer.lock`은 platform `8.4.1`로 잠기고 PHP `>=8.4`를 요구하며, manifest가 바뀌면 `composer update --lock`으로 다시 잠급니다.
-  Enforced by: none, 검토에서 판단합니다.
-- Own: 패키지 테스트는 `legacy/packages/php/tests`의 PHPUnit 테스트이며, `make install`이 설치하고 `make test-php`가 실행합니다.
+- Own: 패키지 테스트는 `make test-php`가 바인딩 확장에서 실행하는 `packages/php-ext/tests`의 PHPUnit 테스트이며, PHPUnit은 `make json-install-php`가 개발 manifest `composer.json`에서 설치합니다(T3.25-3).
   Enforced by: `make test-php`
+- Own: 공유 verifier의 probe는 `packages/php-ext/tests/probe.php`이며, `make verify-php`가 바인딩 확장을 load하고 실행합니다.
+  Enforced by: `make verify-all`
 - Own: 패키지의 변경은 [CHANGELOG.ko.md](CHANGELOG.ko.md)의 이 패키지 절에 적습니다.
-  Enforced by: `make docs-check`
-
-<a id="package-php-ext"></a>
-## 패키지 php-ext (legacy/packages/php-ext)
-
-- Own: extension은 `make json-php-ext-check`로 이 패키지만 검사하며, 이 target은 `make verify-php-extension`을 실행합니다. kit의 `make build-php-ext`(S10)가 stub과 추적되는 arginfo header(`make php-ext-arginfo`가 씁니다)에서 `var/php-ext/polyspec_ordered_json.so`를 빌드하며, `make verify-php-extension`과 `make test-php-ext`가 이를 불러옵니다.
-  Enforced by: `make test-php-ext`
-- Own: `composer.lock`은 platform `8.4.1`로 잠기고 PHP `>=8.4`를 요구합니다. PHP 패키지와 같으며, manifest가 바뀌면 `composer update --lock`으로 다시 잠급니다.
-  Enforced by: none, 검토에서 판단합니다.
-- Own: extension의 변경은 [CHANGELOG.ko.md](CHANGELOG.ko.md)의 이 패키지 절에 적습니다.
   Enforced by: `make docs-check`
 
 <a id="package-python"></a>

@@ -58,17 +58,22 @@ node benchmarks/run.mts --iterations 10000 --warmup 1000 --samples 9
 
 The Rust baseline is `serde_json`, because Rust does not provide a JSON parser
 in its standard library. The JavaScript, Go, and PHP baselines use their
-runtime-native JSON APIs. PHP reports both the pure PHP implementation and the
-native extension implementation.
+runtime-native JSON APIs. PHP reports ext-json and the binding extension
+`Polyspec\Json`, whose release library `make benchmark` builds first with
+`make binding-php-ext-release-library` (T3.25-3). The PHP rows of
+`results.json` are those of the legacy implementations until the next
+measurement.
 
 <a id="python-parse"></a>
 ## Python parse ratio
 
 `make python-parse-budget` (`python-parse/run.py`) parses one generated document of 50,000 flat objects of eight members
-each (6.15 MB) with the Python package and with the pure PHP package, each in its own process, interleaved, three runs each.
+each (6.15 MB) with the Python binding and with the PHP binding, each in its own process, interleaved, three runs each. Both
+bindings parse with the same core, so the ratio compares the conversion layer of Python with that of PHP over the same core;
+both are release builds with the same features (T3.25-3).
 Each process reports the CPU time of its own parse, so the load of the machine slows both sides alike; no wall-clock budget
-exists. The check prints every run, both medians and their ratio, and fails when the Python median exceeds three times the
-PHP median. It is no target of `make check`: a person runs it after a change of the Python parser.
+exists. The check prints every run, both medians and their ratio, and warns when the Python median exceeds three times the
+PHP median; it never fails. It is no target of `make check`: a person runs it after a change of the Python binding.
 
 <a id="host-cost"></a>
 ## Cost of the conversion for a binding

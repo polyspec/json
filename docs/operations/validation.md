@@ -6,7 +6,7 @@
 <a id="repository-check"></a>
 ## Aggregate check
 
-Development runs unit tests only (`make json-test-scripts`). The aggregate check, the PIE artifact check and the owner checks are end-to-end checks that [hosted CI](#ci) runs after every push; no rule requires a local run before a commit or a push, and the pre-push hook only reads the checklist. To run the aggregate check locally anyway, install the [required tools](installation.md#requirements) and run from the repository root:
+Development runs unit tests only (`make json-test-scripts`). The aggregate check and the owner checks are end-to-end checks that [hosted CI](#ci) runs after every push; no rule requires a local run before a commit or a push, and the pre-push hook only reads the checklist. To run the aggregate check locally anyway, install the [required tools](installation.md#requirements) and run from the repository root:
 
 ~~~sh
 make install
@@ -15,14 +15,14 @@ make check
 
 `make check` runs the targets of `CHECK_TARGETS` through ci-targets of `@polyspec/kit`, past failures, and writes the report into `var/report/full-run`. Its target `verify-all` builds every implementation of `config/implementations.json`, sends the common JSON cases to the probe of each, writes the aggregate record `var/records/verification.json`, and runs the evidence check with the [records](#records) of the checkout (`scripts/verify.mts --record`). An aggregate record includes the source hash of every tracked file. The package tests of each implementation run in `make test-<language>`, with the native runner of its language, and the tool tests in `make json-test-scripts`.
 
-Each build step prints a start line, its output as it arrives, and its exit status with the elapsed time. A build step or PIE command has no time limit: its exit status and its output decide the result. Each probe receives one shared case at a time and the verifier prints the case with the elapsed time of its reply; a reply has 60 s, and a probe that misses it is killed and the case is named. No limit applies to the whole run. When a build step or a probe ends, the verifier kills its process group, so a process that it started in the background neither outlives it nor holds its output open. A failure ends neither the run nor the other languages: the build of each language and every shared case of every probe run to their end, a failed build skips only the later steps of its own language, and the run then lists every failure and exits with status 1 without writing a record. The expected result of a fixture or a supplementary case comes from an independent reference (`scripts/reference.mts`): the bytes decoded as strict UTF-8 and parsed by momoa, a JSON parser that keeps every member in order with its source range, with the unescaped control characters and the nesting limit checked on its tokens.
+Each build step prints a start line, its output as it arrives, and its exit status with the elapsed time. A build step has no time limit: its exit status and its output decide the result. Each probe receives one shared case at a time and the verifier prints the case with the elapsed time of its reply; a reply has 60 s, and a probe that misses it is killed and the case is named. No limit applies to the whole run. When a build step or a probe ends, the verifier kills its process group, so a process that it started in the background neither outlives it nor holds its output open. A failure ends neither the run nor the other languages: the build of each language and every shared case of every probe run to their end, a failed build skips only the later steps of its own language, and the run then lists every failure and exits with status 1 without writing a record. The expected result of a fixture or a supplementary case comes from an independent reference (`scripts/reference.mts`): the bytes decoded as strict UTF-8 and parsed by momoa, a JSON parser that keeps every member in order with its source range, with the unescaped control characters and the nesting limit checked on its tokens.
 
 <a id="records"></a>
 ## Records
 
-The evidence of a commit is the run that verifies it. `make pie-check` writes the PIE record `var/records/pie-verification.json` and `make verify-all` writes the aggregate record `var/records/verification.json`. Git ignores `var/`, so no record is committed: a record hashes every tracked file except `benchmarks/results.json`, so a committed record would go stale with the next commit and would force a full run on a local machine after every change. With `--records`, the evidence check at the end of `make verify-all` checks the aggregate record and, when it exists, the PIE record of the same checkout against the current sources, so a run that writes both checks both. `make verify-all` names `make pie-check` as its prerequisite, so the PIE record that it checks is always the one of the same tree; `make check` and the verify job of CI run `make pie-check` only through it.
+The evidence of a commit is the run that verifies it. `make verify-all` writes the aggregate record `var/records/verification.json`. Git ignores `var/`, so no record is committed: a record hashes every tracked file except `benchmarks/results.json`, so a committed record would go stale with the next commit and would force a full run on a local machine after every change. With `--records`, the evidence check at the end of `make verify-all` checks the aggregate record of the same checkout against the current sources. The PIE package of the binding installs a pre-packaged binary of a published release, so no PIE check runs on a checkout; a later row (T3.25-5) checks `pie install` against the published release.
 
-The aggregate record includes source hashes, package file records, actual runtime versions, the running Node.js release, case counts, results, build warnings, and supplementary input revision. PHP and extension versions are separate fields. A changed input invalidates the record as current evidence. The verifier rejects changes during execution and incomplete implementation results. The record does not establish publication. Every record and report (`var/records/verification.json`, `var/records/pie-verification.json`, `benchmarks/results.json`, and the review copy of a failed benchmark) is written completely to a file in `var/`, which Git ignores and no manifest reads, and renamed over its path, so a reader finds the previous file or the new one and never part of one.
+The aggregate record includes source hashes, package file records, actual runtime versions, the running Node.js release, case counts, results, build warnings, and supplementary input revision. PHP and extension versions are separate fields. A changed input invalidates the record as current evidence. The verifier rejects changes during execution and incomplete implementation results. The record does not establish publication. Every record and report (`var/records/verification.json`, `benchmarks/results.json`, and the review copy of a failed benchmark) is written completely to a file in `var/`, which Git ignores and no manifest reads, and renamed over its path, so a reader finds the previous file or the new one and never part of one.
 
 <a id="supplementary"></a>
 ## Supplementary inputs
@@ -36,7 +36,7 @@ make check JSON_TEST_SUITE=.cache/JSONTestSuite
 
 The record states whether supplementary inputs were used. `i_` cases use the shared UTF-8 and depth policy. Official inputs and expectations exist only at the repository root; probes contain no separate goldens.
 
-[External inputs](../../external-inputs.json) pins that revision and the hash of its cases, and a record measured against a different checkout fails the documentation check. `make check` and `make pie-check` compare the suite with that pin before any work, and `make pie-check` also compares the hash of the PHAR with the PIE pin; each field that differs fails the command with the expected and the actual value before a build starts.
+[External inputs](../../external-inputs.json) pins that revision and the hash of its cases, and a record measured against a different checkout fails the documentation check. `make check` compares the suite with that pin before any work; each field that differs fails the command with the expected and the actual value before a build starts.
 
 <a id="individual"></a>
 ## Individual implementations
@@ -47,7 +47,7 @@ From the common checkout, selected checks build and run the declared probes. The
 make verify-js
 make verify-rust
 make verify-go
-make verify-php verify-php-extension
+make verify-php
 ~~~
 
 For an independent clone:
@@ -58,22 +58,9 @@ cd json
 make check
 ~~~
 
-Each package has an independent build target, while the verifier (`scripts/registry.mts`) defines the shared build, probe and runtime commands of the implementations of `config/implementations.json`. The native extension is built from a copy of the source files that Git tracks in its package, in the run's temporary directory, and is tested with the sibling PHP package in the same checkout. Each run prints its run directory and removes it when it ends, so runs of one checkout do not share build output. Every cargo command of a run, and the `cargo run` of the benchmark, sets `CARGO_TARGET_DIR` to a directory inside that run, so a target directory that the environment names or that another checkout filled never provides the Rust probe or the benchmark binary.
+Each package has an independent build target, while the verifier (`scripts/registry.mts`) defines the shared build, probe and runtime commands of the implementations of `config/implementations.json`. The PHP probe, `packages/php-ext/tests/probe.php`, runs with the library of the binding extension that `make binding-php-ext-library` builds from the Rust core of the same checkout loaded (T3.25-3). Each run prints its run directory and removes it when it ends, so runs of one checkout do not share build output. Every cargo command of a run, and the `cargo run` of the benchmark, sets `CARGO_TARGET_DIR` to a directory inside that run, so a target directory that the environment names or that another checkout filled never provides the Rust probe or the benchmark binary.
 
 Run `make check JSON_TEST_SUITE=/path/to/JSONTestSuite` for supplementary inputs.
-
-<a id="pie"></a>
-## PIE artifact check
-
-`make install` downloads the PIE release that [external inputs](../../external-inputs.json) pins from the [official releases](https://github.com/php/pie/releases) into `.cache/pie/pie.phar`, the default `PIE` of `make pie-check`, and refuses a file whose SHA-256 differs from the pin, naming both hashes. Its provenance can be verified with `gh attestation verify --owner php .cache/pie/pie.phar`. From the common root:
-
-~~~sh
-make pie-check JSON_TEST_SUITE=.cache/JSONTestSuite
-~~~
-
-The [PIE checker](../../scripts/check-pie.mts) copies the extension's tracked source files into a temporary run directory, isolates PIE configuration in that directory, registers the copy as a path repository, validates package recognition, and builds it with PIE. It tests that artifact directly with the same shared probe and expectations. It does not run the ordinary native build in between.
-
-The PIE record `var/records/pie-verification.json` records the PIE version and PHAR hash, the declared artifact path relative to the run directory, commands, source hashes, PHP and extension versions, and case results. The PHAR hash and the supplementary revision must match their pins. The built module is named by path alone: a fresh identifier and signature enter it at link time, so its hash identifies one run, and the checker rejects a record that carries one. Build errors, missing build tools, probe warnings, or changes during the check fail verification. Compilation warnings remain in the record. This check does not install the module or publish a package. The record hashes every tracked file except `benchmarks/results.json`; the documentation check of a `make check` that runs after `make pie-check` in the same checkout rejects the PIE record when it does not match the current sources.
 
 <a id="ci"></a>
 ## Hosted CI
@@ -84,11 +71,11 @@ A job holds no content in YAML. Its one run step is `make ci-<job>` with make va
 
 ~~~sh
 make ci-shared
-make ci-runtime RUNTIME=php
+make ci-runtime RUNTIME=go
 make ci-assets-php PHP_MINOR=8.4
 ~~~
 
-[config/ci.json](../../config/ci.json) declares, for those jobs, the setup targets (`setup`) and the tools beyond those of kit (`tools`). The verify job, which the pipeline itself declares, installs the toolchains of every language and the comparison environments with `json-install-verify`; the php-ext job installs PIE and the supplementary suite with `json-install-pie`; each runtime job builds its package. Every target of `CHECK_TARGETS` is a prerequisite of exactly one of these job targets; `tests/scripts/workflow-rules.test.mts` fails otherwise.
+[config/ci.json](../../config/ci.json) declares, for those jobs, the setup targets (`setup`) and the tools beyond those of kit (`tools`). The verify job, which the pipeline itself declares, installs the toolchains of every language and the comparison environments with `json-install-verify`; each runtime job builds its package. Every target of `CHECK_TARGETS` is a prerequisite of exactly one of these job targets; `tests/scripts/workflow-rules.test.mts` fails otherwise.
 
 Each job checks out this repository at the workspace root and installs the locked kit package before its first make command; no sibling checkout is required. Downloads remain installation steps; no check enables network access. The closing job `kit / required` of the pipeline runs `make ci-required` with the results of the other jobs and passes only when every job passed, so a run of `ci` that concludes `success` is the evidence that the release workflow requires ([publishing main](#publish)).
 

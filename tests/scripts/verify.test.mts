@@ -43,7 +43,8 @@ test('the argument cases name kinds of the contract and reach every argument kin
     assert.ok(checks.some(check => check.call === call && check.kind !== null), call);
   }
   const key = known(checks.find(check => check.call === 'object_key' && check.kind !== null), 'an object key case');
-  assert.deepEqual(expectedArgumentReply(key, 'php'), { absent: true });
+  // T3.25-3: the PHP binding takes an object key as a value, so the call is written there too.
+  assert.deepEqual(expectedArgumentReply(key, 'php'), { ok: false, kind: 'non_string_key' });
   assert.deepEqual(expectedArgumentReply(key, 'rust'), { ok: false, kind: 'non_string_key' });
   assert.match(key.request, /^\{"call":"object_key","argument":/);
   const { root, write, json } = checkout(context);

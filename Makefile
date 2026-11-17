@@ -61,13 +61,13 @@ unexport CARGO_TARGET_DIR
 # The targets of the full suite that make check runs through ci-targets of @polyspec/kit and that the jobs of
 # .github/workflows/ci-pipeline.yml run as the prerequisites of their kit-gates-* target (a target is in one job). verify-all
 # writes the aggregate record into var/records.
-CHECK_TARGETS := suppression-check link-check rules-check rebuild-check language-check duplication-check layout-check owner-validate release-coverage docs-check evidence-check verify-all lint-rust lint-go lint-php lint-php-ext test-php-ext lint-python json-test-scripts typecheck lint-ts test-js fmt-check test-rust test-go test-php test-python \
-	lint-bindings check-declarations test-binding-crates test-binding-python test-binding-node test-binding-wasm test-binding-php test-binding-go test-differential-js test-differential-python test-differential-php test-differential-go
+CHECK_TARGETS := suppression-check link-check rules-check rebuild-check language-check duplication-check layout-check owner-validate release-coverage docs-check evidence-check verify-all lint-rust lint-go lint-php lint-python json-test-scripts typecheck lint-ts test-js fmt-check test-rust test-go test-php test-python \
+	lint-bindings check-declarations test-binding-crates test-binding-python test-binding-node test-binding-wasm test-binding-php test-binding-go test-differential-js test-differential-python test-differential-go
 
-.PHONY: check fmt-check json-test-scripts typecheck json-install-php json-install-python verify-all verify-js verify-rust verify-go verify-php verify-php-extension verify-python evidence-check pie-check \
+.PHONY: check fmt-check json-test-scripts typecheck json-install-php json-install-python verify-all verify-js verify-rust verify-go verify-php verify-python evidence-check \
 	benchmark benchmark-check benchmark-host python-parse-budget install json-install json-install-rust \
 	json-js-check json-js-test json-go-check json-go-test json-php-check json-php-test \
-	json-php-ext-check json-php-ext-test json-python-check json-python-test json-rust-check json-rust-test
+	json-python-check json-python-test json-rust-check json-rust-test
 
 # check runs the full suite: ci-targets of @polyspec/kit runs every target past failures and writes its report into
 # var/report/full-run.
@@ -75,9 +75,9 @@ check:
 	$(MAKE) --no-print-directory ci-targets CI_REPORT=var/report/full-run TARGETS="$(CHECK_TARGETS)"
 
 # install makes every download that the checks read after make install-packages: the tools of mise.lock, the Rust toolchain of
-# rust-toolchain.toml, the crates of the root Cargo.lock, the Composer projects of the PHP packages with their PHPUnit,
-# the virtual environment of the Python package; the PIE PHAR and the supplementary suite are tools of mise.toml (http:pie and
-# http:jsontestsuite), which install-tools installs.
+# rust-toolchain.toml, the crates of the root Cargo.lock, the Composer project of the checkout with its PHPUnit,
+# the virtual environment of the Python package; the supplementary suite is a tool of mise.toml (http:jsontestsuite), which
+# install-tools installs.
 # It is the only target that downloads.
 # install runs the bootstrap as the prerequisite install-kit of json-install, then links the packages (install-link).
 install: json-install
@@ -97,14 +97,11 @@ json-install: install-kit json-install-rust-packages json-install-php json-insta
 json-install-rust:
 	$(ONLINE) rustup toolchain install --no-self-update
 
-# json-install-php installs the locked Composer packages of legacy/packages/php and legacy/packages/php-ext, PHPUnit among them, into their
-# vendor/, from which make test-php runs their tests, and the root package, the published composer.json,
-# into vendor/, whose autoloader PHPStan of make lint-php reads for the PHP of benchmarks/. The root package requires only
-# the platform, so its install downloads nothing; its composer.lock locks no package.
+# json-install-php installs the locked Composer packages of the development manifest composer.json, PHPUnit among them, into
+# vendor/, from which make test-php and make test-binding-php run PHPUnit and whose autoloader PHPStan of make lint-php reads
+# (T3.25-3).
 json-install-php:
 	$(ONLINE) $(COMPOSER) install --no-interaction --no-progress
-	$(ONLINE) $(COMPOSER) install --no-interaction --no-progress --working-dir=legacy/packages/php
-	$(ONLINE) $(COMPOSER) install --no-interaction --no-progress --working-dir=legacy/packages/php-ext
 
 # json-install-python makes legacy/packages/python/.venv from the Python of mise.toml (python-venv of kit) and installs the package
 # into it, non-editable, with the uv of mise.toml. make install-link then makes the installed package folder a link to
@@ -117,7 +114,7 @@ json-install-python:
 
 # Product dependency installs are reused by independent CI jobs after Kit prepares
 # only the requested toolchains. These targets install no other language's tools.
-.PHONY: json-install-rust-packages json-install-verify json-install-suite json-install-pie
+.PHONY: json-install-rust-packages json-install-verify json-install-suite
 # Cargo runs offline here (CARGO_NET_OFFLINE), so the install fetches the crates of every tracked Cargo.lock with cargo fetch --locked.
 json-install-rust-packages: json-install-rust
 	@set -e; for lock in $$(git ls-files -- '*Cargo.lock'); do $(ONLINE) $(CARGO) fetch --locked --manifest-path "$${lock%.lock}.toml"; done
@@ -125,12 +122,8 @@ json-install-rust-packages: json-install-rust
 json-install-suite:
 	$(ONLINE) $(KIT_TOOLS)/bin/mise install --locked http:jsontestsuite
 
-json-install-pie: json-install-suite
-	$(ONLINE) $(KIT_TOOLS)/bin/mise install --locked http:pie
-
-# json-install-verify installs what verify-all builds and probes: the packages of every implementation, the suite and the PIE
-# PHAR of its prerequisite pie-check.
-json-install-verify: json-install-rust-packages json-install-php json-install-python json-install-suite json-install-pie
+# json-install-verify installs what verify-all builds and probes: the packages of every implementation and the suite.
+json-install-verify: json-install-rust-packages json-install-php json-install-python json-install-suite
 
 # json-test-scripts runs the node:test tool tests of tests/scripts, or the files of TESTS, through run-tests of @polyspec/kit,
 # which runs the command and passes its output and exit code through; typecheck checks the TypeScript of scripts/, tests/scripts/
@@ -144,13 +137,10 @@ typecheck:
 # verify-all builds and verifies every implementation with the shared cases, writes var/records/verification.json and checks
 # it with the evidence check (scripts/verify.mts --record); verify-<implementation> verifies one implementation and writes no
 # record. The package tests of each implementation run in test-<language>, with the native runner of its language.
-# verify-all checks the PIE record of make pie-check, which names the sources of the tree that it checked, so pie-check is its
-# prerequisite: it reads the record of its own tree and never one that an earlier tree left (pie-check is no target of
-# CHECK_TARGETS of its own).
-verify-all: pie-check
+verify-all:
 	$(NODE) scripts/verify.mts --record$(if $(JSON_TEST_SUITE), --suite "$(JSON_TEST_SUITE)")
 
-verify-js verify-rust verify-go verify-php verify-php-extension verify-python:
+verify-js verify-rust verify-go verify-php verify-python:
 	$(NODE) scripts/verify.mts --only $(patsubst verify-%,%,$@)$(if $(JSON_TEST_SUITE), --suite "$(JSON_TEST_SUITE)")
 
 # evidence-check checks the feature rows against the evidence they name, the release assets of the published features and the
@@ -158,12 +148,7 @@ verify-js verify-rust verify-go verify-php verify-php-extension verify-python:
 evidence-check:
 	$(NODE) scripts/check-evidence.mts
 
-# pie-check builds the extension with the PIE PHAR of mise.toml, verifies the module with the shared cases and writes
-# var/records/pie-verification.json (scripts/check-pie.mts).
-pie-check:
-	$(NODE) scripts/check-pie.mts$(if $(JSON_TEST_SUITE), --suite "$(JSON_TEST_SUITE)")
-
-benchmark:
+benchmark: binding-php-ext-release-library
 	$(NODE) benchmarks/run.mts
 
 # benchmark-host measures the conversion of RQ-036, which reads every string in as its UTF-16 code units, against the
@@ -188,21 +173,21 @@ json-go-test: test-go
 json-php-check: verify-php
 json-php-test: json-php-check
 
-json-php-ext-check: verify-php-extension
-json-php-ext-test: json-php-ext-check
-
 json-python-check: verify-python
 json-python-test: json-python-check
 
 json-rust-check: verify-rust
 json-rust-test: json-rust-check
 
-# python-parse-budget compares the CPU time of the parse of the Python binding with the pure PHP parse on one generated
-# document and warns when the Python median exceeds three times the PHP median (benchmarks/python-parse/run.py). A person
-# runs it after a change of the Python parser; it is no target of make check.
+# python-parse-budget compares the CPU time of the parse of the Python binding with that of the PHP binding on one generated
+# document, the conversion layer of Python with that of PHP over the same core, and warns when the Python median exceeds
+# three times the PHP median (benchmarks/python-parse/run.py). Both are release builds with the same features: the wheel of
+# maturin and the library of binding-php-ext-release-library. A person runs it after a change of the Python binding; it is no
+# target of make check.
 python-parse-budget:
 	$(MAKE) --no-print-directory install-tools TOOLS="python php"
 	$(MAKE) --no-print-directory binding-python-package
+	$(MAKE) --no-print-directory binding-php-ext-release-library
 	$(PYTHON) benchmarks/python-parse/run.py
 
 # ---- The recipes of the bootstrap and the installs, which run the utilities of the installed kit --------------------------
@@ -223,9 +208,10 @@ bootstrap: ## Install package-lock.json with the npm of devEngines before the to
 # only polyspec-binding-core, to the release BINDING_VERSION, so no other crate of the lock changes.
 .PHONY: json-lock-update
 BINDING_VERSION ?= $(shell sed -n 's/.*polyspec-binding-core = .*tag = "v\([0-9.]*\)".*/\1/p' packages/rust/Cargo.toml)
-json-lock-update: ## Write package-lock.json and Cargo.lock again from the manifests; ONLINE
+json-lock-update: ## Write package-lock.json, composer.lock and Cargo.lock again from the manifests; ONLINE
 	root="$$PWD"; version="$$($(BOOTSTRAP_NODE) -p 'require("./package.json").devEngines.packageManager.version')"; \
 	cd "$${TMPDIR:-/tmp}" && $(ONLINE) npm_config_cache="$$root/var/bootstrap/npm-cache" "$(BOOTSTRAP_NPM)" exec --yes --package="npm@$$version" -- npm --prefix "$$root" install --package-lock-only --ignore-scripts --no-audit --no-fund
+	$(ONLINE) $(COMPOSER) update --no-install --no-interaction --no-progress
 	$(MAKE) --no-print-directory json-cargo-lock-update
 # json-cargo-lock-update moves polyspec-binding-core only when Cargo.lock holds another release than BINDING_VERSION: cargo
 # update --precise of a git source reads a version that the lock already holds as a git revision and fails (T3.41).
@@ -280,11 +266,11 @@ python-venv:
 	$(NODE) $(KIT)/python-venv.mjs $(DIR)
 
 # ---- Builds and tests of each runtime of packages/ -----------------------------------------------------------------------
-.PHONY: build-go build-js build-php build-python build-rust test-go test-js test-php test-python test-rust build-php-ext lint-php-ext test-php-ext
-# The build of each package of a runtime with the build of its ecosystem; the JavaScript and PHP packages have none (kit K1106).
+.PHONY: build-go build-js build-python build-rust test-go test-js test-php test-python test-rust
+# The build of each package of a runtime with the build of its ecosystem; the JavaScript package has none (kit K1106).
 build-go:
 	$(NODE) $(KIT)/runtime-targets.mjs build --roots legacy/packages/go -- $(GO) build ./...
-build-js build-php:
+build-js:
 build-python:
 	$(NODE) $(KIT)/runtime-targets.mjs build --roots legacy/packages/python -- $(UV) build
 build-rust:
@@ -298,8 +284,10 @@ test-go:
 # loads the addon that binding-node-addon puts beside it.
 test-js: binding-node-addon
 	$(NODE) $(KIT)/runtime-targets.mjs test --runner node --roots packages/ts/tests -- --test-timeout=30000 --test-concurrency=1
-test-php:
-	$(NODE) $(KIT)/runtime-targets.mjs test --runner php --roots legacy/packages/php
+# test-php runs the package tests of packages/php-ext/tests against the binding extension Polyspec\Json, the library of
+# binding-php-ext-library, with the configuration packages/php-ext/phpunit.xml (T3.25-3).
+test-php: binding-php-ext-library
+	$(PHP) -d extension=$(CURDIR)/target/debug/libpolyspec_json.$(BINDING_DYLIB) $(PHPUNIT) --configuration packages/php-ext/phpunit.xml --fail-on-empty-test-suite --fail-on-skipped
 # test-python runs the package tests of packages/python/tests against the binding polyspec.json, installed in the venv of
 # binding-python-package (T3.25-2).
 test-python: binding-python-package
@@ -343,8 +331,8 @@ check-declarations: bindings
 	$(NODE) node_modules/typescript/bin/tsc --ignoreConfig --noEmit --strict packages/ts/wasm/generated/index.d.ts
 
 # The tools of the job bindings beyond those of make install-tools: the wasm-bindgen CLI of mise.toml at the
-# digests of mise.lock, the crates of Cargo.lock, and PHPUnit of legacy/packages/php/composer.lock (json-install-php), which
-# runs the generated tests of the PHP extension until the legacy PHP package is removed.
+# digests of mise.lock, the crates of Cargo.lock, and PHPUnit of composer.lock (json-install-php), which runs the tests of
+# the PHP extension.
 json-install-bindings: json-install-rust-packages json-install-php json-install-python json-install-suite
 	$(ONLINE) $(KIT_TOOLS)/bin/mise install --locked github:wasm-bindgen/wasm-bindgen
 MATURIN := $(KIT_TOOLS)/mise/shims/maturin
@@ -352,7 +340,7 @@ WASM_BINDGEN := $(KIT_TOOLS)/mise/shims/wasm-bindgen
 GOFMT := $(KIT_TOOLS)/mise/shims/gofmt
 # The PHP of PATH, whose php-config the build script of ext-php-rs reads: the PHP of .php-version that setup-php provides.
 PHP ?= php
-PHPUNIT := $(CURDIR)/legacy/packages/php/vendor/bin/phpunit
+PHPUNIT := $(CURDIR)/vendor/bin/phpunit
 BINDING_VAR := $(CURDIR)/var/bindings
 BINDING_DYLIB := $(if $(filter Darwin,$(shell uname -s)),dylib,so)
 # The test features of a binding crate: every feature of its manifest (binding GN-5), joined by commas.
@@ -421,14 +409,6 @@ test-differential-go: binding-go-library
 	@[ -n "$(JSON_TEST_SUITE)" ] || { echo "test-differential-go needs the supplementary suite: make json-install-suite" >&2; exit 2; }
 	cd legacy/packages/go/differential && JSON_TEST_SUITE=$(abspath $(JSON_TEST_SUITE)) $(BINDING_GO_ENV) $(GO) test -count=1 -v ./...
 
-# The differential test of the legacy PHP implementations and the binding (docs/spec/json-contract.md#transition, V-6 (5)):
-# the binding extension and the legacy API, of the pure PHP library and then of the legacy extension, which registers the
-# same API, parse the files of the supplementary suite and the official examples alike (T3.25-3).
-test-differential-php: binding-php-ext-library build-php-ext
-	@[ -n "$(JSON_TEST_SUITE)" ] || { echo "test-differential-php needs the supplementary suite: make json-install-suite" >&2; exit 2; }
-	JSON_TEST_SUITE=$(abspath $(JSON_TEST_SUITE)) $(PHP) -n -d extension=$(CURDIR)/target/debug/libpolyspec_json.$(BINDING_DYLIB) -d auto_prepend_file=$(CURDIR)/legacy/packages/php/vendor/autoload.php legacy/packages/php/tests/differential.php
-	JSON_TEST_SUITE=$(abspath $(JSON_TEST_SUITE)) $(PHP) -n -d extension=$(CURDIR)/target/debug/libpolyspec_json.$(BINDING_DYLIB) -d extension=$(CURDIR)/var/php-ext/polyspec_ordered_json.so legacy/packages/php/tests/differential.php
-
 # The generated tests of the WASM binding through the subpath ./wasm of the installed package (binding P-5); --expose-gc
 # serves the generated tests that collect instances (binding GN-18a).
 test-binding-wasm: binding-node-package
@@ -440,6 +420,10 @@ test-binding-wasm: binding-node-package
 # The library of the PHP extension of the binding, built with the test features for the PHP of the checkout.
 binding-php-ext-library: bindings-php
 	$(BINDING_PHP) $(BINDING_LLVM) $(CARGO) build --locked -p polyspec-json-php-ext --features $(call binding_features,packages/php-ext/Cargo.toml)
+# The release library of the PHP extension of the binding, which the benchmarks load: the profile of the wheel that maturin
+# builds and of the harness of the Rust package, with the features of binding-php-ext-library.
+binding-php-ext-release-library: bindings-php
+	$(BINDING_PHP) $(BINDING_LLVM) $(CARGO) build --release --locked -p polyspec-json-php-ext --features $(call binding_features,packages/php-ext/Cargo.toml)
 test-binding-php: binding-php-ext-library
 	$(PHP) -l packages/php-ext/generated/polyspec_json.stub.php
 	$(PHP) -d extension=$(CURDIR)/target/debug/libpolyspec_json.$(BINDING_DYLIB) $(PHPUNIT) --fail-on-empty-test-suite --fail-on-skipped packages/php-ext/generated/tests
@@ -478,15 +462,6 @@ BINDING_RUN := $(NODE) $(BINDING)
 release-recipes:
 	$(BINDING_RUN) release-recipes --root $(CURDIR)
 -include packages/release.mk
-
-# The PHP extension of legacy/packages/php-ext: build-php-ext builds var/php-ext/polyspec_ordered_json.so with phpize after the check
-# of its stub and arginfo header; gen_stub.php may fetch its PHP-Parser once.
-build-php-ext:
-	$(ONLINE) $(NODE) $(KIT)/php-extension.mjs build --extension legacy/packages/php-ext --build-dir var/php-ext --skip vendor --skip node_modules --library legacy/packages/php
-lint-php-ext:
-	$(NODE) $(KIT)/php-extension.mjs check --extension legacy/packages/php-ext --build-dir var/php-ext --skip vendor --skip node_modules --library legacy/packages/php
-test-php-ext: build-php-ext
-	$(NODE) $(KIT)/php-extension.mjs test --extension legacy/packages/php-ext --build-dir var/php-ext --skip vendor --skip node_modules --library legacy/packages/php -- --roots legacy/packages/php
 
 # ---- Checks ----------------------------------------------------------------------------------------------------------------
 .PHONY: layout-check docs-check rules-check owner-check owner-validate rebuild-check language-check \
@@ -561,8 +536,8 @@ link-check:
 	$(NODE) $(KIT)/link-check.mjs$(if $(PROJECT), --project $(PROJECT))
 
 # ---- CI: the gates, the plan and the setup of the jobs of .github/workflows/ci-pipeline.yml ----------------------------------
-.PHONY: kit-gates-static kit-gates-verify kit-gates-runtime-ts kit-gates-runtime-php kit-gates-runtime-python \
-	kit-gates-runtime-go kit-gates-runtime-rust kit-gates-runtime-php-ext kit-gates-bindings kit-ci-plan \
+.PHONY: kit-gates-static kit-gates-verify kit-gates-runtime-ts kit-gates-runtime-python \
+	kit-gates-runtime-go kit-gates-runtime-rust kit-gates-bindings kit-ci-plan \
 	ci-targets
 # The targets of the jobs of the pipeline, which its steps run by name: kit-gates-static in the shared job, kit-gates-verify in
 # the verify job and kit-gates-runtime-<runtime> in the runtime job of each runtime. Together they hold every target of
@@ -575,13 +550,12 @@ kit-gates-static: layout-check docs-check rules-check owner-validate rebuild-che
 	@echo "[kit-gates-static] every shared gate passed"
 kit-gates-verify: verify-all
 kit-gates-runtime-ts: lint-ts
-kit-gates-runtime-php: lint-php test-php
 kit-gates-runtime-python: lint-python
 kit-gates-runtime-go: lint-go test-go
 kit-gates-runtime-rust: lint-rust fmt-check test-rust
-kit-gates-runtime-php-ext: lint-php-ext test-php-ext
-# kit-gates-bindings runs in the job bindings, which installs the tools of every target of the contract.
-kit-gates-bindings: lint-bindings check-declarations test-binding-crates test-binding-python test-binding-node test-binding-wasm test-binding-php test-binding-go test-differential-js test-differential-python test-differential-php test-differential-go test-js test-python
+# kit-gates-bindings runs in the job bindings, which installs the tools of every target of the contract; lint-php runs there
+# with the PHP tests, since the PHP package of json is the binding extension (T3.25-3).
+kit-gates-bindings: lint-bindings check-declarations test-binding-crates test-binding-python test-binding-node test-binding-wasm test-binding-php test-binding-go test-differential-js test-differential-python test-differential-go lint-php test-js test-python test-php
 
 # kit-ci-plan writes the fan-out of the pipeline, the jobs and runners of config/ci.json, to GITHUB_OUTPUT.
 kit-ci-plan:
@@ -594,7 +568,7 @@ ci-targets:
 
 # ---- CI: the one recipe of each job (tests/scripts/workflow-rules.test.mts) -------------------------------------------------
 # Each job of .github/workflows/ci-pipeline.yml and .github/workflows/assets.yml has one run step, make ci-<job> with make
-# variables as its only arguments, so a local run of a job is the call that CI makes, such as make ci-runtime RUNTIME=php. The
+# variables as its only arguments, so a local run of a job is the call that CI makes, such as make ci-runtime RUNTIME=go. The
 # recipe holds the order and the conditions of the job: the installs and the prerequisites first, each of which stops the job
 # when it fails, then the checks through ci-targets, each to its end, then the cleanup of the CI context whenever its prepare
 # started. The status of the job is that of its checks, or that of the prepare or the cleanup when one of them fails.
@@ -617,12 +591,12 @@ ci-verify:
 	$(MAKE) --no-print-directory ci-targets TARGETS="$(CI_VERIFY_CHECKS)"
 # RUNTIME is a runtime of config/ci.json, which the matrix of the job runtime lists.
 ci-runtime:
-	@[ -n "$(RUNTIME)" ] || { echo "ci-runtime needs RUNTIME, a runtime of config/ci.json: make ci-runtime RUNTIME=php" >&2; exit 2; }
+	@[ -n "$(RUNTIME)" ] || { echo "ci-runtime needs RUNTIME, a runtime of config/ci.json: make ci-runtime RUNTIME=go" >&2; exit 2; }
 	$(NODE) $(KIT)/ci-setup.mjs --job runtime $(RUNTIME)
 # The job bindings runs on ubuntu-26.04-arm, whose image holds the LLVM of config/toolchain.json at /usr/lib/llvm-<major>, the
 # LLVM_ROOT that packages/release.mk reads for the build of the PHP extension.
 ci-bindings:
-	$(MAKE) --no-print-directory install-tools TOOLS="go php composer python uv maturin"
+	$(MAKE) --no-print-directory install-tools TOOLS="go php composer phpcs phpstan python uv maturin"
 	$(MAKE) --no-print-directory json-install-bindings
 	$(MAKE) --no-print-directory release-recipes
 	$(MAKE) --no-print-directory ci-targets TARGETS="$(CI_BINDINGS_CHECKS)"
