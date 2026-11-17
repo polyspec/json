@@ -199,5 +199,9 @@ test('T3.25: the go row of the benchmark measures a release static library', () 
   assert.doesNotMatch(recipeOf('binding-go-library').join('\n'), /--release/, 'the tests keep the debug library');
   const source = readFileSync(path.join(ROOT, 'benchmarks/run.mts'), 'utf8');
   assert.match(source, /target\/release\/libpolyspec_json_go\.a/);
-  assert.doesNotMatch(source, /target\/debug/, 'the benchmark links no debug library');
+  // The row links the folder of the release library; the debug library is named only as what the bytes are compared with
+  // (benchmarkArtifacts, T3.63).
+  assert.match(source, /CGO_LDFLAGS: `-L\$\{path\.dirname\(library\)\}`/);
+  assert.match(source, /const library = GO_LIBRARY;/);
+  assert.match(source, /const GO_LIBRARY = path\.join\(ROOT, 'target\/release\/libpolyspec_json_go\.a'\);/);
 });

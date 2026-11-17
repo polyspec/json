@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: cab26ef568db0c838a49d90c1782e4491adc9b5b74c867434790ed558f58f342 -->
+<!-- source-sha256: fdae78d4303e45dfcf081b9002835c28934a74573078e4292d11ed59ff9f88d4 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- Go 바인딩이 T3.63과 T3.64의 두 검사에 들어간다(T3.25-6): `make benchmark`는 go 행이 link하는 static library를 `target/release`와 `target/debug`의 library와 비교해 debug인 것을 거부하고, `tests/scripts/kinds.test.mts`는 `packages/go/tests`의 손으로 쓴 시험이 닿는 kind를 공유 목록과 비교한다.
 
 - 시험 하나가 바인딩의 kind를 JSON 계약의 공유 목록과 비교한다(T3.64): `tests/scripts/kinds.test.mts`는 목록의 kind마다 바인딩의 손으로 쓴 시험이 그것에 닿거나 그 항목이 그 언어에서 생길 수 없다고 적을 것을 요구하고, 지워진 legacy 패키지를 이름하는 항목을 거부한다. 이 시험이 찾아 이 변경이 고친 것: `non_string_key`와 `invalid_argument_type` 항목이 PHP에서 생길 수 없다고 적었으나 바인딩은 그 kind를 낸다; `host_serialization_refused`는 이제 hook이 없는 Python에서 생길 수 없다고 적는다; 세 항목이 이행 기간의 패키지에 PHP를 이름했다; TypeScript, Python, PHP의 손으로 쓴 시험 어느 것도 `non_finite_number`에 닿지 않았고 TypeScript의 시험은 `invalid_code_unit`에도 닿지 않았으며, 이제 각각 시험이 있다. distribution 문서의 Go module tag는 `packages/go/vX.Y.Z`로 적는다: `legacy/packages/go/vX.Y.Z`라는 tag는 없다.
 

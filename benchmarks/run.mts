@@ -104,11 +104,14 @@ export function refusal(name: string, profile: Profile): string | null {
 /** The release addon of the Node binding in the package folder of make binding-node-release-addon (T3.59). */
 const NODE_RELEASE = path.join(ROOT, 'var/bindings/node-release');
 const LIBRARY = process.platform === 'darwin' ? 'dylib' : 'so';
+/** The release static library of the Go binding, which the go row links (make binding-go-release-library, T3.25-6). */
+const GO_LIBRARY = path.join(ROOT, 'target/release/libpolyspec_json_go.a');
 
 /**
  * The artifact that each row of the benchmark loads from a build of cargo, with the libraries of both profiles that its
- * bytes are compared with. The rust row builds its harness with cargo run --release in the run directory and the go row
- * runs the Go sources of the legacy package, so neither loads a library that another target wrote.
+ * bytes are compared with. The go row links the static library of the Go binding, whose folder CGO_LDFLAGS names
+ * (T3.25-6). The rust row builds its harness with cargo run --release in the run directory, so it loads no library that
+ * another target wrote.
  */
 export function benchmarkArtifacts(): { row: string; name: string; file: string; release: string; debug: string }[] {
   const folder = path.join(NODE_RELEASE, 'generated');
@@ -116,6 +119,7 @@ export function benchmarkArtifacts(): { row: string; name: string; file: string;
   const library = (profile: string, name: string) => path.join(ROOT, 'target', profile, `${name}.${LIBRARY}`);
   return [
     { row: 'js', name: 'the Node addon', file: path.join(folder, addon ?? 'json.node'), release: library('release', 'libpolyspec_json_node'), debug: library('debug', 'libpolyspec_json_node') },
+    { row: 'go', name: 'the Go static library', file: GO_LIBRARY, release: GO_LIBRARY, debug: path.join(ROOT, 'target/debug/libpolyspec_json_go.a') },
     { row: 'php', name: 'the PHP extension', file: releaseExtension(), release: library('release', 'libpolyspec_json'), debug: library('debug', 'libpolyspec_json') },
   ];
 }
@@ -212,7 +216,7 @@ async function main(): Promise<void> {
     if (!existsSync(extension)) throw new Error('the PHP extension of the benchmark was not built: make binding-php-ext-release-library');
     // The release static library of the Go binding module, which make benchmark builds first (T3.25): the library
     // that the tests and the probe link, the one of make binding-go-library, is a debug build.
-    const library = path.join(ROOT, 'target/release/libpolyspec_json_go.a');
+    const library = GO_LIBRARY;
     if (!existsSync(library)) throw new Error('the Go static library of the benchmark was not built: make binding-go-release-library');
     // The directory of each implementation is its root in config/implementations.json.
     const packages = repositoryPaths();

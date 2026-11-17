@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- The Go binding joins the two checks of T3.63 and T3.64 (T3.25-6): `make benchmark` compares the static library that the go row links with the libraries of `target/release` and `target/debug` and refuses a debug one, and `tests/scripts/kinds.test.mts` compares the kinds that the hand-written tests of `packages/go/tests` reach with the shared lists.
+
 - One test compares the kinds of the bindings with the shared lists of the JSON contract (T3.64): `tests/scripts/kinds.test.mts` requires each listed kind to be reached by the hand-written tests of a binding or stated as one that cannot arise in its language, and refuses an item that names a removed legacy package. It found and this change corrects: the items `non_string_key` and `invalid_argument_type` said that the kind cannot arise in PHP, where the binding gives it; `host_serialization_refused` now states that it cannot arise in Python, which has no hook; three items named PHP among the packages of the transition; no hand-written test of TypeScript, Python or PHP reached `non_finite_number`, nor one of TypeScript `invalid_code_unit`, and each has its test now. The Go module tag is written `packages/go/vX.Y.Z` in the distribution document: no tag `legacy/packages/go/vX.Y.Z` exists.
 
 - `make benchmark` refuses an artifact that is not of the release build (T3.63): `benchmarks/run.mts` compares the sha256 of the Node addon and of the PHP extension that its rows load with the libraries of `target/release` and `target/debug`, prints the profile of each, writes them into the result as `artifacts`, and ends the run on a debug build or on one that equals neither. Three rows had measured a debug build, each found by reading a log (T3.53, T3.59, T3.25-6).

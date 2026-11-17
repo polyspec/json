@@ -51,7 +51,8 @@ test('T3.63: an artifact is of the release build only when its bytes are those o
 
 test('T3.63: the benchmark names an artifact for every row that loads a library of cargo', () => {
   const names = benchmarkArtifacts().map(item => item.row);
-  assert.deepEqual(names, ['js', 'php']);
+  // T3.25-6: the go row links the static library of the Go binding.
+  assert.deepEqual(names, ['js', 'go', 'php']);
   for (const item of benchmarkArtifacts()) {
     assert.match(item.release, /target\/release\//);
     assert.match(item.debug, /target\/debug\//);

@@ -43,7 +43,7 @@ function coreKinds(): Set<string> {
 }
 
 // The language of each binding as the contract names it, with the folder of its hand-written tests.
-const BINDINGS: Record<string, string> = { JavaScript: 'packages/ts/tests', Python: 'packages/python/tests', PHP: 'packages/php-ext/tests' };
+const BINDINGS: Record<string, string> = { JavaScript: 'packages/ts/tests', Python: 'packages/python/tests', PHP: 'packages/php-ext/tests', Go: 'packages/go/tests' };
 // The legacy package of each language of the transition; a language whose package is removed has none.
 const LEGACY: Record<string, string> = { JavaScript: 'legacy/packages/js', Python: 'legacy/packages/python', PHP: 'legacy/packages/php', Go: 'legacy/packages/go' };
 
