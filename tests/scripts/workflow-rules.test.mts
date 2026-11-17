@@ -5,10 +5,11 @@
 // runs, and those targets hold no other target.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import { ROOT } from '../../scripts/registry.mts';
+import { known } from './checkout.mts';
 
 /** The make database of the root Makefile. */
 function database(): string {
@@ -426,4 +427,27 @@ test('T3.25-5: the release checks the PIE package of the published release after
   assert.match(check, / download .*:\$\$\{TAG#v\}/);
   assert.doesNotMatch(check, /\binstall polyspec|pie\S* install\b/, 'the check installs nothing into the PHP of the machine');
   assert.match(check, /scripts\/verify\.mts --only php --php-extension /);
+});
+
+// T3.25-5: release-pie-check runs only in the release, so a tool that its job did not install before it would cost a
+// tag. The dry run of the recipe with the TAG that the job release gives names every program that the recipe starts,
+// and each is installed before it: mise and node by the bootstrap step (make install-tools TOOLS=npm, K71-2), php by
+// the setup-php step of the job, and the PIE PHAR by the recipe itself before its first use.
+test('T3.25-5: the job release installs every tool of release-pie-check before it runs', () => {
+  const run = spawnSync('make', ['-n', '--no-print-directory', 'release-pie-check'], { cwd: ROOT, encoding: 'utf8', env: { ...process.env, TAG: 'v0.0.0', LC_ALL: 'C' } });
+  assert.equal(run.status, 0, run.stderr);
+  const plan = run.stdout;
+  const tools = new Set([...plan.matchAll(/var\/tools\/bin\/([\w-]+)/g)].map(match => match[1]));
+  assert.deepEqual(tools, new Set(['mise', 'node']),'the recipe starts the mise and the node of the bootstrap and no other tool of var/tools/bin');
+  assert.match(plan, /(?:^|\s)php "\$\(/m, 'the recipe starts PIE with the php of PATH');
+  assert.ok(plan.indexOf('mise install --locked http:pie') >= 0 && plan.indexOf('mise install --locked http:pie') < plan.indexOf('mise where http:pie'), 'the recipe installs the PIE PHAR before it starts it');
+  const steps = known(workflowJobs(workflow('release.yml')).get('release'), 'the job release of release.yml');
+  const release = steps.findIndex(step => step.run === 'make ci-release');
+  const php = steps.findIndex(step => /uses: shivammathur\/setup-php@/.test(step.text));
+  const bootstrap = steps.findIndex(step => /uses: \.\/\.github\/actions\/kit-bootstrap$/m.test(step.text));
+  assert.ok(release >= 0 && php >= 0 && php < release, 'setup-php runs before make ci-release');
+  assert.ok(bootstrap >= 0 && bootstrap < release, 'the bootstrap runs before make ci-release');
+  assert.ok(existsSync(path.join(ROOT, '.php-version')), 'the setup-php step runs only with .php-version');
+  assert.match(readFileSync(path.join(ROOT, '.github/actions/kit-bootstrap/action.yml'), 'utf8'), /^ {6}run: make install-tools TOOLS=npm$/m);
+  assert.match(workflow('release.yml'), /^ {6}TAG: \$\{\{ needs\.tag\.outputs\.tag \}\}$/m, 'the job release gives TAG');
 });
