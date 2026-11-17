@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: df68db4834ff9541828effe1ec0753f6a8e6696144b5665583b77db7413d8ab3 -->
+<!-- source-sha256: ca1faf88ff8bbc68c98d0069fad05dee4a063eab042c2579738dbff27676e249 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,9 +7,9 @@
 <a id="unreleased"></a>
 ## Unreleased
 
-- `make release-candidate-assets`가 VERSION 없이 돈다(T3.61): json의 recipe가 kit v0.0.120이 받는 호출(K1286)을 거부해 tag 없는 release 검사를 돌릴 수 없었다; VERSION은 주어졌을 때만 넘긴다.
-
 ## 0.0.36
+
+- `make release-candidate-assets`가 VERSION 없이 돈다(T3.61): json의 recipe가 kit v0.0.120이 받는 호출(K1286)을 거부해 tag 없는 release 검사를 돌릴 수 없었다; VERSION은 주어졌을 때만 넘긴다.
 
 - 이 release는 binding v0.0.20 위에 빌드된다: json의 모든 crate가 `polyspec-binding-core`를 tag v0.0.20으로 받는다. json 0.0.36을 binding v0.0.17 위에 빌드된 library와 한 Cargo workspace나 한 program에 두면 `polyspec-binding-core`가 두 벌이 된다. 그러므로 다른 library가 binding v0.0.17 위에 있는 소비자는 그것들이 한 binding release로 함께 옮길 때까지 json v0.0.34에 머문다.
 
