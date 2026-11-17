@@ -188,3 +188,16 @@ test('T3.59: the js row of the benchmark measures a release addon', () => {
   assert.match(source, /var\/bindings\/node-release/);
   assert.doesNotMatch(source, /prepare\(\['js'\]/, 'the benchmark does not build the debug addon of the tests');
 });
+
+// T3.25: make binding-go-library is a cargo build without --release, so the go row of the benchmark measured a debug
+// static library beside the release builds of the other rows, the defect of T3.53 and T3.59. The benchmark builds a release
+// static library into target/release, which the row links through CGO_LDFLAGS; the tests keep the debug library.
+test('T3.25: the go row of the benchmark measures a release static library', () => {
+  const run = spawnSync('make', ['-n', '--no-print-directory', 'benchmark'], { cwd: ROOT, encoding: 'utf8', env: { ...process.env, LC_ALL: 'C' } });
+  assert.equal(run.status, 0, run.stderr);
+  assert.match(run.stdout, /cargo build --release --locked -p polyspec-json-go /);
+  assert.doesNotMatch(recipeOf('binding-go-library').join('\n'), /--release/, 'the tests keep the debug library');
+  const source = readFileSync(path.join(ROOT, 'benchmarks/run.mts'), 'utf8');
+  assert.match(source, /target\/release\/libpolyspec_json_go\.a/);
+  assert.doesNotMatch(source, /target\/debug/, 'the benchmark links no debug library');
+});

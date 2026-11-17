@@ -1,8 +1,8 @@
 // Runs the equal-workload performance comparison of every implementation (make benchmark, make benchmark-check) and writes
 // benchmarks/results.json. Each implementation measures the inputs of benchmarks/workload.json with its own harness
 // (benchmarks/js.mjs, benchmarks/php.php, tests/benchmark of the Go binding module, examples/benchmark.rs of the Rust package), which prints one
-// tab-separated row for each input and mode. The PHP rows load the release library of the binding extension, which make
-// benchmark builds first (T3.25-3), and cargo builds the Rust harness into the run directory, so no build output of another run decides it.
+// tab-separated row for each input and mode. The PHP rows load the release library of the binding extension and the Go rows
+// link the release static library of the binding module, which make benchmark builds first (T3.25-3, T3.25), and cargo builds the Rust harness into the run directory, so no build output of another run decides it.
 //
 //   node benchmarks/run.mts [--iterations <n>] [--warmup <n>] [--samples <n>] [--check | --update-baseline]
 import { execFileSync, spawnSync } from 'node:child_process';
@@ -151,14 +151,17 @@ async function main(): Promise<void> {
     // The release library of the binding extension Polyspec\Json, which make benchmark builds first (T3.25-3).
     const extension = releaseExtension();
     if (!existsSync(extension)) throw new Error('the PHP extension of the benchmark was not built: make binding-php-ext-release-library');
+    // The release static library of the Go binding module, which make benchmark builds first (T3.25): the library
+    // that the tests and the probe link, the one of make binding-go-library, is a debug build.
+    const library = path.join(ROOT, 'target/release/libpolyspec_json_go.a');
+    if (!existsSync(library)) throw new Error('the Go static library of the benchmark was not built: make binding-go-release-library');
     // The directory of each implementation is its root in config/implementations.json.
     const packages = repositoryPaths();
     const php = env;
     const commands: [string, string, Argv, NodeJS.ProcessEnv][] = [
       ['js', ROOT, ['node', 'benchmarks/js.mjs', ...files], { ...env, OJ_PACKAGE: addon }],
-      // The Go binding module links the static library of make binding-go-library, which make benchmark builds first: a
-      // debug build of target/debug, as the tests link it (T3.25).
-      ['go', pathOf(packages, 'go'), ['go', 'run', './tests/benchmark', ...files], { ...env, GOWORK: 'off', CGO_LDFLAGS: `-L${path.join(ROOT, 'target/debug')}` }],
+      // The Go binding module links the release static library through CGO_LDFLAGS and reads no go.work.
+      ['go', pathOf(packages, 'go'), ['go', 'run', './tests/benchmark', ...files], { ...env, GOWORK: 'off', CGO_LDFLAGS: `-L${path.dirname(library)}` }],
       ['php-native', ROOT, ['php', '-n', 'benchmarks/php.php', 'native-json', ...files], php],
       ['php', ROOT, ['php', '-n', '-d', `extension=${extension}`, 'benchmarks/php.php', 'extension', ...files], php],
       ['rust', ROOT, ['cargo', 'run', '--locked', '--release', '--quiet', '--manifest-path', path.join(pathOf(packages, 'rust'), 'Cargo.toml'), '--example', 'benchmark', '--', ...files], { ...env, CARGO_TARGET_DIR: path.join(run.cache, 'rust-target') }],

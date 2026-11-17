@@ -148,7 +148,7 @@ verify-js verify-rust verify-go verify-php verify-python:
 evidence-check:
 	$(NODE) scripts/check-evidence.mts
 
-benchmark: binding-php-ext-release-library binding-node-release-addon binding-go-library
+benchmark: binding-php-ext-release-library binding-node-release-addon binding-go-release-library
 	$(NODE) benchmarks/run.mts
 
 # benchmark-host measures the conversion of RQ-036, which reads every string in as its UTF-16 code units, against the
@@ -453,6 +453,11 @@ BINDING_GO_ENV = CGO_LDFLAGS=-L$(CURDIR)/target/debug GOWORK=off GOFLAGS=-tags=$
 # The library of the Go binding, built with the test features that the tags of BINDING_GO_ENV name.
 binding-go-library: bindings-go
 	$(CARGO) build --locked -p polyspec-json-go --features $(BINDING_GO_FEATURES)
+# The release static library of the Go binding, with the same features, in target/release, which the go row of make benchmark
+# links through CGO_LDFLAGS (T3.25): the profile of the other rows. The tests and the probe keep the debug library of
+# binding-go-library in target/debug.
+binding-go-release-library: bindings-go
+	$(CARGO) build --release --locked -p polyspec-json-go --features $(BINDING_GO_FEATURES)
 test-binding-go: binding-go-library
 	test -z "$$(cd packages/go && $(GOFMT) -l .)"
 	cd packages/go && $(BINDING_GO_ENV) $(GO) vet ./...
