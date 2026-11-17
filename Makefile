@@ -148,7 +148,7 @@ verify-js verify-rust verify-go verify-php verify-python:
 evidence-check:
 	$(NODE) scripts/check-evidence.mts
 
-benchmark: binding-php-ext-release-library
+benchmark: binding-php-ext-release-library binding-node-release-addon
 	$(NODE) benchmarks/run.mts
 
 # benchmark-host measures the conversion of RQ-036, which reads every string in as its UTF-16 code units, against the
@@ -378,6 +378,15 @@ WASM_BINDGEN_RELEASE := $(shell sed -n 's/^wasm-bindgen = "=\(.*\)"$$/\1/p' pack
 binding-node-addon: bindings-node
 	$(CARGO) build --locked -p polyspec-json-node --features $(call binding_features,packages/ts/Cargo.toml)
 	cp target/debug/libpolyspec_json_node.$(BINDING_DYLIB) packages/ts/generated/$(BINDING_ADDON)
+# The release addon of the Node binding, with the same features, in a package folder of its own, $(BINDING_VAR)/node-release:
+# the manifest and the generated entries of packages/ts with the addon beside them, which the js row of make benchmark loads
+# (T3.59). The tests keep the debug addon that binding-node-addon puts beside packages/ts/generated/index.cjs.
+binding-node-release-addon: bindings-node
+	$(CARGO) build --release --locked -p polyspec-json-node --features $(call binding_features,packages/ts/Cargo.toml)
+	mkdir -p $(BINDING_VAR)/node-release/generated
+	cp packages/ts/package.json $(BINDING_VAR)/node-release/package.json
+	cp packages/ts/generated/index.cjs packages/ts/generated/index.mjs $(BINDING_VAR)/node-release/generated/
+	cp target/release/libpolyspec_json_node.$(BINDING_DYLIB) $(BINDING_VAR)/node-release/generated/$(BINDING_ADDON)
 binding-node-package: binding-node-addon bindings-wasm
 	test "$$($(WASM_BINDGEN) --version)" = "wasm-bindgen $(WASM_BINDGEN_RELEASE)"
 	$(CARGO) build --locked -p polyspec-json-wasm --target wasm32-unknown-unknown --features $(call binding_features,packages/ts/wasm/Cargo.toml)

@@ -14,7 +14,7 @@ import { isDeepStrictEqual, parseArgs } from 'node:util';
 import { parseJson, readJsonFile } from '../scripts/json.mts';
 import { present } from '../scripts/present.mts';
 import { writeRecord } from '../scripts/records.mts';
-import { ROOT, releaseExtension, pathOf, prepare, repositoryPaths, withRun, type Argv } from '../scripts/registry.mts';
+import { ROOT, releaseExtension, pathOf, repositoryPaths, withRun, type Argv } from '../scripts/registry.mts';
 
 type Protocol = { warmup: number; warmup_ms: number; iterations: number; samples: number; median_tolerance: number; p95_tolerance: number };
 type Entry = { file: string; input_bytes: number; sha256: string } & Record<(typeof COUNTS)[number] | 'max_depth', number>;
@@ -144,7 +144,10 @@ async function main(): Promise<void> {
   const files = workload.fixtures.map(entry => path.join(FIXTURES, entry.file));
   const env = { ...process.env, OJ_BENCH_ITERATIONS: String(protocol.iterations), OJ_BENCH_WARMUP: String(protocol.warmup), OJ_BENCH_WARMUP_MS: String(protocol.warmup_ms), OJ_BENCH_SAMPLES: String(protocol.samples) };
   const rows = await withRun(async (run) => {
-    await prepare(['js'], run);
+    // The release addon of the Node binding in its own package folder, which make benchmark builds first (T3.59): the addon
+    // beside packages/ts/generated is the debug build of the tests.
+    const addon = path.join(ROOT, 'var/bindings/node-release');
+    if (!existsSync(path.join(addon, 'package.json'))) throw new Error('the Node addon of the benchmark was not built: make binding-node-release-addon');
     // The release library of the binding extension Polyspec\Json, which make benchmark builds first (T3.25-3).
     const extension = releaseExtension();
     if (!existsSync(extension)) throw new Error('the PHP extension of the benchmark was not built: make binding-php-ext-release-library');
@@ -152,7 +155,7 @@ async function main(): Promise<void> {
     const packages = repositoryPaths();
     const php = env;
     const commands: [string, string, Argv, NodeJS.ProcessEnv][] = [
-      ['js', ROOT, ['node', 'benchmarks/js.mjs', ...files], { ...env, OJ_PACKAGE: packages.js }],
+      ['js', ROOT, ['node', 'benchmarks/js.mjs', ...files], { ...env, OJ_PACKAGE: addon }],
       ['go', pathOf(packages, 'go'), ['go', 'run', './internal/benchmark', ...files], env],
       ['php-native', ROOT, ['php', '-n', 'benchmarks/php.php', 'native-json', ...files], php],
       ['php', ROOT, ['php', '-n', '-d', `extension=${extension}`, 'benchmarks/php.php', 'extension', ...files], php],

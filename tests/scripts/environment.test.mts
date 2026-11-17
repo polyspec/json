@@ -175,3 +175,16 @@ test('T3.53: the parse budget measures a release wheel of the Python binding', (
   assert.doesNotMatch(recipeOf('binding-python-package').join('\n'), /--release/, 'the tests keep the debug wheel');
   assert.match(readFileSync(path.join(ROOT, 'benchmarks/python-parse/run.py'), 'utf8'), /var\/bindings\/venv-release\/bin\/python/);
 });
+
+// T3.59: make binding-node-addon is a cargo build without --release, so the js row of the benchmark measured a debug
+// addon beside the release builds of the PHP and Rust rows. The benchmark builds a release addon into a package folder of
+// its own, var/bindings/node-release, which no test loads.
+test('T3.59: the js row of the benchmark measures a release addon', () => {
+  const run = spawnSync('make', ['-n', '--no-print-directory', 'benchmark'], { cwd: ROOT, encoding: 'utf8', env: { ...process.env, LC_ALL: 'C' } });
+  assert.equal(run.status, 0, run.stderr);
+  assert.match(run.stdout, /cargo build --release --locked -p polyspec-json-node /);
+  assert.match(run.stdout, /target\/release\/libpolyspec_json_node\.\S+ \S*var\/bindings\/node-release\/generated\/json\.\S+\.node/);
+  const source = readFileSync(path.join(ROOT, 'benchmarks/run.mts'), 'utf8');
+  assert.match(source, /var\/bindings\/node-release/);
+  assert.doesNotMatch(source, /prepare\(\['js'\]/, 'the benchmark does not build the debug addon of the tests');
+});

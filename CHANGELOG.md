@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- The js row of `make benchmark` measures a release addon of the Node binding (T3.59): it was prepared with `make binding-node-addon`, a `cargo build` without `--release`, so it measured a debug build beside the release builds of the PHP and Rust rows. `make binding-node-release-addon` builds the release addon into the package folder `var/bindings/node-release`, which the row loads; the tests keep the debug addon. The js rows of `benchmarks/results.json` are those of the earlier builds until the next measurement.
+
 - `make python-parse-budget` measures a release wheel of the Python binding (T3.53): `make binding-python-package` builds a debug wheel, since `maturin build` takes `--release` for a release build, so the ratio 7.85 of 0.0.35 (7.38 at low load) compared an unoptimized Python binding with the release library of PHP, and the entry of 0.0.35 that called both release builds was wrong. The new `make binding-python-release-package` builds the release wheel into a venv of its own; with it the ratio is 1.06 (Python 0.054 s, PHP 0.051 s), and no warning is printed. The tests keep the debug wheel.
 
 - The JSON contract states the refusal of a text with an unpaired surrogate as the bindings do it: `invalid_text` at the boundary of the binding, before the core runs; `unescaped_lone_surrogate` is given by the legacy JavaScript and Python packages alone, and T3.58 retires it with them. The sentence on the `compact` option of JavaScript and the `compact` argument of PHP is removed: the one option of `stringify` is `htmlSafe` in every target (`index.d.ts`, the PHP stub, `_native.pyi`, `zz_generated_json.go`).

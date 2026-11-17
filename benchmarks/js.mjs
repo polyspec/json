@@ -4,8 +4,8 @@ import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 
-// The package of the JavaScript implementation, the binding @polyspec/json, which benchmarks/run.mts names by its root in
-// config/implementations.json; its generated entry loads the addon that make binding-node-addon puts beside it.
+// The package of the JavaScript implementation, the binding @polyspec/json, which benchmarks/run.mts names: the package
+// folder of make binding-node-release-addon, whose generated entry loads the release addon beside it (T3.59).
 if (!process.env.OJ_PACKAGE) throw new Error('OJ_PACKAGE names the directory of the JavaScript package');
 const { parse, stringify } = createRequire(path.join(process.env.OJ_PACKAGE, 'package.json'))('@polyspec/json');
 

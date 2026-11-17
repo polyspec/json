@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: b401cca966c2539af644359b173cb078081d5b04cd336e4b26f181d51129dea9 -->
+<!-- source-sha256: 642ee7a9c12041e54a30a58beecf5806e3be2f73086f328d544bf25f09698f20 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- `make benchmark`의 js 행이 Node 바인딩의 release addon을 잰다(T3.59): 이 행은 `--release` 없는 `cargo build`인 `make binding-node-addon`으로 준비되어, PHP와 Rust 행의 release build 곁에서 debug build를 쟀다. `make binding-node-release-addon`이 release addon을 패키지 폴더 `var/bindings/node-release`에 빌드하고 행이 그것을 올린다; 시험은 debug addon을 그대로 쓴다. `benchmarks/results.json`의 js 행은 다음 실측까지 이전 빌드의 값이다.
 
 - `make python-parse-budget`가 Python 바인딩의 release wheel을 잰다(T3.53): `maturin build`는 `--release`를 받아야 release로 빌드하므로 `make binding-python-package`는 debug wheel을 만든다. 그래서 0.0.35의 비율 7.85(저부하에서 7.38)는 최적화되지 않은 Python 바인딩을 PHP의 release library와 비교한 것이었고, 둘 다 release build라고 적은 0.0.35의 항목은 틀렸다. 새 `make binding-python-release-package`가 release wheel을 자기 venv에 만든다; 그것으로 잰 비율은 1.06(Python 0.054 s, PHP 0.051 s)이고 경고가 없다. 시험은 debug wheel을 그대로 쓴다.
 
