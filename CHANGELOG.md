@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.37
+
 - json pins binding v0.0.21 (T3.65): `package.json` fetches `polyspec-binding-0.0.21.tgz` (the sha256 of the release, ccbf9625, is that of the asset), `package-lock.json` holds its integrity, `Cargo.lock` and every `Cargo.toml` of the bindings name the tag `v0.0.21`, and `binding scaffold` and `binding release-recipes` wrote the scaffolded files again. This lane has no Go module of `packages/go` yet: its go.mod, which the scaffold writes with `// indirect` lines, and go.sum come with the move of the hand-written Go tests (T3.25-6).
 
 - One test compares the kinds of the bindings with the shared lists of the JSON contract (T3.64): `tests/scripts/kinds.test.mts` requires each listed kind to be reached by the hand-written tests of a binding or stated as one that cannot arise in its language, and refuses an item that names a removed legacy package. It found and this change corrects: the items `non_string_key` and `invalid_argument_type` said that the kind cannot arise in PHP, where the binding gives it; `host_serialization_refused` now states that it cannot arise in Python, which has no hook; three items named PHP among the packages of the transition; no hand-written test of TypeScript, Python or PHP reached `non_finite_number`, nor one of TypeScript `invalid_code_unit`, and each has its test now. The Go module tag is written `packages/go/vX.Y.Z` in the distribution document: no tag `legacy/packages/go/vX.Y.Z` exists.

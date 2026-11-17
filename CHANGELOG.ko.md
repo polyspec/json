@@ -7,6 +7,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.37
+
 - json이 binding v0.0.21을 pin한다(T3.65): `package.json`은 `polyspec-binding-0.0.21.tgz`를 받고(release의 sha256 ccbf9625는 그 asset의 것), `package-lock.json`은 그 integrity를 가지며, `Cargo.lock`과 바인딩의 모든 `Cargo.toml`은 tag `v0.0.21`을 이름하고, `binding scaffold`와 `binding release-recipes`가 scaffold된 파일을 다시 썼다. 이 lane에는 아직 `packages/go`의 Go module이 없다. scaffold가 `// indirect` 줄과 함께 쓰는 go.mod와 go.sum은 손으로 쓴 Go 시험의 이동(T3.25-6)과 함께 온다.
 
 - 시험 하나가 바인딩의 kind를 JSON 계약의 공유 목록과 비교한다(T3.64): `tests/scripts/kinds.test.mts`는 목록의 kind마다 바인딩의 손으로 쓴 시험이 그것에 닿거나 그 항목이 그 언어에서 생길 수 없다고 적을 것을 요구하고, 지워진 legacy 패키지를 이름하는 항목을 거부한다. 이 시험이 찾아 이 변경이 고친 것: `non_string_key`와 `invalid_argument_type` 항목이 PHP에서 생길 수 없다고 적었으나 바인딩은 그 kind를 낸다; `host_serialization_refused`는 이제 hook이 없는 Python에서 생길 수 없다고 적는다; 세 항목이 이행 기간의 패키지에 PHP를 이름했다; TypeScript, Python, PHP의 손으로 쓴 시험 어느 것도 `non_finite_number`에 닿지 않았고 TypeScript의 시험은 `invalid_code_unit`에도 닿지 않았으며, 이제 각각 시험이 있다. distribution 문서의 Go module tag는 `packages/go/vX.Y.Z`로 적는다: `legacy/packages/go/vX.Y.Z`라는 tag는 없다.
