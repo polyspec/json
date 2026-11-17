@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 2fe8e6fd897735adbfd3f6aaa59fa6622be1a2b4f79b2e13f383db01eed001c6 -->
+<!-- source-sha256: 541ae9633aa41a3b53857f6e553179309dc53bae877a1277d8f02ee2388a61ac -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- 시험 하나가 바인딩의 kind를 JSON 계약의 공유 목록과 비교한다(T3.64): `tests/scripts/kinds.test.mts`는 목록의 kind마다 바인딩의 손으로 쓴 시험이 그것에 닿거나 그 항목이 그 언어에서 생길 수 없다고 적을 것을 요구하고, 지워진 legacy 패키지를 이름하는 항목을 거부한다. 이 시험이 찾아 이 변경이 고친 것: `non_string_key`와 `invalid_argument_type` 항목이 PHP에서 생길 수 없다고 적었으나 바인딩은 그 kind를 낸다; `host_serialization_refused`는 이제 hook이 없는 Python에서 생길 수 없다고 적는다; 세 항목이 이행 기간의 패키지에 PHP를 이름했다; TypeScript, Python, PHP의 손으로 쓴 시험 어느 것도 `non_finite_number`에 닿지 않았고 TypeScript의 시험은 `invalid_code_unit`에도 닿지 않았으며, 이제 각각 시험이 있다. distribution 문서의 Go module tag는 `packages/go/vX.Y.Z`로 적는다: `legacy/packages/go/vX.Y.Z`라는 tag는 없다.
 
 - `make benchmark`가 release build가 아닌 산출물을 거부한다(T3.63): `benchmarks/run.mts`는 행이 올리는 Node addon과 PHP 확장의 sha256을 `target/release`와 `target/debug`의 library와 비교해 각각의 profile을 출력하고 결과에 `artifacts`로 적으며, debug build이거나 어느 쪽과도 같지 않으면 실행을 끝낸다. 세 행이 debug build를 쟀고 모두 log를 읽어서 찾았다(T3.53, T3.59, T3.25-6).
 
