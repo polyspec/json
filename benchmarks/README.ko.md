@@ -1,5 +1,5 @@
 <!-- doc-id: performance-benchmarks -->
-<!-- source-sha256: 2f66055abd574a19e9670476eb12a3554609a7c9bea4b16d35d1b52a96bbf4d8 -->
+<!-- source-sha256: 44eeaa2caa7d02e515672c06c0b23ea37915f280e003be60306255cb36bea440 -->
 # 성능 벤치마크
 
 `run.mts`는 모든 런타임에서 같은 입력 문서, 워밍업 횟수, 반복 횟수,
@@ -65,7 +65,7 @@ node benchmarks/run.mts --iterations 10000 --warmup 1000 --samples 9
 
 `make python-parse-budget`(`python-parse/run.py`)는 member 여덟 개짜리 평평한 객체 50,000개를 생성한 문서 하나(6.15 MB)를
 Python 바인딩과 PHP 바인딩으로 각자의 process에서 번갈아 세 번씩 parse합니다. 두 바인딩은 같은 core로 parse하므로 이 비율은
-같은 core 위에서 Python 변환 층과 PHP 변환 층을 비교하며, 둘 다 같은 feature의 release build입니다(T3.25-3). 각 process는 자기 parse의 CPU 시간을
+같은 core 위에서 Python 변환 층과 PHP 변환 층을 비교하며, 둘 다 같은 feature의 release build입니다: `make binding-python-release-package`의 wheel과 `make binding-php-ext-release-library`의 library입니다(T3.53; 그 전에는 wheel이 시험용 debug wheel이었습니다. maturin은 `--release`가 없으면 debug로 빌드하며, 그때의 비율(저부하에서 7.38)은 변환 층이 아니라 그 빌드를 잰 것이었습니다). 각 process는 자기 parse의 CPU 시간을
 보고하므로 기계의 부하는 양쪽을 똑같이 느리게 하며, wall-clock 예산은 없습니다. 검사는 모든 실행, 두 중앙값과 그 비율을
 출력하고, Python 중앙값이 PHP 중앙값의 세 배를 넘으면 경고하며 실패하지 않습니다. `make check`의 target이 아니며, Python 바인딩을 바꾼 뒤
 사람이 실행합니다.

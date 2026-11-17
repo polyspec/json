@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 745b142feea90464c927774559e90fb03d4cf6b931dd927972112c3b5a47ab50 -->
+<!-- source-sha256: b401cca966c2539af644359b173cb078081d5b04cd336e4b26f181d51129dea9 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- `make python-parse-budget`가 Python 바인딩의 release wheel을 잰다(T3.53): `maturin build`는 `--release`를 받아야 release로 빌드하므로 `make binding-python-package`는 debug wheel을 만든다. 그래서 0.0.35의 비율 7.85(저부하에서 7.38)는 최적화되지 않은 Python 바인딩을 PHP의 release library와 비교한 것이었고, 둘 다 release build라고 적은 0.0.35의 항목은 틀렸다. 새 `make binding-python-release-package`가 release wheel을 자기 venv에 만든다; 그것으로 잰 비율은 1.06(Python 0.054 s, PHP 0.051 s)이고 경고가 없다. 시험은 debug wheel을 그대로 쓴다.
 
 - JSON 계약이 짝 없는 surrogate가 든 텍스트의 거부를 바인딩이 하는 대로 적는다: 코어가 실행되기 전에 바인딩의 경계에서 `invalid_text`로 거부한다; `unescaped_lone_surrogate`는 legacy JavaScript와 Python 패키지만 내며 T3.58이 그 둘과 함께 retire한다. JavaScript의 `compact` 옵션과 PHP의 `compact` 인자에 대한 문장을 지운다: 모든 target에서 `stringify`의 옵션은 `htmlSafe` 하나다(`index.d.ts`, PHP stub, `_native.pyi`, `zz_generated_json.go`).
 

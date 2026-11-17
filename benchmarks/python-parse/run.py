@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """The parse ratio of the Python binding against the PHP binding (make python-parse-budget), a performance check that a
 person runs; it is no unit test and no target of make check. Both bindings parse with the same core, so the ratio compares
-the conversion layer of Python with that of PHP over the same core (T3.25-3), each a release build with the same features.
+the conversion layer of Python with that of PHP over the same core (T3.25-3), each a release build with the same features
+(T3.53: the wheel of make binding-python-release-package).
 
 Both parse one generated document of 50,000 flat objects of eight members each (6.15 MB) in their own process, interleaved
 Python, PHP, Python, PHP, three runs each. Each process measures the CPU time of its own parse (time.process_time in Python,
@@ -9,7 +10,6 @@ getrusage in PHP), so the load of the machine slows both sides alike and no wall
 run, both medians and their ratio, and warns when the Python median exceeds three times the PHP median; it never fails."""
 
 from pathlib import Path
-import json
 import statistics
 import subprocess
 import sys
@@ -27,14 +27,9 @@ PHP_EXTENSION = (
     / "target/release"
     / ("libpolyspec_json.dylib" if sys.platform == "darwin" else "libpolyspec_json.so")
 )
-# The implementations of config/implementations.json, the one declaration of the interpreter of the Python binding (the venv
-# of make binding-python-package).
-IMPLEMENTATIONS = {
-    item["name"]: item
-    for item in json.loads((ROOT / "config/implementations.json").read_text())[
-        "implementations"
-    ]
-}
+# The interpreter of the venv of make binding-python-release-package, which holds the release wheel of the Python binding
+# (T3.53): the venv of the tests holds a debug wheel, which maturin builds without --release.
+PYTHON = ROOT / "var/bindings/venv-release/bin/python"
 
 
 def document(rows=ROWS):
@@ -62,7 +57,7 @@ def main():
         path = Path(folder) / "rows.json"
         path.write_bytes(document())
         python = [
-            str(ROOT / IMPLEMENTATIONS["python"]["command"]),
+            str(PYTHON),
             str(PYTHON_RUN),
             str(path),
             str(ROWS),

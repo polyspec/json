@@ -161,3 +161,17 @@ test('T3.54: the tags of make test-binding-go are the build tags of the generate
   const given = new Set((/-tags=(\S+)/.exec(run.stdout)?.[1] ?? '').split(','));
   for (const tag of wanted) assert.ok(given.has(tag), `make test-binding-go does not give the tag ${tag} (it gives ${[...given].join(',')})`);
 });
+
+// T3.53: maturin build makes a debug wheel unless it is given --release, so the parse budget compared an unoptimized
+// Python binding with the release library of PHP (ratio 7.38 at low load). The budget builds a release wheel into a venv
+// of its own, and the tests keep the debug wheel of binding-python-package.
+test('T3.53: the parse budget measures a release wheel of the Python binding', () => {
+  const budget = recipeOf('python-parse-budget').join('\n');
+  assert.match(budget, /binding-python-release-package/);
+  assert.doesNotMatch(budget, /binding-python-package/);
+  const wheel = recipeOf('binding-python-release-package').join('\n');
+  assert.match(wheel, /\$\(MATURIN\) build --release --locked /);
+  assert.match(wheel, /venv-release/);
+  assert.doesNotMatch(recipeOf('binding-python-package').join('\n'), /--release/, 'the tests keep the debug wheel');
+  assert.match(readFileSync(path.join(ROOT, 'benchmarks/python-parse/run.py'), 'utf8'), /var\/bindings\/venv-release\/bin\/python/);
+});

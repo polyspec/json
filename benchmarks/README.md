@@ -70,7 +70,9 @@ measurement.
 `make python-parse-budget` (`python-parse/run.py`) parses one generated document of 50,000 flat objects of eight members
 each (6.15 MB) with the Python binding and with the PHP binding, each in its own process, interleaved, three runs each. Both
 bindings parse with the same core, so the ratio compares the conversion layer of Python with that of PHP over the same core;
-both are release builds with the same features (T3.25-3).
+both are release builds with the same features: the wheel of `make binding-python-release-package` and the library of
+`make binding-php-ext-release-library` (T3.53; until then the wheel was the debug wheel of the tests, which maturin builds
+without `--release`, and the ratio it gave, 7.38 at low load, measured that build and not the conversion layer).
 Each process reports the CPU time of its own parse, so the load of the machine slows both sides alike; no wall-clock budget
 exists. The check prints every run, both medians and their ratio, and warns when the Python median exceeds three times the
 PHP median; it never fails. It is no target of `make check`: a person runs it after a change of the Python binding.

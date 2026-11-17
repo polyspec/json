@@ -182,11 +182,11 @@ json-rust-test: json-rust-check
 # python-parse-budget compares the CPU time of the parse of the Python binding with that of the PHP binding on one generated
 # document, the conversion layer of Python with that of PHP over the same core, and warns when the Python median exceeds
 # three times the PHP median (benchmarks/python-parse/run.py). Both are release builds with the same features: the wheel of
-# maturin and the library of binding-php-ext-release-library. A person runs it after a change of the Python binding; it is no
-# target of make check.
+# binding-python-release-package and the library of binding-php-ext-release-library (T3.53: until then the wheel was the
+# debug wheel of the tests). A person runs it after a change of the Python binding; it is no target of make check.
 python-parse-budget:
 	$(MAKE) --no-print-directory install-tools TOOLS="python php"
-	$(MAKE) --no-print-directory binding-python-package
+	$(MAKE) --no-print-directory binding-python-release-package
 	$(MAKE) --no-print-directory binding-php-ext-release-library
 	$(PYTHON) benchmarks/python-parse/run.py
 
@@ -354,6 +354,13 @@ binding-python-package: bindings-python
 	rm -rf $(BINDING_VAR)/wheels
 	cd packages/python && $(MATURIN) build --locked --interpreter $(BINDING_VAR)/venv/bin/python --features $(call binding_features,packages/python/Cargo.toml) --out $(BINDING_VAR)/wheels
 	$(BINDING_VAR)/venv/bin/python -m pip install -q --no-index --force-reinstall $(BINDING_VAR)/wheels/*.whl
+# The release wheel of the Python binding, with the same features, installed in the venv $(BINDING_VAR)/venv-release, which
+# make python-parse-budget measures (T3.53): maturin build makes a debug wheel unless it is given --release, and the tests
+# keep that debug wheel in $(BINDING_VAR)/venv.
+binding-python-release-package: bindings-python
+	$(PYTHON) -m venv --clear $(BINDING_VAR)/venv-release
+	cd packages/python && $(MATURIN) build --release --locked --interpreter $(BINDING_VAR)/venv-release/bin/python --features $(call binding_features,packages/python/Cargo.toml) --out $(BINDING_VAR)/wheels-release
+	$(BINDING_VAR)/venv-release/bin/python -m pip install -q --no-index --force-reinstall $(BINDING_VAR)/wheels-release/*.whl
 test-binding-python: binding-python-package
 	cd $(BINDING_VAR) && venv/bin/python -m unittest discover -s $(CURDIR)/packages/python/generated/tests -t $(CURDIR)/packages/python/generated/tests
 
