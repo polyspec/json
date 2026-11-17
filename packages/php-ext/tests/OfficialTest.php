@@ -7,7 +7,6 @@ namespace Polyspec\Json\Tests;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Polyspec\Json\Kind;
-use Polyspec\Json\OrderedMap;
 use Polyspec\Json\Value;
 
 use function Polyspec\Json\parse;
@@ -49,7 +48,7 @@ final class OfficialTest extends TestCase
         self::assertSame($compact, stringify($value));
         self::assertSame($tree, self::tree($value));
         self::assertSame($tree, self::tree(parse(stringify($value))));
-        self::assertSame($tree, self::tree(parse(stringify(self::rebuild($value)))));
+        self::assertSame($tree, self::tree(parse(stringify(ProbeTree::rebuild($value)))));
     }
 
     /**
@@ -94,31 +93,5 @@ final class OfficialTest extends TestCase
             'boolean' => ['boolean', $parts[1]->booleanValue()],
             default => ['null'],
         };
-    }
-
-    /**
-     * Inserts the keys in their first order, then sets the values in reverse order (change-ordered-map: an object takes
-     * an OrderedMap, whose insert of a present key keeps its position and sets its value).
-     */
-    private static function rebuild(Value $value): Value
-    {
-        if ($value->kind() === Kind::Object_) {
-            $keys = [];
-            foreach ($value->members() as $key => $_) {
-                $keys[] = $key;
-            }
-            $members = new OrderedMap();
-            foreach ($keys as $key) {
-                $members->insert($key, Value::null());
-            }
-            foreach (array_reverse($keys) as $key) {
-                $members->insert($key, self::rebuild($value->getUnits($key->stringUnits())));
-            }
-            return Value::object($members);
-        }
-        if ($value->kind() === Kind::Array_) {
-            return Value::array(array_map(self::rebuild(...), $value->items()));
-        }
-        return $value;
     }
 }
