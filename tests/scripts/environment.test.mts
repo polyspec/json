@@ -4,7 +4,7 @@
 // make install-tools installs the running tools with them, and every target that runs a tool depends on it.
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -141,4 +141,20 @@ test('requires-python of the Python package is the minor release of the python o
   const pyproject = checkJson<{ project: { 'requires-python'?: string } }>(parse(read(path.join(rootOf('python'), 'pyproject.toml'))), 'pyproject.schema.json', 'pyproject.toml');
   const minor = miseVersion('python').split('.').slice(0, 2).join('.');
   assert.equal(pyproject.project['requires-python'], `>=${minor}`);
+});
+
+// T3.54: the generated Go tests of binding 0.0.17 build under polyspec_json_<feature>, but BINDING_GO_ENV named
+// polyspec_<feature>, so go test compiled none of the panic, fault and codec tests and passed without them.
+test('T3.54: the tags of make test-binding-go are the build tags of the generated Go tests', () => {
+  const run = spawnSync('make', ['-n', '--no-print-directory', 'test-binding-go'], { cwd: ROOT, encoding: 'utf8', env: { ...process.env, LC_ALL: 'C' } });
+  assert.equal(run.status, 0, run.stderr);
+  const given = new Set((/-tags=(\S+)/.exec(run.stdout)?.[1] ?? '').split(','));
+  const wanted = new Set<string>();
+  // The generated files are ignored by Git (binding GN-1), so the test reads those that make bindings wrote.
+  for (const file of readdirSync(path.join(ROOT, 'packages/go'), { recursive: true, encoding: 'utf8' }).filter(name => /zz_generated_[^/]*\.go$/.test(name))) {
+    const line = /^\/\/go:build (\S+)$/m.exec(readFileSync(path.join(ROOT, 'packages/go', file), 'utf8'))?.[1];
+    if (line?.startsWith('polyspec_')) wanted.add(line);
+  }
+  assert.ok(wanted.size > 0, 'no generated Go test names a build tag');
+  for (const tag of wanted) assert.ok(given.has(tag), `make test-binding-go does not give the tag ${tag} (it gives ${[...given].join(',')})`);
 });

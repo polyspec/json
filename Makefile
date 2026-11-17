@@ -429,17 +429,18 @@ test-binding-php: binding-php-ext-library
 	$(PHP) -d extension=$(CURDIR)/target/debug/libpolyspec_json.$(BINDING_DYLIB) $(PHPUNIT) --fail-on-empty-test-suite --fail-on-skipped packages/php-ext/generated/tests
 
 # The static library with the test features, which Go links through CGO_LDFLAGS, then gofmt, go vet and the generated tests
-# on go test with the build tags of those features, polyspec_<feature> with _ for - (binding GN-5). The module has no go.work,
-# and GOTOOLCHAIN=local is exported above.
+# on go test with the build tags of those features, polyspec_json_<feature> with _ for - (binding GN-5; the tags of the
+# generated files of binding 0.0.17 name the product, T3.54). The module has no go.work, and GOTOOLCHAIN=local is exported
+# above.
 BINDING_GO_FEATURES = $(call binding_features,packages/go/internal/ffi/Cargo.toml)
-BINDING_GO_ENV = CGO_LDFLAGS=-L$(CURDIR)/target/debug GOWORK=off GOFLAGS=-tags=$(subst -,_,$(shell echo '$(BINDING_GO_FEATURES)' | sed 's/\([^,]*\)/polyspec_\1/g'))
+BINDING_GO_ENV = CGO_LDFLAGS=-L$(CURDIR)/target/debug GOWORK=off GOFLAGS=-tags=$(subst -,_,$(shell echo '$(BINDING_GO_FEATURES)' | sed 's/\([^,]*\)/polyspec_json_\1/g'))
 # The library of the Go binding, built with the test features that the tags of BINDING_GO_ENV name.
 binding-go-library: bindings-go
 	$(CARGO) build --locked -p polyspec-json-go --features $(BINDING_GO_FEATURES)
 test-binding-go: binding-go-library
 	test -z "$$(cd packages/go && $(GOFMT) -l .)"
 	cd packages/go && $(BINDING_GO_ENV) $(GO) vet ./...
-	cd packages/go && $(BINDING_GO_ENV) $(GO) test -count=1 ./...
+	cd packages/go && $(BINDING_GO_ENV) $(GO) test -count=1 -v ./...
 # bindings generates the five targets, each in its own target bindings-<target>, so that a target that binding does not
 # generate fails with its name (binding GN-1c) and the other targets still run.
 BINDING_TARGETS := php python node wasm go
