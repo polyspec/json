@@ -454,17 +454,17 @@ test('T3.25-5: the job release installs every tool of release-pie-check before i
 
 // T3.66: the release of a Go module pushes its tag. binding 0.0.21 splits release-go-module, which only adds the reference of the
 // tag, from release-go-module-push, which pushes every reference of the release at once (B2.488). ci-release must run the rehearsal
-// of the module before its tag and the push after it, or the tag of packages/go/vX.Y.Z is made in the runner and never reaches the remote
-// (release 0.0.37, run 44079838426). The dry run of ci-release names the order of its steps.
+// of the module before its tag and the push after it, or the tag of packages/go/vX.Y.Z is made in the runner and never reaches the
+// remote (release 0.0.37, run 44079838426). The order is read from the recipe of ci-release in the make database, so the test
+// needs no generated file: packages/release.mk, which binding release-recipes writes and Git ignores, is absent in CI before the
+// release job makes it (CI run 44082769614).
 test('T3.66: ci-release rehearses the Go module before its tag and pushes the tag after it', () => {
-  const run = spawnSync('make', ['-n', '--no-print-directory', 'ci-release', 'TAG=v0.0.0'], { cwd: ROOT, encoding: 'utf8', env: { ...process.env, LC_ALL: 'C', GITHUB_ACTOR: 'test' } });
-  assert.equal(run.status, 0, run.stderr);
-  const plan = run.stdout;
-  const at = (pattern: RegExp) => plan.search(pattern);
-  const rehearse = at(/--no-print-directory rehearse-go-module TAG=/);
-  const module = at(/--no-print-directory release-go-module(?=\s|$)/m);
-  const push = at(/--no-print-directory release-go-module-push TAG=/);
-  const publish = at(/--no-print-directory release-publish(?=\s|$)/m);
+  const lines = recipe(database(), 'ci-release');
+  const at = (pattern: RegExp) => lines.findIndex(line => pattern.test(line));
+  const rehearse = at(/\brehearse-go-module\b/);
+  const module = at(/\brelease-go-module\b(?!-)/);
+  const push = at(/\brelease-go-module-push\b/);
+  const publish = at(/\brelease-publish\b/);
   assert.ok(rehearse >= 0, 'ci-release rehearses the Go module with the tag it will make');
   assert.ok(module >= 0 && rehearse < module, 'the rehearsal runs before release-go-module');
   assert.ok(push >= 0 && module < push, 'release-go-module-push runs after release-go-module');
