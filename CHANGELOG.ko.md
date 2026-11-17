@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 46f426434300427e2e65e6dc89be8b2082effc5e07a2b32417ce3d5d74dac615 -->
+<!-- source-sha256: d0c8120542543b397b562dfea7fb7a34e2e3d0e4a24abe8ff7884e50f7f3d4e6 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+## 0.0.35
 
 - `make test-binding-go`가 Go 바인딩의 생성된 panic, fault, codec 시험을 돌린다(T3.54): build tag를 `polyspec_<feature>`로 주었지만 binding 0.0.17은 그 시험을 `polyspec_json_<feature>`로 생성하므로, v0.0.34까지 `go test`는 그것들을 컴파일하지 않고 통과했다. 이제 `go test`를 `-v`로 돌려 make log에 시험마다 보인다.
 

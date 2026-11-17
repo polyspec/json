@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.35
+
 - `make test-binding-go` runs the generated panic, fault and codec tests of the Go binding (T3.54): it named the build tags `polyspec_<feature>`, while binding 0.0.17 generates them under `polyspec_json_<feature>`, so up to v0.0.34 `go test` passed without compiling them. `go test` now runs with `-v`, so the make log shows each test.
 
 - The PHP package of json is the binding extension of `packages/php-ext` (T3.25-3, V-6 (5)): the legacy packages `legacy/packages/php` and `legacy/packages/php-ext` are removed after `make test-differential-php` found no difference with either (CI run 43977986876). The package tests `ValueApiTest`, `ErrorKindTest` and `OfficialTest` and the probe of the shared verifier run against the binding in `packages/php-ext/tests`, changed only where a change of `packages/rust/interface.json` applies; `make test-php` runs them with PHPUnit of the development manifest `composer.json`, and `lint-php` runs in the job bindings. The runtime jobs `php` and `php-ext`, `make pie-check`, `make test-php-ext`, `make lint-php-ext` and `make build-php-ext` are removed; the PIE install of the binding is checked against the published release by T3.25-5. AGENTS states that S10 has no object in json (`Refines S10: No object`, kit 0.0.119, K1284), which `make layout-check` keeps by refusing a Composer package of type library. `make python-parse-budget` now compares the conversion layer of the Python binding with that of the PHP binding over the same core, both release builds; its first measurement was a ratio of 7.85 (Python 0.425 s, PHP 0.054 s, load average 25), a warning.
