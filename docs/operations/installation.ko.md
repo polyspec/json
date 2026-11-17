@@ -1,5 +1,5 @@
 <!-- doc-id: installation -->
-<!-- source-sha256: 7f1da456936b2bd2e1dfb6e0bdb70176e8eaf1b618159bcac6a708bad94d5395 -->
+<!-- source-sha256: 5361c8f5b106dc8f56233a39918ff6e5890ff40261ff0fa26c6eff2ba795ff2d -->
 # 설치와 실행
 
 [English](installation.md)
@@ -16,7 +16,7 @@
 | Python | Python >= 3.14 | `polyspec-json`, `polyspec.json` import | [pyproject.toml](https://github.com/polyspec/json/blob/main/packages/python/pyproject.toml) |
 | 저장소 검사 | 고정된 Python, Node.js, Rust, Go, npm release, Git, make, 위 PHP | `make install`, `make check` | [검증](validation.ko.md) |
 
-저장소 검사는 추적 파일이 고정한 정확한 release로 실행합니다. Rust는 `rust-toolchain.toml`, Node.js, Go와 Python은 `mise.toml`에 `@polyspec/kit`의 pin으로(`legacy/packages/go/go.mod`의 `go` 줄도 같은 Go를 정확히 가리킵니다) Composer, uv, lint와 dependency review의 도구와 함께 고정하고 `mise.lock`이 각 digest로 잠그며, PHP는 `.php-version`에 minor release로, npm은 `package.json`의 `devEngines.packageManager` 버전으로 고정하고, 그 tarball의 digest는 `mise.lock`에 둡니다. 새 checkout은 먼저 `make bootstrap`을 실행합니다. 이 target은 `devEngines.packageManager`의 npm release를 checkout 밖에서 `npm exec`로 실행해 `@polyspec/kit`을 포함한 `package-lock.json`을 설치합니다. `make install-tools TOOLS=npm`의 bootstrap은 설치된 kit의 파일이고, 다른 release의 npm은 이 checkout을 거부하기(`EBADDEVENGINES`) 때문입니다. 그다음 mise, `mise.toml`의 Node.js와 그 npm을 `var/tools`에 설치하는 `make install-tools TOOLS=npm`과, 그 npm으로 공유 도구의 package `@polyspec/kit`을 포함한 `package-lock.json`을 설치하는 `make install-packages`를 실행합니다. 그다음 `make install`은 그 Rust toolchain을 rustup으로 설치하고, `mise.lock`의 도구를 `mise install --locked`로 Git이 무시하고 Makefile이 그 shim을 `PATH` 앞에 두는 checkout의 `var/tools/mise`에 설치합니다(`@polyspec/kit`의 설치 도구를 실행하는 `make install-tools`). 기계의 도구는 사용하지도 바꾸지도 않습니다. `make install-tools`는 모든 도구를 선언대로 설치하고, 도구를 실행하는 모든 target이 이에 의존하며, 다른 도구마다 기대 버전과 실제 버전을 밝히며 실패합니다. `GOTOOLCHAIN=local`과 `RUSTUP_AUTO_INSTALL=0`은 실행 중에 go와 rustup이 다른 toolchain을 내려받거나 설치하지 못하게 하고, 모든 cargo 명령은 `--locked`를 사용합니다.
+저장소 검사는 추적 파일이 고정한 정확한 release로 실행합니다. Rust는 `rust-toolchain.toml`, Node.js, Go와 Python은 `mise.toml`에 `@polyspec/kit`의 pin으로(`packages/go/go.mod`의 `go` 줄도 같은 Go를 정확히 가리킵니다) Composer, uv, lint와 dependency review의 도구와 함께 고정하고 `mise.lock`이 각 digest로 잠그며, PHP는 `.php-version`에 minor release로, npm은 `package.json`의 `devEngines.packageManager` 버전으로 고정하고, 그 tarball의 digest는 `mise.lock`에 둡니다. 새 checkout은 먼저 `make bootstrap`을 실행합니다. 이 target은 `devEngines.packageManager`의 npm release를 checkout 밖에서 `npm exec`로 실행해 `@polyspec/kit`을 포함한 `package-lock.json`을 설치합니다. `make install-tools TOOLS=npm`의 bootstrap은 설치된 kit의 파일이고, 다른 release의 npm은 이 checkout을 거부하기(`EBADDEVENGINES`) 때문입니다. 그다음 mise, `mise.toml`의 Node.js와 그 npm을 `var/tools`에 설치하는 `make install-tools TOOLS=npm`과, 그 npm으로 공유 도구의 package `@polyspec/kit`을 포함한 `package-lock.json`을 설치하는 `make install-packages`를 실행합니다. 그다음 `make install`은 그 Rust toolchain을 rustup으로 설치하고, `mise.lock`의 도구를 `mise install --locked`로 Git이 무시하고 Makefile이 그 shim을 `PATH` 앞에 두는 checkout의 `var/tools/mise`에 설치합니다(`@polyspec/kit`의 설치 도구를 실행하는 `make install-tools`). 기계의 도구는 사용하지도 바꾸지도 않습니다. `make install-tools`는 모든 도구를 선언대로 설치하고, 도구를 실행하는 모든 target이 이에 의존하며, 다른 도구마다 기대 버전과 실제 버전을 밝히며 실패합니다. `GOTOOLCHAIN=local`과 `RUSTUP_AUTO_INSTALL=0`은 실행 중에 go와 rustup이 다른 toolchain을 내려받거나 설치하지 못하게 하고, 모든 cargo 명령은 `--locked`를 사용합니다.
 
 표는 선언된 최소 버전이며 모든 최소 버전에서 테스트했다는 의미는 아닙니다. 실제 버전은 commit을 검증하는 실행의 [기록](validation.ko.md#records)에 기록합니다. JavaScript, Rust, Go, Python은 외부 런타임 라이브러리에 의존하지 않습니다.
 
@@ -32,7 +32,7 @@ cd json
 
 - JavaScript: `make binding-node-addon`이 checkout의 Node addon을 `packages/ts/generated/index.cjs` 옆에 빌드하고, 그 파일이 거기서 addon을 load합니다. 패키지 테스트와 공유 verifier의 probe는 `packages/ts`에서 `@polyspec/json`을 가져옵니다. legacy 패키지 `legacy/packages/js/`는 삭제될 때까지 checkout에 남습니다([전환](../spec/json-contract.ko.md#transition)).
 - Rust: `path`가 `packages/rust/`를 지정하는 로컬 Cargo 의존성을 설정합니다.
-- Go: `make binding-go-library`가 바인딩 모듈 `packages/go`가 링크하는 static library를 빌드합니다. 공유 verifier의 probe `packages/go/tests/probe`가 그것을 링크하고, benchmark 프로그램 `packages/go/tests/benchmark`는 `make binding-go-release-library`의 release library를 링크합니다(T3.25). legacy 패키지 `legacy/packages/go/`(모듈 `github.com/polyspec/ordered-json/packages/go`)는 삭제될 때까지 `make test-go`가 실행하는 그 패키지 테스트와 함께 checkout에 남습니다.
+- Go: `make binding-go-library`가 바인딩 모듈 `packages/go`가 링크하는 static library를 빌드합니다. 공유 verifier의 probe `packages/go/tests/probe`가 그것을 링크하고, benchmark 프로그램 `packages/go/tests/benchmark`는 `make binding-go-release-library`의 release library를 링크합니다. `make test-go`는 `packages/go/tests`의 패키지 테스트를 바인딩에 대해 실행합니다(T3.25-6).
 - PHP: 바인딩 확장을 PIE로 설치합니다. `pie install polyspec/json`은 PHP minor와 플랫폼에 맞는 release의 pre-packaged binary를 받습니다([네이티브 PHP](#native-php)).
 - Python: `make binding-python-package`가 바인딩의 wheel을 빌드해 venv `var/bindings/venv`에 설치합니다. 사용자는 release의 자기 platform wheel asset을 pip로 설치합니다([릴리스 asset](#release-assets)). legacy 패키지 `legacy/packages/python/`은 삭제될 때까지 checkout에 남습니다.
 

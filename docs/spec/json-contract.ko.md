@@ -1,5 +1,5 @@
 <!-- doc-id: json-contract -->
-<!-- source-sha256: 03d2052054d4e76b340e17a1daebad79f96a0811dcc68f71cf1f524cae83be68 -->
+<!-- source-sha256: 8b4e4faf4ddcdc07586a082fb9106e42435f5c17f0f5221e41881e428cc7f5e6 -->
 # JSON 계약
 
 [English](json-contract.md)
@@ -63,12 +63,12 @@ JSON 배열은 입력 순서대로 값을 저장합니다. 빈 배열과 빈 객
 - `invalid_number_literal` — 다른 JSON 값이거나 공백을 가진 literal을 받은 숫자 생성자. 파싱되지 않는 literal은 그 거부 종류를 알립니다.
 - `depth_limit_out_of_range` — 0보다 작거나 256보다 큰 정수인 깊이 한도로, core가 거부합니다. 정수가 아닌 값은 바인딩의 인자 변환이 거부합니다(`change-depth-limit`).
 - `invalid_argument_type` — 함수가 받지 않는 타입의 인자. 라이브러리가 만들지 않은 값(Go의 nil 또는 영값 `Value`)을 포함합니다. compiler가 타입을 검사하는 Rust에서는 생길 수 없습니다. PHP에서는 선언된 매개변수 타입이 라이브러리 실행 전에 host 타입을 거부하므로, 배열 원소처럼 signature가 타입을 선언할 수 없는 곳에서만 생깁니다.
-- `invalid_code_unit` — 65535보다 큰 부호 없는 정수인 UTF-16 코드 단위로, core가 거부합니다([RQ-029](#requirements)); 부호 없는 정수가 아닌 값은 바인딩의 인자 변환이 거부합니다(`change-code-units`). [이행 기간](#transition)의 언어 패키지에서는 코드 단위가 `uint16`인 Go와 코드 단위를 문자열로만 받는 JavaScript에서 생길 수 없습니다.
+- `invalid_code_unit` — 65535보다 큰 부호 없는 정수인 UTF-16 코드 단위로, core가 거부합니다([RQ-029](#requirements)); 부호 없는 정수가 아닌 값은 바인딩의 인자 변환이 거부합니다(`change-code-units`). [이행 기간](#transition)의 언어 패키지에서는 코드 단위를 문자열로만 받는 JavaScript에서 생길 수 없습니다.
 - `host_serialization_refused` — 값을 다시 쓰게 될 언어의 표준 JSON 인터페이스([RQ-020](#requirements), [RQ-034](#requirements)). 코어와 그 바인딩에서 생기며, 계약 바이트를 쓰는 Rust serde와 `MarshalJSON`이 그 바이트를 쓰는 [이행 기간](#transition)의 Go 패키지에서는 생길 수 없습니다.
 - `direct_construction` — 라이브러리 밖에서 호출한 라이브러리 생성자: JavaScript와 Python의 `Value` 생성자, 이 목록 밖의 메시지나 종류를 받은 오류 생성자. 값과 오류의 필드를 비공개로 두는 Rust와 Go에서는 생길 수 없습니다.
-- `unpaired_surrogate` — 이스케이프한 짝 없는 surrogate가 든 문자열의 유니코드 텍스트. 어떤 유니코드 텍스트도 그것을 담지 못합니다([RQ-027](#requirements)). 코어와 그 바인딩에서 생기며, [이행 기간](#transition)의 언어 패키지(JavaScript, Go, PHP, Python)에서는 생길 수 없습니다.
-- `non_finite_number` — NaN, 양의 무한대, 음의 무한대인 실수로 만든 숫자. 어떤 JSON 숫자 토큰도 그것을 쓰지 못합니다([RQ-030](#requirements)). 코어와 그 바인딩에서 생기며, 실수로 숫자를 만들지 않는 [이행 기간](#transition)의 언어 패키지(JavaScript, Go, PHP, Python)에서는 생길 수 없습니다.
-- `internal` — 코어의 불변식 위반. 결함이며 거부된 입력이 아닙니다([RQ-033](#requirements)). [이행 기간](#transition)의 언어 패키지(JavaScript, Go, PHP, Python)에서는 생길 수 없습니다.
+- `unpaired_surrogate` — 이스케이프한 짝 없는 surrogate가 든 문자열의 유니코드 텍스트. 어떤 유니코드 텍스트도 그것을 담지 못합니다([RQ-027](#requirements)). 코어와 그 바인딩에서 생기며, [이행 기간](#transition)의 언어 패키지(JavaScript, PHP, Python)에서는 생길 수 없습니다.
+- `non_finite_number` — NaN, 양의 무한대, 음의 무한대인 실수로 만든 숫자. 어떤 JSON 숫자 토큰도 그것을 쓰지 못합니다([RQ-030](#requirements)). 코어와 그 바인딩에서 생기며, 실수로 숫자를 만들지 않는 [이행 기간](#transition)의 언어 패키지(JavaScript, PHP, Python)에서는 생길 수 없습니다.
+- `internal` — 코어의 불변식 위반. 결함이며 거부된 입력이 아닙니다([RQ-033](#requirements)). [이행 기간](#transition)의 언어 패키지(JavaScript, PHP, Python)에서는 생길 수 없습니다.
 
 <a id="numbers"></a>
 ## 숫자
@@ -78,7 +78,7 @@ JSON 배열은 입력 순서대로 값을 저장합니다. 빈 배열과 빈 객
 <a id="strings"></a>
 ## 문자열
 
-문자열은 해석된 UTF-16 코드 단위와 파싱된 토큰 문자열을 유지합니다. 이스케이프된 단독 surrogate는 코드 단위 API로 조회할 수 있습니다. 단독 surrogate가 든 문자열의 유니코드 텍스트는 `unpaired_surrogate`로 거부합니다([RQ-027](#requirements)). [이행 기간](#transition)의 언어 패키지에서는 Go와 PHP가 거부하고, Rust는 그 WTF-8 바이트를 돌려주었으며, JavaScript와 Python은 해당 문자열을 반환합니다.
+문자열은 해석된 UTF-16 코드 단위와 파싱된 토큰 문자열을 유지합니다. 이스케이프된 단독 surrogate는 코드 단위 API로 조회할 수 있습니다. 단독 surrogate가 든 문자열의 유니코드 텍스트는 `unpaired_surrogate`로 거부합니다([RQ-027](#requirements)). [이행 기간](#transition)의 언어 패키지에서는 PHP가 거부하고, Rust는 그 WTF-8 바이트를 돌려주었으며, JavaScript와 Python은 해당 문자열을 반환합니다.
 
 PHP는 일반 객체 키를 UTF-8 배열 키로 저장합니다. 키에 포함된 이스케이프된 단독 surrogate는 내부에서 WTF-8을 사용하며 직렬화할 때 이스케이프합니다. 숫자 PHP 배열 키는 JSON 문자열 키로 출력합니다.
 
@@ -186,4 +186,4 @@ Workflow는 T3.24-1의 source 계약을 구현한다. ASSET-3에 명시한 nativ
 <a id="transition"></a>
 ### 이행 기간
 
-이전의 언어 패키지는 `legacy/packages/js`, `legacy/packages/go`, `legacy/packages/python`에 있고, 생성된 바인딩이 `packages/`를 차지합니다. 이전의 PHP 패키지 `legacy/packages/php`와 `legacy/packages/php-ext`는 T3.25-3이 없앴으므로 json의 PHP는 `packages/php-ext`의 바인딩 확장뿐입니다. legacy 패키지는 API와 자기 구현을 유지하고, 배포 대상이 아니며, 시험·lint·공통 사례를 새 경로에서 실행합니다. 그 이름 `@polyspec/ordered-json`, `polyspec/ordered-json`, `polyspec/ordered-json-php-ext`, `polyspec-ordered-json`과 Go 모듈 `github.com/polyspec/ordered-json/packages/go`는 마지막 release 0.0.25에 머뭅니다. 0.0.27부터 코어의 release는 `packages/rust`의 crate `polyspec-json`을 git tag로, `packages/`의 바인딩 패키지를 N-3의 이름으로 binding의 release recipe(`packages/release.mk`, binding GN-19h)가 빌드하는 플랫폼별 asset으로, `packages/php-ext`의 PHP 확장을 0.0.29부터 `config/release.json`의 Composer package `polyspec/json`으로도 게시하여 release가 그 zip `polyspec-json-php-ext-X.Y.Z.zip`과 Composer 저장소 `packages.json`을 담고(PIE는 Composer 저장소에서만 package를 찾은 뒤 그 플랫폼의 빌드를 release에서 내려받기 때문입니다), `packages/go`의 Go 모듈을 `binding release-go-module`이 만드는 tag(GN-19f)로 게시합니다. root의 `package.json`과 `composer.json`은 개발 checkout의 manifest입니다. 둘 다 private이고, root `composer.json`은 PHP 시험을 위해 PHPUnit을 설치하며, `config/release.json`은 둘 다 release하지 않으며, 어떤 release도 이것들을 통해 legacy 패키지를 게시하지 않습니다. 각 패키지는 그 언어의 생성된 바인딩이 공통 suite를 실패 0, 건너뜀 0으로 통과하고, legacy 패키지의 패키지 시험이 인터페이스 계약의 `changes` 밖의 수정 없이 바인딩으로 통과하고, 두 구현의 차등 시험에 판정하지 않은 차이가 없을 때 그 패키지만의 변경으로 없앱니다(V-6 (5)). 그때까지 이 레포는 언어마다 구현 둘을 가지며, 이는 그 제거로 끝나는 PRINCIPLES S6의 예외입니다. 이 패키지들만 따르는 규칙은 해당하는 곳에 적고, 그 API와 인터페이스 계약의 모든 차이는 `packages/rust/interface.json`의 `changes` 항목과 그 규칙입니다.
+아직 남은 이전의 언어 패키지는 `legacy/packages/js`와 `legacy/packages/python`이고, 생성된 바인딩이 `packages/`를 차지합니다. 이전의 PHP 패키지 `legacy/packages/php`와 `legacy/packages/php-ext`는 T3.25-3이 없앴으므로 json의 PHP는 `packages/php-ext`의 바인딩 확장뿐이며, 이전의 Go 패키지 `legacy/packages/go`는 `make test-differential-go`가 그것과 바인딩 사이에 차이를 찾지 못한 뒤(CI run 44018490146의 job bindings: `test_parsing`의 파일 318개와 공식 예제 17개) T3.25-6이 없앴으므로 json의 Go는 `packages/go`의 바인딩 모듈 `github.com/polyspec/json/packages/go`뿐입니다. legacy 패키지는 API와 자기 구현을 유지하고, 배포 대상이 아니며, 시험·lint·공통 사례를 새 경로에서 실행합니다. 그 이름 `@polyspec/ordered-json`, `polyspec/ordered-json`, `polyspec/ordered-json-php-ext`, `polyspec-ordered-json`과 Go 모듈 `github.com/polyspec/ordered-json/packages/go`는 마지막 release 0.0.25에 머뭅니다. 0.0.27부터 코어의 release는 `packages/rust`의 crate `polyspec-json`을 git tag로, `packages/`의 바인딩 패키지를 N-3의 이름으로 binding의 release recipe(`packages/release.mk`, binding GN-19h)가 빌드하는 플랫폼별 asset으로, `packages/php-ext`의 PHP 확장을 0.0.29부터 `config/release.json`의 Composer package `polyspec/json`으로도 게시하여 release가 그 zip `polyspec-json-php-ext-X.Y.Z.zip`과 Composer 저장소 `packages.json`을 담고(PIE는 Composer 저장소에서만 package를 찾은 뒤 그 플랫폼의 빌드를 release에서 내려받기 때문입니다), `packages/go`의 Go 모듈을 `binding release-go-module`이 만드는 tag(GN-19f)로 게시합니다. root의 `package.json`과 `composer.json`은 개발 checkout의 manifest입니다. 둘 다 private이고, root `composer.json`은 PHP 시험을 위해 PHPUnit을 설치하며, `config/release.json`은 둘 다 release하지 않으며, 어떤 release도 이것들을 통해 legacy 패키지를 게시하지 않습니다. 각 패키지는 그 언어의 생성된 바인딩이 공통 suite를 실패 0, 건너뜀 0으로 통과하고, legacy 패키지의 패키지 시험이 인터페이스 계약의 `changes` 밖의 수정 없이 바인딩으로 통과하고, 두 구현의 차등 시험에 판정하지 않은 차이가 없을 때 그 패키지만의 변경으로 없앱니다(V-6 (5)). 그때까지 이 레포는 언어마다 구현 둘을 가지며, 이는 그 제거로 끝나는 PRINCIPLES S6의 예외입니다. 이 패키지들만 따르는 규칙은 해당하는 곳에 적고, 그 API와 인터페이스 계약의 모든 차이는 `packages/rust/interface.json`의 `changes` 항목과 그 규칙입니다.

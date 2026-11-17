@@ -1,16 +1,20 @@
-package orderedjson
+package tests
 
 import (
 	"os"
 	"reflect"
 	"testing"
+
+	json "github.com/polyspec/json/packages/go"
 )
 
 // The official examples of examples/official.json: each case is the subtest TestOfficial/<id>.
 // A case parses its input and compares the source text, the compact serialization and
 // the value tree with the expected results, then the tree of the reparsed serialization and of the value rebuilt
 // through the factories (docs/spec/json-contract.md#acceptance). The examples are read with the library: their trees hold
-// lone surrogates, which encoding/json replaces, and every string of a tree is compared as its UTF-16 code units.
+// lone surrogates, which encoding/json replaces, and every string of a tree is compared as its UTF-16 code units. The test
+// of the legacy package with no change beyond the changes of packages/rust/interface.json, each named where it applies
+// (T3.25).
 
 // Requirements: RQ-022
 func TestOfficial(t *testing.T) {
@@ -18,43 +22,44 @@ func TestOfficial(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	official, err := ParseBytes(source)
+	// change-parse-source: the one Parse takes the bytes.
+	official, err := json.Parse(source, json.ParseOptions{})
 	if err != nil {
 		t.Fatal(err)
 	}
-	cases, err := official.Get("cases").Items()
+	cases, err := member(t, official, "cases").Items()
 	if err != nil {
 		t.Fatal(err)
 	}
 	for _, example := range cases {
-		id, err := example.Get("id").StringValue()
+		id, err := member(t, example, "id").StringValue()
 		if err != nil {
 			t.Fatal(err)
 		}
 		t.Run(id, func(t *testing.T) {
-			input := mustString(t, example.Get("source"))
-			compact := mustString(t, example.Get("compact"))
-			expected := expectedTree(t, example.Get("tree"))
-			value, err := Parse(input)
+			input := mustString(t, member(t, example, "source"))
+			written := mustString(t, member(t, example, "compact"))
+			expected := expectedTree(t, member(t, example, "tree"))
+			value, err := parse(input)
 			if err != nil {
 				t.Fatal(err)
 			}
-			if value.Raw() != input {
-				t.Fatalf("Raw() = %q, want %q", value.Raw(), input)
+			if raw := must(value.Raw()); raw != input {
+				t.Fatalf("Raw() = %q, want %q", raw, input)
 			}
-			serialized, err := Stringify(value)
+			serialized, err := compact(value)
 			if err != nil {
 				t.Fatal(err)
 			}
-			if serialized != compact {
-				t.Fatalf("Stringify() = %q, want %q", serialized, compact)
+			if serialized != written {
+				t.Fatalf("Stringify() = %q, want %q", serialized, written)
 			}
-			rebuilt, err := Stringify(rebuild(t, value))
+			rebuilt, err := compact(rebuild(t, value))
 			if err != nil {
 				t.Fatal(err)
 			}
 			for name, text := range map[string]string{"input": input, "serialization": serialized, "rebuilt value": rebuilt} {
-				parsed, err := Parse(text)
+				parsed, err := parse(text)
 				if err != nil {
 					t.Fatalf("%s: %v", name, err)
 				}
@@ -66,7 +71,36 @@ func TestOfficial(t *testing.T) {
 	}
 }
 
-func mustString(t *testing.T, value *Value) string {
+// member is the member name of an object, which the test expects (change-accessors: a lookup has an error result).
+func member(t *testing.T, value *json.Value, name string) *json.Value {
+	t.Helper()
+	child, err := value.Get(name)
+	if err != nil || child == nil {
+		t.Fatalf("Get(%q) = %v, %v", name, child, err)
+	}
+	return child
+}
+
+// entries holds the members of an object in their order, each as its key and its value (change-ordered-map: the keys of an
+// OrderedMap are values, which Entries gives with their values).
+func entries(t *testing.T, value *json.Value) [][2]*json.Value {
+	t.Helper()
+	members, err := value.Members()
+	if err != nil {
+		t.Fatal(err)
+	}
+	sequence, err := members.Entries()
+	if err != nil {
+		t.Fatal(err)
+	}
+	pairs := [][2]*json.Value{}
+	for key, child := range sequence {
+		pairs = append(pairs, [2]*json.Value{key, child})
+	}
+	return pairs
+}
+
+func mustString(t *testing.T, value *json.Value) string {
 	t.Helper()
 	text, err := value.StringValue()
 	if err != nil {
@@ -75,7 +109,7 @@ func mustString(t *testing.T, value *Value) string {
 	return text
 }
 
-func mustUnits(t *testing.T, value *Value) []uint16 {
+func mustUnits(t *testing.T, value *json.Value) []uint64 {
 	t.Helper()
 	units, err := value.StringUnits()
 	if err != nil {
@@ -84,7 +118,7 @@ func mustUnits(t *testing.T, value *Value) []uint16 {
 	return units
 }
 
-func mustItems(t *testing.T, value *Value) []*Value {
+func mustItems(t *testing.T, value *json.Value) []*json.Value {
 	t.Helper()
 	items, err := value.Items()
 	if err != nil {
@@ -94,35 +128,31 @@ func mustItems(t *testing.T, value *Value) []*Value {
 }
 
 // tree is the tree of a value, each string as its UTF-16 code units.
-func tree(t *testing.T, value *Value) []any {
+func tree(t *testing.T, value *json.Value) []any {
 	t.Helper()
-	switch value.Kind() {
-	case ObjectKind:
-		members, err := value.Members()
-		if err != nil {
-			t.Fatal(err)
-		}
+	// change-kind-enum: the kinds are the constants Kind<Name> of the enum Kind.
+	switch must(value.Kind()) {
+	case json.KindObject:
 		pairs := []any{}
-		for _, key := range members.Keys() {
-			units := mustUnits(t, key)
-			pairs = append(pairs, []any{units, tree(t, members.GetUnits(units))})
+		for _, entry := range entries(t, value) {
+			pairs = append(pairs, []any{mustUnits(t, entry[0]), tree(t, entry[1])})
 		}
 		return []any{"object", pairs}
-	case ArrayKind:
+	case json.KindArray:
 		items := []any{}
 		for _, item := range mustItems(t, value) {
 			items = append(items, tree(t, item))
 		}
 		return []any{"array", items}
-	case StringKind:
+	case json.KindString:
 		return []any{"string", mustUnits(t, value)}
-	case NumberKind:
+	case json.KindNumber:
 		literal, err := value.NumberLiteral()
 		if err != nil {
 			t.Fatal(err)
 		}
 		return []any{"number", literal}
-	case BooleanKind:
+	case json.KindBoolean:
 		boolean, err := value.BooleanValue()
 		if err != nil {
 			t.Fatal(err)
@@ -134,7 +164,7 @@ func tree(t *testing.T, value *Value) []any {
 }
 
 // expectedTree is the expected tree of official.json in the form of tree.
-func expectedTree(t *testing.T, value *Value) []any {
+func expectedTree(t *testing.T, value *json.Value) []any {
 	t.Helper()
 	parts := mustItems(t, value)
 	switch kind := mustString(t, parts[0]); kind {
@@ -167,37 +197,34 @@ func expectedTree(t *testing.T, value *Value) []any {
 }
 
 // rebuild inserts the keys in their first order, then sets the values in reverse order.
-func rebuild(t *testing.T, value *Value) *Value {
+func rebuild(t *testing.T, value *json.Value) *json.Value {
 	t.Helper()
-	switch value.Kind() {
-	case ObjectKind:
-		members, err := value.Members()
-		if err != nil {
-			t.Fatal(err)
-		}
-		keys := members.Keys()
-		out := &OrderedMap{}
-		for _, key := range keys {
-			if err := out.Set(key, Null()); err != nil {
+	switch must(value.Kind()) {
+	case json.KindObject:
+		pairs := entries(t, value)
+		// change-ordered-map: an object takes an OrderedMap whose keys are values.
+		out := must(json.NewOrderedMap())
+		for _, entry := range pairs {
+			if _, err := out.Insert(entry[0], must(json.ValueNull())); err != nil {
 				t.Fatal(err)
 			}
 		}
-		for index := len(keys) - 1; index >= 0; index-- {
-			if err := out.Set(keys[index], rebuild(t, members.GetUnits(mustUnits(t, keys[index])))); err != nil {
+		for index := len(pairs) - 1; index >= 0; index-- {
+			if _, err := out.Insert(pairs[index][0], rebuild(t, pairs[index][1])); err != nil {
 				t.Fatal(err)
 			}
 		}
-		object, err := Object(out)
+		object, err := json.ValueObject(out)
 		if err != nil {
 			t.Fatal(err)
 		}
 		return object
-	case ArrayKind:
-		items := []*Value{}
+	case json.KindArray:
+		items := []*json.Value{}
 		for _, item := range mustItems(t, value) {
 			items = append(items, rebuild(t, item))
 		}
-		array, err := Array(items)
+		array, err := json.ValueArray(items)
 		if err != nil {
 			t.Fatal(err)
 		}

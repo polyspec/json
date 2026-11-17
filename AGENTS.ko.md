@@ -1,5 +1,5 @@
 <!-- doc-id: development -->
-<!-- source-sha256: 1465073f3ccb2a8da4fc09830ac7ecd085acfaa937b7ff0695aa65e7dbd4dec0 -->
+<!-- source-sha256: 972b0ee03a955d503a9fa64dc435e6beb91f260c15aaf8de96bdc80098f5277a -->
 # Development procedure
 
 [English](AGENTS.md)
@@ -171,7 +171,7 @@
 <a id="package-go"></a>
 ## 패키지 go (packages/go)
 
-- Own: 바인딩 module(`packages/go/tests`의 probe와 benchmark 프로그램 포함)과 legacy module `legacy/packages/go`는 `make lint-go`(`.golangci.yml`을 쓰는 golangci-lint와 deadcode)가 lint합니다.
+- Own: module은 `packages/go`의 바인딩 module `github.com/polyspec/json/packages/go`입니다(T3.25-6). `packages/go/tests`의 패키지 테스트, probe, benchmark 프로그램과 함께 `make lint-go`(`.golangci.yml`을 쓰는 golangci-lint와 deadcode)가 lint합니다.
   Enforced by: `make lint-go`
 - Own: module은 `make json-go-check`로 이 패키지만 검사하며, 이 target은 `make verify-go`를 실행합니다.
   Enforced by: none, 검토에서 판단합니다: workflow, Git hook, Claude Code hook 어디도 이 target을 실행하지 않습니다.
@@ -179,7 +179,7 @@
   Enforced by: none, 검토에서 판단합니다: kit 0.0.77이 toolchain check를 제거했고(K854), mise.toml과 mise.lock의 고정은 install-tools가 읽습니다.
 - Own: 공유 verifier는 `make binding-go-library` 다음에 probe `packages/go/tests/probe`를 빌드하고, `make benchmark`의 go 행은 `make binding-go-release-library`의 release library로 `packages/go/tests/benchmark`를 실행합니다.
   Enforced by: `make json-test-scripts`
-- Own: legacy 패키지 `legacy/packages/go`가 삭제될 때까지 패키지 테스트는 `make test-go`가 실행하는 그 코드 옆의 Go 테스트입니다.
+- Own: 패키지 테스트는 `packages/go/tests`의 Go 테스트이며, `make test-go`가 `make binding-go-library`의 static library와 그 feature의 build tag로 바인딩 module에 대해 실행합니다.
   Enforced by: `make test-go`
 - Own: module의 변경은 [CHANGELOG.ko.md](CHANGELOG.ko.md)의 이 패키지 절에 적습니다.
   Enforced by: `make docs-check`

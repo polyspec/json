@@ -28,8 +28,6 @@
   "notReleased": {
     "Cargo.toml": "the root Cargo workspace; the crate is released by packages/rust/Cargo.toml",
     "composer.json": "the development manifest of the checkout, which installs PHPUnit for the PHP tests; the PHP package of json is the binding extension of packages/php-ext (T3.25-3)",
-    "legacy/packages/go/differential/go.mod": "the module of the differential test of the legacy Go package and the binding (make test-differential-go), which is removed with the legacy package (docs/spec/json-contract.md#transition)",
-    "legacy/packages/go/go.mod": "the legacy language package of the transition, which is no release target until it is removed (docs/spec/json-contract.md#transition)",
     "legacy/packages/js/package.json": "the legacy language package of the transition, which is no release target until it is removed (docs/spec/json-contract.md#transition)",
     "legacy/packages/python/pyproject.toml": "the legacy language package of the transition, which is no release target until it is removed (docs/spec/json-contract.md#transition)",
     "package.json": "the private manifest of the development checkout, which names the legacy JavaScript package; the legacy packages keep their last release (docs/spec/json-contract.md#transition)",

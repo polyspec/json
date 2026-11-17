@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: b89e1bcba92640c38600eba426f34bad556b00e6d233b29766bd87ecdf89a90c -->
+<!-- source-sha256: 3b5f16d4e5bea18f0adc1ea3230d4a47ed142165ccbe5e47a88d22d9d6207364 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,7 +7,9 @@
 <a id="unreleased"></a>
 ## Unreleased
 
-- `config/implementations.json`의 root go가 바인딩 모듈 `packages/go`입니다(T3.25): 공유 verifier의 probe와 benchmark 프로그램이 `legacy/packages/go/internal`에서 `packages/go/tests/probe`와 `packages/go/tests/benchmark`로 옮겨져 `github.com/polyspec/json/packages/go`를 import하며, `packages/rust/interface.json`의 change가 적용되는 곳만 바뀌었습니다. `make verify-go`는 `make binding-go-library`를 실행하고 `CGO_LDFLAGS`와 `GOWORK=off`로 probe를 빌드합니다. `make binding-go-library`의 library는 debug 빌드이고 이것은 T3.53과 T3.59의 결함이므로, `make benchmark`의 go 행은 새 `make binding-go-release-library`의 release static library를 링크합니다. [API 계약](docs/operations/api.ko.md)의 Go 열은 바인딩의 API입니다. legacy 패키지의 패키지 테스트는 패키지가 삭제될 때까지 `legacy/packages/go`에 남고 `make test-go`가 그것을 실행합니다: `make lint-go`는 그 테스트가 없는 legacy module을 거부하고(`deadcode: no main packages`), `make duplication-check`는 바인딩의 테스트 옆에 있는 그 사본을 거부합니다. `benchmarks/results.json`은 baseline을 다시 측정할 때까지 legacy 패키지의 go 행을 유지합니다.
+- `config/implementations.json`의 root go가 바인딩 모듈 `packages/go`입니다(T3.25): 공유 verifier의 probe와 benchmark 프로그램이 `legacy/packages/go/internal`에서 `packages/go/tests/probe`와 `packages/go/tests/benchmark`로 옮겨져 `github.com/polyspec/json/packages/go`를 import하며, `packages/rust/interface.json`의 change가 적용되는 곳만 바뀌었습니다. `make verify-go`는 `make binding-go-library`를 실행하고 `CGO_LDFLAGS`와 `GOWORK=off`로 probe를 빌드합니다. `make binding-go-library`의 library는 debug 빌드이고 이것은 T3.53과 T3.59의 결함이므로, `make benchmark`의 go 행은 새 `make binding-go-release-library`의 release static library를 링크합니다. [API 계약](docs/operations/api.ko.md)의 Go 열은 바인딩의 API입니다. `benchmarks/results.json`은 baseline을 다시 측정할 때까지 legacy 패키지의 go 행을 유지합니다.
+
+- json의 Go 패키지는 `packages/go`의 바인딩 모듈 `github.com/polyspec/json/packages/go`입니다(T3.25-6, V-6 (5)): legacy 패키지 `legacy/packages/go`(`orderedjson`, 모듈 `github.com/polyspec/ordered-json/packages/go`)는 `make test-differential-go`가 차이를 찾지 못한 뒤(CI run 44018490146의 job bindings: `test_parsing`의 파일 318개와 공식 예제 17개) 그 target, differential 테스트의 module, `docs/rebuild/json-go.md`와 함께 삭제되었습니다. 그 패키지 테스트는 `packages/go/tests`로 옮겨져 바인딩을 import하며, `packages/rust/interface.json`의 change가 적용되는 곳만 바뀌었습니다. `make test-go`, `make build-go`, `make deps-go`는 runtime job go에서 바인딩 모듈을 실행하고, `make test-go`는 `make binding-go-library`의 static library와 그 feature의 build tag를 씁니다. checkout에서 `github.com/polyspec/ordered-json/packages/go`를 import하는 프로그램은 이 변경으로 그 폴더를 잃습니다. 그 모듈은 마지막 release 0.0.25에 머뭅니다.
 
 ## 0.0.36
 

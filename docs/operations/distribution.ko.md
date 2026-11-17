@@ -1,5 +1,5 @@
 <!-- doc-id: distribution -->
-<!-- source-sha256: 299200a6b54d7c6dad7ba1bcb132228a8f8c8f068884bb0a93daac1791345067 -->
+<!-- source-sha256: 63e13d13b9aef00af48c5d8282832c652af0a62c6e16fb6e015101dd2f293cd9 -->
 # 배포
 
 [English](distribution.md)
@@ -7,9 +7,9 @@
 <a id="state"></a>
 ## 확인된 상태
 
-저장소는 다섯 [구현 패키지](repositories.ko.md#ownership)를 하나의 리비전에 담습니다. GitHub 릴리스와 버전 태그는 `gh release list -R polyspec/json`과 저장소의 Releases 페이지에 나열되며, 추적 파일은 이를 다시 적지 않습니다. `vX.Y.Z` 릴리스는 [릴리스 asset](installation.ko.md#release-assets)에 나열된 asset을 첨부하고, Go 모듈 릴리스 `legacy/packages/go/vX.Y.Z`는 asset을 첨부하지 않습니다. `published`로 표시한 기능 행은 릴리스 tag와 asset 이름을 적으며([기능](../features.ko.md)), 그 형식은 `make evidence-check`가 오프라인으로 검사합니다.
+저장소는 다섯 [구현 패키지](repositories.ko.md#ownership)를 하나의 리비전에 담습니다. GitHub 릴리스와 버전 태그는 `gh release list -R polyspec/json`과 저장소의 Releases 페이지에 나열되며, 추적 파일은 이를 다시 적지 않습니다. `vX.Y.Z` 릴리스는 [릴리스 asset](installation.ko.md#release-assets)에 나열된 asset을 첨부하고, Go 모듈 릴리스 `packages/go/vX.Y.Z`는 asset을 첨부하지 않습니다. `published`로 표시한 기능 행은 릴리스 tag와 asset 이름을 적으며([기능](../features.ko.md)), 그 형식은 `make evidence-check`가 오프라인으로 검사합니다.
 
-0.0.27부터 release는 `packages/rust/`의 crate `polyspec-json`을 git tag로, `packages/`의 바인딩 패키지를 `.github/workflows/assets.yml`이 `packages/release.mk`의 recipe로 빌드하는 플랫폼별 release asset으로, `packages/go`의 Go 모듈을 `make release-go-module`의 tag로 게시합니다([이행 기간](../spec/json-contract.ko.md#transition)). legacy 패키지는 마지막 release 0.0.25에 머뭅니다. 0.0.25까지 이 저장소는 세 채널로 배포했습니다. `vX.Y.Z` release의 GitHub release asset(npm tarball, PHP 라이브러리와 PHP 확장의 Composer zip, Python wheel), `packages/rust/`의 Rust 크레이트 `polyspec-ordered-json`을 git tag로, Go 모듈 `github.com/polyspec/ordered-json/packages/go`를 tag `legacy/packages/go/vX.Y.Z`로 배포합니다. 어떤 release도 레지스트리에 게시하지 않습니다. npm, crates.io, Packagist, PyPI는 release를 받지 않으며, 어떤 workflow도 레지스트리에 게시하지 않습니다. 로컬 배포는 소스 체크아웃입니다. PIE 메타데이터와 성공한 PIE 빌드는 로컬 빌드 호환성을 확인하며 Packagist 게시 근거는 아닙니다. 확장 패키지는 `polyspec/ordered-json-php-ext`, PHP 라이브러리는 `polyspec/ordered-json`입니다.
+0.0.27부터 release는 `packages/rust/`의 crate `polyspec-json`을 git tag로, `packages/`의 바인딩 패키지를 `.github/workflows/assets.yml`이 `packages/release.mk`의 recipe로 빌드하는 플랫폼별 release asset으로, `packages/go`의 Go 모듈을 `make release-go-module`의 tag로 게시합니다([이행 기간](../spec/json-contract.ko.md#transition)). legacy 패키지는 마지막 release 0.0.25에 머뭅니다. 0.0.25까지 이 저장소는 세 채널로 배포했습니다. `vX.Y.Z` release의 GitHub release asset(npm tarball, PHP 라이브러리와 PHP 확장의 Composer zip, Python wheel), `packages/rust/`의 Rust 크레이트 `polyspec-ordered-json`을 git tag로, Go 모듈 `github.com/polyspec/ordered-json/packages/go`를 tag `packages/go/vX.Y.Z`로 배포합니다. 어떤 release도 레지스트리에 게시하지 않습니다. npm, crates.io, Packagist, PyPI는 release를 받지 않으며, 어떤 workflow도 레지스트리에 게시하지 않습니다. 로컬 배포는 소스 체크아웃입니다. PIE 메타데이터와 성공한 PIE 빌드는 로컬 빌드 호환성을 확인하며 Packagist 게시 근거는 아닙니다. 확장 패키지는 `polyspec/ordered-json-php-ext`, PHP 라이브러리는 `polyspec/ordered-json`입니다.
 
 소스 버전 문자열은 릴리스된 산출물의 근거가 아닙니다. 어떤 workflow도 레지스트리에 게시하지 않고, 호스팅 CI는 전체 suite와 push gate를 실행하며([호스팅 CI](validation.ko.md#ci)), `main`에서 성공한 `ci` 실행이 release workflow를 시작합니다([tag 릴리스](#tag-release)). LICENSE 파일은 없습니다.
 

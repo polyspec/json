@@ -62,7 +62,7 @@ unexport CARGO_TARGET_DIR
 # .github/workflows/ci-pipeline.yml run as the prerequisites of their kit-gates-* target (a target is in one job). verify-all
 # writes the aggregate record into var/records.
 CHECK_TARGETS := suppression-check link-check rules-check rebuild-check language-check duplication-check layout-check owner-validate release-coverage docs-check evidence-check verify-all lint-rust lint-go lint-php lint-python json-test-scripts typecheck lint-ts test-js fmt-check test-rust test-go test-php test-python \
-	lint-bindings check-declarations test-binding-crates test-binding-python test-binding-node test-binding-wasm test-binding-php test-binding-go test-differential-js test-differential-python test-differential-go
+	lint-bindings check-declarations test-binding-crates test-binding-python test-binding-node test-binding-wasm test-binding-php test-binding-go test-differential-js test-differential-python
 
 .PHONY: check fmt-check json-test-scripts typecheck json-install-php json-install-python verify-all verify-js verify-rust verify-go verify-php verify-python evidence-check \
 	benchmark benchmark-check benchmark-host python-parse-budget install json-install json-install-rust \
@@ -88,7 +88,7 @@ install: json-install
 deps-node:
 	$(MAKE) --no-print-directory install-packages
 deps-go:
-	$(GO) -C legacy/packages/go mod download
+	$(GO) -C packages/go mod download
 deps-rust: json-install-rust-packages
 deps-php: json-install-php
 deps-python: json-install-python
@@ -268,8 +268,10 @@ python-venv:
 # ---- Builds and tests of each runtime of packages/ -----------------------------------------------------------------------
 .PHONY: build-go build-js build-python build-rust test-go test-js test-php test-python test-rust
 # The build of each package of a runtime with the build of its ecosystem; the JavaScript package has none (kit K1106).
-build-go:
-	$(NODE) $(KIT)/runtime-targets.mjs build --roots legacy/packages/go -- $(GO) build ./...
+# build-go builds the binding module packages/go with its probe and its benchmark program (packages/go/tests), which link
+# the static library of binding-go-library (T3.25-6).
+build-go: binding-go-library
+	$(BINDING_GO_ENV) $(NODE) $(KIT)/runtime-targets.mjs build --roots packages/go -- $(GO) build ./...
 build-js:
 build-python:
 	$(NODE) $(KIT)/runtime-targets.mjs build --roots legacy/packages/python -- $(UV) build
@@ -278,8 +280,11 @@ build-rust:
 
 # The unit tests of a runtime; CASES=<pattern> is the name filter of its runner. The runner arguments are those that kit 0.0.98
 # passed (kit K1094, K1106): go -count=1 -timeout=0, one test at a time in node and cargo, and the 30 s test timeout of node.
-test-go:
-	$(NODE) $(KIT)/runtime-targets.mjs test --runner go --roots legacy/packages/go -- -count=1 -timeout=0
+# test-go runs the package tests of packages/go/tests against the binding module packages/go, with its generated tests: go test
+# links the static library of binding-go-library and takes the build tags of its features from BINDING_GO_ENV, without which
+# the generated guard of the tags fails (T3.25-6).
+test-go: binding-go-library
+	$(BINDING_GO_ENV) $(NODE) $(KIT)/runtime-targets.mjs test --runner go --roots packages/go -- -count=1 -timeout=0
 # The package tests of the Node binding (T3.25-1) on node --test: @polyspec/json resolves to packages/ts, whose generated entry
 # loads the addon that binding-node-addon puts beside it.
 test-js: binding-node-addon
@@ -418,13 +423,6 @@ test-differential-python: binding-python-package
 	$(UV) pip install -q --python legacy/packages/python/.venv/bin/python --offline --no-index --no-deps --reinstall $(BINDING_VAR)/wheels/*.whl
 	JSON_TEST_SUITE=$(abspath $(JSON_TEST_SUITE)) legacy/packages/python/.venv/bin/python -I legacy/packages/python/tests/differential.py
 
-# The differential test of the legacy Go package and the binding (docs/spec/json-contract.md#transition, V-6 (5)): the module
-# legacy/packages/go/differential requires both from the checkout and parses the files of the supplementary suite and the
-# official examples in each (T3.25-4).
-test-differential-go: binding-go-library
-	@[ -n "$(JSON_TEST_SUITE)" ] || { echo "test-differential-go needs the supplementary suite: make json-install-suite" >&2; exit 2; }
-	cd legacy/packages/go/differential && JSON_TEST_SUITE=$(abspath $(JSON_TEST_SUITE)) $(BINDING_GO_ENV) $(GO) test -count=1 -v ./...
-
 # The generated tests of the WASM binding through the subpath ./wasm of the installed package (binding P-5); --expose-gc
 # serves the generated tests that collect instances (binding GN-18a).
 test-binding-wasm: binding-node-package
@@ -534,8 +532,9 @@ lint-php:
 	$(NODE) $(KIT)/lint-php.mjs --memory-limit=-1
 lint-python:
 	$(NODE) $(KIT)/lint-python.mjs
-# lint-go lints every Go module of the checkout, a go.mod: legacy/packages/go and the binding module packages/go, whose Go
-# files make bindings writes (binding design L-1), so it runs after bindings and fails with it.
+# lint-go lints every Go module of the checkout, a go.mod: the binding module packages/go, whose Go files make bindings writes
+# (binding design L-1), so it runs after bindings and fails with it, with the package tests, the probe and the benchmark
+# program of packages/go/tests.
 lint-go: bindings
 	$(NODE) $(KIT)/lint-go.mjs
 # lint-rust lints the core crate: kit runs clippy --workspace, and the binding crates, which need make bindings first, are
@@ -577,7 +576,7 @@ kit-gates-runtime-go: lint-go test-go
 kit-gates-runtime-rust: lint-rust fmt-check test-rust
 # kit-gates-bindings runs in the job bindings, which installs the tools of every target of the contract; lint-php runs there
 # with the PHP tests, since the PHP package of json is the binding extension (T3.25-3).
-kit-gates-bindings: lint-bindings check-declarations test-binding-crates test-binding-python test-binding-node test-binding-wasm test-binding-php test-binding-go test-differential-js test-differential-python test-differential-go lint-php test-js test-python test-php
+kit-gates-bindings: lint-bindings check-declarations test-binding-crates test-binding-python test-binding-node test-binding-wasm test-binding-php test-binding-go test-differential-js test-differential-python lint-php test-js test-python test-php
 
 # kit-ci-plan writes the fan-out of the pipeline, the jobs and runners of config/ci.json, to GITHUB_OUTPUT.
 kit-ci-plan:

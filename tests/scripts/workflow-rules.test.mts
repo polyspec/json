@@ -463,3 +463,19 @@ test('T3.61: release-candidate-assets runs with no VERSION and passes one that i
   assert.equal(given.status, 0, given.stderr);
   assert.match(given.stdout, /release\.mjs candidate-assets "?0\.0\.1"?\s*$/m);
 });
+
+// T3.25-6: the Go package of json is the binding module of packages/go, so the runtime job go builds, lints and tests that
+// module: its recipes link the static library of binding-go-library, and go test takes the build tags of BINDING_GO_ENV.
+test('T3.25-6: the runtime job go runs the binding module and no legacy Go package is left', () => {
+  const text = database();
+  assert.deepEqual(prerequisites(text, 'kit-gates-runtime-go'), ['lint-go', 'test-go']);
+  for (const target of ['build-go', 'test-go']) {
+    assert.ok(prerequisites(text, target).includes('binding-go-library'), `${target} builds the static library first`);
+    const lines = recipe(text, target).join('\n');
+    assert.match(lines, /\$\(BINDING_GO_ENV\) .*--roots packages\/go /, `${target} runs the binding module with the environment of the binding`);
+  }
+  assert.match(recipe(text, 'deps-go').join('\n'), /-C packages\/go mod download/);
+  // Git tracks no file of the folder; an ignored folder of an earlier build is no part of the tree.
+  assert.equal(spawnSync('git', ['ls-files', '--', 'legacy/packages/go'], { cwd: ROOT, encoding: 'utf8' }).stdout, '', 'legacy/packages/go is removed');
+  assert.doesNotMatch(readFileSync(path.join(ROOT, 'Makefile'), 'utf8'), /legacy\/packages\/go|test-differential-go/);
+});

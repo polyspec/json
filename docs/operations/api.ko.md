@@ -1,12 +1,12 @@
 <!-- doc-id: api -->
-<!-- source-sha256: 8e230492d249369478bbca567484cf47ca3f52f2c04b97e551d6ddf559b6921b -->
+<!-- source-sha256: 548ea5457586d4f800900d315c031296d0b7dfad85298b56f8692b0142077a51 -->
 # API 계약
 
 [English](api.md)
 
 [JSON 계약](../spec/json-contract.ko.md)은 모든 구현의 공통 동작을 정의합니다. 이 문서는 현재 언어별 API를 정의합니다. 현재 식별자는 [설치 문서](installation.ko.md)에 작성합니다.
 
-프로젝트는 `json`이고 모든 패키지 이름은 polyspec 관례를 따릅니다. JavaScript는 바인딩 `@polyspec/json`을 사용하며, 이것은 기계마다의 platform 패키지를 가진 npm 패키지입니다. Rust는 Cargo 패키지 `polyspec-json`을 사용하고 `polyspec_json`을 import합니다. Go는 바인딩 모듈 `github.com/polyspec/json/packages/go`(패키지 `json`)를 사용하며, 이것은 Rust 코어의 static library를 링크합니다(T3.25). `legacy/packages/go`의 legacy 패키지 `orderedjson`(모듈 `github.com/polyspec/ordered-json/packages/go`)은 삭제될 때까지 그 패키지 테스트와 함께 checkout에 남습니다([전환](../spec/json-contract.ko.md#transition)). PHP는 PIE 패키지 `polyspec/json`의 바인딩 확장 `polyspec_json`을 사용하며 namespace는 `Polyspec\Json`입니다(T3.25-3). Python은 바인딩 `polyspec-json`을 사용하고 namespace `polyspec` 아래의 패키지 `polyspec.json`을 import합니다. JavaScript, Go, PHP, Python 열은 `packages/rust/interface.json`에서 생성된 바인딩입니다. 패키지 `@polyspec/ordered-json`, `polyspec/ordered-json`, `polyspec-ordered-json`은 그 legacy 형태이며 마지막 release를 유지합니다.
+프로젝트는 `json`이고 모든 패키지 이름은 polyspec 관례를 따릅니다. JavaScript는 바인딩 `@polyspec/json`을 사용하며, 이것은 기계마다의 platform 패키지를 가진 npm 패키지입니다. Rust는 Cargo 패키지 `polyspec-json`을 사용하고 `polyspec_json`을 import합니다. Go는 바인딩 모듈 `github.com/polyspec/json/packages/go`(패키지 `json`)를 사용하며, 이것은 Rust 코어의 static library를 링크합니다. legacy 패키지 `orderedjson`은 T3.25-6이 없앴습니다([전환](../spec/json-contract.ko.md#transition)). PHP는 PIE 패키지 `polyspec/json`의 바인딩 확장 `polyspec_json`을 사용하며 namespace는 `Polyspec\Json`입니다(T3.25-3). Python은 바인딩 `polyspec-json`을 사용하고 namespace `polyspec` 아래의 패키지 `polyspec.json`을 import합니다. JavaScript, Go, PHP, Python 열은 `packages/rust/interface.json`에서 생성된 바인딩입니다. 패키지 `@polyspec/ordered-json`, `polyspec/ordered-json`, `polyspec-ordered-json`과 Go 모듈 `github.com/polyspec/ordered-json/packages/go`는 그 legacy 형태이며 마지막 release를 유지합니다.
 
 <a id="values"></a>
 ## 값과 파싱

@@ -112,7 +112,7 @@
         "composer.lock",
         "legacy/packages/js/package.json",
         "packages/rust/Cargo.toml",
-        "legacy/packages/go/go.mod",
+        "packages/go/go.mod",
         "legacy/packages/python/pyproject.toml",
         "Cargo.toml",
         "Cargo.lock"
@@ -206,18 +206,11 @@
     },
     {
       "paths": [
-        "legacy/packages/go/**"
-      ],
-      "targets": [
-        "test-go"
-      ]
-    },
-    {
-      "paths": [
         "packages/go/tests/**"
       ],
       "targets": [
-        "verify-go"
+        "verify-go",
+        "test-go"
       ]
     },
     {
@@ -277,7 +270,7 @@
         ".php-version",
         "rust-toolchain.toml",
         "config/toolchain.json",
-        "legacy/packages/go/go.mod",
+        "packages/go/go.mod",
         "package.json"
       ],
       "targets": [
