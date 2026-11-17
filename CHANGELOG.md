@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- The installation and API documents describe the binding packages of JavaScript and Python (T3.57): `@polyspec/json` with its platform packages and `polyspec-json` (`polyspec.json`), in place of the legacy `@polyspec/ordered-json` and `polyspec_ordered_json`, which no release after v0.0.25 carries. The installs from the assets of a release are those measured on v0.0.35 on macOS arm64: npm 12 needs `allow-remote=root` in `.npmrc` and the consumer names the platform packages as optionalDependencies; pip takes the wheel URL of the platform; PIE reads `packages.json` of the release. The Linux assets, npm 11 and `pie install` itself were not run and are stated so.
+
 - A release checks its PIE package (T3.25-5): after `release-undraft`, `make ci-release` runs `make release-pie-check`, which downloads `polyspec/json` of the tag with the PIE of `mise.toml` (`pie download`, which writes nothing into the PHP of the machine), checks the version of that extension and runs the probe of the shared verifier with it (`scripts/verify.mts --only php --php-extension <file>`). It checks the one PHP minor and platform of the release job, PHP 8.4 on Linux x86_64, after the release is public. Against v0.0.35 on macOS arm64 with PHP 8.4 it passes.
 
 ## 0.0.35

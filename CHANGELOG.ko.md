@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 44d970486552a1d500e8b82dc733dac3fa1f7819b911956922cdc7fe48e86a73 -->
+<!-- source-sha256: c18ae3e8ef5fc7a554afc98993670cef682efca6eda50fd09560f2d04139bcb4 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- 설치와 API 문서가 JavaScript와 Python의 바인딩 패키지를 적는다(T3.57): v0.0.25 뒤의 release가 싣지 않는 legacy `@polyspec/ordered-json`과 `polyspec_ordered_json` 대신 `@polyspec/json`과 그 platform 패키지, `polyspec-json`(`polyspec.json`)이다. release의 asset으로 하는 설치는 macOS arm64에서 v0.0.35로 실측한 것이다: npm 12는 `.npmrc`의 `allow-remote=root`가 필요하고 소비자가 platform 패키지를 optionalDependencies에 적는다; pip은 platform의 wheel URL을 받는다; PIE는 release의 `packages.json`을 읽는다. Linux asset, npm 11, `pie install` 자체는 돌리지 않았고 그렇게 적었다.
 
 - release가 자기 PIE 패키지를 검사한다(T3.25-5): `release-undraft` 뒤에 `make ci-release`가 `make release-pie-check`를 실행하고, 이것은 `mise.toml`의 PIE로 그 tag의 `polyspec/json`을 내려받아(`pie download`, 기계의 PHP에 아무것도 쓰지 않는다) 그 확장의 version을 확인하고 그 확장으로 공유 verifier의 probe를 돈다(`scripts/verify.mts --only php --php-extension <file>`). release job의 PHP minor와 platform 하나, Linux x86_64의 PHP 8.4를, release가 공개된 뒤에 검사한다. macOS arm64, PHP 8.4에서 v0.0.35에 대해 통과한다.
 
