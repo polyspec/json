@@ -1,5 +1,5 @@
 <!-- doc-id: overview -->
-<!-- source-sha256: ba5f228d4d38bd0b6e353a85de320928060841a7e3e6dfc0628ca13067cf4cc9 -->
+<!-- source-sha256: ed4c5e66034703aed2b2751d1fb3b436dc6dfce55e3b91f6014d84f565f1e015 -->
 # json
 
 [English](README.md)
@@ -53,7 +53,7 @@ pip install "https://github.com/polyspec/json/releases/download/vX.Y.Z/polyspec_
 | --- | --- | --- |
 | JavaScript | JavaScript 및 TypeScript 선언 | `legacy/packages/js/` |
 | Rust | Rust crate | `packages/rust/` |
-| Go | Go 패키지 | `legacy/packages/go/` |
+| Go | 바인딩 모듈 `github.com/polyspec/json/packages/go` | `packages/go/` |
 | PHP | 바인딩 확장 `Polyspec\Json`, PIE 패키지 `polyspec/json` | `packages/php-ext/` |
 | Python | Python 패키지 `polyspec-ordered-json`, import `polyspec.ordered_json` | `legacy/packages/python/` |
 

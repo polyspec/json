@@ -168,15 +168,17 @@ The working principles of every polyspec repository are in [PRINCIPLES.md](PRINC
   Enforced by: `make docs-check`
 
 <a id="package-go"></a>
-## Package go (legacy/packages/go)
+## Package go (packages/go)
 
-- Own: The module is linted by `make lint-go` (golangci-lint with `.golangci.yml`, and deadcode).
+- Own: The binding module, with the probe and the benchmark program of `packages/go/tests`, and the legacy module `legacy/packages/go` are linted by `make lint-go` (golangci-lint with `.golangci.yml`, and deadcode).
   Enforced by: `make lint-go`
 - Own: The module is checked alone by `make json-go-check`, which runs `make verify-go`.
   Enforced by: none, judged at review: no workflow, Git hook or Claude Code hook runs this target.
 - Own: `GOTOOLCHAIN` is `local`, and the module requires the Go release of `mise.toml`.
   Enforced by: none, judged at review: kit 0.0.77 removed toolchain check (K854), and the pins of mise.toml and mise.lock are read by install-tools.
-- Own: Its package tests are the Go tests beside the code that `make test-go` runs.
+- Own: The shared verifier builds the probe `packages/go/tests/probe` after `make binding-go-library`, and the go row of `make benchmark` runs `packages/go/tests/benchmark` with the release library of `make binding-go-release-library`.
+  Enforced by: `make json-test-scripts`
+- Own: Until the legacy package `legacy/packages/go` is removed, the package tests are the Go tests beside its code that `make test-go` runs.
   Enforced by: `make test-go`
 - Own: The changes of the module are listed in its section of [CHANGELOG.md](CHANGELOG.md).
   Enforced by: `make docs-check`

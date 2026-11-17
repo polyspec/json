@@ -52,7 +52,7 @@ pip install "https://github.com/polyspec/json/releases/download/vX.Y.Z/polyspec_
 | --- | --- | --- |
 | JavaScript | JavaScript and TypeScript declarations | `legacy/packages/js/` |
 | Rust | Rust crate | `packages/rust/` |
-| Go | Go package | `legacy/packages/go/` |
+| Go | The binding module `github.com/polyspec/json/packages/go` | `packages/go/` |
 | PHP | The binding extension `Polyspec\Json`, PIE package `polyspec/json` | `packages/php-ext/` |
 | Python | Python package `polyspec-ordered-json`, import `polyspec.ordered_json` | `legacy/packages/python/` |
 

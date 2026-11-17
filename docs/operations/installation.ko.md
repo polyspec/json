@@ -1,5 +1,5 @@
 <!-- doc-id: installation -->
-<!-- source-sha256: 763679af77f0a3828c6bdc5d88d397db02095017f42fa7b1a0b6fdc953647574 -->
+<!-- source-sha256: 7f1da456936b2bd2e1dfb6e0bdb70176e8eaf1b618159bcac6a708bad94d5395 -->
 # 설치와 실행
 
 [English](installation.md)
@@ -32,7 +32,7 @@ cd json
 
 - JavaScript: `make binding-node-addon`이 checkout의 Node addon을 `packages/ts/generated/index.cjs` 옆에 빌드하고, 그 파일이 거기서 addon을 load합니다. 패키지 테스트와 공유 verifier의 probe는 `packages/ts`에서 `@polyspec/json`을 가져옵니다. legacy 패키지 `legacy/packages/js/`는 삭제될 때까지 checkout에 남습니다([전환](../spec/json-contract.ko.md#transition)).
 - Rust: `path`가 `packages/rust/`를 지정하는 로컬 Cargo 의존성을 설정합니다.
-- Go: `make binding-go-library`가 바인딩 모듈 `packages/go`가 링크하는 static library를 빌드합니다. legacy 패키지 `legacy/packages/go/`(모듈 `github.com/polyspec/ordered-json/packages/go`)는 삭제될 때까지 checkout에 남습니다.
+- Go: `make binding-go-library`가 바인딩 모듈 `packages/go`가 링크하는 static library를 빌드합니다. 공유 verifier의 probe `packages/go/tests/probe`가 그것을 링크하고, benchmark 프로그램 `packages/go/tests/benchmark`는 `make binding-go-release-library`의 release library를 링크합니다(T3.25). legacy 패키지 `legacy/packages/go/`(모듈 `github.com/polyspec/ordered-json/packages/go`)는 삭제될 때까지 `make test-go`가 실행하는 그 패키지 테스트와 함께 checkout에 남습니다.
 - PHP: 바인딩 확장을 PIE로 설치합니다. `pie install polyspec/json`은 PHP minor와 플랫폼에 맞는 release의 pre-packaged binary를 받습니다([네이티브 PHP](#native-php)).
 - Python: `make binding-python-package`가 바인딩의 wheel을 빌드해 venv `var/bindings/venv`에 설치합니다. 사용자는 release의 자기 platform wheel asset을 pip로 설치합니다([릴리스 asset](#release-assets)). legacy 패키지 `legacy/packages/python/`은 삭제될 때까지 checkout에 남습니다.
 

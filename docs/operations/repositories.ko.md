@@ -1,5 +1,5 @@
 <!-- doc-id: repositories -->
-<!-- source-sha256: 300c48206ec7df521230833341412f1e1757eb8c8e41fde79af20023b41291e3 -->
+<!-- source-sha256: 8f7215700951f158a2c53eb685b189c5676d699fac241b08ba279d3f89157762 -->
 # 저장소 계약
 
 [English](repositories.md)
@@ -14,7 +14,7 @@
 | common | . | 계약, fixture, 검증과 구현 선언 |
 | javascript | legacy/packages/js | JavaScript |
 | rust | packages/rust | Rust |
-| go | legacy/packages/go | Go |
+| go | packages/go | 바인딩 모듈 `github.com/polyspec/json/packages/go` |
 | php | packages/php-ext | 바인딩 확장 `Polyspec\Json` |
 | python | legacy/packages/python | Python |
 

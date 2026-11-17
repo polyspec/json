@@ -13,7 +13,7 @@ The repository owns the JSON specification, official inputs and expected results
 | common | . | Contract, fixtures, verification and implementation declaration |
 | javascript | legacy/packages/js | JavaScript |
 | rust | packages/rust | Rust |
-| go | legacy/packages/go | Go |
+| go | packages/go | The binding module `github.com/polyspec/json/packages/go` |
 | php | packages/php-ext | The binding extension `Polyspec\Json` |
 | python | legacy/packages/python | Python |
 
