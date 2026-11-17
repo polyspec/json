@@ -6,6 +6,10 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.36
+
+- This release is built on binding v0.0.20: every crate of json takes `polyspec-binding-core` at the tag v0.0.20. A Cargo workspace or a program that holds json 0.0.36 beside a library that is built on binding v0.0.17 holds two `polyspec-binding-core`, so a consumer whose other libraries are on binding v0.0.17 stays on json v0.0.34 until they move to one binding release together.
+
 - json pins kit v0.0.120 (T3.61): `make release-candidate-assets` with no VERSION builds the candidate of the version that the change log of HEAD records (K1286), the release check without a tag.
 
 - json generates with binding v0.0.20 (T3.60), as its first consumer: the Go module has the generated guard `zz_generated_tags_test.go`, which fails a `go test` that does not give the build tags of the tagged generated tests (GN-13bf); `packages/release.mk` has `GO ?= go` and passes `--go` to `binding check --release` and `binding release-go-module`, and the Makefile gives it the go of mise; the generated tests of Python check that the options of `parse` and `stringify` are keyword-only, and those of Node, WASM and Python give `stringify` a text with `<`, `>` and `&` for the `htmlSafe` argument case. The public API of the bindings does not change.

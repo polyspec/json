@@ -1,11 +1,15 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 0deef34f4c70c6df019bfc68ecb2f850e85b3e3311b7551ea22d240a77ee827f -->
+<!-- source-sha256: daa026103362ace92fda3ce33698410c93516af6f05c761a80699a0773ef6cd8 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+## 0.0.36
+
+- 이 release는 binding v0.0.20 위에 빌드된다: json의 모든 crate가 `polyspec-binding-core`를 tag v0.0.20으로 받는다. json 0.0.36을 binding v0.0.17 위에 빌드된 library와 한 Cargo workspace나 한 program에 두면 `polyspec-binding-core`가 두 벌이 된다. 그러므로 다른 library가 binding v0.0.17 위에 있는 소비자는 그것들이 한 binding release로 함께 옮길 때까지 json v0.0.34에 머문다.
 
 - json이 kit v0.0.120을 pin한다(T3.61): VERSION 없는 `make release-candidate-assets`가 HEAD의 change log가 기록한 version의 candidate를 빌드한다(K1286). tag 없는 release 검사다.
 
