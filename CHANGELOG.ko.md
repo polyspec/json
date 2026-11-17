@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 1297b5f7d97bdca7524d68616aed3be0e1945e82e90ed562d386ab997c88d2a0 -->
+<!-- source-sha256: 0deef34f4c70c6df019bfc68ecb2f850e85b3e3311b7551ea22d240a77ee827f -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- json이 kit v0.0.120을 pin한다(T3.61): VERSION 없는 `make release-candidate-assets`가 HEAD의 change log가 기록한 version의 candidate를 빌드한다(K1286). tag 없는 release 검사다.
 
 - json이 첫 소비자로 binding v0.0.20으로 생성한다(T3.60): Go module은 생성된 guard `zz_generated_tags_test.go`를 가지며, 이것은 tag가 붙은 생성 시험의 build tag를 주지 않는 `go test`를 실패시킨다(GN-13bf); `packages/release.mk`는 `GO ?= go`를 갖고 `binding check --release`와 `binding release-go-module`에 `--go`를 넘기며, Makefile이 mise의 go를 준다; Python의 생성 시험은 `parse`와 `stringify`의 옵션이 keyword 전용임을 검사하고, Node, WASM, Python의 생성 시험은 `htmlSafe` 인자 case에서 `stringify`에 `<`, `>`, `&`가 든 텍스트를 준다. 바인딩의 공개 API는 바뀌지 않는다.
 

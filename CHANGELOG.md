@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- json pins kit v0.0.120 (T3.61): `make release-candidate-assets` with no VERSION builds the candidate of the version that the change log of HEAD records (K1286), the release check without a tag.
+
 - json generates with binding v0.0.20 (T3.60), as its first consumer: the Go module has the generated guard `zz_generated_tags_test.go`, which fails a `go test` that does not give the build tags of the tagged generated tests (GN-13bf); `packages/release.mk` has `GO ?= go` and passes `--go` to `binding check --release` and `binding release-go-module`, and the Makefile gives it the go of mise; the generated tests of Python check that the options of `parse` and `stringify` are keyword-only, and those of Node, WASM and Python give `stringify` a text with `<`, `>` and `&` for the `htmlSafe` argument case. The public API of the bindings does not change.
 
 - The js row of `make benchmark` measures a release addon of the Node binding (T3.59): it was prepared with `make binding-node-addon`, a `cargo build` without `--release`, so it measured a debug build beside the release builds of the PHP and Rust rows. `make binding-node-release-addon` builds the release addon into the package folder `var/bindings/node-release`, which the row loads; the tests keep the debug addon. The js rows of `benchmarks/results.json` are those of the earlier builds until the next measurement.
