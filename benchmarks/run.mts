@@ -80,6 +80,63 @@ const environment = () => ({
   rust_profile: 'release', php_ini: '-n',
 });
 
+/** The profile of the build of an artifact, by its bytes (T3.63). */
+export type Profile = 'release' | 'debug' | 'unverified';
+
+/**
+ * The profile of an artifact by its digest: release when it equals the digest of the build of target/release, debug when it
+ * equals that of target/debug, and unverified when it equals neither or no build is there to compare. No function of a
+ * binding names the profile of its build, so the bytes decide.
+ */
+export function profileOf(artifact: string, builds: { release: string | null; debug: string | null }): Profile {
+  if (builds.release !== null && artifact === builds.release) return 'release';
+  if (builds.debug !== null && artifact === builds.debug) return 'debug';
+  return 'unverified';
+}
+
+/** Why the benchmark does not measure an artifact of `profile`, or null for a release build. */
+export function refusal(name: string, profile: Profile): string | null {
+  if (profile === 'debug') return `${name} is a debug build: it equals the build of target/debug, which the tests load; build the release with make benchmark`;
+  if (profile === 'unverified') return `${name} equals neither the release nor the debug build of the target folder, so its profile is not known; build it with make benchmark`;
+  return null;
+}
+
+/** The release addon of the Node binding in the package folder of make binding-node-release-addon (T3.59). */
+const NODE_RELEASE = path.join(ROOT, 'var/bindings/node-release');
+const LIBRARY = process.platform === 'darwin' ? 'dylib' : 'so';
+
+/**
+ * The artifact that each row of the benchmark loads from a build of cargo, with the libraries of both profiles that its
+ * bytes are compared with. The rust row builds its harness with cargo run --release in the run directory and the go row
+ * runs the Go sources of the legacy package, so neither loads a library that another target wrote.
+ */
+export function benchmarkArtifacts(): { row: string; name: string; file: string; release: string; debug: string }[] {
+  const folder = path.join(NODE_RELEASE, 'generated');
+  const addon = existsSync(folder) ? readdirSync(folder).find(name => name.endsWith('.node')) : undefined;
+  const library = (profile: string, name: string) => path.join(ROOT, 'target', profile, `${name}.${LIBRARY}`);
+  return [
+    { row: 'js', name: 'the Node addon', file: path.join(folder, addon ?? 'json.node'), release: library('release', 'libpolyspec_json_node'), debug: library('debug', 'libpolyspec_json_node') },
+    { row: 'php', name: 'the PHP extension', file: releaseExtension(), release: library('release', 'libpolyspec_json'), debug: library('debug', 'libpolyspec_json') },
+  ];
+}
+
+/** The profile of every artifact of the benchmark, printed; a debug or unverified artifact ends the run. */
+function verifiedArtifacts(): { row: string; file: string; sha256: string; profile: Profile }[] {
+  const digest = (file: string): string | null => (existsSync(file) ? createHash('sha256').update(readFileSync(file)).digest('hex') : null);
+  const failures: string[] = [];
+  const verified = benchmarkArtifacts().map((item) => {
+    const sha256 = digest(item.file);
+    if (sha256 === null) throw new Error(`${item.name} of the benchmark was not built (${item.file}): make benchmark builds it`);
+    const profile = profileOf(sha256, { release: digest(item.release), debug: digest(item.debug) });
+    console.log(`artifact ${item.row}: ${profile} ${sha256} ${path.relative(ROOT, item.file)}`);
+    const refused = refusal(item.name, profile);
+    if (refused !== null) failures.push(refused);
+    return { row: item.row, file: path.relative(ROOT, item.file), sha256, profile };
+  });
+  if (failures.length) throw new Error(`the benchmark measures release builds alone:\n${failures.join('\n')}`);
+  return verified;
+}
+
 /** The rows that a harness prints. */
 function measure(label: string, command: Argv, cwd: string, env: NodeJS.ProcessEnv): Row[] {
   const [program, ...args] = command;
@@ -143,10 +200,12 @@ async function main(): Promise<void> {
   validateWorkload(workload.fixtures);
   const files = workload.fixtures.map(entry => path.join(FIXTURES, entry.file));
   const env = { ...process.env, OJ_BENCH_ITERATIONS: String(protocol.iterations), OJ_BENCH_WARMUP: String(protocol.warmup), OJ_BENCH_WARMUP_MS: String(protocol.warmup_ms), OJ_BENCH_SAMPLES: String(protocol.samples) };
+  // The bytes of each loaded library are those of target/release, or the run ends before it measures (T3.63).
+  const artifacts = verifiedArtifacts();
   const rows = await withRun(async (run) => {
     // The release addon of the Node binding in its own package folder, which make benchmark builds first (T3.59): the addon
     // beside packages/ts/generated is the debug build of the tests.
-    const addon = path.join(ROOT, 'var/bindings/node-release');
+    const addon = NODE_RELEASE;
     if (!existsSync(path.join(addon, 'package.json'))) throw new Error('the Node addon of the benchmark was not built: make binding-node-release-addon');
     // The release library of the binding extension Polyspec\Json, which make benchmark builds first (T3.25-3).
     const extension = releaseExtension();
@@ -177,7 +236,7 @@ async function main(): Promise<void> {
   const current = { environment: environment(), protocol, results: rows };
   const previous = existsSync(RESULTS) ? readJsonFile<{ environment?: unknown; protocol?: unknown; results: Row[] }>(RESULTS, 'benchmark-results.schema.json') : undefined;
   const comparison = values['update-baseline'] ? { status: 'baseline-updated' } : compare(previous, current);
-  const record = { schema_version: 2, source: sourceState(), protocol, environment: current.environment, fixtures: workload.fixtures, results: rows, comparison };
+  const record = { schema_version: 2, source: sourceState(), protocol, environment: current.environment, artifacts, fixtures: workload.fixtures, results: rows, comparison };
   const failed = comparison.status === 'failed';
   if (failed) {
     writeRecord(CURRENT, record);

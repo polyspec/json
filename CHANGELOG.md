@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- `make benchmark` refuses an artifact that is not of the release build (T3.63): `benchmarks/run.mts` compares the sha256 of the Node addon and of the PHP extension that its rows load with the libraries of `target/release` and `target/debug`, prints the profile of each, writes them into the result as `artifacts`, and ends the run on a debug build or on one that equals neither. Three rows had measured a debug build, each found by reading a log (T3.53, T3.59, T3.25-6).
+
 ## 0.0.36
 
 - `make release-candidate-assets` runs with no VERSION (T3.61): the recipe of json refused the call that kit v0.0.120 takes (K1286), so the release check without a tag could not run; it passes VERSION only when one is given.

@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: ca1faf88ff8bbc68c98d0069fad05dee4a063eab042c2579738dbff27676e249 -->
+<!-- source-sha256: 2fe8e6fd897735adbfd3f6aaa59fa6622be1a2b4f79b2e13f383db01eed001c6 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- `make benchmark`가 release build가 아닌 산출물을 거부한다(T3.63): `benchmarks/run.mts`는 행이 올리는 Node addon과 PHP 확장의 sha256을 `target/release`와 `target/debug`의 library와 비교해 각각의 profile을 출력하고 결과에 `artifacts`로 적으며, debug build이거나 어느 쪽과도 같지 않으면 실행을 끝낸다. 세 행이 debug build를 쟀고 모두 log를 읽어서 찾았다(T3.53, T3.59, T3.25-6).
 
 ## 0.0.36
 

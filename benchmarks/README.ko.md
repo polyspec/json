@@ -1,5 +1,5 @@
 <!-- doc-id: performance-benchmarks -->
-<!-- source-sha256: 44eeaa2caa7d02e515672c06c0b23ea37915f280e003be60306255cb36bea440 -->
+<!-- source-sha256: 7f945b5b965da9f084eb255c8a4369779458e13ce01a42232f9b2bcf38fe7b86 -->
 # 성능 벤치마크
 
 `run.mts`는 모든 런타임에서 같은 입력 문서, 워밍업 횟수, 반복 횟수,
@@ -17,8 +17,12 @@ Rust 표준 라이브러리에는 JSON 파서가 없으므로 네이티브 비�
 네이티브 JSON API를 사용합니다. PHP는 ext-json과 바인딩 확장
 `Polyspec\Json`을 측정하며, `make benchmark`가 먼저
 `make binding-php-ext-release-library`로 그 release library를 빌드합니다
-(T3.25-3). `results.json`의 PHP 행은 다음 측정 전까지 legacy 구현의
-값입니다.
+(T3.25-3). JavaScript 행은 `make binding-node-release-addon`의 release
+addon을 올립니다(T3.59). `run.mts`는 측정하기 전에 그 둘의 sha256을
+`target/release`와 `target/debug`의 library와 비교해 profile을 출력하고 결과에
+`artifacts`로 적으며, debug build이거나 어느 쪽과도 같지 않으면 실행을
+끝냅니다(T3.63). `results.json`의 JavaScript와 PHP 행은 다음 측정 전까지 이전
+빌드의 값입니다.
 
 네이티브 측정값은 동등한 동작이라고 주장하는 값이 아니라 별도의 기준값입니다.
 일반적인 네이티브 API는 객체 순서나 정확한 숫자 토큰을 보존하지 않습니다.
