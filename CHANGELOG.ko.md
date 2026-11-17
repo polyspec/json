@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: f39787b5e2256d32d70cbc1f0a54f9e8d87f29c9a5d275f126a06514ee591c75 -->
+<!-- source-sha256: d3aac832241f6b83c24e9c221edec778fc43ab030948c847465e52b35698e899 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,9 +7,9 @@
 <a id="unreleased"></a>
 ## Unreleased
 
-- T3.54의 시험은 Go 바인딩의 build tag를 생성기의 입력, 곧 `packages/rust/interface.json`의 library와 `packages/go/internal/ffi/Cargo.toml`의 feature에서 계산한다: 그 시험은 Git이 무시하고 job shared가 쓰지 않는 생성된 Go 시험을 읽었으므로 CI run 43993922998에서 실패했다(HR-85).
-
 ## 0.0.35
+
+- T3.54의 시험은 Go 바인딩의 build tag를 생성기의 입력, 곧 `packages/rust/interface.json`의 library와 `packages/go/internal/ffi/Cargo.toml`의 feature에서 계산한다: 그 시험은 Git이 무시하고 job shared가 쓰지 않는 생성된 Go 시험을 읽었으므로 CI run 43993922998에서 실패했다(HR-85).
 
 - `make test-binding-go`가 Go 바인딩의 생성된 panic, fault, codec 시험을 돌린다(T3.54): build tag를 `polyspec_<feature>`로 주었지만 binding 0.0.17은 그 시험을 `polyspec_json_<feature>`로 생성하므로, v0.0.34까지 `go test`는 그것들을 컴파일하지 않고 통과했다. 이제 `go test`를 `-v`로 돌려 make log에 시험마다 보인다.
 

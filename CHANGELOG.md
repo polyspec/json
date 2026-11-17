@@ -6,9 +6,9 @@
 <a id="unreleased"></a>
 ## Unreleased
 
-- The test of T3.54 derives the build tags of the Go binding from the inputs of the generator, the library of `packages/rust/interface.json` and the features of `packages/go/internal/ffi/Cargo.toml`: it read the generated Go tests, which Git ignores and the job shared does not write, so CI run 43993922998 failed it (HR-85).
-
 ## 0.0.35
+
+- The test of T3.54 derives the build tags of the Go binding from the inputs of the generator, the library of `packages/rust/interface.json` and the features of `packages/go/internal/ffi/Cargo.toml`: it read the generated Go tests, which Git ignores and the job shared does not write, so CI run 43993922998 failed it (HR-85).
 
 - `make test-binding-go` runs the generated panic, fault and codec tests of the Go binding (T3.54): it named the build tags `polyspec_<feature>`, while binding 0.0.17 generates them under `polyspec_json_<feature>`, so up to v0.0.34 `go test` passed without compiling them. `go test` now runs with `-v`, so the make log shows each test.
 
