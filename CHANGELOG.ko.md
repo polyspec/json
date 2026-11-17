@@ -7,6 +7,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.38
+
 - Go module의 release는 그 tag를 push한다(T3.66): `ci-release`는 tag 전에 Go module을 rehearse하고(`rehearse-go-module`), `release-go-module` 뒤에 `release-go-module-push TAG=…`를 돌려 tag `packages/go/vX.Y.Z`가 remote에 닿게 한다. release 0.0.37은 그 tag를 runner 안에만 만들었다(run 44079838426). `tests/scripts/workflow-rules.test.mts`의 `ci-release` 순서 시험이 그 step을 지킨다.
 
 ## 0.0.37

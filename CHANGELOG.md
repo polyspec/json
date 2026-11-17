@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.38
+
 - The release of a Go module pushes its tag (T3.66): `ci-release` rehearses the Go module before its tag (`rehearse-go-module`) and runs `release-go-module-push TAG=…` after `release-go-module`, so the tag `packages/go/vX.Y.Z` reaches the remote; release 0.0.37 made it only in the runner (run 44079838426), and the test of the order of `ci-release` in `tests/scripts/workflow-rules.test.mts` keeps the step.
 
 ## 0.0.37
