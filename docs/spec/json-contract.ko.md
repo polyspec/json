@@ -1,5 +1,5 @@
 <!-- doc-id: json-contract -->
-<!-- source-sha256: 8b4e4faf4ddcdc07586a082fb9106e42435f5c17f0f5221e41881e428cc7f5e6 -->
+<!-- source-sha256: 546642f5e036d2c09bb74477dbb539bfd4116d3b83b7dc58351c45d5372ac048 -->
 # JSON 계약
 
 [English](json-contract.md)
@@ -58,17 +58,17 @@ JSON 배열은 입력 순서대로 값을 저장합니다. 빈 배열과 빈 객
 
 인자 종류의 공통 목록입니다. 인자를 거부하는 라이브러리 함수는 이 중 하나를 모든 구현에서 같게 알립니다. 각 바인딩은 그 경우에 맞는 host의 오류 class를 던지고, 자기 문구를 유지하며, 거부 종류의 접근자로 종류를 노출합니다. UTF-8이 아닌 인자의 거부는 거부 종류의 `invalid_utf8`을 알립니다. 공통 검증기는 이 목록을 읽고 [arguments.json](../../contracts/fixtures/arguments.json)의 인자 사례를 모든 구현에 보내며 다른 종류에서 실패합니다. 어떤 언어에서 생길 수 없는 종류는 그 언어와 함께 적습니다.
 
-- `non_string_key` — 문자열이 아닌 다른 종류의 값인 객체 키. 함수가 받지 않는 host 타입의 키는 `invalid_argument_type`입니다(`change-argument-types`). 배열 키가 문자열이나 정수인 PHP에서는 생길 수 없습니다.
+- `non_string_key` — 문자열이 아닌 다른 종류의 값인 객체 키. 함수가 받지 않는 host 타입의 키는 `invalid_argument_type`입니다(`change-argument-types`).
 - `wrong_kind` — 다른 종류의 값을 거부하는 접근자.
 - `invalid_number_literal` — 다른 JSON 값이거나 공백을 가진 literal을 받은 숫자 생성자. 파싱되지 않는 literal은 그 거부 종류를 알립니다.
 - `depth_limit_out_of_range` — 0보다 작거나 256보다 큰 정수인 깊이 한도로, core가 거부합니다. 정수가 아닌 값은 바인딩의 인자 변환이 거부합니다(`change-depth-limit`).
-- `invalid_argument_type` — 함수가 받지 않는 타입의 인자. 라이브러리가 만들지 않은 값(Go의 nil 또는 영값 `Value`)을 포함합니다. compiler가 타입을 검사하는 Rust에서는 생길 수 없습니다. PHP에서는 선언된 매개변수 타입이 라이브러리 실행 전에 host 타입을 거부하므로, 배열 원소처럼 signature가 타입을 선언할 수 없는 곳에서만 생깁니다.
+- `invalid_argument_type` — 함수가 받지 않는 타입의 인자. 라이브러리가 만들지 않은 값(Go의 nil 또는 영값 `Value`)을 포함합니다. compiler가 타입을 검사하는 Rust에서는 생길 수 없습니다. 바인딩은 어떤 host 타입의 인자든 받아서 함수가 받지 않는 것을 거부합니다.
 - `invalid_code_unit` — 65535보다 큰 부호 없는 정수인 UTF-16 코드 단위로, core가 거부합니다([RQ-029](#requirements)); 부호 없는 정수가 아닌 값은 바인딩의 인자 변환이 거부합니다(`change-code-units`). [이행 기간](#transition)의 언어 패키지에서는 코드 단위를 문자열로만 받는 JavaScript에서 생길 수 없습니다.
-- `host_serialization_refused` — 값을 다시 쓰게 될 언어의 표준 JSON 인터페이스([RQ-020](#requirements), [RQ-034](#requirements)). 코어와 그 바인딩에서 생기며, 계약 바이트를 쓰는 Rust serde와 `MarshalJSON`이 그 바이트를 쓰는 [이행 기간](#transition)의 Go 패키지에서는 생길 수 없습니다.
+- `host_serialization_refused` — 값을 다시 쓰게 될 언어의 표준 JSON 인터페이스([RQ-020](#requirements), [RQ-034](#requirements)). 코어와 그 바인딩에서 생기며, 계약 바이트를 쓰는 Rust serde에서는 생길 수 없습니다. 그런 hook이 없는 Python에서도 생길 수 없습니다. `json.dumps`가 자체 오류로 값을 거부합니다([RQ-034](#requirements)).
 - `direct_construction` — 라이브러리 밖에서 호출한 라이브러리 생성자: JavaScript와 Python의 `Value` 생성자, 이 목록 밖의 메시지나 종류를 받은 오류 생성자. 값과 오류의 필드를 비공개로 두는 Rust와 Go에서는 생길 수 없습니다.
-- `unpaired_surrogate` — 이스케이프한 짝 없는 surrogate가 든 문자열의 유니코드 텍스트. 어떤 유니코드 텍스트도 그것을 담지 못합니다([RQ-027](#requirements)). 코어와 그 바인딩에서 생기며, [이행 기간](#transition)의 언어 패키지(JavaScript, PHP, Python)에서는 생길 수 없습니다.
-- `non_finite_number` — NaN, 양의 무한대, 음의 무한대인 실수로 만든 숫자. 어떤 JSON 숫자 토큰도 그것을 쓰지 못합니다([RQ-030](#requirements)). 코어와 그 바인딩에서 생기며, 실수로 숫자를 만들지 않는 [이행 기간](#transition)의 언어 패키지(JavaScript, PHP, Python)에서는 생길 수 없습니다.
-- `internal` — 코어의 불변식 위반. 결함이며 거부된 입력이 아닙니다([RQ-033](#requirements)). [이행 기간](#transition)의 언어 패키지(JavaScript, PHP, Python)에서는 생길 수 없습니다.
+- `unpaired_surrogate` — 이스케이프한 짝 없는 surrogate가 든 문자열의 유니코드 텍스트. 어떤 유니코드 텍스트도 그것을 담지 못합니다([RQ-027](#requirements)). 코어와 그 바인딩에서 생기며, [이행 기간](#transition)의 언어 패키지(JavaScript, Python)에서는 생길 수 없습니다.
+- `non_finite_number` — NaN, 양의 무한대, 음의 무한대인 실수로 만든 숫자. 어떤 JSON 숫자 토큰도 그것을 쓰지 못합니다([RQ-030](#requirements)). 코어와 그 바인딩에서 생기며, 실수로 숫자를 만들지 않는 [이행 기간](#transition)의 언어 패키지(JavaScript, Python)에서는 생길 수 없습니다.
+- `internal` — 코어의 불변식 위반. 결함이며 거부된 입력이 아닙니다([RQ-033](#requirements)). [이행 기간](#transition)의 언어 패키지(JavaScript, Python)에서는 생길 수 없습니다.
 
 <a id="numbers"></a>
 ## 숫자

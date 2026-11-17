@@ -24,8 +24,8 @@ use const Polyspec\Json\MAX_DEPTH;
  * that the binding throws names its kind on `kind()`: a ParseError the rejection kinds of the JSON contract, a
  * JsonTypeError or JsonValueError the argument kinds (change-errors). Each kind has an accepting and a refusing site.
  * The test of the legacy package with no change beyond the changes of packages/rust/interface.json, each named where it
- * applies (T3.25-3). The test of the kinds that cannot arise in PHP waits for the removal of the legacy package, as in
- * Python (T3.25-2).
+ * applies (T3.25-3). The test of the kinds that cannot arise in PHP is tests/scripts/kinds.test.mts, one test for every
+ * binding (T3.64).
  *
  * Requirements: RQ-005, RQ-025.
  */
@@ -99,6 +99,9 @@ final class ErrorKindTest extends TestCase
                 static fn() => Value::array([1])],
             ['invalid_code_unit', JsonValueError::class, static fn() => Value::fromUnits([0xffff]),
                 static fn() => Value::fromUnits([0x10000])],
+            // change-from-float: a number is built from a float, and a float that is no JSON number is refused (T3.64).
+            ['non_finite_number', JsonValueError::class, static fn() => Value::fromFloat(1.5),
+                static fn() => Value::fromFloat(NAN)],
             // change-stringify: stringify is the one serialization.
             ['host_serialization_refused', JsonTypeError::class, static fn() => stringify(Value::null()),
                 static fn() => json_encode(Value::null(), JSON_THROW_ON_ERROR)],

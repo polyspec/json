@@ -60,9 +60,13 @@ The Rust baseline is `serde_json`, because Rust does not provide a JSON parser
 in its standard library. The JavaScript, Go, and PHP baselines use their
 runtime-native JSON APIs. PHP reports ext-json and the binding extension
 `Polyspec\Json`, whose release library `make benchmark` builds first with
-`make binding-php-ext-release-library` (T3.25-3). The PHP rows of
-`results.json` are those of the legacy implementations until the next
-measurement.
+`make binding-php-ext-release-library` (T3.25-3), and the JavaScript row loads the
+release addon of `make binding-node-release-addon` (T3.59). Before it measures,
+`run.mts` compares the sha256 of each of the two with the library of
+`target/release` and of `target/debug`, prints the profile, writes it into the
+result as `artifacts`, and ends the run on a debug build or on one that equals
+neither (T3.63). The JavaScript and PHP rows of `results.json` are those of the
+earlier builds until the next measurement.
 
 <a id="python-parse"></a>
 ## Python parse ratio

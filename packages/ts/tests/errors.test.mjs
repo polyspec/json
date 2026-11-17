@@ -2,7 +2,7 @@
 // rejection kinds of the JSON contract, a JsonTypeError or JsonValueError the argument kinds (change-errors). Each kind has an
 // accepting and a refusing site. The test of the legacy package with no change beyond the changes of
 // packages/rust/interface.json, each named where it applies (T3.25-1); the test of the kinds that cannot arise in JavaScript
-// waits for the removal of the legacy package.
+// is tests/scripts/kinds.test.mts, one test for every binding (T3.64).
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {JsonTypeError, JsonValueError, OrderedMap, ParseError, Value, parse, stringify} from '@polyspec/json';
@@ -75,6 +75,13 @@ test('every refused argument carries its kind', () => {
   for (const key of [1, null, true]) assert.equal(kind(() => insert(key)), 'invalid_argument_type', String(key));
   for (const key of [1, null, undefined]) assert.equal(kind(() => object.get(key)), 'invalid_argument_type');
   for (const maxDepth of [-1, 257]) assert.equal(kind(() => parse('1', {maxDepth}), JsonValueError), 'depth_limit_out_of_range', String(maxDepth));
+  // change-code-units, change-from-units: a string is built from its code units, and the core refuses a unit above 65535
+  // (T3.64).
+  assert.equal(Value.fromUnits([0xffff]).kind, 'string');
+  assert.equal(kind(() => Value.fromUnits([0x10000]), JsonValueError), 'invalid_code_unit');
+  // change-from-float: a number is built from a float, and a float that is no JSON number is refused (T3.64).
+  assert.equal(Value.fromFloat(1.5).kind, 'number');
+  for (const float of [NaN, Infinity, -Infinity]) assert.equal(kind(() => Value.fromFloat(float), JsonValueError), 'non_finite_number', String(float));
   // change-depth-limit: a limit that is no integer is refused by the conversion of the argument, a number with invalid_number
   // and a value of another type with invalid_argument_type.
   for (const maxDepth of [1.5, NaN]) assert.equal(kind(() => parse('1', {maxDepth}), JsonValueError), 'invalid_number', String(maxDepth));

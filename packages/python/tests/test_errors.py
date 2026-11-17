@@ -4,7 +4,8 @@ Requirements: RQ-005, RQ-025. Every error that the binding raises names its kind
 kinds of the JSON contract, a JSONTypeError or JSONValueError the argument kinds (change-errors). Each kind has an accepting
 and a refusing site. The test of the legacy package with no change beyond the changes of packages/rust/interface.json, each
 named where it applies (T3.25-2). An option given by position is refused as the binding v0.0.16 refuses it until the
-binding 0.0.18; the test of the kinds that cannot arise in Python waits for the removal of the legacy package.
+binding 0.0.18; the test of the kinds that cannot arise in Python is tests/scripts/kinds.test.mts, one test for
+every binding (T3.64).
 """
 
 import json
@@ -109,6 +110,13 @@ CASES = [
         ValueError,
         lambda: Value.from_units([0xFFFF]),
         lambda: Value.from_units([0x10000]),
+    ),
+    # change-from-float: a number is built from a float, and a float that is no JSON number is refused (T3.64).
+    (
+        "non_finite_number",
+        ValueError,
+        lambda: Value.from_float(1.5),
+        lambda: Value.from_float(float("nan")),
     ),
     # change-host-hooks: Python has no hook, and json.dumps refuses a value with its own error, so the kind
     # host_serialization_refused cannot arise in Python.
