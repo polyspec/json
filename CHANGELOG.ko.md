@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: d0c8120542543b397b562dfea7fb7a34e2e3d0e4a24abe8ff7884e50f7f3d4e6 -->
+<!-- source-sha256: f39787b5e2256d32d70cbc1f0a54f9e8d87f29c9a5d275f126a06514ee591c75 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- T3.54의 시험은 Go 바인딩의 build tag를 생성기의 입력, 곧 `packages/rust/interface.json`의 library와 `packages/go/internal/ffi/Cargo.toml`의 feature에서 계산한다: 그 시험은 Git이 무시하고 job shared가 쓰지 않는 생성된 Go 시험을 읽었으므로 CI run 43993922998에서 실패했다(HR-85).
 
 ## 0.0.35
 

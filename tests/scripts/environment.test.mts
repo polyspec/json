@@ -4,7 +4,7 @@
 // make install-tools installs the running tools with them, and every target that runs a tool depends on it.
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -143,18 +143,21 @@ test('requires-python of the Python package is the minor release of the python o
   assert.equal(pyproject.project['requires-python'], `>=${minor}`);
 });
 
-// T3.54: the generated Go tests of binding 0.0.17 build under polyspec_json_<feature>, but BINDING_GO_ENV named
-// polyspec_<feature>, so go test compiled none of the panic, fault and codec tests and passed without them.
+// T3.54: the generated Go tests of binding 0.0.17 build under polyspec_<library>_<feature>, but BINDING_GO_ENV named
+// polyspec_<feature>, so go test compiled none of the panic, fault and codec tests and passed without them. The generated
+// files are ignored by Git and no job of this test writes them (HR-85), so the test derives the tags from the inputs of
+// the generator: the library of packages/rust/interface.json and the features of the tracked Cargo.toml of the Go binding,
+// with _ for - (binding GN-5).
 test('T3.54: the tags of make test-binding-go are the build tags of the generated Go tests', () => {
+  const contract: unknown = JSON.parse(readFileSync(path.join(ROOT, 'packages/rust/interface.json'), 'utf8'));
+  const library = typeof contract === 'object' && contract !== null && 'library' in contract ? String(contract.library) : '';
+  assert.ok(library, 'packages/rust/interface.json names no library');
+  const declared = parse(readFileSync(path.join(ROOT, 'packages/go/internal/ffi/Cargo.toml'), 'utf8')).features;
+  const features = typeof declared === 'object' && declared !== null ? Object.keys(declared) : [];
+  assert.ok(features.length > 0, 'the Go binding declares no test feature');
+  const wanted = features.map(feature => `polyspec_${library}_${feature}`.replaceAll('-', '_'));
   const run = spawnSync('make', ['-n', '--no-print-directory', 'test-binding-go'], { cwd: ROOT, encoding: 'utf8', env: { ...process.env, LC_ALL: 'C' } });
   assert.equal(run.status, 0, run.stderr);
   const given = new Set((/-tags=(\S+)/.exec(run.stdout)?.[1] ?? '').split(','));
-  const wanted = new Set<string>();
-  // The generated files are ignored by Git (binding GN-1), so the test reads those that make bindings wrote.
-  for (const file of readdirSync(path.join(ROOT, 'packages/go'), { recursive: true, encoding: 'utf8' }).filter(name => /zz_generated_[^/]*\.go$/.test(name))) {
-    const line = /^\/\/go:build (\S+)$/m.exec(readFileSync(path.join(ROOT, 'packages/go', file), 'utf8'))?.[1];
-    if (line?.startsWith('polyspec_')) wanted.add(line);
-  }
-  assert.ok(wanted.size > 0, 'no generated Go test names a build tag');
   for (const tag of wanted) assert.ok(given.has(tag), `make test-binding-go does not give the tag ${tag} (it gives ${[...given].join(',')})`);
 });
