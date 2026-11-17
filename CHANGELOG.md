@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- `make release-candidate-assets` runs with no VERSION (T3.61): the recipe of json refused the call that kit v0.0.120 takes (K1286), so the release check without a tag could not run; it passes VERSION only when one is given.
+
 ## 0.0.36
 
 - This release is built on binding v0.0.20: every crate of json takes `polyspec-binding-core` at the tag v0.0.20. A Cargo workspace or a program that holds json 0.0.36 beside a library that is built on binding v0.0.17 holds two `polyspec-binding-core`, so a consumer whose other libraries are on binding v0.0.17 stays on json v0.0.34 until they move to one binding release together.

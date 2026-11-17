@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: daa026103362ace92fda3ce33698410c93516af6f05c761a80699a0773ef6cd8 -->
+<!-- source-sha256: df68db4834ff9541828effe1ec0753f6a8e6696144b5665583b77db7413d8ab3 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- `make release-candidate-assets`가 VERSION 없이 돈다(T3.61): json의 recipe가 kit v0.0.120이 받는 호출(K1286)을 거부해 tag 없는 release 검사를 돌릴 수 없었다; VERSION은 주어졌을 때만 넘긴다.
 
 ## 0.0.36
 

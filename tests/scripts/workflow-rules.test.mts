@@ -451,3 +451,15 @@ test('T3.25-5: the job release installs every tool of release-pie-check before i
   assert.match(readFileSync(path.join(ROOT, '.github/actions/kit-bootstrap/action.yml'), 'utf8'), /^ {6}run: make install-tools TOOLS=npm$/m);
   assert.match(workflow('release.yml'), /^ {6}TAG: \$\{\{ needs\.tag\.outputs\.tag \}\}$/m, 'the job release gives TAG');
 });
+
+// T3.61: kit 0.0.120 builds the candidate of the version that the change log of HEAD records when it is given no VERSION
+// (K1286), so the recipe of json asks for none: it passes VERSION only when a person gives one.
+test('T3.61: release-candidate-assets runs with no VERSION and passes one that is given', () => {
+  const plan = (args: string[]) => spawnSync('make', ['-n', '--no-print-directory', 'release-candidate-assets', ...args], { cwd: ROOT, encoding: 'utf8', env: { ...process.env, LC_ALL: 'C' } });
+  const bare = plan([]);
+  assert.equal(bare.status, 0, bare.stderr + bare.stdout);
+  assert.match(bare.stdout, /release\.mjs candidate-assets\s*$/m);
+  const given = plan(['VERSION=0.0.1']);
+  assert.equal(given.status, 0, given.stderr);
+  assert.match(given.stdout, /release\.mjs candidate-assets "?0\.0\.1"?\s*$/m);
+});
