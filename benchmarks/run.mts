@@ -1,6 +1,6 @@
 // Runs the equal-workload performance comparison of every implementation (make benchmark, make benchmark-check) and writes
 // benchmarks/results.json. Each implementation measures the inputs of benchmarks/workload.json with its own harness
-// (benchmarks/js.mjs, benchmarks/php.php, internal/benchmark of the Go package, examples/benchmark.rs of the Rust package), which prints one
+// (benchmarks/js.mjs, benchmarks/php.php, tests/benchmark of the Go binding module, examples/benchmark.rs of the Rust package), which prints one
 // tab-separated row for each input and mode. The PHP rows load the release library of the binding extension, which make
 // benchmark builds first (T3.25-3), and cargo builds the Rust harness into the run directory, so no build output of another run decides it.
 //
@@ -156,7 +156,9 @@ async function main(): Promise<void> {
     const php = env;
     const commands: [string, string, Argv, NodeJS.ProcessEnv][] = [
       ['js', ROOT, ['node', 'benchmarks/js.mjs', ...files], { ...env, OJ_PACKAGE: addon }],
-      ['go', pathOf(packages, 'go'), ['go', 'run', './internal/benchmark', ...files], env],
+      // The Go binding module links the static library of make binding-go-library, which make benchmark builds first: a
+      // debug build of target/debug, as the tests link it (T3.25).
+      ['go', pathOf(packages, 'go'), ['go', 'run', './tests/benchmark', ...files], { ...env, GOWORK: 'off', CGO_LDFLAGS: `-L${path.join(ROOT, 'target/debug')}` }],
       ['php-native', ROOT, ['php', '-n', 'benchmarks/php.php', 'native-json', ...files], php],
       ['php', ROOT, ['php', '-n', '-d', `extension=${extension}`, 'benchmarks/php.php', 'extension', ...files], php],
       ['rust', ROOT, ['cargo', 'run', '--locked', '--release', '--quiet', '--manifest-path', path.join(pathOf(packages, 'rust'), 'Cargo.toml'), '--example', 'benchmark', '--', ...files], { ...env, CARGO_TARGET_DIR: path.join(run.cache, 'rust-target') }],

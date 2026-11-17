@@ -45,9 +45,14 @@ export const COMMANDS: Record<string, Commands> = {
     command: ['{cache}/rust-target/debug/examples/probe'],
     runtime: { rustc: ['rustc', '--version'] },
   },
+  // The binding module json of packages/go, whose probe links the static library that make binding-go-library builds into
+  // target/debug: go build finds it through CGO_LDFLAGS and reads no go.work (T3.25).
   go: {
-    env: { GOTOOLCHAIN: 'local' },
-    prepare: [{ cwd: '{go}', command: ['go', 'build', '-o', '{cache}/go-probe', './internal/probe'] }],
+    env: { GOTOOLCHAIN: 'local', GOWORK: 'off', CGO_LDFLAGS: '-L{repository}/target/debug' },
+    prepare: [
+      { cwd: '{repository}', command: ['make', 'binding-go-library'] },
+      { cwd: '{go}', command: ['go', 'build', '-o', '{cache}/go-probe', './tests/probe'] },
+    ],
     command: ['{cache}/go-probe'],
     runtime: { go: ['go', 'version'] },
   },

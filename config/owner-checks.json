@@ -98,7 +98,7 @@
         "benchmarks/*.{mjs,php,json}",
         "benchmarks/fixtures/*.json",
         "packages/rust/examples/benchmark.rs",
-        "legacy/packages/go/internal/benchmark/*.go"
+        "packages/go/tests/benchmark/*.go"
       ],
       "targets": [
         "benchmark-check"
@@ -209,8 +209,15 @@
         "legacy/packages/go/**"
       ],
       "targets": [
-        "verify-go",
         "test-go"
+      ]
+    },
+    {
+      "paths": [
+        "packages/go/tests/**"
+      ],
+      "targets": [
+        "verify-go"
       ]
     },
     {

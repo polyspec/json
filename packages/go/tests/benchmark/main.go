@@ -1,9 +1,11 @@
+// The benchmark harness of the Go binding json, which benchmarks/run.mts runs for the rows go. The harness of the legacy
+// package with no change beyond the changes of packages/rust/interface.json, each named where it applies (T3.25).
 package main
 
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"encoding/json"
+	stdjson "encoding/json"
 	"fmt"
 	"os"
 	"runtime"
@@ -11,11 +13,11 @@ import (
 	"strconv"
 	"time"
 
-	orderedjson "github.com/polyspec/ordered-json/packages/go"
+	json "github.com/polyspec/json/packages/go"
 )
 
 func digest(value []byte) string { sum := sha256.Sum256(value); return hex.EncodeToString(sum[:]) }
-func iterations() int { return setting("OJ_BENCH_ITERATIONS", 1000) }
+func iterations() int            { return setting("OJ_BENCH_ITERATIONS", 1000) }
 
 // setting returns the fallback when the variable is unset. A value that is not a positive integer stops the run: a silent
 // default would measure a different workload than the one asked for (P8).
@@ -78,8 +80,9 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		parseOrdered := func() *orderedjson.Value {
-			v, err := orderedjson.ParseBytes(source)
+		// change-parse-source: the one Parse takes the bytes.
+		parseOrdered := func() *json.Value {
+			v, err := json.Parse(source, json.ParseOptions{})
 			if err != nil {
 				panic(err)
 			}
@@ -87,15 +90,16 @@ func main() {
 		}
 		parseStats, _ := measure(func() []byte { sink = parseOrdered(); runtime.KeepAlive(sink); return nil }, n, warmup, warmupMs, samples)
 		value := parseOrdered()
+		// change-stringify: Stringify is the one serializer.
 		stringifyStats, output := measure(func() []byte {
-			out, err := value.Compact()
+			out, err := json.Stringify(value, json.StringifyOptions{})
 			if err != nil {
 				panic(err)
 			}
 			return []byte(out)
 		}, n, warmup, warmupMs, samples)
 		roundtripStats, _ := measure(func() []byte {
-			out, err := parseOrdered().Compact()
+			out, err := json.Stringify(parseOrdered(), json.StringifyOptions{})
 			if err != nil {
 				panic(err)
 			}
@@ -103,18 +107,18 @@ func main() {
 		}, n, warmup, warmupMs, samples)
 		var nativeValue any
 		nativeParseStats, _ := measure(func() []byte {
-			if err := json.Unmarshal(source, &nativeValue); err != nil {
+			if err := stdjson.Unmarshal(source, &nativeValue); err != nil {
 				panic(err)
 			}
 			runtime.KeepAlive(nativeValue)
 			return nil
 		}, n, warmup, warmupMs, samples)
-		nativeValue, err = func() (any, error) { var value any; err := json.Unmarshal(source, &value); return value, err }()
+		nativeValue, err = func() (any, error) { var value any; err := stdjson.Unmarshal(source, &value); return value, err }()
 		if err != nil {
 			panic(err)
 		}
 		nativeStringifyStats, nativeOutput := measure(func() []byte {
-			out, err := json.Marshal(nativeValue)
+			out, err := stdjson.Marshal(nativeValue)
 			if err != nil {
 				panic(err)
 			}
@@ -122,17 +126,17 @@ func main() {
 		}, n, warmup, warmupMs, samples)
 		nativeRoundtripStats, _ := measure(func() []byte {
 			var value any
-			if err := json.Unmarshal(source, &value); err != nil {
+			if err := stdjson.Unmarshal(source, &value); err != nil {
 				panic(err)
 			}
-			out, err := json.Marshal(value)
+			out, err := stdjson.Marshal(value)
 			if err != nil {
 				panic(err)
 			}
 			return out
 		}, n, warmup, warmupMs, samples)
 		statsJSON := func(p, s, r stats) string {
-			b, err := json.Marshal(map[string]any{"parse": p.Samples, "stringify": s.Samples, "roundtrip": r.Samples})
+			b, err := stdjson.Marshal(map[string]any{"parse": p.Samples, "stringify": s.Samples, "roundtrip": r.Samples})
 			if err != nil {
 				panic(err)
 			}

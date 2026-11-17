@@ -61,6 +61,19 @@ test('the Rust build runs in the target directory of the run', () => {
   assert.deepEqual(commandsOf('rust').command, ['{cache}/rust-target/debug/examples/probe']);
 });
 
+// T3.25: the probe of the root go is that of the binding module, packages/go/tests/probe, which links the static library
+// that make binding-go-library builds into target/debug; go build finds it through CGO_LDFLAGS and reads no go.work.
+test('the Go probe is built in the binding module after its static library', () => {
+  const { prepare = [], env, command } = commandsOf('go');
+  assert.deepEqual(prepare.map(step => [step.cwd, ...step.command]), [
+    ['{repository}', 'make', 'binding-go-library'],
+    ['{go}', 'go', 'build', '-o', '{cache}/go-probe', './tests/probe'],
+  ]);
+  assert.deepEqual(env, { GOTOOLCHAIN: 'local', GOWORK: 'off', CGO_LDFLAGS: '-L{repository}/target/debug' });
+  assert.deepEqual(command, ['{cache}/go-probe']);
+  assert.equal(pathOf(REGISTRY.roots, 'go'), 'packages/go');
+});
+
 test('the packages follow the polyspec naming convention and each Cargo package has one manifest', () => {
   const [js, php, rust, go] = (['js', 'php', 'rust', 'go'] as const).map(name => pathOf(REGISTRY.roots, name));
   assert.ok(js !== undefined && php !== undefined && rust !== undefined && go !== undefined, 'the roots of the four packages');
@@ -72,9 +85,9 @@ test('the packages follow the polyspec naming convention and each Cargo package 
   assert.deepEqual(['package.json', `${js}/package.json`].map(name), ['@polyspec/ordered-json', '@polyspec/json']);
   const cargo = checkJson<{ package: { name: string }; lib: { name: string } }>(parse(read(`${rust}/Cargo.toml`)), 'cargo-manifest.schema.json', `${rust}/Cargo.toml`);
   assert.deepEqual([cargo.package.name, cargo.lib.name], ['polyspec-json', 'polyspec_json']);
-  // The module path of the Go package is the repository path followed by its folder (S5 of kit); the legacy package keeps
-  // the path of its releases, its folder before the transition (docs/spec/json-contract.md#transition).
-  assert.equal(parseJson<{ Module: { Path: string } }>(execFileSync('go', ['mod', 'edit', '-json'], { cwd: path.join(ROOT, go), encoding: 'utf8' }), 'go-mod-edit.schema.json', 'go mod edit -json').Module.Path, `github.com/polyspec/ordered-json/${go.replace(/^legacy\//, '')}`);
+  // The root go is the binding module of packages/go (T3.25, change-names): its module path is the repository path followed
+  // by its folder (S5 of kit).
+  assert.equal(parseJson<{ Module: { Path: string } }>(execFileSync('go', ['mod', 'edit', '-json'], { cwd: path.join(ROOT, go), encoding: 'utf8' }), 'go-mod-edit.schema.json', 'go mod edit -json').Module.Path, `github.com/polyspec/json/${go}`);
   // A Git dependency on this repository reads every tracked Cargo.toml; two manifests of one package make Cargo skip one.
   const manifests = execFileSync('git', ['ls-files', '-z', '--', '*Cargo.toml'], { cwd: ROOT, encoding: 'utf8' }).split('\0').filter(Boolean)
     .map(file => (parse(read(file)) as { package?: { name: string } }).package?.name).filter(Boolean);

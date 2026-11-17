@@ -148,7 +148,7 @@ verify-js verify-rust verify-go verify-php verify-python:
 evidence-check:
 	$(NODE) scripts/check-evidence.mts
 
-benchmark: binding-php-ext-release-library binding-node-release-addon
+benchmark: binding-php-ext-release-library binding-node-release-addon binding-go-library
 	$(NODE) benchmarks/run.mts
 
 # benchmark-host measures the conversion of RQ-036, which reads every string in as its UTF-16 code units, against the
