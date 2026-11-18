@@ -7,6 +7,10 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.40
+
+- polyspec-binding-core와 @polyspec/binding을 0.0.22로 pin한다(T3.72). 0.0.22 소비자 실행으로 측정된 첫 release다. 0.0.39는 여전히 release되지 않음이다(T3.69).
+
 ## 0.0.39
 
 - 릴리스 recipe는 rustup과 cargo를 이름으로 부르고, Makefile이 맨 앞에 두는 `$(HOME)/.cargo/bin`의 PATH에서 찾는다. 그래서 `make ci-assets-*`는 각 runner에서 그것들을 찾는다(T3.67).

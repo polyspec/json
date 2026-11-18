@@ -6,6 +6,10 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.40
+
+- Pin polyspec-binding-core and @polyspec/binding to 0.0.22 (T3.72), the first release that the binding 0.0.22 consumer run measures. Version 0.0.39 stays not released (T3.69).
+
 ## 0.0.39
 
 - The release recipes call rustup and cargo by name, on the PATH that the Makefile exports first with `$(HOME)/.cargo/bin`, so `make ci-assets-*` finds them on each runner (T3.67).
