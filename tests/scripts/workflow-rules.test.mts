@@ -510,3 +510,12 @@ test('T3.70: ci.yml runs the release rehearsal, which runs the steps of ci-relea
   assert.match(steps, /rehearse-go-module/, 'the rehearsal runs rehearse-go-module');
   assert.doesNotMatch(steps, /release-go-module-push|release-publish|release-undraft|release-platform-assets|git push|gh release/, 'the rehearsal writes nothing to GitHub');
 });
+
+test('T3.70: the gate of ci.yml needs the release rehearsal and reads its result with make ci-required', () => {
+  const gate = workflowJobs(workflow('ci.yml')).get('required');
+  assert.ok(gate, 'ci.yml declares the gate required');
+  const text = workflow('ci.yml');
+  assert.match(text, /^ {4}needs: \[kit, assets, release-rehearsal\]$/m, 'the gate needs kit, assets and release-rehearsal');
+  assert.match(text, /make ci-required RESULTS=/, 'the gate reads its results with make ci-required');
+  assert.match(text, /^ {4}runs-on: ubuntu-24\.04$/m);
+});

@@ -46,3 +46,13 @@ jobs:
           merge-multiple: true
       - uses: ./.github/actions/kit-bootstrap
       - run: make ci-release-rehearsal
+  # The gate of the release rehearsal (T3.70): green means the release job of the commit passes its steps before the tag.
+  # It reads the results of kit, assets and release-rehearsal with make ci-required, as the required job of ci-pipeline does.
+  required:
+    if: ${{ always() }}
+    needs: [kit, assets, release-rehearsal]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: ./.github/actions/kit-bootstrap
+      - run: make ci-required RESULTS='${{ toJSON(needs) }}'
