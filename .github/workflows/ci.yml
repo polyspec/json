@@ -33,7 +33,10 @@ jobs:
     permissions:
       contents: read
     steps:
+      # The whole history: rehearse-go-module walks the parents of HEAD, as the release job does (T3.73).
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
       - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
         if: ${{ hashFiles('.php-version') != '' }}
         with:
