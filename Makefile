@@ -34,9 +34,9 @@ COMPOSER := $(CURDIR)/var/tools/mise/shims/composer
 # file exports, so a lookup there finds the Go of the machine in one make and the Go of the checkout in another.
 GO := $(CURDIR)/var/tools/mise/shims/go
 # cargo and rustup are the proxies of rustup, the tool of the machine that reads rust-toolchain.toml; var/tools holds neither.
-# They are the proxies of rustup's default install folder, $(HOME)/.cargo/bin, so the recipes name them by that path.
-CARGO := $(HOME)/.cargo/bin/cargo
-RUSTUP := $(HOME)/.cargo/bin/rustup
+# The recipes call them by name; the PATH export above puts the folder of rustup's proxies first, where the machine has them.
+CARGO := cargo
+RUSTUP := rustup
 # The supplementary suite of mise.toml (http:jsontestsuite), which json-install-suite installs; empty when it is not installed.
 JSON_TEST_SUITE ?= $(wildcard var/tools/mise/installs/http-jsontestsuite/latest)
 

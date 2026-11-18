@@ -94,7 +94,7 @@ test('T3.45: every cargo run that builds the PHP extension passes the php-config
   writeFileSync(php, `#!/bin/sh\necho ${dir}/bin/php\n`, { mode: 0o755 });
   const run = spawnSync('make', ['-n', '--no-print-directory', 'lint-bindings', 'test-binding-crates', 'test-binding-php', `PHP=${php}`], { cwd: ROOT, encoding: 'utf8', env: { ...process.env, LC_ALL: 'C' } });
   assert.equal(run.status, 0, run.stdout + run.stderr);
-  const builds = run.stdout.split('\n').filter(line => /\/cargo (clippy|test|build) --locked .*-p polyspec-json-php-ext/.test(line));
+  const builds = run.stdout.split('\n').filter(line => /(?:^|[\s\/])cargo (clippy|test|build) --locked .*-p polyspec-json-php-ext/.test(line));
   assert.equal(builds.length, 3, run.stdout);
   for (const line of builds) assert.ok(line.includes(`PHP_CONFIG=${dir}/bin/php-config `), line);
 });
