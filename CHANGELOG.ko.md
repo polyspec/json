@@ -7,6 +7,10 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.39
+
+- 릴리스 recipe는 cargo와 rustup을 rustup 설치 폴더 `$(HOME)/.cargo/bin`의 경로로 부른다. Makefile이 그 경로를 PATH의 맨 앞에 두므로 `make ci-assets-*`는 runner image의 PATH 없이 돈다(T3.67).
+
 - Go 바인딩이 T3.63과 T3.64의 두 검사에 들어간다(T3.25-6): `make benchmark`는 go 행이 link하는 static library를 `target/release`와 `target/debug`의 library와 비교해 debug인 것을 거부하고, `tests/scripts/kinds.test.mts`는 `packages/go/tests`의 손으로 쓴 시험이 닿는 kind를 공유 목록과 비교한다.
 ## 0.0.38
 

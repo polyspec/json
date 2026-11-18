@@ -6,6 +6,10 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.39
+
+- The release recipes call cargo and rustup by the path of rustup's folder, `$(HOME)/.cargo/bin`, which the Makefile exports first on PATH, so `make ci-assets-*` runs with no PATH of the runner image (T3.67).
+
 - The Go binding joins the two checks of T3.63 and T3.64 (T3.25-6): `make benchmark` compares the static library that the go row links with the libraries of `target/release` and `target/debug` and refuses a debug one, and `tests/scripts/kinds.test.mts` compares the kinds that the hand-written tests of `packages/go/tests` reach with the shared lists.
 ## 0.0.38
 
