@@ -695,8 +695,10 @@ ci-release:
 	$(MAKE) --no-print-directory json-install-rust-packages
 	$(MAKE) --no-print-directory install-tools TOOLS=go
 	$(MAKE) --no-print-directory release-recipes
+	$(MAKE) --no-print-directory rehearse-go-module TAG="$$TAG"
 	GIT_AUTHOR_NAME="$$GITHUB_ACTOR" GIT_AUTHOR_EMAIL="$$GITHUB_ACTOR@users.noreply.github.com" GIT_COMMITTER_NAME="$$GITHUB_ACTOR" \
 	GIT_COMMITTER_EMAIL="$$GITHUB_ACTOR@users.noreply.github.com" $(MAKE) --no-print-directory release-go-module
+	$(MAKE) --no-print-directory release-go-module-push TAG="$$TAG"
 	$(MAKE) --no-print-directory release-publish
 	$(MAKE) --no-print-directory release-platform-assets
 	$(MAKE) --no-print-directory release-undraft TAG="$$TAG"

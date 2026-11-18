@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: fdae78d4303e45dfcf081b9002835c28934a74573078e4292d11ed59ff9f88d4 -->
+<!-- source-sha256: 07a0409b7ad098c42e5d52369ab3299faad9dda2ac295922fe84187ff67b8a70 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -8,6 +8,15 @@
 ## Unreleased
 
 - Go 바인딩이 T3.63과 T3.64의 두 검사에 들어간다(T3.25-6): `make benchmark`는 go 행이 link하는 static library를 `target/release`와 `target/debug`의 library와 비교해 debug인 것을 거부하고, `tests/scripts/kinds.test.mts`는 `packages/go/tests`의 손으로 쓴 시험이 닿는 kind를 공유 목록과 비교한다.
+## 0.0.38
+
+- Go module의 release는 그 tag를 push한다(T3.66): `ci-release`는 tag 전에 Go module을 rehearse하고(`rehearse-go-module`), `release-go-module` 뒤에 `release-go-module-push TAG=…`를 돌려 tag `packages/go/vX.Y.Z`가 remote에 닿게 한다. release 0.0.37은 그 tag를 runner 안에만 만들었다(run 44079838426). `tests/scripts/workflow-rules.test.mts`의 `ci-release` 순서 시험이 그 step을 지킨다.
+
+- Go module tag 순서 시험(T3.66)은 dry run 대신 make database에서 `ci-release`의 recipe를 읽는다. 따라서 Git이 무시하고 CI에는 release job이 만든 뒤에야 있는 생성 파일 `packages/release.mk`가 필요 없다.
+
+## 0.0.37
+
+- json이 binding v0.0.21을 pin한다(T3.65): `package.json`은 `polyspec-binding-0.0.21.tgz`를 받고(release의 sha256 ccbf9625는 그 asset의 것), `package-lock.json`은 그 integrity를 가지며, `Cargo.lock`과 바인딩의 모든 `Cargo.toml`은 tag `v0.0.21`을 이름하고, `binding scaffold`와 `binding release-recipes`가 scaffold된 파일을 다시 썼다. 이 lane에는 아직 `packages/go`의 Go module이 없다. scaffold가 `// indirect` 줄과 함께 쓰는 go.mod와 go.sum은 손으로 쓴 Go 시험의 이동(T3.25-6)과 함께 온다.
 
 - 시험 하나가 바인딩의 kind를 JSON 계약의 공유 목록과 비교한다(T3.64): `tests/scripts/kinds.test.mts`는 목록의 kind마다 바인딩의 손으로 쓴 시험이 그것에 닿거나 그 항목이 그 언어에서 생길 수 없다고 적을 것을 요구하고, 지워진 legacy 패키지를 이름하는 항목을 거부한다. 이 시험이 찾아 이 변경이 고친 것: `non_string_key`와 `invalid_argument_type` 항목이 PHP에서 생길 수 없다고 적었으나 바인딩은 그 kind를 낸다; `host_serialization_refused`는 이제 hook이 없는 Python에서 생길 수 없다고 적는다; 세 항목이 이행 기간의 패키지에 PHP를 이름했다; TypeScript, Python, PHP의 손으로 쓴 시험 어느 것도 `non_finite_number`에 닿지 않았고 TypeScript의 시험은 `invalid_code_unit`에도 닿지 않았으며, 이제 각각 시험이 있다. distribution 문서의 Go module tag는 `packages/go/vX.Y.Z`로 적는다: `legacy/packages/go/vX.Y.Z`라는 tag는 없다.
 

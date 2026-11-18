@@ -452,6 +452,25 @@ test('T3.25-5: the job release installs every tool of release-pie-check before i
   assert.match(workflow('release.yml'), /^ {6}TAG: \$\{\{ needs\.tag\.outputs\.tag \}\}$/m, 'the job release gives TAG');
 });
 
+// T3.66: the release of a Go module pushes its tag. binding 0.0.21 splits release-go-module, which only adds the reference of the
+// tag, from release-go-module-push, which pushes every reference of the release at once (B2.488). ci-release must run the rehearsal
+// of the module before its tag and the push after it, or the tag of packages/go/vX.Y.Z is made in the runner and never reaches the
+// remote (release 0.0.37, run 44079838426). The order is read from the recipe of ci-release in the make database, so the test
+// needs no generated file: packages/release.mk, which binding release-recipes writes and Git ignores, is absent in CI before the
+// release job makes it (CI run 44082769614).
+test('T3.66: ci-release rehearses the Go module before its tag and pushes the tag after it', () => {
+  const lines = recipe(database(), 'ci-release');
+  const at = (pattern: RegExp) => lines.findIndex(line => pattern.test(line));
+  const rehearse = at(/\brehearse-go-module\b/);
+  const module = at(/\brelease-go-module\b(?!-)/);
+  const push = at(/\brelease-go-module-push\b/);
+  const publish = at(/\brelease-publish\b/);
+  assert.ok(rehearse >= 0, 'ci-release rehearses the Go module with the tag it will make');
+  assert.ok(module >= 0 && rehearse < module, 'the rehearsal runs before release-go-module');
+  assert.ok(push >= 0 && module < push, 'release-go-module-push runs after release-go-module');
+  assert.ok(publish >= 0 && push < publish, 'the tags reach the remote before the release is published');
+});
+
 // T3.61: kit 0.0.120 builds the candidate of the version that the change log of HEAD records when it is given no VERSION
 // (K1286), so the recipe of json asks for none: it passes VERSION only when a person gives one.
 test('T3.61: release-candidate-assets runs with no VERSION and passes one that is given', () => {
