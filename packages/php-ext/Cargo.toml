@@ -21,7 +21,7 @@ fault-test = ["polyspec-json/fault-test"]
 
 [dependencies]
 polyspec-json = { path = "../rust" }
-polyspec-binding-core = { git = "https://github.com/polyspec/binding.git", tag = "v0.0.21", features = ["construct", "lock"] }
+polyspec-binding-core = { git = "https://github.com/polyspec/binding.git", tag = "v0.0.22", features = ["construct", "lock"] }
 ext-php-rs = "=0.16.4"
 
 [lints]
