@@ -519,3 +519,14 @@ test('T3.70: the gate of ci.yml needs the release rehearsal and reads its result
   assert.match(text, /make ci-required RESULTS=/, 'the gate reads its results with make ci-required');
   assert.match(text, /^ {4}runs-on: ubuntu-24\.04$/m);
 });
+
+test('T3.73: the release rehearsal checks out the whole history, as the release job does, for the Go module rehearsal', () => {
+  // binding release-go-module --rehearsal walks the parents of HEAD (packages/release.mk rehearse-go-module); a shallow checkout
+  // fails there with "failed to traverse parents of commit" (B2.547 of the run 44276307203).
+  const job = workflowJobs(workflow('ci.yml')).get('release-rehearsal');
+  assert.ok(job, 'ci.yml declares the job release-rehearsal');
+  const text = workflow('ci.yml');
+  const checkout = /^ {6}- uses: actions\/checkout@[^\n]*\n((?: {8}[^\n]*\n)*)/m.exec(text.slice(text.indexOf('  release-rehearsal:')));
+  assert.ok(checkout, 'the job release-rehearsal checks out the repository');
+  assert.match(checkout[1], /^ {8}fetch-depth: 0$/m, 'the checkout of the rehearsal has fetch-depth 0');
+});
