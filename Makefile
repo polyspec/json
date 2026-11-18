@@ -681,6 +681,21 @@ ci-tag:
 	$(MAKE) --no-print-directory release-tag $(if $(filter workflow_run,$(GITHUB_EVENT_NAME)),AUTO=1)
 	@test -n "$$GITHUB_OUTPUT" || { echo 'ci-tag: GITHUB_OUTPUT is not set; run it in the release workflow' >&2; exit 2; }
 	{ grep -E '^TAG=' "$$GITHUB_ENV" | tail -n 1 | sed 's/^TAG=/tag=/'; grep -E '^VERSION=' "$$GITHUB_ENV" | tail -n 1 | sed 's/^VERSION=/version=/'; } >> "$$GITHUB_OUTPUT"
+# ci-release-rehearsal runs the steps of ci-release that write nothing to GitHub, with no tag and no push (T3.70): the archives,
+# the Go module through rehearse-go-module, and the release recipes. A CI run of a commit on main runs it, so a release that
+# would fail at rehearse-go-module fails before any tag exists (B2.539).
+.PHONY: ci-release-rehearsal
+ci-release-rehearsal:
+	@command -v zip >/dev/null || { echo 'Info-ZIP is required for Composer release archives; install the zip package on the Ubuntu runner' >&2; exit 1; }
+	$(MAKE) --no-print-directory release-prepare
+	$(MAKE) --no-print-directory release-tools
+	$(MAKE) --no-print-directory release-assets
+	cp -R var/release/platform-assets/. var/release/assets/
+	$(MAKE) --no-print-directory json-install-rust-packages
+	$(MAKE) --no-print-directory install-tools TOOLS=go
+	$(MAKE) --no-print-directory release-recipes
+	$(MAKE) --no-print-directory rehearse-go-module TAG="v$(strip $(file <VERSION))"
+
 # ci-release releases TAG in the order of config/release.json. The job downloads the assets of each platform into
 # var/release/platform-assets before its run step, and the recipe merges them into var/release/assets after release-assets
 # built the archives of the tag. The tools of var/tools are on the PATH that this Makefile exports, so no step puts them on

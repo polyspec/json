@@ -26,3 +26,23 @@ jobs:
   # check of binding, so a commit whose assets do not build fails its run and no release tags it.
   assets:
     uses: ./.github/workflows/assets.yml
+  # The release rehearsal (T3.70): the steps of ci-release before its tag, with no push, rehearse-go-module among them.
+  release-rehearsal:
+    needs: [assets]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
+        if: ${{ hashFiles('.php-version') != '' }}
+        with:
+          php-version-file: .php-version
+          coverage: none
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          pattern: assets-*
+          path: var/release/platform-assets
+          merge-multiple: true
+      - uses: ./.github/actions/kit-bootstrap
+      - run: make ci-release-rehearsal

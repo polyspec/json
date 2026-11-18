@@ -498,3 +498,15 @@ test('T3.25-6: the runtime job go runs the binding module and no legacy Go packa
   assert.equal(spawnSync('git', ['ls-files', '--', 'legacy/packages/go'], { cwd: ROOT, encoding: 'utf8' }).stdout, '', 'legacy/packages/go is removed');
   assert.doesNotMatch(readFileSync(path.join(ROOT, 'Makefile'), 'utf8'), /legacy\/packages\/go|test-differential-go/);
 });
+
+test('T3.70: ci.yml runs the release rehearsal, which runs the steps of ci-release before the tag and pushes nothing', () => {
+  // A release that fails after its tag is found too late (B2.539): the job runs the steps of ci-release that write nothing to
+  // GitHub, the Go module rehearsal among them, on every commit of main, and ci-passed of the run needs it.
+  const job = workflowJobs(workflow('ci.yml')).get('release-rehearsal');
+  assert.ok(job, 'ci.yml declares the job release-rehearsal');
+  assert.ok(job.some(step => step.run === 'make ci-release-rehearsal'), 'the job runs make ci-release-rehearsal');
+  assert.match(workflow('ci.yml'), /^ {4}needs: \[?[^\n]*\bassets\b/m, 'the job needs the assets of every platform');
+  const steps = recipe(database(), 'ci-release-rehearsal').join('\n');
+  assert.match(steps, /rehearse-go-module/, 'the rehearsal runs rehearse-go-module');
+  assert.doesNotMatch(steps, /release-go-module-push|release-publish|release-undraft|release-platform-assets|git push|gh release/, 'the rehearsal writes nothing to GitHub');
+});
