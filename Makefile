@@ -21,7 +21,7 @@ MISE_ENVIRONMENT := MISE_DATA_DIR MISE_CACHE_DIR MISE_STATE_DIR MISE_CONFIG_DIR 
 # kit 0.0.98's run-tests dropped NODE_TEST_CONTEXT, so a node --test that a recipe starts from inside a node test runs as
 # its own run, not as a child of that test (kit K1094); no recipe passes it on.
 unexport NODE_TEST_CONTEXT
-export PATH := $(CURDIR)/var/tools/bin:$(CURDIR)/var/tools/mise/shims:$(PATH)
+export PATH := $(HOME)/.cargo/bin:$(CURDIR)/var/tools/bin:$(CURDIR)/var/tools/mise/shims:$(PATH)
 
 # PYTHON is the python of mise.toml, which make install-tools installs with mise at the digest of mise.lock and its shim
 # runs (kit K127). A recipe names it by its absolute path: GNU make execs a recipe line without shell metacharacters
@@ -33,9 +33,10 @@ COMPOSER := $(CURDIR)/var/tools/mise/shims/composer
 # Go of mise.toml, by the absolute path of its shim: a $(shell) of GNU make before 4.4 does not read the PATH that this
 # file exports, so a lookup there finds the Go of the machine in one make and the Go of the checkout in another.
 GO := $(CURDIR)/var/tools/mise/shims/go
-# cargo is the proxy of rustup, a tool of the machine that reads rust-toolchain.toml; var/tools holds no cargo, so the
-# lookup gives the same path under every make.
-CARGO := $(shell command -v cargo)
+# cargo and rustup are the proxies of rustup, the tool of the machine that reads rust-toolchain.toml; var/tools holds neither.
+# They are the proxies of rustup's default install folder, $(HOME)/.cargo/bin, so the recipes name them by that path.
+CARGO := $(HOME)/.cargo/bin/cargo
+RUSTUP := $(HOME)/.cargo/bin/rustup
 # The supplementary suite of mise.toml (http:jsontestsuite), which json-install-suite installs; empty when it is not installed.
 JSON_TEST_SUITE ?= $(wildcard var/tools/mise/installs/http-jsontestsuite/latest)
 
@@ -95,7 +96,7 @@ deps-python: json-install-python
 json-install: install-kit json-install-rust-packages json-install-php json-install-python
 
 json-install-rust:
-	$(ONLINE) rustup toolchain install --no-self-update
+	$(ONLINE) $(RUSTUP) toolchain install --no-self-update
 
 # json-install-php installs the locked Composer packages of the development manifest composer.json, PHPUnit among them, into
 # vendor/, from which make test-php and make test-binding-php run PHPUnit and whose autoloader PHPStan of make lint-php reads
