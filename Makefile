@@ -685,16 +685,18 @@ ci-tag:
 # the Go module through rehearse-go-module, and the release recipes. A CI run of a commit on main runs it, so a release that
 # would fail at rehearse-go-module fails before any tag exists (B2.539).
 .PHONY: ci-release-rehearsal
+# The tag of the rehearsal is the version of the top ## X.Y.Z section of CHANGELOG.md, which the release of the commit would make.
+RELEASE_REHEARSAL_TAG = v$(strip $(shell sed -n 's/^## \([0-9][0-9.]*\)$$/\1/p' CHANGELOG.md | head -n 1))
 ci-release-rehearsal:
 	@command -v zip >/dev/null || { echo 'Info-ZIP is required for Composer release archives; install the zip package on the Ubuntu runner' >&2; exit 1; }
 	$(MAKE) --no-print-directory release-prepare
 	$(MAKE) --no-print-directory release-tools
-	$(MAKE) --no-print-directory release-assets
+	$(MAKE) --no-print-directory release-candidate-assets
 	cp -R var/release/platform-assets/. var/release/assets/
 	$(MAKE) --no-print-directory json-install-rust-packages
 	$(MAKE) --no-print-directory install-tools TOOLS=go
 	$(MAKE) --no-print-directory release-recipes
-	$(MAKE) --no-print-directory rehearse-go-module TAG="v$(strip $(file <VERSION))"
+	$(MAKE) --no-print-directory rehearse-go-module TAG="$(RELEASE_REHEARSAL_TAG)"
 
 # ci-release releases TAG in the order of config/release.json. The job downloads the assets of each platform into
 # var/release/platform-assets before its run step, and the recipe merges them into var/release/assets after release-assets
