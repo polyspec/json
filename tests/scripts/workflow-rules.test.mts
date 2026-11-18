@@ -528,5 +528,5 @@ test('T3.73: the release rehearsal checks out the whole history, as the release 
   const text = workflow('ci.yml');
   const checkout = /^ {6}- uses: actions\/checkout@[^\n]*\n((?: {8}[^\n]*\n)*)/m.exec(text.slice(text.indexOf('  release-rehearsal:')));
   assert.ok(checkout, 'the job release-rehearsal checks out the repository');
-  assert.match(checkout[1], /^ {10}fetch-depth: 0$/m, 'the checkout of the rehearsal has fetch-depth 0');
+  assert.match(checkout[1] ?? '', /^ {10}fetch-depth: 0$/m, 'the checkout of the rehearsal has fetch-depth 0');
 });
