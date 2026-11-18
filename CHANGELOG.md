@@ -8,7 +8,8 @@
 
 ## 0.0.39
 
-- The release recipes call cargo and rustup by the path of rustup's folder, `$(HOME)/.cargo/bin`, which the Makefile exports first on PATH, so `make ci-assets-*` runs with no PATH of the runner image (T3.67).
+- The release recipes call rustup and cargo by name, on the PATH that the Makefile exports first with `$(HOME)/.cargo/bin`, so `make ci-assets-*` finds them on each runner (T3.67).
+- Not released: the release run 44230487187 of version 0.0.39 stopped at `rehearse-go-module` (B2.539, binding 0.0.21: `git update-index --force-remove` in a bare repository), after the tag `v0.0.39` was pushed at dd4927d. The tag stays; version 0.0.40 is the release that follows it (T3.69).
 
 - The Go binding joins the two checks of T3.63 and T3.64 (T3.25-6): `make benchmark` compares the static library that the go row links with the libraries of `target/release` and `target/debug` and refuses a debug one, and `tests/scripts/kinds.test.mts` compares the kinds that the hand-written tests of `packages/go/tests` reach with the shared lists.
 ## 0.0.38

@@ -9,7 +9,8 @@
 
 ## 0.0.39
 
-- 릴리스 recipe는 cargo와 rustup을 rustup 설치 폴더 `$(HOME)/.cargo/bin`의 경로로 부른다. Makefile이 그 경로를 PATH의 맨 앞에 두므로 `make ci-assets-*`는 runner image의 PATH 없이 돈다(T3.67).
+- 릴리스 recipe는 rustup과 cargo를 이름으로 부르고, Makefile이 맨 앞에 두는 `$(HOME)/.cargo/bin`의 PATH에서 찾는다. 그래서 `make ci-assets-*`는 각 runner에서 그것들을 찾는다(T3.67).
+- 릴리스되지 않음: version 0.0.39의 release run 44230487187은 `rehearse-go-module`(B2.539, binding 0.0.21: bare repository에서 `git update-index --force-remove`)에서 멈췄다. tag `v0.0.39`는 dd4927d에 push된 뒤였다. tag는 그대로 두고, 그 다음 version 0.0.40이 release다(T3.69).
 
 - Go 바인딩이 T3.63과 T3.64의 두 검사에 들어간다(T3.25-6): `make benchmark`는 go 행이 link하는 static library를 `target/release`와 `target/debug`의 library와 비교해 debug인 것을 거부하고, `tests/scripts/kinds.test.mts`는 `packages/go/tests`의 손으로 쓴 시험이 닿는 kind를 공유 목록과 비교한다.
 ## 0.0.38
