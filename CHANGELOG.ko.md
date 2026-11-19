@@ -7,6 +7,10 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.41
+
+- polyspec-binding-core와 @polyspec/binding을 0.0.24로 pin한다. json과 소비자가 같은 binding release를 쓰게 하여, json을 pin하는 소비자의 CK-20 검사가 통과하도록 한다(0.0.22는 대체되고, 0.0.23은 쓰지 않는다).
+
 ## 0.0.40
 
 - polyspec-binding-core와 @polyspec/binding을 0.0.22로 pin한다(T3.72). 0.0.22 소비자 실행으로 측정된 첫 release다. 0.0.39는 여전히 release되지 않음이다(T3.69).

@@ -6,6 +6,10 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.41
+
+- Pin polyspec-binding-core and @polyspec/binding to 0.0.24, one binding release for json and its consumers, so that the binding CK-20 check passes for a consumer that pins json (0.0.22 is replaced; 0.0.23 is not used).
+
 ## 0.0.40
 
 - Pin polyspec-binding-core and @polyspec/binding to 0.0.22 (T3.72), the first release that the binding 0.0.22 consumer run measures. Version 0.0.39 stays not released (T3.69).
